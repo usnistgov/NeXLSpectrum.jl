@@ -1,6 +1,18 @@
 name = "NeXLSpectrum"
 uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
 version = "0.0.1"
+
+[deps]
+BoteSalvatICX = "fe54227b-96c7-489b-9963-dd1ce2905f30"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+FFAST = "10506e09-08cd-5f0b-aee5-631de1bcc925"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+NeXLCore = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
+PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
 [compat]
 julia = "1"
 
@@ -9,4 +21,3 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
-
