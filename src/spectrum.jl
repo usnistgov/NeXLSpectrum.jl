@@ -9,7 +9,7 @@ using PeriodicTable
     Spectrum
 A structure to hold spectrum data (energy scale, counts and metadata).
 Metadata is identified by a symbol. Predefined symbols include
-    :BeamEnergy    # In keV
+    :BeamEnergy    # In eV
     :Elevation     # In degrees
     :LiveTime      # In seconds
     :RealTime      # In seconds
@@ -41,7 +41,7 @@ function Base.show(io::IO, spec::Spectrum)
     cols, rows = 80, 16
     # how much to plot
     e0_eV = haskey(spec,:BeamEnergy) ?
-        e0_eV=1000.0*spec.properties[:BeamEnergy] :
+        e0_eV=spec.properties[:BeamEnergy] :
         energy(length(spec), spec)
     maxCh = min(channel(e0_eV, spec),length(spec))
     step = maxCh ÷ cols
@@ -58,7 +58,7 @@ function Base.show(io::IO, spec::Spectrum)
         if r==1
             println(io, ss, " ", max)
         elseif r==rows
-            println(io, ss," ",get(spec,:BeamEnergy,-1.0)," keV]")
+            println(io, ss," ",0.001*get(spec,:BeamEnergy,-1.0)," keV]")
         else
             println(io, ss)
         end
@@ -99,7 +99,7 @@ function parsed2stdcmp(value::AbstractString)::Material
     return material(name, mf, den)
 end
 
-function name(sp::Spectrum)
+function NeXLCore.name(sp::Spectrum)
     if haskey(sp.properties,:Name)
         return sp[:Name]
     elseif haskey(sp.properties,:Filename)
@@ -152,7 +152,7 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                     if key == "SPECTRUM"
                         inData = 1
                     elseif key == "BEAMKV"
-                        props[:BeamEnergy]=parse(Float64,value)
+                        props[:BeamEnergy]=1000.0*parse(Float64,value) # in eV
                     elseif key == "XPERCHAN"
                         energy = LinearEnergyScale(energy.offset, parse(Float64,value))
                     elseif key == "LIVETIME"
