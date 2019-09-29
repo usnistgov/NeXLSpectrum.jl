@@ -1,5 +1,7 @@
 using Test
-using NeXL
+using NeXLCore
+using NeXLSpectrum
+using Printf
 
 @testset "Filter" begin
     eds = basicEDS(2048,10.0,0.0,135.0)
@@ -14,7 +16,29 @@ using NeXL
     @test all( filt[r,r-1]==filt[r,r+1] for r in 2:(size(filt)[1]-1))
 end
 
-al2o3 = readEMSA("supplemental/K412 spectra/Al2O3_std.msa")
-f2 = buildfilter(basicEDS(al2o3, 132.0))
+@testset "LLSQ" begin
+    dir = @__DIR__
+    path = "$(dir)/K412 spectra/"
+    unks = readEMSA.(@sprintf("%sIII-E K412[%d][4].msa", path, i) for i in 0:4)
+    al2o3 = readEMSA(path*"Al2O3 std.msa")
+    caf2 = readEMSA(path*"CaF2 std.msa")
+    fe = readEMSA(path*"Fe std.msa")
+    mgo = readEMSA(path*"MgO std.msa")
+    sio2 = readEMSA(path*"SiO2 std.msa");
 
-alk = filter("Al K",al2o3,135:170,f2)
+    det = basicEDS(4096, 10.0, 0.0, 132.0)
+    filt = buildfilter(det)
+
+    ok = filter(sio2,34:66,ff)
+    mgk = filter(mgo, 110:142, ff)
+    alk = filter(al2o3,135:170,filt)
+    sik = filter(sio2,159:196,ff)
+    cak = filter(caf2, 345:422, ff)
+    fel = filter(fe, 51:87, ff)
+    feka = filter(fe , 615:666, ff)
+    fekb = filter(fe, 677:735, ff)
+
+    unk = filter(unks[1], ff)
+
+
+end

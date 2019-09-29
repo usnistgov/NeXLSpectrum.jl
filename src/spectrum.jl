@@ -2,8 +2,11 @@ using Polynomials
 using DataFrames
 using PeriodicTable
 
-#include("../src/xray.jl")
-#include("../src/detector.jl")
+# Keeps track of the number of spectra in this session.
+
+let spectrumIndex = 1
+    global spectrumCounter() = (spectrumIndex += 1)
+end;
 
 """
     Spectrum
@@ -30,8 +33,12 @@ If spec is a Spectrum then
 """
 struct Spectrum
     energy::EnergyScale
-    counts::Array{Int}
+    counts::Array{<:Real}
     properties::Dict{Symbol,Any}
+    function Spectrum(energy::EnergyScale, data::Array{<:Real},props::Dict{Symbol,Any})
+        props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
+        return new(energy, data, props)
+    end
 end
 
 function Base.show(io::IO, spec::Spectrum)
@@ -97,18 +104,6 @@ function parsed2stdcmp(value::AbstractString)::Material
         end
     end
     return material(name, mf, den)
-end
-
-function NeXLCore.name(sp::Spectrum)
-    if haskey(sp.properties,:Name)
-        return sp[:Name]
-    elseif haskey(sp.properties,:Filename)
-        return sp[:Filename]
-    elseif haskey(sp.properties,:Comment)
-        return sp[:Comment]
-    else
-        return "Unnamed spectrum"
-    end
 end
 
 """
@@ -185,7 +180,7 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
             end
         end
         props[:StagePosition] = stgpos
-        return Spectrum(energy,counts,props)
+        return Spectrum(energy, counts, props)
     end
 end
 
@@ -223,9 +218,6 @@ The length of a spectrum is the number of channels.
 """
 Base.length(spec::Spectrum) = size(spec.counts)[1]
 
-basicEDS(spec::Spectrum, fwhmatmnka::Float64) =
-    SimpleEDS(length(spec),spec.energy,MnKaResolution(fwhmatmnka))
-
 """
     energy(ch::Int, spec::Spectrum)
 
@@ -246,13 +238,12 @@ channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 Creates a copy of the spectrum counts data as the specified Number type.
 """
 counts(spec::Spectrum, numType::Type{T}=Float64) where {T<:Number} = map(n->convert(numType,n), spec.counts)
-
 """
     counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T})::Vector{T} where {T<:Number}
 
 Creates a copy of the spectrum counts data as the specified Number type.
 """
-counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}) where {T<:Number} =
+counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}) where {T<:Real} =
     map(n->convert(numType,n), spec.counts[channels])
 
 """
@@ -306,6 +297,15 @@ energyscale(spec::Spectrum) =
     energyscale(spec.energy, 1:length(spec))
 
 """
+    basicEDS(spec::Spectrum, fwhmatmnka::Float64)
+
+Build a SimpleEDS object for this spectrum with the specified FWHM at Mn Kα.
+"""
+basicEDS(spec::Spectrum, fwhmatmnka::Float64) =
+    SimpleEDS(length(spec),spec.energy,MnKaResolution(fwhmatmnka))
+
+
+"""
     subsample(spec::Spectrum, frac::Float64)
 
 Subsample the counts data in a spectrum according to a statistically valid algorithm.
@@ -316,7 +316,7 @@ function subsample(spec::Spectrum, frac::Float64)::Spectrum
     props = deepcopy(spec.properties)
     props[:LiveTime]=frac*get(spec, :LiveTime, 1.0)
     props[:RealTime]=frac*get(spec, :RealTime, 1.0)
-    Spectrum(spec.energy, map(n -> ss(n, frac), spec.counts), props)
+    Spectrum(spec.energy, map(n -> ss(floor(Int,n), frac), spec.counts), props)
 end
 
 

@@ -1,6 +1,7 @@
 using SparseArrays
 using Polynomials
 using LinearAlgebra
+using NeXLUncertainties
 
 """
     buildfilter(det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
@@ -39,6 +40,8 @@ function buildfilter(det::Detector, a::Float64=1.0, b::Float64=1.0, full::Bool=f
     return sparse(ans)
 end
 
+abstract type FilteredLabel end
+
 """
     FilteredDatum
 
@@ -47,7 +50,7 @@ region-of-interest (continguous range of channles) and computing
 useful output statistics.
 """
 struct FilteredDatum
-    identifier # A way of identifying this filtered datum
+    identifier::FilteredLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data
     ffroi::UnitRange{Int} # ROI for the filtered data
@@ -56,10 +59,8 @@ struct FilteredDatum
     covariance::AbstractMatrix{Float64} # Channel covariance
 end
 
-function Base.show(io::IO, fd::FilteredDatum)
-    print(io, "FilteredDatum[",fd.identifier,"]")
-    print(io," over ROC[",fd.roi.start,",",fd.roi.stop,"]")
-end
+Base.show(io::IO, fd::FilteredDatum) =
+    print(io, "FilteredDatum[$(fd.identifier)]")
 
 """
     FilterFit
@@ -69,7 +70,7 @@ A packet of data for fitting spectra.
 struct FilterFit
     filtered::Vector{FilteredDatum}
     filter::AbstractMatrix{Float64}
-    FilterFit(filt::AbstractMatrix{Float64}) = new(Vector{FilteredDatum}(), filt)
+    FilterFit(filter::AbstractMatrix{Float64}) = new(Vector{FilteredDatum}(), filter)
 end
 
 function Base.show(io::IO, fp::FilterFit)
@@ -89,12 +90,23 @@ function estimateBackground(data::AbstractArray{Float64}, channel::Int, width::I
     return Poly( [ fit(0), polyder(fit)(0) ] )
 end
 
+struct ReferenceLabel <: FilteredLabel
+    spec::Spectrum
+    roi::UnitRange{Int}
+end
+
+Base.show(io::IO, refLab::ReferenceLabel) =
+    print(io::IO, "Reference[$(refLab.spec[:Name]),$(refLab.roi)]")
+Base.isequal(rl1::ReferenceLabel,rl2::ReferenceLabel) =
+    isequal(rl1.roi,rl2.roi) && isequal(rl1.spec,rl2.spec)
+
+
 """
     filter(id, spec::Spectrum, roi::UnitRange{Int},  filter::AbstractMatrix{Float64})::FilteredDatum
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
-function Base.filter(id, spec::Spectrum, roi::UnitRange{Int},  filter::AbstractMatrix{Float64}, scale=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
+function Base.filter(spec::Spectrum, roi::UnitRange{Int},  filter::AbstractMatrix{Float64}, scale=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
     data = counts(spec, Float64) # Extract the spectrum data
     # Determine tangents to the two background end points
     tangents = map(st->estimateBackground(data, st, 5, 2), (roi.start, roi.stop))
@@ -110,11 +122,20 @@ function Base.filter(id, spec::Spectrum, roi::UnitRange{Int},  filter::AbstractM
     # Extract the range of non-zero filtered data
     trimmedcovar=sparse(covar[roiff,roiff])
     checkcovariance!(trimmedcovar)
-    FilteredDatum(id, scale, roi, roiff, data[roiff], filtered[roiff], trimmedcovar)
+    FilteredDatum(ReferenceLabel(spec,roi), scale, roi, roiff, data[roiff], filtered[roiff], trimmedcovar)
 end
 
+struct UnknownLabel <: FilteredLabel
+    spec::Spectrum
+end
+
+Base.show(io::IO, unk::UnknownLabel) =
+    print(io, "Unknown[$(unk.spec[:Name])]")
+Base.isequal(ul1::UnknownLabel,ul2::UnknownLabel) =
+    isequal(ul1.spec, ul2.spec)
+
 """
-    filter(id, spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
+    filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
@@ -140,6 +161,7 @@ a FilterFit object representing the entire fit.
 """
 add!(ff::FilterFit, fd::FilteredDatum) =
     push!(ff.filtered, fd)
+
 """
     extract(fd::FilteredDatum, roi::UnitRange{Int})
 

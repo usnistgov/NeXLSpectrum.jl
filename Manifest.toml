@@ -1,7 +1,19 @@
 # This file is machine-generated - editing it directly is not advised
 
+[[Arpack]]
+deps = ["BinaryProvider", "Libdl", "LinearAlgebra"]
+git-tree-sha1 = "07a2c077bdd4b6d23a40342a8a108e2ee5e58ab6"
+uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+version = "0.3.1"
+
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[BinaryProvider]]
+deps = ["Libdl", "Logging", "SHA"]
+git-tree-sha1 = "c7361ce8a2129f20b0e05a89f7070820cfed6648"
+uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
+version = "0.5.6"
 
 [[BoteSalvatICX]]
 deps = ["Requires"]
@@ -28,6 +40,18 @@ deps = ["Compat", "DataAPI", "Future", "JSON", "Missings", "Printf", "Reexport",
 git-tree-sha1 = "5f4400b24adb1fbed17a9dcc1e8ab8aaf5b03d1f"
 uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 version = "0.6.0"
+
+[[ColorTypes]]
+deps = ["FixedPointNumbers", "Random"]
+git-tree-sha1 = "10050a24b09e8e41b951e9976b109871ce98d965"
+uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
+version = "0.8.0"
+
+[[Colors]]
+deps = ["ColorTypes", "FixedPointNumbers", "InteractiveUtils", "Printf", "Reexport"]
+git-tree-sha1 = "c9c1845d6bf22e34738bee65c357a69f416ed5d1"
+uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
+version = "0.9.6"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
@@ -71,11 +95,16 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FFAST]]
 deps = ["CSV", "DataFrames", "Requires"]
-git-tree-sha1 = "da1689490ca164a0e44c9345b50c23833c9e5447"
+git-tree-sha1 = "aae71f27ecfea04947020e6524f38210d0f6c254"
 repo-rev = "master"
 repo-url = "https://github.com/usnistgov/FFAST.jl.git"
 uuid = "10506e09-08cd-5f0b-aee5-631de1bcc925"
 version = "0.0.1"
+
+[[FixedPointNumbers]]
+git-tree-sha1 = "d14a6fa5890ea3a7e5dcab6811114f132fec2b4b"
+uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
+version = "0.6.1"
 
 [[Future]]
 deps = ["Random"]
@@ -133,12 +162,26 @@ version = "0.4.2"
 [[Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
+[[MultivariateStats]]
+deps = ["Arpack", "LinearAlgebra", "SparseArrays", "Statistics", "StatsBase"]
+git-tree-sha1 = "352fae519b447bf52e6de627b89f448bcd469e4e"
+uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
+version = "0.7.0"
+
 [[NeXLCore]]
-deps = ["BoteSalvatICX", "CSV", "DataFrames", "FFAST", "PeriodicTable", "Printf", "Requires", "Unitful"]
-git-tree-sha1 = "6cec575afa013b2961d5a043d36cedc4b2066380"
+deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "PeriodicTable", "Printf", "Requires", "Unitful"]
+git-tree-sha1 = "9ba298b0d3ff2b1bea5a984a9bc39367be01f01d"
 repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl"
+repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl.git"
 uuid = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
+version = "0.0.1"
+
+[[NeXLUncertainties]]
+deps = ["LinearAlgebra", "Printf", "SparseArrays"]
+git-tree-sha1 = "a671fed1e0e62f407a0d6de2c900294222224c4f"
+repo-rev = "master"
+repo-url = "https://github.com/NicholasWMRitchie/NeXLUncertainties.jl.git"
+uuid = "7127f3d6-1721-46bc-bb38-8fc703dd438e"
 version = "0.0.1"
 
 [[OrderedCollections]]
@@ -234,6 +277,12 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[[StatsBase]]
+deps = ["DataAPI", "DataStructures", "LinearAlgebra", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics"]
+git-tree-sha1 = "c53e809e63fe5cf5de13632090bc3520649c9950"
+uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+version = "0.32.0"
+
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
 git-tree-sha1 = "b1ad568ba658d8cbb3b892ed5380a6f3e781a81e"
@@ -268,3 +317,9 @@ deps = ["Random", "Test"]
 git-tree-sha1 = "9a0bb82eede528debe631b642eeb48a631a69bc2"
 uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
 version = "0.6.1"
+
+[[XXhash]]
+deps = ["BinaryProvider", "Libdl"]
+git-tree-sha1 = "e5a0bf9da1ac49671026a28bc38264f0877dec0a"
+uuid = "137af188-b1ec-11e9-0b40-31ed9142ae64"
+version = "0.7.0"

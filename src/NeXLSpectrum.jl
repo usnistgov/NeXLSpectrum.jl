@@ -1,6 +1,7 @@
 module NeXLSpectrum
 
 using NeXLCore
+using Requires
 
 include("detector.jl")
 export EnergyScale # Abstract: Detector energy calibration function
@@ -33,5 +34,20 @@ export subsample # Sub-sample a spectrum
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensityS
+
+include("llsq.jl")
+include("filterfit.jl")
+export buildfilter
+export estimateBackground
+export extract
+export covariance
+export ascontiguous
+export fitcontiguousg, fitcontiguousp, fitcontiguousw, fitcontiguouso
+export filterfit
+export filteredresidual
+
+function __init__()
+    @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
+end
 
 end
