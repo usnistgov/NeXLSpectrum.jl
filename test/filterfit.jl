@@ -2,6 +2,7 @@ using Test
 using NeXLCore
 using NeXLSpectrum
 using Printf
+using BenchmarkTools
 
 @testset "Filter" begin
     eds = basicEDS(2048,10.0,0.0,135.0)
@@ -27,18 +28,42 @@ end
     sio2 = readEMSA(path*"SiO2 std.msa");
 
     det = basicEDS(4096, 10.0, 0.0, 132.0)
-    filt = buildfilter(det)
+    ff = buildfilter(det)
 
-    ok = filter(sio2,34:66,ff)
-    mgk = filter(mgo, 110:142, ff)
-    alk = filter(al2o3,135:170,filt)
-    sik = filter(sio2,159:196,ff)
-    cak = filter(caf2, 345:422, ff)
-    fel = filter(fe, 51:87, ff)
-    feka = filter(fe , 615:666, ff)
-    fekb = filter(fe, 677:735, ff)
+    ok = filter(sio2,34:66,ff, 1.0/dose(sio2))
+    mgk = filter(mgo, 110:142, ff, 1.0/dose(mgo))
+    alk = filter(al2o3,135:170,ff, 1.0/dose(al2o3))
+    sik = filter(sio2,159:196,ff, 1.0/dose(sio2))
+    cak = filter(caf2, 345:422, ff, 1.0/dose(caf2))
+    fel = filter(fe, 51:87, ff, 1.0/dose(fe))
+    feka = filter(fe, 615:666, ff, 1.0/dose(fe))
+    fekb = filter(fe, 677:735, ff, 1.0/dose(fe))
 
-    unk = filter(unks[1], ff)
+    fds = [ ok, mgk, alk, sik, cak, fel, feka, fekb ]
 
+    unk = filter(unks[1], ff, 1.0/dose(unks[1]))
 
+    ff = filterfit(unk, fds, fitcontiguousp)
+    println("Performing the full generalized fit takes:")
+    @btime filterfit(unk, fds, fitcontiguousp)
+    println("Performing the weighted fit takes:")
+    @btime filterfit(unk, fds, fitcontiguousw)
+
+    @test isapprox(value(ok.identifier, ff), 0.6623, atol=0.0001)
+    @test isapprox(value(fekb.identifier, ff), 0.0686, atol=0.0001)
+    @test isapprox(value(mgk.identifier, ff), 0.1540, atol=0.0001)
+    @test isapprox(value(alk.identifier, ff), 0.0691, atol=0.0001)
+    @test isapprox(value(sik.identifier, ff), 0.3616, atol=0.0001)
+    @test isapprox(value(cak.identifier, ff), 0.1952, atol=0.0001)
+    @test isapprox(value(fel.identifier, ff), 0.0469, atol=0.0001)
+    @test isapprox(value(feka.identifier, ff), 0.0715, atol=0.0001)
+
+    @test isapprox(uncertainty(ok.identifier, ff), 0.000107, atol=0.000001)
+    @test isapprox(uncertainty(mgk.identifier, ff), 3.810e-5, atol=1.0e-7)
+    @test isapprox(uncertainty(alk.identifier, ff), 2.60e-5, atol=1.0e-7)
+    @test isapprox(uncertainty(sik.identifier, ff), 6.21e-5, atol=1.0e-7)
+    @test isapprox(uncertainty(cak.identifier, ff), 5.42e-5, atol=1.0e-7)
+    @test isapprox(uncertainty(fel.identifier, ff), 0.0001809, atol=0.0001)
+    @test isapprox(uncertainty(feka.identifier, ff), 4.36e-5, atol=1.0e-7)
+    @test isapprox(uncertainty(fekb.identifier, ff), 0.0002178, atol=0.0001)
 end

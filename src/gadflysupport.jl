@@ -19,7 +19,7 @@ const NeXLPalette = ( # This palette - https://flatuicolors.com/palette/nl
 Plot a Spectrum using Gadfly
 """
 function Gadfly.plot(spec::Spectrum, klmLines=[]; xmin=0.0, xmax=nothing)::Plot
-    maxCh = channel(1000.0*get(spec, :BeamEnergy, 0.001*energy(length(spec),spec)),spec)
+    maxCh = channel(get(spec, :BeamEnergy, energy(length(spec),spec)),spec)
     norm = dose(spec)
     data = (isequal(norm, missing) ? 1.0 : 1.0/norm) * spec.counts[1:maxCh]
     if isnothing(xmax)
@@ -41,7 +41,7 @@ function Gadfly.plot(specs::Vector{Spectrum}; xmin=0.0, xmax=nothing)::Plot
     maxI, maxE = 16, 1.0e3
     layers=[]
     for (i, spec) in enumerate(specs)
-        chs = max(1,channel(xmin,spec)):channel(1000.0*get(spec, :BeamEnergy, 0.001*energy(length(spec),spec)),spec)
+        chs = max(1,channel(xmin,spec)):channel(get(spec, :BeamEnergy, energy(length(spec),spec)),spec)
         maxI = maximum( [ maxI, maximum(spec.counts[chs]) ] )
         maxE = maximum( [ maxE, energy(chs.stop,spec) ] )
         push!(layers, layer(x=energyscale(spec)[chs], y=spec.counts[chs], Geom.step, Theme(default_color=NeXLPalette[(i-1) % length(NeXLPalette)+1] )))

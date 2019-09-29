@@ -40,7 +40,7 @@ function buildfilter(det::Detector, a::Float64=1.0, b::Float64=1.0, full::Bool=f
     return sparse(ans)
 end
 
-abstract type FilteredLabel end
+abstract type FilteredLabel <: Label end
 
 """
     FilteredDatum
@@ -96,7 +96,7 @@ struct ReferenceLabel <: FilteredLabel
 end
 
 Base.show(io::IO, refLab::ReferenceLabel) =
-    print(io::IO, "Reference[$(refLab.spec[:Name]),$(refLab.roi)]")
+    print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
 Base.isequal(rl1::ReferenceLabel,rl2::ReferenceLabel) =
     isequal(rl1.roi,rl2.roi) && isequal(rl1.spec,rl2.spec)
 
@@ -276,8 +276,8 @@ end
 Filter fit the unknown against ffs, an array of FilteredDatum and return the result
 as an UncertainValues object. Use generalized LLSQ fitting.
 """
-function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousw)::UncertainValues
-    println("Fitting: ",unk)
+function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousp)::UncertainValues
+    # println("Fitting: ",unk)
     join(roi1,roi2) = min(roi1.start,roi2.start):max(roi1.stop,roi2.stop)
     dup = copy(ffs)
     uvss=Array{UncertainValues,1}()
@@ -293,13 +293,13 @@ function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontigu
                 chs = join(chs,ff.ffroi)
             end
         end
-        println("References: ",ffs2)
+        # println("References: ",ffs2)
         push!(uvss,alg(unk, ffs2, chs))
         for ff in ffs2
             splice!(dup,findfirst(d->d==ff,dup))
         end
     end
-    println("\n")
+    # println("\n")
     cat(uvss)
 end
 
@@ -312,6 +312,5 @@ filteredresidual(fit::UncertainValues, unk::FilteredDatum, ffs::Array{FilteredDa
      unk.filtered - mapreduce(ff->(value(ff.identifier,fit)*(ff.scale/unk.scale))*extract(ff,unk.ffroi), +, ffs)
 
 function residual(fit::UncertainValues, unk::Spectrum, ffs::Array{Spectrum})::Vector{Float64}
-
 
 end
