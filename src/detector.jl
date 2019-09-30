@@ -1,5 +1,5 @@
 using Polynomials
-
+using NeXLCore
 
 """
     EnergyScale
@@ -61,7 +61,7 @@ Example:
     energy(101,lsc) == 10.1*101 + 3.0
     energy(101,lsc) - energy(100,lsc) == 10.1
 """
-energy(ch::Int, sc::LinearEnergyScale)::Float64 =
+NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 =
     (ch-1)*sc.width+sc.offset
 
 
@@ -111,7 +111,7 @@ Example:
     pes = PolyEnergyScale([ 3.0, 10.1, 0.001])
     energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
 """
-energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
+NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
     sc.poly(convert(Float64,ch-1))
 
 
@@ -290,7 +290,7 @@ resolution(eV::Float64, det::SimpleEDS) =
 
 Energy of the low-energy side of the ch-th detector bin.
 """
-energy(ch::Int, det::SimpleEDS) =
+NeXLCore.energy(ch::Int, det::SimpleEDS) =
     energy(ch, det.scale)
 
 """

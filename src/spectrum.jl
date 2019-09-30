@@ -219,11 +219,11 @@ The length of a spectrum is the number of channels.
 Base.length(spec::Spectrum) = size(spec.counts)[1]
 
 """
-    energy(ch::Int, spec::Spectrum)
+    NeXLCore.energy(ch::Int, spec::Spectrum)
 
 The energy of the start of the ch-th channel.
 """
-energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
+NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
 
 """
     channel(eV::Float64, spec::Spectrum)
