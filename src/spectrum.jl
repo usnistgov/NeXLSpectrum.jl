@@ -19,11 +19,12 @@ Metadata is identified by a symbol. Predefined symbols include
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
-    :StagePosition # A Dict with entries :X, :Y, :Z in millimeters and degrees
+    :StagePosition # A Dict with entries :X, :Y, :Z, :R, :TX in millimeters and degrees
     :Comment       # A string
     :Composition   # A Material
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
+    :Coating       # A Layer (10 nm of C|Au etc.)
 
 Not all spectra will define all properties.
 If spec is a Spectrum then
@@ -72,6 +73,14 @@ function Base.show(io::IO, spec::Spectrum)
     end
 end
 
+"""
+    tabulate(spec::Spectrum)
+
+Converts the spectrum energy and counts data into a table.
+"""
+tabulate(spec::Spectrum)::DataFrame =
+    DataFrame(E=energyscale(spec),I=counts(spec))
+
 function split_emsa_header_item(line::AbstractString)
     p = findfirst(":",line)
     if p ≠ nothing
@@ -104,6 +113,13 @@ function parsed2stdcmp(value::AbstractString)::Material
         end
     end
     return material(name, mf, den)
+end
+
+function parsecoating(value::AbstractString)::Union{Layer,Missing}
+    "XXX nm of material()"
+
+
+    return missing
 end
 
 """
@@ -175,6 +191,8 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                         props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
                     elseif key== "#D2STDCMP"
                         props[:Composition] = parsed2stdcmp(value)
+                    elseif key== "#CONDCOATING"
+                        props[:Coating] = parsecoating(value)
                     end
                 end
             end

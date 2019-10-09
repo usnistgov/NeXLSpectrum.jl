@@ -35,6 +35,7 @@ export subsample # Sub-sample a spectrum
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
+export tabulate # Converts a Spectrum to a DataFrame
 
 include("llsq.jl")
 include("filterfit.jl")
