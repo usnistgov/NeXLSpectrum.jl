@@ -197,6 +197,13 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                 end
             end
         end
+        if startswith( props[:Name], "Bruker Nano")
+            if haskey(props, :Composition)
+                props[:Name]=name(props[:Composition])
+            else
+                props[:Name]=basename(filename[1:end-4])
+            end
+        end
         props[:StagePosition] = stgpos
         return Spectrum(energy, counts, props)
     end
