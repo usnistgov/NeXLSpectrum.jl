@@ -5,6 +5,7 @@ using NeXLUncertainties
 using Printf
 using BenchmarkTools
 using CSV
+using Gadfly
 
 @testset "Filter" begin
     eds = basicEDS(2048,10.0,0.0,135.0)
@@ -147,7 +148,7 @@ end
     det = basicEDSwICC(4096, 5.01716, -484.20818, 126.0)
     ff = buildfilter(det)
 
-    ampl = 0.00005
+    ampl = 1e-4
     alkroi = extent(characteristic(n"Al",ktransitions),det,ampl)
     cakroi = extent(characteristic(n"Ca",ktransitions),det,ampl)
     felroi = extent(characteristic(n"Fe",ltransitions),det,ampl)

@@ -24,7 +24,7 @@ Metadata is identified by a symbol. Predefined symbols include
     :Composition   # A Material
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
-    :Coating       # A Layer (10 nm of C|Au etc.)
+    :Coating       # A Film (eg. 10 nm of C|Au etc.)
 
 Not all spectra will define all properties.
 If spec is a Spectrum then
@@ -100,25 +100,36 @@ function split_emsa_header_item(line::AbstractString)
 end
 
 function parsed2stdcmp(value::AbstractString)::Material
-    sp=split(value,",")
-    name=sp[1]
-    mf = Dict{Element,Float64}()
-    den = missing
-    for item in sp[2:end]
-        if item[1]=='(' && item[end]==')'
-            sp2=split(item[2:end-1],":")
-            mf[element(sp2[1])]=parse(Float64,sp2[2])
-        else
-            den = parse(Float64,item)
-        end
-    end
-    return material(name, mf, den)
+	try
+		sp=split(value,",")
+		name=sp[1]
+		mf = Dict{Element,Float64}()
+		den = missing
+		for item in sp[2:end]
+			if item[1]=='(' && item[end]==')'
+				sp2=split(item[2:end-1],":")
+				mf[element(sp2[1])]=parse(Float64,sp2[2])
+			else
+				den = parse(Float64,item)
+			end
+		end
+		return material(name, mf, den)
+	catch err
+		warn("Error parsing composition $(value) - $(err)")
+	end
 end
 
-function parsecoating(value::AbstractString)::Union{Layer,Missing}
-    "XXX nm of material()"
-
-
+function parsecoating(value::AbstractString)::Union{Film,Missing}
+    i=findfirst(value," nm of ")
+	if !ismissing(i)
+		try
+			thk = parse(Float64,value[1:i])*1.0e-7 // cm
+			mat = parse2stdcmp(Material, value[i+7:end])
+			return Film(mat,thickness)
+		catch err
+			warn("Error parsing $(value) as a coating $(value)")
+		end
+	end
     return missing
 end
 

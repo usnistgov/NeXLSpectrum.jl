@@ -221,7 +221,9 @@ function ascontiguous(rois::AbstractArray{UnitRange{Int}})
     end
     res
 end
-
+"""
+Generalized least squares (my implementation)
+"""
 function fitcontiguousg(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef,(length(chs), length(ffs)))
@@ -234,6 +236,9 @@ function fitcontiguousg(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::Uni
     return scale*glssvd(extract(unk,chs), A, covariance(unk, chs), xlbls)
 end
 
+"""
+Generalized least squares (pseudo-inverse)
+"""
 function fitcontiguousp(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef,(length(chs), length(ffs)))
@@ -246,6 +251,9 @@ function fitcontiguousp(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::Uni
     return scale*glspinv(extract(unk,chs), A, covariance(unk, chs), xlbls)
 end
 
+"""
+Weighted least squares
+"""
 function fitcontiguousw(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef,(length(chs), length(ffs)))
@@ -258,6 +266,9 @@ function fitcontiguousw(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::Uni
     return scale*wlssvd(extract(unk,chs), A, diag(covariance(unk,chs)), xlbls)
 end
 
+"""
+Ordinary least squares
+"""
 function fitcontiguouso(unk::FilteredDatum, ffs:: Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef,(length(chs), length(ffs)))
@@ -274,7 +285,7 @@ end
     filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousw)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredDatum and return the result
-as an UncertainValues object. Use generalized LLSQ fitting.
+as an UncertainValues object. Use generalized LLSQ fitting (pseudo-inverse).
 """
 function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousp)::UncertainValues
     # println("Fitting: ",unk)
