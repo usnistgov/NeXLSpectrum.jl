@@ -62,10 +62,11 @@ end
 Base.show(io::IO, fd::FilteredDatum) = print(io, "FilteredDatum[$(fd.identifier)]")
 
 function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::UncertainValues)
+    res = copy(unk.data)
     for ff in filter(ff -> !ismissing(ff.back), ffs)
-        ref = (value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
+        ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
         for ch in max(ff.roi.start,unk.roi.start):min(ff.roi.stop,unk.roi.stop)
-            unk.data[ch-unk.roi.start+1] -= ref[ch-ff.roi.start+1]
+            res[ch-unk.ffroi.start+1] -= ref[ch-ff.roi.start+1]
         end
     end
     return res
@@ -115,7 +116,7 @@ function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
     filter::AbstractMatrix{Float64},
-    back::Union{Missing,Vector{Float64}} = missing,
+    back::Union{Missing,Vector{Float64}},
     scale = 1.0,
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
@@ -177,7 +178,7 @@ function Base.filter(
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
     back = spec[roi] - modelBackground(spec, roi)
-    return filtered(spec, roi, filter, back, scale, tol)
+    return Base.filter(spec, roi, filter, back, scale, tol)
 end
 
 
@@ -354,35 +355,14 @@ uncertainty(label::ReferenceLabel, ffr::FilterFitResult) =
 """
     filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousw)::UncertainValues
 
-Filter fit the unknown against ffs, an array of FilteredDatum and return the result
-as an UncertainValues object. Use generalized LLSQ fitting (pseudo-inverse).
+Filter fit the unknown against ffs, an array of FilteredDatum and return the result as an FilterFitResult object.
+By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg = fitcontiguousp)::UncertainValues
-    join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
-    dup = copy(ffs)
-    uvss = Array{UncertainValues,1}()
-    while length(dup) > 0
-        ffs2 = Array{FilteredDatum,1}()
-        chs = 1:1
-        for ff in dup
-            if length(ffs2) == 0
-                push!(ffs2, ff)
-                chs = ff.ffroi
-            elseif length(intersect(ff.ffroi, chs)) > 0
-                push!(ffs2, ff)
-                chs = join(chs, ff.ffroi)
-            end
-        end
-        # println("References: ",ffs2)
-        push!(uvss, alg(unk, ffs2, chs))
-        for ff in ffs2
-            splice!(dup, findfirst(d -> d == ff, dup))
-        end
-    end
-    kr = cat(uvss)
-    return FilterFitResult(kr, unk.roi, unk.data, computeResidual(unk.identifier, unk, ffs, kr))
+function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg = fitcontiguousp)::FilterFitResult
+    fitrois = ascontiguous(collect(fd.ffroi for fd in ffs))
+    kr = cat(collect(alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr) for fr in fitrois))
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, computeResidual(unk, ffs, kr))
 end
-
 
 """
     filteredresidual(fit::UncertainValues, unk::FilteredDatum, ffs::Array{FilteredDatum})::Vector{Float64}

@@ -62,8 +62,17 @@ function Gadfly.plot(fd::FilteredDatum)
     p1=layer(x=fd.ffroi, y=fd.filtered, Geom.step, Theme(default_color=NeXLPalette[1]),
         xintercept=[fd.roi.start, fd.roi.stop], Geom.vline(color=["firebrick","firebrick"]))
     p2=layer(x=fd.ffroi, y=fd.data, Geom.step, Theme(default_color=NeXLPalette[2]))
-    plot(p1,p2,Coord.cartesian(xmin=fd.ffroi.start, xmax=fd.ffroi.stop),
-            Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title(repr(fd)))
+	lyrs = ( p1, p2 )
+    lbls = [ "Filtered", "Raw" ]
+	if !ismissing(fd.back)
+        bck = fd.data[fd.roi.start-fd.ffroi.start+1:fd.roi.stop-fd.ffroi.start+1]-fd.back
+		p3=layer(x=fd.roi, y=bck, Geom.step, Theme(default_color=NeXLPalette[3]))
+		lyrs = ( p1, p2, p3 )
+        push!(lbls, "Background")
+	end
+    plot(lyrs...,Coord.cartesian(xmin=fd.ffroi.start, xmax=fd.ffroi.stop),
+            Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title(repr(fd)),
+            Guide.manual_color_key("", lbls, NeXLPalette[1:length(lbls)]))
 end
 
 """
@@ -71,9 +80,12 @@ end
 
 Plot the unknown and the residual spectrum.
 """
-function Gadfly.plot(ffr::FilterFitResult)
-	p1=layer(x=ffr.roi, y=ffr.raw, Geom.step, Theme(default_color=NeXLPalette[1]))
-    p2=layer(x=ffr.roi, y=ffr.residual, Geom.step, Theme(default_color=NeXLPalette[2]))
-    plot(p1,p2,Coord.cartesian(xmin=ffr.roi.start, xmax=ffr.roi.stop),
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=missing)
+	if ismissing(roi)
+		roi = ffr.roi
+	end
+	p1=layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=NeXLPalette[1]))
+    p2=layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2]))
+    plot(p1,p2,Coord.cartesian(xmin=roi.start, xmax=roi.stop),
             Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title("$(ffr.label)"))
 end

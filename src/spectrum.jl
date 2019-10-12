@@ -396,7 +396,7 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
     else
         s=(bh(0)-bl(0))/length(chs)
         back = Poly([bl(0), s])
-        res=back.(collect(0:length(chs)))
+        res=back.(collect(0:length(chs)-1))
     end
     return res
 end
@@ -417,7 +417,7 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int})
     bh=estimateBackground(counts(spec),chs.stop,5)
     s=(bh(0)-bl(0))/length(chs)
     back = Poly([bl(0), s])
-    return back.(collect(0:length(chs)))
+    return back.(collect(0:length(chs)-1))
 end
 
 """
