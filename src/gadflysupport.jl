@@ -59,9 +59,21 @@ Plot the fitting filter and the spectrum from which it was derived.  Vertical re
 lines represent the principle ROC.
 """
 function Gadfly.plot(fd::FilteredDatum)
-    p1=layer(x=fd.ffroi, y=fd.filtered, Geom.step, Theme(default_color="darkcyan"),
+    p1=layer(x=fd.ffroi, y=fd.filtered, Geom.step, Theme(default_color=NeXLPalette[1]),
         xintercept=[fd.roi.start, fd.roi.stop], Geom.vline(color=["firebrick","firebrick"]))
-    p2=layer(x=fd.ffroi, y=fd.data, Geom.step, Theme(default_color="blueviolet"))
+    p2=layer(x=fd.ffroi, y=fd.data, Geom.step, Theme(default_color=NeXLPalette[2]))
     plot(p1,p2,Coord.cartesian(xmin=fd.ffroi.start, xmax=fd.ffroi.stop),
             Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title(repr(fd)))
+end
+
+"""
+    Gadfly.plot(ffr::FilterFitResult)
+
+Plot the unknown and the residual spectrum.
+"""
+function Gadfly.plot(ffr::FilterFitResult)
+	p1=layer(x=ffr.roi, y=ffr.raw, Geom.step, Theme(default_color=NeXLPalette[1]))
+    p2=layer(x=ffr.roi, y=ffr.residual, Geom.step, Theme(default_color=NeXLPalette[2]))
+    plot(p1,p2,Coord.cartesian(xmin=ffr.roi.start, xmax=ffr.roi.stop),
+            Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title("$(ffr.label)"))
 end

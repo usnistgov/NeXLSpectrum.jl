@@ -357,6 +357,16 @@ end
 
 
 """
+    estimateBackground(data::AbstractArray{Float64}, channel::Int, width::Int=5, order::Int=2)
+
+Returns the tangent to the a quadratic fit to the counts data centered at channel with width
+"""
+function estimateBackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Poly
+    fit = polyfit(-width:width, data[max(1, channel - width):min(length(data), channel + width)], order)
+    return Poly([fit(0), polyder(fit)(0)])
+end
+
+"""
     modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
 
 spec: A spectrum containing a peak centered on chs
@@ -371,8 +381,8 @@ is fit between the low energy side and the high energy side. This model only wor
 there are no peak interference over the range chs.
 """
 function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
-    bl=NeXL.estimateBackground(counts(spec),chs.start,5)
-    bh=NeXL.estimateBackground(counts(spec),chs.stop,5)
+    bl=estimateBackground(counts(spec),chs.start,5)
+    bh=estimateBackground(counts(spec),chs.stop,5)
     ec = channel(energy(ash),sp)
     if (ec<chs.stop) && (bl(ec-chs.start)>bh(ec-chs.stop)) && (energy(ec,spec)<2.0e3)
         res=zeros(Float64,length(chs))
@@ -403,9 +413,8 @@ fits a line between the  low and high energy background regions around chs.start
 This model only works when there are no peak interference over the range chs.
 """
 function modelBackground(spec::Spectrum, chs::UnitRange{Int})
-    bl=NeXL.estimateBackground(counts(spec),chs.start,5)
-    bh=NeXL.estimateBackground(counts(spec),chs.stop,5)
-    ec = channel(energy(ash),sp)
+    bl=estimateBackground(counts(spec),chs.start,5)
+    bh=estimateBackground(counts(spec),chs.stop,5)
     s=(bh(0)-bl(0))/length(chs)
     back = Poly([bl(0), s])
     return back.(collect(0:length(chs)))
