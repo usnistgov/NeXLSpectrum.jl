@@ -2,6 +2,7 @@ using SparseArrays
 using Polynomials
 using LinearAlgebra
 using NeXLUncertainties
+using TimerOutputs
 
 abstract type TopHatFilter end
 
@@ -141,7 +142,6 @@ end
 Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
 Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
 
-
 """
     filter(
       spec::Spectrum,
@@ -163,7 +163,7 @@ function Base.filter(
     scale = 1.0,
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
-    data = counts(spec, Float64) # Extract the spectrum data
+    data = counts(spec, Float64) # Extract the spectrum data as Float64 to match the filter
     # Determine tangents to the two background end points
     tangents = map(st -> estimateBackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
@@ -232,21 +232,26 @@ end
 Base.show(io::IO, unk::UnknownLabel) = print(io, "Unknown[$(unk.spec[:Name])]")
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
 
+
+to = TimerOutput()
+
 """
     filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
 function Base.filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale = 1.0)::FilteredDatum
-    data = counts(spec, Float64) # Extract the spectrum data
+    @timeit_debug to "filter unknown" begin
+        @timeit_debug to "extract" data = counts(spec, Float64) # Extract the spectrum data
     # Compute the filtered data
-    filtered = filter * data
+        @timeit_debug to "data" filtered = filter * data
     # max(d,1.0) is necessary to ensure the varianes are positive
-    covar = filter * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filter)
+        @timeit_debug to "covar" covar = filter * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filter)
     # Extract the range of non-zero filtered data
-    roi = 1:findlast(f -> f ≠ 0.0, filtered)
-    trimmedcovar = sparse(covar[roi, roi])
-    checkcovariance!(trimmedcovar)
+        roi = 1:findlast(f -> f ≠ 0.0, filtered)
+        @timeit_debug to "as sparse" trimmedcovar = sparse(covar[roi, roi])
+        @timeit_debug to "check" checkcovariance!(trimmedcovar)
+    end
     FilteredDatum(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], trimmedcovar, missing)
 end
 
