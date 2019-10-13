@@ -258,6 +258,7 @@ struct SimpleEDS <: Detector
     channelcount::Int
     scale::EnergyScale
     resolution::Resolution
+    lld::Int # low level discriminator
 end
 
 """
@@ -320,18 +321,18 @@ extent(cxrs::AbstractArray{CharXRay}, det::Detector, ampl::Float64) =
     UnitRange(map(ee->channel(ee,det), extent(cxrs, det.resolution, ampl))...)
 
 """
-    basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64)
+    basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = 1)
 
 Construct simple model of an EDS detector.
 """
-basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64) =
-    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaResolution(fwhmatmnka))
+basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1) =
+    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaResolution(fwhmatmnka), lld)
 
 """
-    basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64)
+    basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1)
 
 Construct simple model of an EDS detector with incomplete charge collection at
 low X-ray energies.
 """
-basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64) =
-    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0))
+basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1) =
+    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), lld)

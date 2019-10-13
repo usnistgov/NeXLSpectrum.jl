@@ -231,8 +231,8 @@ Base.getindex(spec::Spectrum,idx) = spec.counts[idx]
 Base.setindex!(spec::Spectrum, val, sym::Symbol) =
     spec.properties[sym] = val
 
-Base.setindex!(spec::Spectrum, val, idx) =
-    spec.counts[idx] = val
+Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
+    spec.counts[idx] = convert(typeof(spec.counts[1]), val)
 
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
@@ -274,6 +274,7 @@ channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 Creates a copy of the spectrum counts data as the specified Number type.
 """
 counts(spec::Spectrum, numType::Type{T}=Float64) where {T<:Number} = map(n->convert(numType,n), spec.counts)
+
 """
     counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T})::Vector{T} where {T<:Number}
 

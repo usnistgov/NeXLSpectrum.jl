@@ -3,12 +3,24 @@ using Polynomials
 using LinearAlgebra
 using NeXLUncertainties
 
+abstract type TopHatFilter end
+
 """
     buildfilter(det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
 
 Build a top-hat filter for the specified detector with the specified top and base parameters.
 """
-function buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64}
+buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64} =
+     buildFilter(VariableSparseFilter, det, a, b, full)
+
+struct VariableFilter <: TopHatFilter end
+
+"""
+    buildfilter(::Type{VariableSparseFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
+
+Build a top-hat filter for the specified detector with the specified top and base parameters.
+"""
+function buildfilter(::Type{VariableFilter}, det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64}
     intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
     filtint(e0, e1, minb, mina, maxa, maxb) =
         intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
@@ -16,17 +28,65 @@ function buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bo
     #i,j,v=Array{Int}(),Array{Int}(),Array{Float64}()
     cc = channelcount(det)
     ans = zeros(Float64, (cc, cc))
-    for ch1 = 1:cc
+    for ch1 = det.lld:cc
         ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
         res = resolution(ee, det)
         ea = (ee - 0.5 * a * res, ee + 0.5 * a * res)
         eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
         if full
-            chmin, chmax = max(1, channel(eb[1], det)), min(cc, channel(eb[2], det))
+            chmin, chmax = max(det.lld, channel(eb[1], det)), min(cc, channel(eb[2], det))
         else
             chmin, chmax = channel(eb[1], det), channel(eb[2], det)
         end
-        if (chmin >= 1) && (chmax <= cc) # fit the full filter
+        if (chmin >= det.lld) && (chmax <= cc) # fit the full filter
+            sum = 0.0 # Ensure the sum of the top-hat is precisely 0.0
+            for ch2 = chmin:chmax-1
+                fi = filtint(energy(ch2, det), energy(ch2 + 1, det), eb[1], ea[1], ea[2], eb[2])
+                sum += fi
+                ans[ch1, ch2] = fi
+            end
+            ans[ch1, chmax] = -sum # Ensure the sum is zero...
+        end
+    end
+    return ans
+end
+
+struct VariableSparseFilter <: TopHatFilter end
+
+"""
+    buildfilter(::Type{VariableSparseFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
+
+Build a top-hat filter for the specified detector with the specified top and base parameters.
+"""
+buildfilter(::Type{VariableSparseFilter}, det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64} =
+    sparse(buildfilter(VariableFilter, det, a, b, full))
+
+struct ConstantWidthFilter <: TopHatFilter end
+
+"""
+    buildfilter(::Type{ConstantWidthFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
+
+Build a top-hat filter for the specified detector with the specified top and base parameters.
+"""
+function buildfilter(::Type{ConstantWidthFilter}, det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64}
+    intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
+    filtint(e0, e1, minb, mina, maxa, maxb) =
+        intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
+        intersect(maxa, maxb, e0, e1) * (-0.5 / (maxb - maxa))
+    #i,j,v=Array{Int}(),Array{Int}(),Array{Float64}()
+    cc = channelcount(det)
+    ans = zeros(Float64, (cc, cc))
+    res = resolution(energy(n"Mn K-L3"), det)
+    for ch1 = det.lld:cc
+        ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
+        ea = (ee - 0.5 * a * res, ee + 0.5 * a * res)
+        eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
+        if full
+            chmin, chmax = max(det.lld, channel(eb[1], det)), min(cc, channel(eb[2], det))
+        else
+            chmin, chmax = channel(eb[1], det), channel(eb[2], det)
+        end
+        if (chmin >= det.lld) && (chmax <= cc) # fit the full filter
             sum = 0.0 # Ensure the sum of the top-hat is precisely 0.0
             for ch2 = chmin:chmax-1
                 fi = filtint(energy(ch2, det), energy(ch2 + 1, det), eb[1], ea[1], ea[2], eb[2])
@@ -38,6 +98,7 @@ function buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bo
     end
     return sparse(ans)
 end
+
 
 abstract type FilteredLabel <: Label end
 

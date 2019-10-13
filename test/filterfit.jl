@@ -187,5 +187,5 @@ end
         unk = filter(unks[i], ff, 1.0 / dose(unks[i]))
         push!(res, filterfit(unk, fds, fitcontiguousp))
     end
-    CSV.write("$(path)kratios.csv", NeXLUncertainties.tabulate(res))
+    CSV.write("$(path)kratios.csv", tabulate(res))
 end
