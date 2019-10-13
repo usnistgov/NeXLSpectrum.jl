@@ -133,24 +133,6 @@ function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::Unce
     return res
 end
 
-"""
-    FilterFit
-
-A packet of data for fitting spectra.
-"""
-struct FilterFit
-    filtered::Vector{FilteredDatum}
-    filter::AbstractMatrix{Float64}
-    FilterFit(filter::AbstractMatrix{Float64}) = new(Vector{FilteredDatum}(), filter)
-end
-
-function Base.show(io::IO, fp::FilterFit)
-    println(io, "FilterFit with ", size(fp.filteredData), " items")
-    for fd in fp.filtered
-        println(io, fd)
-    end
-end
-
 struct ReferenceLabel <: FilteredLabel
     spec::Spectrum
     roi::UnitRange{Int}
@@ -268,14 +250,6 @@ function Base.filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale = 1.
     FilteredDatum(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], trimmedcovar, missing)
 end
 
-
-"""
-    add!(ff::FilterFit, fd::FilteredDatum)
-
-Add a FilteredDatum structure representing a range to be fit into
-a FilterFit object representing the entire fit.
-"""
-add!(ff::FilterFit, fd::FilteredDatum) = push!(ff.filtered, fd)
 
 """
     extract(fd::FilteredDatum, roi::UnitRange{Int})
