@@ -157,23 +157,35 @@ end
 
 function computeCovar(fvf::FastFilter, data::Vector{Float64})
     function val(r,c,d)
+        f(a,b,c) = sum(a[i]*b[i]*c[i] for i in eachindex(a))
+        g(a,ao,b,bo,c,chs) = sum(a[ch-ao]*b[ch-bo]*c[ch] for ch in chs)
         roff, rfilt = fvf.offset[r], fvf.rows[r]
         coff, cfilt = fvf.offset[c], fvf.rows[c]
         chs = intersect(fvf, r, c)
-        return (rfilt[chs.start-roff+1:chs.stop-roff+1].*cfilt[chs.start-coff+1:chs.stop-coff+1])'d[chs]
-        #return (view(rfilt,chs.start-roff+1:chs.stop-roff+1).*view(cfilt,chs.start-coff+1:chs.stop-coff+1))'view(d,chs)
+        return g(rfilt, roff-1, cfilt, coff-1, d, chs) #Fastest, lowest memory
+        #return f(rfilt[chs.start-roff+1:chs.stop-roff+1],cfilt[chs.start-coff+1:chs.stop-coff+1],d[chs]) #Faster
+        #return f(view(rfilt,chs.start-roff+1:chs.stop-roff+1),view(cfilt,chs.start-coff+1:chs.stop-coff+1),view(d,chs)) #Faster
+        #return (rfilt[chs.start-roff+1:chs.stop-roff+1].*cfilt[chs.start-coff+1:chs.stop-coff+1])'d[chs] # Slower
+        #return (view(rfilt,chs.start-roff+1:chs.stop-roff+1).*view(cfilt,chs.start-coff+1:chs.stop-coff+1))'view(d,chs) #Slower
     end
     res = zeros(Float64,length(data),length(data))
     d = map(f->max(1.0,f),data)
-    for r in filter(r->length(fvf.rows[r])>0, eachindex(data))
+    maxSize, sz = 1000000, 0
+    rs, cs, vals = zeros(Int,maxSize), zeros(Int,maxSize), zeros(Float64,maxSize)
+    for r in filter(r->length(fvf.rows[r])>0, eachindex(d))
         for c in r:-1:1
             if length(intersect(fvf, r, c))==0
                 break
             end
-            res[r,c] = (res[c,r] = val(r,c,d))
+            v = val(r,c,d)
+            sz+=1
+            rs[sz], cs[sz], vals[sz] = r, c, v
+            sz+=1
+            rs[sz], cs[sz], vals[sz] = c, r, v
         end
     end
-    return res
+    println(sz)
+    return sparse(view(rs,1:sz),view(cs,1:sz),view(vals,1:sz))
 end
 
 function computeWeights(fvf::FastFilter, data::Vector{Float64})
@@ -265,8 +277,8 @@ function Base.filter(
 end
 
 computeCovar(filt::AbstractMatrix{Float64}, data::Vector{Float64}) =
-    #filt * Diagonal(map(d -> max(d, 1.0))) * transpose(filt)
-    filt * sparse(collect(eachindex(data)), collect(eachindex(data)),map(d -> max(d, 1.0), data) ) * transpose(filt)
+    filt * Diagonal(map(d -> max(d, 1.0),data)) * transpose(filt)
+    #filt * sparse(collect(eachindex(data)), collect(eachindex(data)),map(d -> max(d, 1.0), data) ) * transpose(filt)
 
 """
     filter(
