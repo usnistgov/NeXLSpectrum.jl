@@ -345,15 +345,22 @@ basicEDS(spec::Spectrum, fwhmatmnka::Float64) =
 """
     subsample(spec::Spectrum, frac::Float64)
 
-Subsample the counts data in a spectrum according to a statistically valid algorithm.
+Subsample the counts data in a spectrum according to a statistically valid algorithm.  Returns
+<code>spec</code> if frac>=1.0.
 """
 function subsample(spec::Spectrum, frac::Float64)::Spectrum
+	@assert frac>0.0 "frac must be larger than zero."
+	@assert frac<=1.0 "frac must be less than or equal to 1.0."
     ss(n, f) = n > 0 ? mapreduce(i -> rand() < f ? 1 : 0, + , 1:n) : 0
-    frac = min(frac, 1.0)
-    props = deepcopy(spec.properties)
-    props[:LiveTime]=frac*get(spec, :LiveTime, 1.0)
-    props[:RealTime]=frac*get(spec, :RealTime, 1.0)
-    Spectrum(spec.energy, map(n -> ss(floor(Int,n), frac), spec.counts), props)
+    frac = max(0.0, min(frac, 1.0))
+	if frac<1.0
+	    props = deepcopy(spec.properties)
+	    props[:LiveTime]=frac*get(spec, :LiveTime, 1.0)
+	    props[:RealTime]=frac*get(spec, :RealTime, 1.0)
+	    return Spectrum(spec.energy, map(n -> ss(floor(Int,n), frac), spec.counts), props)
+	else
+		return spec
+	end
 end
 
 
@@ -429,6 +436,16 @@ Extract the characteristic intensity for the peak located within chs with an edg
 function extractcharacteristic(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Vector{Float64}
     return counts(spec,chs,Float64)-modelBackground(spec,chs,ash)
 end
+
+
+"""
+    peak(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+
+Estimates the peak intensity for the characteristic X-ray in the specified range of channels.
+"""
+peak(spec::Spectrum, chs::UnitRange{Int})::Float64 =
+    return sum(counts(spec,chs,Float64))-sum(modelBackground(spec,chs))
+
 
 """
     peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64

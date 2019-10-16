@@ -12,14 +12,15 @@ abstract type TopHatFilter end
 Build a top-hat filter for the specified detector with the specified top and base parameters.
 """
 buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64} =
-     buildFilter(VariableSparseFilter, det, a, b, full)
+     buildfilter(VariableSparseFilter, det, a, b, full)
 
 struct VariableFilter <: TopHatFilter end
 
 """
-    buildfilter(::Type{VariableSparseFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
+    buildfilter(::Type{VariableFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::AbstractMatrix{Float64}
 
-Build a top-hat filter for the specified detector with the specified top and base parameters.
+Build a top-hat filter whose width varies with the detector's resolution as a function of X-ray energy for the
+specified detector with the specified top and base parameters.
 """
 function buildfilter(::Type{VariableFilter}, det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::AbstractMatrix{Float64}
     intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
@@ -29,7 +30,7 @@ function buildfilter(::Type{VariableFilter}, det::Detector, a::Float64 = 1.0, b:
     #i,j,v=Array{Int}(),Array{Int}(),Array{Float64}()
     cc = channelcount(det)
     ans = zeros(Float64, (cc, cc))
-    for ch1 = det.lld:cc
+    for ch1 = 1:cc
         ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
         res = resolution(ee, det)
         ea = (ee - 0.5 * a * res, ee + 0.5 * a * res)
@@ -78,7 +79,7 @@ function buildfilter(::Type{ConstantWidthFilter}, det::Detector, a::Float64 = 1.
     cc = channelcount(det)
     ans = zeros(Float64, (cc, cc))
     res = resolution(energy(n"Mn K-L3"), det)
-    for ch1 = det.lld:cc
+    for ch1 = 1:cc
         ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
         ea = (ee - 0.5 * a * res, ee + 0.5 * a * res)
         eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
@@ -100,6 +101,88 @@ function buildfilter(::Type{ConstantWidthFilter}, det::Detector, a::Float64 = 1.
     return sparse(ans)
 end
 
+struct FastFilter <: TopHatFilter
+    offset::Vector{Int}
+    rows::Vector{Vector{Float64}}
+end
+
+Base.range(ff::FastFilter,r::Int) =
+    ff.offset[r]:ff.offset[r]+length(ff.rows[r])-1
+
+Base.intersect(ff::FastFilter, r::Int, c::Int) =
+    intersect(range(ff,r),range(ff,c))
+
+function buildfilter(::Type{FastFilter}, det::Detector, a::Float64 = 1.0, b::Float64 = 1.0, full::Bool = false)::FastFilter
+    intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
+    filtint(e0, e1, minb, mina, maxa, maxb) =
+        intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
+        intersect(maxa, maxb, e0, e1) * (-0.5 / (maxb - maxa))
+    #i,j,v=Array{Int}(),Array{Int}(),Array{Float64}()
+    cc = channelcount(det)
+    ans = FastFilter(Vector{Int}(), Vector{Vector{Float64}}())
+    for ch1 = 1:cc
+        ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
+        res = resolution(ee, det)
+        ea = (ee - 0.5 * a * res, ee + 0.5 * a * res)
+        eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
+        if full
+            chmin, chmax = max(det.lld, channel(eb[1], det)), min(cc, channel(eb[2], det))
+        else
+            chmin, chmax = channel(eb[1], det), channel(eb[2], det)
+        end
+        filt = Vector{Float64}()
+        if (chmin >= det.lld) && (chmax <= cc) # fit the full filter
+            sum = 0.0 # Ensure the sum of the top-hat is precisely 0.0
+            for ch2 = chmin:chmax-1
+                fi = filtint(energy(ch2, det), energy(ch2 + 1, det), eb[1], ea[1], ea[2], eb[2])
+                sum += fi
+                push!(filt, fi)
+            end
+            push!(filt, -sum) # Ensure the sum is zero...
+        end
+        push!(ans.offset,chmin)
+        push!(ans.rows, filt)
+    end
+    return ans
+end
+
+function Base.:*(fvf::FastFilter, spec::Vector{Float64})::Vector{Float64}
+    res = zeros(Float64, length(spec))
+    for r in eachindex(spec)
+        row, off = fvf.rows[r], fvf.offset[r]
+        res[r] = length(row) > 0 ? row'view(spec,off:off+length(row)-1) : 0.0
+    end
+    return res
+end
+
+function computeCovar(fvf::FastFilter, data::Vector{Float64})
+    function val(r,c,d)
+        roff, rfilt = fvf.offset[r], fvf.rows[r]
+        coff, cfilt = fvf.offset[c], fvf.rows[c]
+        chs = intersect(fvf, r, c)
+        return (rfilt[chs.start-roff+1:chs.stop-roff+1].*cfilt[chs.start-coff+1:chs.stop-coff+1])'d[chs]
+        #return (view(rfilt,chs.start-roff+1:chs.stop-roff+1).*view(cfilt,chs.start-coff+1:chs.stop-coff+1))'view(d,chs)
+    end
+    res = zeros(Float64,length(data),length(data))
+    d = map(f->max(1.0,f),data)
+    for r in filter(r->length(fvf.rows[r])>0, eachindex(data))
+        for c in r:-1:1
+            if length(intersect(fvf, r, c))==0
+                break
+            end
+            res[r,c] = (res[c,r] = val(r,c,d))
+        end
+    end
+    return res
+end
+
+function computeWeights(fvf::FastFilter, data::Vector{Float64})
+    function val(r)
+        off, filt = fvf.offset[r], fvf.rows[r]
+        return length(filt)>0 ? (filt.*filt)'data[off:off+length(filt)] : 0.0
+    end
+    return collect(val(r) for r in eachindex(data))
+end
 
 abstract type FilteredLabel <: Label end
 
@@ -146,7 +229,7 @@ Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.ro
     filter(
       spec::Spectrum,
       roi::UnitRange{Int},
-      filter::AbstractMatrix{Float64},
+      filter::Union{AbstractMatrix{Float64},FastFilter},
       back::Union{Missing,Vector{Float64}} = missing,
       scale = 1.0,
       tol::Float64 = 1.0e-4,
@@ -158,7 +241,7 @@ with the specified filter.
 function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
-    filter::AbstractMatrix{Float64},
+    filter::Union{AbstractMatrix{Float64},FastFilter},
     back::Union{Missing,Vector{Float64}},
     scale = 1.0,
     tol::Float64 = 1.0e-4,
@@ -174,18 +257,22 @@ function Base.filter(
     maxval = maximum(filtered)
     roiff = findfirst(f -> abs(f) > tol * maxval, filtered):findlast(f -> abs(f) > tol * maxval, filtered)
     # max(d,1.0) is necessary to ensure the varianes are positive
-    covar = filter * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filter)
+    covar = computeCovar(filter, data)
     # Extract the range of non-zero filtered data
     trimmedcovar = sparse(covar[roiff, roiff])
     checkcovariance!(trimmedcovar)
     FilteredDatum(ReferenceLabel(spec, roi), scale, roi, roiff, data[roiff], filtered[roiff], trimmedcovar, back)
 end
 
+computeCovar(filt::AbstractMatrix{Float64}, data::Vector{Float64}) =
+    #filt * Diagonal(map(d -> max(d, 1.0))) * transpose(filt)
+    filt * sparse(collect(eachindex(data)), collect(eachindex(data)),map(d -> max(d, 1.0), data) ) * transpose(filt)
+
 """
     filter(
       spec::Spectrum,
       roi::UnitRange{Int},
-      filter::AbstractMatrix{Float64}
+      filter::Union{AbstractMatrix{Float64},FastFilter}
       ashell::AtomicShell
     )::FilteredDatum
 
@@ -194,20 +281,20 @@ For filtering an ROI on a reference spectrum. Process a portion of a Spectrum wi
 function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
-    filter::AbstractMatrix{Float64},
+    filt::Union{AbstractMatrix{Float64},FastFilter},
     ashell::AtomicShell,
     scale = 1.0,
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
     back = spec[roi] - modelBackground(spec, roi, ashell)
-    return filtered(spec, roi, filter, back, scale, tol)
+    return filtered(spec, roi, filt, back, scale, tol)
 end
 
 """
     filter(
       spec::Spectrum,
       roi::UnitRange{Int},
-      filter::AbstractMatrix{Float64}
+      filter::Union{AbstractMatrix{Float64},FastFilter}
       ashell::AtomicShell
     )::FilteredDatum
 
@@ -216,12 +303,12 @@ For filtering an ROI on a reference spectrum. Process a portion of a Spectrum wi
 function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
-    filter::AbstractMatrix{Float64},
+    filt::Union{AbstractMatrix{Float64},FastFilter},
     scale = 1.0,
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
     back = spec[roi] - modelBackground(spec, roi)
-    return Base.filter(spec, roi, filter, back, scale, tol)
+    return Base.filter(spec, roi, filt, back, scale, tol)
 end
 
 
@@ -240,13 +327,13 @@ to = TimerOutput()
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
-function Base.filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale = 1.0)::FilteredDatum
+function Base.filter(spec::Spectrum, filt::Union{AbstractMatrix{Float64},FastFilter}, scale = 1.0)::FilteredDatum
     @timeit_debug to "filter unknown" begin
         @timeit_debug to "extract" data = counts(spec, Float64) # Extract the spectrum data
     # Compute the filtered data
-        @timeit_debug to "data" filtered = filter * data
+        @timeit_debug to "data" filtered = filt * data
     # max(d,1.0) is necessary to ensure the varianes are positive
-        @timeit_debug to "covar" covar = filter * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filter)
+        @timeit_debug to "covar" covar = computeCovar(filt, data)
     # Extract the range of non-zero filtered data
         roi = 1:findlast(f -> f ≠ 0.0, filtered)
         @timeit_debug to "as sparse" trimmedcovar = sparse(covar[roi, roi])

@@ -53,6 +53,12 @@ git-tree-sha1 = "ed2c4abadf84c53d9e58510b5fc48912c2336fbb"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
 version = "2.2.0"
 
+[[Crayons]]
+deps = ["Test"]
+git-tree-sha1 = "f621b8ef51fd2004c7cf157ea47f027fdeac5523"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.0.0"
+
 [[DataAPI]]
 git-tree-sha1 = "674b67f344687a88310213ddfa8a2b3c76cc4252"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -159,9 +165,7 @@ version = "0.7.0"
 
 [[NeXLCore]]
 deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "PeriodicTable", "Printf", "Requires", "Unitful"]
-git-tree-sha1 = "a74dbfa246c82992bb46fdba40dcc48f7d83b621"
-repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl"
+path = "C:\\Users\\nicho\\.julia\\dev\\NeXLCore"
 uuid = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
 version = "0.0.2"
 
@@ -282,6 +286,12 @@ version = "0.2.11"
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TimerOutputs]]
+deps = ["Crayons", "Printf", "Test", "Unicode"]
+git-tree-sha1 = "b80671c06f8f8bae08c55d67b5ce292c5ae2660c"
+uuid = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
+version = "0.5.0"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]
