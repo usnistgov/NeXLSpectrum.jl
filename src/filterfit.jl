@@ -81,7 +81,7 @@ function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::Unce
     res = copy(unk.data)
     for ff in filter(ff -> !ismissing(ff.back), ffs)
         ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
-        for ch = max(ff.roi.start, unk.roi.start):min(ff.roi.stop, unk.roi.stop)
+        for ch in ff.roi
             res[ch] -= ref[ch-ff.roi.start+1]
         end
     end
