@@ -72,7 +72,7 @@ struct FilteredDatum
     data::Vector{Float64} # Spectrum data over ffroi
     filtered::Vector{Float64} # Filtered spectrum data over ffroi
     covariance::AbstractMatrix{Float64} # Channel covariance
-    back::Union{Missing,Vector{Float64}} # Background corrected intensity data
+    back::Union{Missing,Vector{Float64}} # Background corrected intensity data over roi
 end
 
 Base.show(io::IO, fd::FilteredDatum) = print(io, "FilteredDatum[$(fd.identifier)]")
@@ -82,7 +82,7 @@ function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::Unce
     for ff in filter(ff -> !ismissing(ff.back), ffs)
         ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
         for ch = max(ff.roi.start, unk.roi.start):min(ff.roi.stop, unk.roi.stop)
-            res[ch-unk.ffroi.start+1] -= ref[ch-ff.roi.start+1]
+            res[ch] -= ref[ch-ff.roi.start+1]
         end
     end
     return res
@@ -135,29 +135,6 @@ function Base.filter(
     FilteredDatum(ReferenceLabel(spec, roi), scale, roi, roiff, data[roiff], filtered[roiff], trimmedcovar, back)
 end
 
-
-"""
-    filter(
-      spec::Spectrum,
-      roi::UnitRange{Int},
-      filter::AbstractMatrix{Float64},
-      ashell::AtomicShell
-    )::FilteredDatum
-
-For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
-"""
-function Base.filter(
-    spec::Spectrum,
-    roi::UnitRange{Int},
-    filt::AbstractMatrix{Float64},
-    ashell::AtomicShell,
-    scale = 1.0,
-    tol::Float64 = 1.0e-4,
-)::FilteredDatum
-    back = spec[roi] - modelBackground(spec, roi, ashell)
-    return filtered(spec, roi, filt, back, scale, tol)
-end
-
 """
     filter(
       spec::Spectrum,
@@ -173,9 +150,14 @@ function Base.filter(
     roi::UnitRange{Int},
     filt::AbstractMatrix{Float64},
     scale = 1.0,
+    ashell::Union{Missing,AtomicShell} = missing,
     tol::Float64 = 1.0e-4,
 )::FilteredDatum
-    back = spec[roi] - modelBackground(spec, roi)
+    if ismissing(ashell)
+        back = spec[roi] - modelBackground(spec, roi)
+    else
+        back = spec[roi] - modelBackground(spec, roi, ashell)
+    end
     return Base.filter(spec, roi, filt, back, scale, tol)
 end
 
@@ -332,6 +314,9 @@ struct FilterFitResult
     raw::Vector{Float64}
     residual::Vector{Float64}
 end
+
+tabulate(ffrs::Array{FilterFitResult}, withUnc=false) =
+    NeXLUncertainties.tabulate([r.kratios for r in ffrs],withUnc)
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 

@@ -391,7 +391,7 @@ there are no peak interference over the range chs.
 function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
     bl=estimateBackground(counts(spec),chs.start,5)
     bh=estimateBackground(counts(spec),chs.stop,5)
-    ec = channel(energy(ash),sp)
+    ec = channel(energy(ash),spec)
     if (ec<chs.stop) && (bl(ec-chs.start)>bh(ec-chs.stop)) && (energy(ec,spec)<2.0e3)
         res=zeros(Float64,length(chs))
         for y in chs.start:ec-1

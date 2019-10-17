@@ -37,7 +37,7 @@ end
 
 Plot a multiple spectra on a single plot using Gadfly.
 """
-function Gadfly.plot(specs::Vector{Spectrum}; xmin=0.0, xmax=nothing)::Plot
+function Gadfly.plot(specs::AbstractVector{Spectrum}; xmin=0.0, xmax=nothing, klms::AbstractVector{Any}=[])::Plot
     maxI, maxE = 16, 1.0e3
     layers=[]
     for (i, spec) in enumerate(specs)
@@ -46,6 +46,15 @@ function Gadfly.plot(specs::Vector{Spectrum}; xmin=0.0, xmax=nothing)::Plot
         maxE = maximum( [ maxE, energy(chs.stop,spec) ] )
         push!(layers, layer(x=energyscale(spec)[chs], y=spec.counts[chs], Geom.step, Theme(default_color=NeXLPalette[(i-1) % length(NeXLPalette)+1] )))
     end
+	if length(klms)>0
+		trans(elm::Element) = characteristic(elm, alltransitions, 0.002, maxE)
+		trans(cxr::CharXRay) = [ cxr ]
+		trans(ash::AtomicShell) = [ ash ]
+		allTr = mapreduce(klm->trans(klm), append!, klms)
+		x = energy.(allTr)
+		y = 0.5*maxI*weight.(allTr)
+		push!(layers, layer(x=x, y=y, Geom.hair, Geom.point))
+	end
     plot(layers...,
         Guide.XLabel("Energy (eV)"), Guide.YLabel("Counts"),
         Scale.x_continuous(format=:plain), Scale.y_continuous(format=:plain),
