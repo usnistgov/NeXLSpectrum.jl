@@ -346,6 +346,38 @@ end
 extents(elm::Element, det::Detector, ampl::Float64) =
     extents(characteristic(elm,alltransitions),det,ampl)
 
+extents(elms::Vector{Element}, det::Detector, ampl::Float64) =
+    extents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
+
+function labeledextents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+    es = map(xr->extent(energy(xr), det.resolution, ampl), cxrs)
+    le=collect(zip(cxrs, map(ee->channel(ee[1],det):channel(ee[2],det),es)))
+    sort!(le, lt=(x1,x2)->isless(energy(x1[1]),energy(x2[1]))) # sort by x-ray energy
+    res = Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}()
+    if length(le)>0
+        curX, curInt = [ le[1][1] ], le[1][2]
+        for (cxr, interval) in le[2:end]
+            if length(intersect(interval, curInt))>0 # Add to current extent
+                curInt = min(interval.start,curInt.start):max(interval.stop, curInt.stop)
+                push!(curX, cxr)
+            else # create a new extent
+                push!(res, ( curX, curInt))
+                curX = [ cxr ]
+                curInt = interval
+            end
+        end
+        push!(res, (curX, curInt))
+    end
+    return res
+end
+
+labeledextents(elm::Element, det::Detector, ampl::Float64) =
+    labeledextents(characteristic(elm,alltransitions),det,ampl)
+
+labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64) =
+    labeledextents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
+
+
 """
     basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = 1)
 
