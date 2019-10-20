@@ -95,34 +95,6 @@ end
 Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)]")
 
 """
-    FilteredUnknown
-
-Represents the unknown in a filter fit.
-"""
-struct FilteredUnknown <: FilteredDatum
-    identifier::UnknownLabel # A way of identifying this filtered datum
-    scale::Float64 # A dose or other scale correction factor
-    roi::UnitRange{Int} # ROI for the raw data
-    ffroi::UnitRange{Int} # ROI for the filtered data
-    data::Vector{Float64} # Spectrum data over ffroi
-    filtered::Vector{Float64} # Filtered spectrum data over ffroi
-    covariance::AbstractMatrix{Float64} # Channel covariance
-end
-
-Base.show(io::IO, fd::FilteredUnknown) = print(io, "Unknown[$(fd.identifier)]")
-
-function computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
-    res = copy(unk.data)
-    for ff in filter(ff -> !ismissing(ff.back), ffs)
-        ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
-        for ch in ff.roi
-            res[ch] -= ref[ch-ff.roi.start+1]
-        end
-    end
-    return res
-end
-
-"""
     filter(
       spec::Spectrum,
       roi::UnitRange{Int},
@@ -204,12 +176,33 @@ function Base.filter(
     return FilteredReference(ReferenceLabel(spec, roi), scale, roi, f..., back)
 end
 
+
+abstract type FilteredUnknown <: FilteredDatum end
+
+
+"""
+    FilteredUnknownG
+
+Represents the unknown in a filter fit using the full generalized fitting model.
+"""
+struct FilteredUnknownG <: FilteredUnknown
+    identifier::UnknownLabel # A way of identifying this filtered datum
+    scale::Float64 # A dose or other scale correction factor
+    roi::UnitRange{Int} # ROI for the raw data
+    ffroi::UnitRange{Int} # ROI for the filtered data
+    data::Vector{Float64} # Spectrum data over ffroi
+    filtered::Vector{Float64} # Filtered spectrum data over ffroi
+    covariance::AbstractMatrix{Float64} # Channel covariance
+end
+
+Base.show(io::IO, fd::FilteredUnknown) = print(io, "Unknown[$(fd.identifier)]")
+
 """
     filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
-function Base.filter(spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float64 = 1.0)::FilteredUnknown
+function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float64 = 1.0)::FilteredUnknownG
     data = counts(spec, Float64) # Extract the spectrum data
     # Compute the filtered data
     filtered = filt * data
@@ -220,7 +213,88 @@ function Base.filter(spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float
     covar = filt[roi,roi] * diag * transpose(filt[roi,roi])
     @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in filter(...)::FilterUnknown."
     checkcovariance!(covar)
-    return FilteredUnknown(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
+    return FilteredUnknownG(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
+end
+
+"""
+    covariance(fd::FilteredUnknown, roi::UnitRange{Int})
+
+Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
+fully encompass the filtered edata in <code>fd</code>.
+"""
+function covariance(fd::FilteredUnknownG, roi::UnitRange{Int})
+    # Unknown case
+    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
+    return Matrix(fd.covariance[nz,nz])
+end
+
+"""
+    FilteredUnknownW
+
+Represents the unknown in a filter fit using the weighted fitting model.
+"""
+struct FilteredUnknownW <: FilteredUnknown
+    identifier::UnknownLabel # A way of identifying this filtered datum
+    scale::Float64 # A dose or other scale correction factor
+    roi::UnitRange{Int} # ROI for the raw data
+    ffroi::UnitRange{Int} # ROI for the filtered data
+    data::Vector{Float64} # Spectrum data over ffroi
+    filtered::Vector{Float64} # Filtered spectrum data over ffroi
+    covariance::Vector{Float64} # Channel covariance
+end
+
+"""
+    filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknown
+
+For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
+"""
+Base.filter(spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float64 = 1.0)::FilteredUnknown =
+    filter(FilteredUnknownG,spec,filt,scale)
+
+
+"""
+    filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknownW
+
+For filtering the unknown spectrum. Process the full Spectrum with the specified filter for use with the weighted
+least squares model.
+"""
+function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float64 = 1.0)::FilteredUnknownW
+    data = counts(spec, Float64) # Extract the spectrum data
+    # Compute the filtered data
+    filtered = filt * data
+    roi = 1:findlast(f -> f ≠ 0.0, filtered)
+    # max(d,1.0) is necessary to ensure the variances are positive
+    diag = map(d -> max(d, 1.0), data[roi])
+    covar = zeros(Float64, roi.stop)
+    for r in roi
+        ff = filt[r,roi]
+        covar[r]=(ff.*ff)'diag
+    end
+    return FilteredUnknownW(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
+end
+
+
+"""
+    covariance(fd::FilteredUnknown, roi::UnitRange{Int})
+
+Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
+fully encompass the filtered edata in <code>fd</code>.
+"""
+function covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
+    # Unknown case
+    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
+    return fd.covariance[nz]
+end
+
+function computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
+    res = copy(unk.data)
+    for ff in filter(ff -> !ismissing(ff.back), ffs)
+        ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
+        for ch in ff.roi
+            res[ch] -= ref[ch-ff.roi.start+1]
+        end
+    end
+    return res
 end
 
 """
@@ -250,21 +324,9 @@ function extract(fd::FilteredUnknown, roi::UnitRange{Int})
 end
 
 """
-    covariance(fd::FilteredUnknown, roi::UnitRange{Int})
-
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
-fully encompass the filtered edata in <code>fd</code>.
-"""
-function covariance(fd::FilteredUnknown, roi::UnitRange{Int})
-    # Unknown case
-    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
-    return Matrix(fd.covariance[nz,nz])
-end
-
-"""
 Generalized least squares (my implementation)
 """
-function fitcontiguousg(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousg(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -279,7 +341,7 @@ end
 """
 Generalized least squares (pseudo-inverse)
 """
-function fitcontiguousp(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousp(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -294,7 +356,7 @@ end
 """
 Weighted least squares
 """
-function fitcontiguousw(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousw(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -304,6 +366,21 @@ function fitcontiguousw(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs
     xlbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
     return scale * wlssvd(extract(unk, chs), A, diag(covariance(unk, chs)), xlbls)
+end
+
+"""
+Weighted least squares for FilteredUnknownW
+"""
+function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+    # Build the fitting matrix
+    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    for i in eachindex(ffs)
+        A[:, i] = extract(ffs[i], chs)
+    end
+    # Build labels and scale
+    xlbls = collect(ff.identifier for ff in ffs)
+    scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
+    return scale * wlssvd(extract(unk, chs), A, covariance(unk, chs), xlbls)
 end
 
 """
@@ -354,16 +431,29 @@ function ascontiguous(rois::AbstractArray{UnitRange{Int}})
 end
 
 """
-    filterfit(unk::FilteredUnknown, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
+    filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit(unk::FilteredUnknown, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
+function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
     fitrois = ascontiguous(map(fd->fd.ffroi, ffs))
     kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois))
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, computeResidual(unk, ffs, kr))
 end
+
+"""
+    filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
+
+Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
+By default use the generalized LLSQ fitting (pseudo-inverse implementation).
+"""
+function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww)::FilterFitResult
+    fitrois = ascontiguous(map(fd->fd.ffroi, ffs))
+    kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois))
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, computeResidual(unk, ffs, kr))
+end
+
 
 """
     filteredresidual(fit::UncertainValues, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64}
