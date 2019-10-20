@@ -1,5 +1,6 @@
 using Polynomials
 using NeXLCore
+using PeriodicTable
 
 """
     EnergyScale
@@ -230,7 +231,6 @@ function extent(cxrs::AbstractArray{CharXRay,1}, res::Resolution, ampl::Float64)
     return (low, high)
 end
 
-
 """
     Detector
 
@@ -244,6 +244,7 @@ Implements:
     energy(ch::Int, det::Detector)::Float64
     channel(eV::Float64, det::Detector)::Int
     profile(energy::Float64, xrayE::Float64, det::Detector)
+    lld(det::Detector)::Int
 """
 abstract type Detector end
 
@@ -276,6 +277,8 @@ EnergyScale associated with this detector.
 """
 scale(det::SimpleEDS)::EnergyScale =
     det.scale
+
+lld(det::SimpleEDS) = det.lld
 
 """
     resolution(eV::Float64, det::SimpleEDS)
@@ -319,6 +322,29 @@ down to an intensity of ampl.  Relative line weights are taken into account.
 """
 extent(cxrs::AbstractArray{CharXRay}, det::Detector, ampl::Float64) =
     UnitRange(map(ee->channel(ee,det), extent(cxrs, det.resolution, ampl))...)
+
+
+function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)
+    function ascontiguous(rois)
+        join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
+        srois = sort(rois)
+        res = [srois[1]]
+        for roi in srois[2:end]
+            if length(intersect(res[end], roi)) > 0
+                res[end] = join(roi, res[end])
+            else
+                push!(res, roi)
+            end
+        end
+        res
+    end
+    inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
+    es=map(xr->extent(energy(xr), det.resolution, ampl), cxrs)
+    return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
+end
+
+extents(elm::Element, det::Detector, ampl::Float64) =
+    extents(characteristic(elm,alltransitions),det,ampl)
 
 """
     basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = 1)

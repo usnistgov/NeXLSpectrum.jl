@@ -42,6 +42,8 @@ struct Spectrum
     end
 end
 
+channelcount(spec::Spectrum) = length(spec.counts)
+
 function Base.show(io::IO, spec::Spectrum)
     print(io, "Spectrum[")
     print(io, "name = ",get(spec, :Name, "None"),", ")
@@ -132,6 +134,37 @@ function parsecoating(value::AbstractString)::Union{Film,Missing}
 	end
     return missing
 end
+
+function readEMSA(filename::AbstractString, det::Detector)::Union{Spectrum,Nothing}
+	spec = readEMSA(fieldname)
+	if !isnothing(spec)
+		if abs(channel(energy(1,det))-1)>1
+			error("Spectrum and detector calibrations don't match - Offset.")
+		end
+		test = det.channelcount/2
+		if abs(channel(energy(test,det))-test)>1
+			error("Spectrum and detector calibrations don't match - Gain.")
+		end
+		spec[:Detector] = det
+	end
+	return spec
+end
+
+"""
+	matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS
+
+Build an EDSDetector to match the channel count and energy scale in this spectrum.
+"""
+matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS =
+	SimpleEDS(channelcount(spec), spec.energy, res, lld)
+
+"""
+	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS
+
+Build an EDSDetector to match the channel count and energy scale in this spectrum.
+"""
+matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
+	SimpleEDS(channelcount(spec), spec.energy, MnKaResolution(resMnKa), lld)
 
 """
     readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
@@ -243,7 +276,7 @@ Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 The probe dose in nano-amp seconds
 """
 function dose(spec::Spectrum, def=missing)::Union{Float64,Missing}
-    res = get(spec.properties,:RealTime, missing)*get(spec,:ProbeCurrent, missing)
+    res = get(spec.properties,:LiveTime, missing)*get(spec,:ProbeCurrent, missing)
     return isequal(res,missing) ? def : res
 end
 
@@ -323,6 +356,18 @@ function integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRange
     b2i = channel(back2[back2.offset],spec):channel(back2[end],spec)
     pi = channel(peak[peak.offset],spec):channel(peak[end],spec)
     integrate(spec, b1i, pi, b2i)
+end
+
+"""
+    integrate(spec::Spectrum)
+
+Total integral of all counts from the LLD to the beam energy
+"""
+function integrate(spec::Spectrum)
+	det = get(spec, :Detector, missing)
+	last = channel(get(spec, :BeamEnergy, energy(length(spec.counts),spec)),spec)
+	first = !ismissing(det) ? lld(det) : 1
+	return integrate(spec,first:last)
 end
 
 """
@@ -444,7 +489,14 @@ end
 Estimates the peak intensity for the characteristic X-ray in the specified range of channels.
 """
 peak(spec::Spectrum, chs::UnitRange{Int})::Float64 =
-    return sum(counts(spec,chs,Float64))-sum(modelBackground(spec,chs))
+    return sum(counts(spec,chs,Float64))- back(spec,chs)
+
+"""
+    back(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+
+Estimates the background intensity for the characteristic X-ray in the specified range of channels.
+"""
+back(spec::Spectrum, chs::UnitRange{Int})::Float64 = sum(modelBackground(spec,chs))
 
 
 """
@@ -457,3 +509,57 @@ function peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
     back = sum(modelBackground(spec,chs,ash))
     return (sum(counts(spec,chs,Float64))-back)/back
 end
+
+"""
+    estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int})
+
+Estimates the k-ratio from niave models of peak and background intensity.  Only works if the peak is not interfered.
+"""
+estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
+    peak(unk, chs)*dose(std)/(peak(std, chs)*dose(unk))
+
+"""
+    describe(io, spec::Spectrum)
+
+Outputs a description of the data in the spectrum.
+"""
+function describe(io::IO, spec::Spectrum)
+	println(io, "           Name:   $(spec[:Name])")
+	println(io, "    Beam energy:   $(get(spec, :BeamEnergy, missing)/1000.0) keV")
+	println(io, "  Probe current:   $(get(spec, :ProbeCurrent, missing)) nA")
+	println(io, "      Live time:   $(get(spec, :LiveTime, missing)) s")
+	println(io, "       Detector:   $(get(spec, :Detector, missing))")
+	println(io, "        Comment:   $(get(spec, :Comment, missing))")
+	println(io, "       Integral:   $(integrate(spec)) counts")
+	comp = get(spec, :Composition, missing)
+	if !ismissing(comp)
+		println(io, "    Composition:   $(comp)")
+		det = get(spec, :Detector, missing)
+		if !ismissing(det)
+			allexts = []
+			for elm in keys(comp)
+				exts = extents(elm, det, 1.0e-4)
+				for ext in extents(elm, det, 1.0e-4)
+					print(io, "            ROI:   $(elm.symbol)[$(ext)]")
+					printi=true
+					for (elm2, ext2) in allexts
+						if length(intersect(ext,ext2))>0
+							print(io, "\n              Warning: $(elm.symbol)[$(ext)] intersects with $(elm2)[$(ext2)]")
+							printi=false
+						end
+					end
+					push!(allexts,(elm, ext))
+					println(io, printi ? " = $(round(Int,peak(spec, ext))) counts over $(round(Int,back(spec,ext))) counts" : "")
+				end
+			end
+		end
+	end
+	return nothing
+end
+
+"""
+    describe(spec::Spectrum)
+
+Outputs a description of the data in the spectrum to standard output.
+"""
+describe(spec::Spectrum) = describe(stdout, spec)

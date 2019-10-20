@@ -73,7 +73,7 @@ function Gadfly.plot(fd::FilteredDatum)
     p2=layer(x=fd.ffroi, y=fd.data, Geom.step, Theme(default_color=NeXLPalette[2]))
 	lyrs = ( p1, p2 )
     lbls = [ "Filtered", "Raw" ]
-	if !ismissing(fd.back)
+	if (fd isa FilteredReference) && (!ismissing(fd.back))
         bck = fd.data[fd.roi.start-fd.ffroi.start+1:fd.roi.stop-fd.ffroi.start+1]-fd.back
 		p3=layer(x=fd.roi, y=bck, Geom.step, Theme(default_color=NeXLPalette[3]))
 		lyrs = ( p1, p2, p3 )

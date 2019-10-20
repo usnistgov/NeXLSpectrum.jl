@@ -57,27 +57,62 @@ end
 
 abstract type FilteredLabel <: Label end
 
-"""
-    FilteredDatum
+struct ReferenceLabel <: FilteredLabel
+    spec::Spectrum
+    roi::UnitRange{Int}
+end
 
+Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
+Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
+
+struct UnknownLabel <: FilteredLabel
+    spec::Spectrum
+end
+
+Base.show(io::IO, unk::UnknownLabel) = print(io, "Unknown[$(unk.spec[:Name])]")
+Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
+
+abstract type FilteredDatum end
+
+"""
+    FilteredReference
+
+Represents the filtered reference spectrum over an ROI.
 Carries the minimal data necessary to support filter-fitting a single
 region-of-interest (continguous range of channles) and computing
 useful output statistics.
 """
-struct FilteredDatum
-    identifier::FilteredLabel # A way of identifying this filtered datum
+struct FilteredReference <: FilteredDatum
+    identifier::ReferenceLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data
     ffroi::UnitRange{Int} # ROI for the filtered data
     data::Vector{Float64} # Spectrum data over ffroi
     filtered::Vector{Float64} # Filtered spectrum data over ffroi
     covariance::AbstractMatrix{Float64} # Channel covariance
-    back::Union{Missing,Vector{Float64}} # Background corrected intensity data over roi
+    back::Vector{Float64} # Background corrected intensity data over roi
 end
 
-Base.show(io::IO, fd::FilteredDatum) = print(io, "FilteredDatum[$(fd.identifier)]")
+Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)]")
 
-function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::UncertainValues)
+"""
+    FilteredUnknown
+
+Represents the unknown in a filter fit.
+"""
+struct FilteredUnknown <: FilteredDatum
+    identifier::UnknownLabel # A way of identifying this filtered datum
+    scale::Float64 # A dose or other scale correction factor
+    roi::UnitRange{Int} # ROI for the raw data
+    ffroi::UnitRange{Int} # ROI for the filtered data
+    data::Vector{Float64} # Spectrum data over ffroi
+    filtered::Vector{Float64} # Filtered spectrum data over ffroi
+    covariance::AbstractMatrix{Float64} # Channel covariance
+end
+
+Base.show(io::IO, fd::FilteredUnknown) = print(io, "Unknown[$(fd.identifier)]")
+
+function computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
     res = copy(unk.data)
     for ff in filter(ff -> !ismissing(ff.back), ffs)
         ref = (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.back
@@ -88,14 +123,6 @@ function computeResidual(unk::FilteredDatum, ffs::Array{FilteredDatum}, kr::Unce
     return res
 end
 
-struct ReferenceLabel <: FilteredLabel
-    spec::Spectrum
-    roi::UnitRange{Int}
-end
-
-Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
-Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
-
 """
     filter(
       spec::Spectrum,
@@ -104,19 +131,17 @@ Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.ro
       back::Union{Missing,Vector{Float64}} = missing,
       scale = 1.0,
       tol::Float64 = 1.0e-4,
-    )::FilteredDatum
+    )::FilteredReference
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum
 with the specified filter.
 """
-function Base.filter(
+function filterImpl(
     spec::Spectrum,
     roi::UnitRange{Int},
     filter::AbstractMatrix{Float64},
-    back::Union{Missing,Vector{Float64}},
-    scale = 1.0,
-    tol::Float64 = 1.0e-4,
-)::FilteredDatum
+    tol::Float64
+)
     data = counts(spec, Float64) # Extract the spectrum data as Float64 to match the filter
     # Determine tangents to the two background end points
     tangents = map(st -> estimateBackground(data, st, 5, 2), (roi.start, roi.stop))
@@ -132,7 +157,7 @@ function Base.filter(
     # Extract the range of non-zero filtered data
     trimmedcovar = sparse(covar[roiff, roiff])
     checkcovariance!(trimmedcovar)
-    FilteredDatum(ReferenceLabel(spec, roi), scale, roi, roiff, data[roiff], filtered[roiff], trimmedcovar, back)
+    return (roiff, data[roiff], filtered[roiff], trimmedcovar)
 end
 
 """
@@ -140,117 +165,128 @@ end
       spec::Spectrum,
       roi::UnitRange{Int},
       filter::AbstractMatrix{Float64},
-      ashell::AtomicShell
-    )::FilteredDatum
+      ashell::AtomicShell,
+      scale = 1.0,
+      tol = 1.0e-6
+    )::FilteredReference
 
-For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
+For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.  Use a simple
+edge-based background model.
 """
 function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
     filt::AbstractMatrix{Float64},
-    scale = 1.0,
-    ashell::Union{Missing,AtomicShell} = missing,
-    tol::Float64 = 1.0e-4,
-)::FilteredDatum
-    if ismissing(ashell)
-        back = spec[roi] - modelBackground(spec, roi)
-    else
-        back = spec[roi] - modelBackground(spec, roi, ashell)
-    end
-    return Base.filter(spec, roi, filt, back, scale, tol)
+    ashell::AtomicShell,
+    scale::Float64 = 1.0,
+    tol::Float64 = 1.0e-6
+)::FilteredReference
+    back = spec[roi] - modelBackground(spec, roi, ashell)
+    f = filterImpl(spec, roi, filt, tol)
+    return FilteredReference(ReferenceLabel(spec, roi), scale, roi, f..., back)
 end
 
+"""
+    filter(
+      spec::Spectrum,
+      roi::UnitRange{Int},
+      filter::AbstractMatrix{Float64},
+      scale = 1.0,
+      tol = 1.0e-6
+    )::FilteredReference
 
-struct UnknownLabel <: FilteredLabel
-    spec::Spectrum
+For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter. Use a naive
+linear background model.
+"""
+function Base.filter(
+    spec::Spectrum,
+    roi::UnitRange{Int},
+    filt::AbstractMatrix{Float64},
+    scale::Float64 = 1.0,
+    tol::Float64 = 1.0e-6
+)::FilteredReference
+    back = spec[roi] - modelBackground(spec, roi)
+    f = filterImpl(spec, roi, filt, tol)
+    return FilteredReference(ReferenceLabel(spec, roi), scale, roi, f..., back)
 end
-
-Base.show(io::IO, unk::UnknownLabel) = print(io, "Unknown[$(unk.spec[:Name])]")
-Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
 
 """
     filter(spec::Spectrum, filter::AbstractMatrix{Float64}, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
-function Base.filter(spec::Spectrum, filt::AbstractMatrix{Float64}, scale = 1.0)::FilteredDatum
+function Base.filter(spec::Spectrum, filt::AbstractMatrix{Float64}, scale::Float64 = 1.0)::FilteredUnknown
     data = counts(spec, Float64) # Extract the spectrum data
     # Compute the filtered data
     filtered = filt * data
-    # max(d,1.0) is necessary to ensure the varianes are positive
-    covar = filt * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filt)
-    # Extract the range of non-zero filtered data
     roi = 1:findlast(f -> f ≠ 0.0, filtered)
-    trimmedcovar = sparse(covar[roi, roi])
-    checkcovariance!(trimmedcovar)
-    FilteredDatum(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], trimmedcovar, missing)
+    # max(d,1.0) is necessary to ensure the variances are positive
+    diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
+    # diag = Diagonal(map(d -> max(d, 1.0), data[roi]))
+    covar = filt[roi,roi] * diag * transpose(filt[roi,roi])
+    @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in filter(...)::FilterUnknown."
+    checkcovariance!(covar)
+    return FilteredUnknown(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
 end
 
-
 """
-    extract(fd::FilteredDatum, roi::UnitRange{Int})
+    extract(fd::FilteredReference, roi::UnitRange{Int})
 
-Extract the filtered data representing the specified range.
+Extract the filtered data representing the specified range.  <code>roi</code> must fully encompass the filtered
+data in <code>fd</code>.
 """
-function extract(fd::FilteredDatum, roi::UnitRange{Int})
-    if (roi.start > fd.ffroi.stop) || (roi.stop < fd.ffroi.start)
-        error("The FilteredDatum ", fd.identifier, ffroi, " does not intersect " + roi)
-    end
-    # How many zeros do we need to add the beginning and end
-    nz = max(1, 1 + fd.ffroi.start - roi.start):(length(roi)-max(0, roi.stop - fd.ffroi.stop))
-    # Determine the range of channels to extract from fd.filter
-    ffr = (1+max(0, roi.start - fd.ffroi.start)):min(length(fd.ffroi), 1 + roi.stop - fd.ffroi.start)
-    # println("extract:: roi = ",roi,"  ff = ",fd.ffroi, "  nz = ",nz, "  ffr = ",ffr)
+function extract(fd::FilteredReference, roi::UnitRange{Int})
+    @assert fd.ffroi.start>=roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
+    @assert fd.ffroi.stop<=roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
     data = zeros(Float64, length(roi))
-    # Set the non-zero extent
-    data[nz] = fd.filtered[ffr]
+    nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
+    data[nz] = fd.filtered
     return data
 end
 
 """
-    covariance(fd::FilteredDatum, roi::UnitRange{Int})
+    extract(fd::FilteredUnknown, roi::UnitRange{Int})
 
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.
+Extract the filtered data representing the specified range.  <code>roi</code> must fully encompass the filtered
+data in <code>fd</code>.
 """
-function covariance(fd::FilteredDatum, roi::UnitRange{Int})
-    if (roi.start > fd.ffroi.stop) || (roi.stop < fd.ffroi.start)
-        error("The FilteredDatum ", fd.identifier, ffroi, " does not intersect " + roi)
-    end
-    # How many zeros do we need to add the beginning and end
-    nz = max(1, 1 + fd.ffroi.start - roi.start):(length(roi)-max(0, roi.stop - fd.ffroi.stop))
-    # Determine the range of channels to extract from fd.filter
-    ffr = (1+max(0, roi.start - fd.ffroi.start)):min(length(fd.ffroi), 1 + roi.stop - fd.ffroi.start)
-    # println("covariance:: roi = ",roi,"  ff = ",fd.ffroi, "  nz = ",nz, "  ffr = ",ffr)
+function extract(fd::FilteredUnknown, roi::UnitRange{Int})
+    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
+    return copy(fd.filtered[nz])
+end
+
+"""
+    covariance(fd::FilteredReference, roi::UnitRange{Int})
+
+Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
+fully encompass the filtered edata in <code>fd</code>.
+"""
+function covariance(fd::FilteredReference, roi::UnitRange{Int})
+    # Reference case
+    @assert fd.ffroi.start>=roi.start "$(fd.ffroi.start) >= $(roi.start) in $(fd)"
+    @assert fd.ffroi.stop<=roi.stop "$(fd.ffroi.stop) <= $(roi.stop) in $(fd)"
     cov = zeros(Float64, length(roi), length(roi))
-    # Set the non-zero extent
-    cov[nz, nz] = fd.covariance[ffr, ffr]
+    nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
+    cov[nz,nz] = Matrix(fd.covariance)
     return cov
 end
 
 """
-    ascontiguous(rois::AbstractArray{UnitRange{Int}})
+    covariance(fd::FilteredUnknown, roi::UnitRange{Int})
 
-Combine the array of ranges into a array in which intersecting ranges are
-combined.  Returns a minimal set of contiguous ranges.
+Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
+fully encompass the filtered edata in <code>fd</code>.
 """
-function ascontiguous(rois::AbstractArray{UnitRange{Int}})
-    join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
-    srois = sort(rois)
-    res = [srois[1]]
-    for roi in srois[2:end]
-        if length(intersect(res[end], roi)) > 0
-            res[end] = join(roi, res[end])
-        else
-            push!(res, roi)
-        end
-    end
-    res
+function covariance(fd::FilteredUnknown, roi::UnitRange{Int})
+    # Unknown case
+    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
+    return Matrix(fd.covariance[nz,nz])
 end
+
 """
 Generalized least squares (my implementation)
 """
-function fitcontiguousg(unk::FilteredDatum, ffs::Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousg(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -265,7 +301,7 @@ end
 """
 Generalized least squares (pseudo-inverse)
 """
-function fitcontiguousp(unk::FilteredDatum, ffs::Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousp(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -280,7 +316,7 @@ end
 """
 Weighted least squares
 """
-function fitcontiguousw(unk::FilteredDatum, ffs::Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousw(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -295,7 +331,7 @@ end
 """
 Ordinary least squares
 """
-function fitcontiguouso(unk::FilteredDatum, ffs::Array{FilteredDatum}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
     A = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
@@ -320,27 +356,41 @@ tabulate(ffrs::Array{FilterFitResult}, withUnc=false) =
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 
-value(label::ReferenceLabel, ffr::FilterFitResult) = value(kratios[label])
+NeXLUncertainties.value(label::ReferenceLabel, ffr::FilterFitResult) = value(label, ffr.kratios)
 
-uncertainty(label::ReferenceLabel, ffr::FilterFitResult) = uncertainty(kratios[label])
+NeXLUncertainties.σ(label::ReferenceLabel, ffr::FilterFitResult) = σ(label, ffr.kratios)
+
+function ascontiguous(rois::AbstractArray{UnitRange{Int}})
+    # Join the UnitRanges into contiguous UnitRanges
+    join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
+    srois = sort(rois)
+    res = [srois[1]]
+    for roi in srois[2:end]
+        if length(intersect(res[end], roi)) > 0
+            res[end] = join(roi, res[end]) # Join UnitRanges
+        else
+            push!(res, roi) # Add a new UnitRange
+        end
+    end
+    return res
+end
 
 """
-    filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg=fitcontiguousw)::UncertainValues
+    filterfit(unk::FilteredUnknown, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
-Filter fit the unknown against ffs, an array of FilteredDatum and return the result as an FilterFitResult object.
+Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit(unk::FilteredDatum, ffs::Array{FilteredDatum}, alg = fitcontiguousp)::FilterFitResult
-    fitrois = ascontiguous(collect(fd.ffroi for fd in ffs))
-    kr = cat(collect(alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr) for fr in fitrois))
+function filterfit(unk::FilteredUnknown, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
+    fitrois = ascontiguous(map(fd->fd.ffroi, ffs))
+    kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois))
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, computeResidual(unk, ffs, kr))
 end
 
 """
-    filteredresidual(fit::UncertainValues, unk::FilteredDatum, ffs::Array{FilteredDatum})::Vector{Float64}
+    filteredresidual(fit::UncertainValues, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64}
 
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
-filteredresidual(fit::UncertainValues, unk::FilteredDatum, ffs::Array{FilteredDatum})::Vector{Float64} =
-    unk.filtered -
-    mapreduce(ff -> (value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi), +, ffs)
+filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64} =
+    unk.filtered - mapreduce(ff -> (NeXLSpectrum.value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi), +, ffs)
