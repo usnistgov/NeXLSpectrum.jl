@@ -89,7 +89,6 @@ struct FilteredReference <: FilteredDatum
     ffroi::UnitRange{Int} # ROI for the filtered data
     data::Vector{Float64} # Spectrum data over ffroi
     filtered::Vector{Float64} # Filtered spectrum data over ffroi
-    covariance::AbstractMatrix{Float64} # Channel covariance
     back::Vector{Float64} # Background corrected intensity data over roi
 end
 
@@ -152,12 +151,7 @@ function filterImpl(
     filtered = filter * data
     maxval = maximum(filtered)
     roiff = findfirst(f -> abs(f) > tol * maxval, filtered):findlast(f -> abs(f) > tol * maxval, filtered)
-    # max(d,1.0) is necessary to ensure the varianes are positive
-    covar = filter * Diagonal(map(d -> max(d, 1.0), data)) * transpose(filter)
-    # Extract the range of non-zero filtered data
-    trimmedcovar = sparse(covar[roiff, roiff])
-    checkcovariance!(trimmedcovar)
-    return (roiff, data[roiff], filtered[roiff], trimmedcovar)
+    return ( roiff, data[roiff], filtered[roiff] )
 end
 
 """
@@ -253,22 +247,6 @@ data in <code>fd</code>.
 function extract(fd::FilteredUnknown, roi::UnitRange{Int})
     nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
     return copy(fd.filtered[nz])
-end
-
-"""
-    covariance(fd::FilteredReference, roi::UnitRange{Int})
-
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
-fully encompass the filtered edata in <code>fd</code>.
-"""
-function covariance(fd::FilteredReference, roi::UnitRange{Int})
-    # Reference case
-    @assert fd.ffroi.start>=roi.start "$(fd.ffroi.start) >= $(roi.start) in $(fd)"
-    @assert fd.ffroi.stop<=roi.stop "$(fd.ffroi.stop) <= $(roi.stop) in $(fd)"
-    cov = zeros(Float64, length(roi), length(roi))
-    nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
-    cov[nz,nz] = Matrix(fd.covariance)
-    return cov
 end
 
 """
@@ -392,5 +370,7 @@ end
 
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
-filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64} =
-    unk.filtered - mapreduce(ff -> (NeXLSpectrum.value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi), +, ffs)
+function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64}
+    scaled(ff) = (value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
+    return unk.filtered - mapreduce(scaled, +, ffs)
+end

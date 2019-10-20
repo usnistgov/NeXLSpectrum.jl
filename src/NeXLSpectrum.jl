@@ -18,9 +18,9 @@ export scale # Detector EnergyScale
 export resolution # Detector Resolution
 export basicEDS # Create a basic EDS detector
 export basicEDSwICC # Create a basic EDS detector with incomplete charge collection
-export extent # Determine the channel extent of lines and line families
+export extent # Determine the energy extent of x-ray lines on a detector ( Emin, Emax )
 export extents # Determines contiguous channel extents from a set of characteristic lines or an element
-export describe # Provide useful details about a spectrum
+export labeledextents # Like extents but labeled with a vector of the characteristic x-ray lines in each extent
 
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")
@@ -38,8 +38,10 @@ export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
 export tabulate # Converts a Spectrum to a DataFrame
+export details # Outputs useful details about a spectrum
 export peak # Estimates the peak intensity
 export back # Estimates the background intensity
+export estkratio # Estimate the k-ratio from two spectra for a ROI
 
 include("llsq.jl")
 include("filterfit.jl")

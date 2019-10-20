@@ -216,20 +216,13 @@ function extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
 end
 
 """
-    extent(cxrs::AbstractArray{CharXRay}, res::Resolution, ampl::Float64)::Tuple{2,Float64}
+    extent(cxr::CharXRay, res::Resolution, ampl::Float64)::Tuple{2,Float64}
 
-Computes the energy range encompassed by the specified set of x-ray transitions
+Computes the energy range encompassed by the specified x-ray
 down to an intensity of ampl.  Relative line weights are taken into account.
 """
-function extent(cxrs::AbstractArray{CharXRay,1}, res::Resolution, ampl::Float64)
-    tmp = map(cxr -> extent(energy(cxr) ,res, min(0.999,ampl/weight(cxr))), cxrs)
-    low, high = +100000,-100000
-    for (l, h) in tmp
-        low = min(l, low)
-        high = max(h, high)
-    end
-    return (low, high)
-end
+extent(cxr::CharXRay, res::Resolution, ampl::Float64) =
+    extent(energy(cxr) ,res, min(0.999,ampl/weight(cxr)))
 
 """
     Detector
@@ -315,16 +308,21 @@ profile(energy::Float64, xrayE::Float64, det::Detector) =
     profile(energy, xrayE, det.resolution)
 
 """
-    extent(cxrs::AbstractArray{CharXRay}, det::Detector, ampl::Float64)::UnitRange
+    extent(cxrs::CharXRay, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
 
 Computes the channel range encompassed by the specified set of x-ray transitions
 down to an intensity of ampl.  Relative line weights are taken into account.
 """
-extent(cxrs::AbstractArray{CharXRay}, det::Detector, ampl::Float64) =
-    UnitRange(map(ee->channel(ee,det), extent(cxrs, det.resolution, ampl))...)
+extent(cxrs::CharXRay, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
+    extent(cxrs, det.resolution, ampl)
 
+"""
+    extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)
 
-function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)
+Determine the contiguous ranges of channels over which the specified collection of X-rays will be measured on
+the specified detector.  The ampl determines the extent of each peak.
+"""
+function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
     function ascontiguous(rois)
         join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
         srois = sort(rois)
@@ -336,33 +334,50 @@ function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)
                 push!(res, roi)
             end
         end
-        res
+        return res
     end
     inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
-    es=map(xr->extent(energy(xr), det.resolution, ampl), cxrs)
+    # Note: extent(cxr,...) takes line weight into account
+    es=map(cxr->extent(cxr, det.resolution, ampl), filter(cxr->weight(cxr)>ampl,cxrs))
     return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
 end
 
-extents(elm::Element, det::Detector, ampl::Float64) =
+extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(characteristic(elm,alltransitions),det,ampl)
 
-extents(elms::Vector{Element}, det::Detector, ampl::Float64) =
+extents(elms::Vector{Element}, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
 
-function labeledextents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
-    es = map(xr->extent(energy(xr), det.resolution, ampl), cxrs)
-    le=collect(zip(cxrs, map(ee->channel(ee[1],det):channel(ee[2],det),es)))
-    sort!(le, lt=(x1,x2)->isless(energy(x1[1]),energy(x2[1]))) # sort by x-ray energy
+"""
+    function labeledextents(
+        cxrs::AbstractArray{CharXRay,1},
+        det::Detector,
+        ampl::Float64
+    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+
+Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
+contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
+interfere with each other on the specified detector.
+"""
+function labeledextents(
+    cxrs::AbstractArray{CharXRay,1},
+    det::Detector,
+    ampl::Float64
+)::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+    fcxrs = filter(cxr->weight(cxr)>ampl, cxrs)
+    es = map(xr -> extent(xr, det.resolution, ampl), fcxrs) # CharXRay -> energy ranges
+    le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
+    sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
     res = Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}()
-    if length(le)>0
-        curX, curInt = [ le[1][1] ], le[1][2]
+    if length(le) > 0
+        curX, curInt = [le[1][1]], le[1][2]
         for (cxr, interval) in le[2:end]
-            if length(intersect(interval, curInt))>0 # Add to current extent
-                curInt = min(interval.start,curInt.start):max(interval.stop, curInt.stop)
+            if length(intersect(interval, curInt)) > 0 # Add to current extent
+                curInt = min(interval.start, curInt.start):max(interval.stop, curInt.stop)
                 push!(curX, cxr)
             else # create a new extent
-                push!(res, ( curX, curInt))
-                curX = [ cxr ]
+                push!(res, (curX, curInt))
+                curX = [cxr]
                 curInt = interval
             end
         end
@@ -371,12 +386,35 @@ function labeledextents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Floa
     return res
 end
 
-labeledextents(elm::Element, det::Detector, ampl::Float64) =
-    labeledextents(characteristic(elm,alltransitions),det,ampl)
+"""
+    function labeledextents(
+        elm::Element,  # All CharXRay for this element
+        det::Detector,
+        ampl::Float64,
+        maxE::Float64=energy(det.channelcount+1, det) # full detector range
+    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
 
-labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64) =
+Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
+contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
+interfere with each other on the specified detector.
+"""
+labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=energy(det.channelcount+1, det)) =
+    labeledextents(characteristic(elm, alltransitions, ampl, maxE), det, ampl)
+
+"""
+    function labeledextents(
+        elm::Vector{Element},  # All CharXRay for these elements
+        det::Detector,
+        ampl::Float64,
+        maxE::Float64=energy(det.channelcount+1, det)
+    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+
+Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
+contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
+interfere with each other on the specified detector.
+"""
+labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64, maxE::Float64=energy(det.channelcount+1, det)) =
     labeledextents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
-
 
 """
     basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = 1)

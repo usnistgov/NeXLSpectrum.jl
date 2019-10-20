@@ -523,11 +523,12 @@ estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
 
 Outputs a description of the data in the spectrum.
 """
-function describe(io::IO, spec::Spectrum)
+function details(io::IO, spec::Spectrum)
 	println(io, "           Name:   $(spec[:Name])")
 	println(io, "    Beam energy:   $(get(spec, :BeamEnergy, missing)/1000.0) keV")
 	println(io, "  Probe current:   $(get(spec, :ProbeCurrent, missing)) nA")
 	println(io, "      Live time:   $(get(spec, :LiveTime, missing)) s")
+	println(io, "        Coating:   $(get(spec,:Coating, "None"))")
 	println(io, "       Detector:   $(get(spec, :Detector, missing))")
 	println(io, "        Comment:   $(get(spec, :Comment, missing))")
 	println(io, "       Integral:   $(integrate(spec)) counts")
@@ -536,20 +537,28 @@ function describe(io::IO, spec::Spectrum)
 		println(io, "    Composition:   $(comp)")
 		det = get(spec, :Detector, missing)
 		if !ismissing(det)
-			allexts = []
-			for elm in keys(comp)
-				exts = extents(elm, det, 1.0e-4)
-				for ext in extents(elm, det, 1.0e-4)
-					print(io, "            ROI:   $(elm.symbol)[$(ext)]")
+			coating = get(spec, :Coating, missing)
+			comp2 = collect(keys(comp))
+			if !ismissing(coating)
+				append!(comp2, keys(coating.material))
+			end
+			for elm1 in keys(comp)
+				for ext1 in extents(elm1, det, 1.0e-4)
+					print(io, "            ROI:   $(elm1.symbol)[$(ext1)]")
 					printi=true
-					for (elm2, ext2) in allexts
-						if length(intersect(ext,ext2))>0
-							print(io, "\n              Warning: $(elm.symbol)[$(ext)] intersects with $(elm2)[$(ext2)]")
-							printi=false
+					for elm2 in comp2
+						if elm2 ≠ elm1
+							for ext2 in extents(elm2, det, 1.0e-4)
+								if length(intersect(ext1,ext2))>0
+									print(io, "\n              Warning: $(elm1.symbol)[$(ext1)] intersects with $(elm2.symbol)[$(ext2)]")
+									printi=false
+								end
+							end
 						end
 					end
-					push!(allexts,(elm, ext))
-					println(io, printi ? " = $(round(Int,peak(spec, ext))) counts over $(round(Int,back(spec,ext))) counts" : "")
+					p, b = peak(spec, ext1), back(spec,ext1)
+					σ = p/sqrt(b)
+					println(io, printi ? " = $(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))" : "")
 				end
 			end
 		end
@@ -558,8 +567,8 @@ function describe(io::IO, spec::Spectrum)
 end
 
 """
-    describe(spec::Spectrum)
+    details(spec::Spectrum)
 
 Outputs a description of the data in the spectrum to standard output.
 """
-describe(spec::Spectrum) = describe(stdout, spec)
+details(spec::Spectrum) = details(stdout, spec)
