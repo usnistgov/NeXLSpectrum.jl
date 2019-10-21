@@ -34,6 +34,7 @@ export dose # Spectrum probe dose
 export counts # Spectrum channel data
 export integrate # Integrate range of channels
 export energyscale # Energy scale function
+export elements # A collection of the Elements in the spectrum
 export subsample # Sub-sample a spectrum
 export modelbackground # Model a background region
 export modelBackground
@@ -43,6 +44,7 @@ export details # Outputs useful details about a spectrum
 export peak # Estimates the peak intensity
 export back # Estimates the background intensity
 export estkratio # Estimate the k-ratio from two spectra for a ROI
+
 
 include("llsq.jl")
 include("filterfit.jl")

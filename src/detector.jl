@@ -308,6 +308,17 @@ profile(energy::Float64, xrayE::Float64, det::Detector) =
     profile(energy, xrayE, det.resolution)
 
 """
+    visible(cxrs::AbstractVector{CharXRay}, det::Detector)
+
+Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
+channel).
+"""
+function visible(cxrs::AbstractVector{CharXRay}, det::Detector)
+    eMin, eMax = energy(lld(det), det), energy(det.channelcount+1, det)
+    return filter(cxr->(energy(cxr)>eMin) && (energy(cxr)<eMax), cxrs)
+end
+
+"""
     extent(cxrs::CharXRay, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
 
 Computes the channel range encompassed by the specified set of x-ray transitions
@@ -338,12 +349,12 @@ function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::V
     end
     inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
     # Note: extent(cxr,...) takes line weight into account
-    es=map(cxr->extent(cxr, det.resolution, ampl), filter(cxr->weight(cxr)>ampl,cxrs))
+    es=map(cxr->extent(cxr, det.resolution, ampl), filter(cxr->weight(cxr)>ampl, visible(cxrs, det)))
     return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
 end
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
-    extents(characteristic(elm,alltransitions),det,ampl)
+    extents(visible(characteristic(elm,alltransitions),det),det,ampl)
 
 extents(elms::Vector{Element}, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
@@ -364,7 +375,7 @@ function labeledextents(
     det::Detector,
     ampl::Float64
 )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
-    fcxrs = filter(cxr->weight(cxr)>ampl, cxrs)
+    fcxrs = filter(cxr-> weight(cxr)>ampl, visible(cxrs, det))
     es = map(xr -> extent(xr, det.resolution, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
@@ -398,8 +409,8 @@ Creates a vector containing pairs containing a vector of CharXRay and an interva
 contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
 interfere with each other on the specified detector.
 """
-labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=energy(det.channelcount+1, det)) =
-    labeledextents(characteristic(elm, alltransitions, ampl, maxE), det, ampl)
+labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=1.0e6) =
+    labeledextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
 
 """
     function labeledextents(
@@ -417,18 +428,22 @@ labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64, maxE::Float6
     labeledextents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
 
 """
-    basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = 1)
+    basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = channel(150.0 eV))
 
 Construct simple model of an EDS detector.
 """
-basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1) =
+function basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
+    lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
     SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaResolution(fwhmatmnka), lld)
+end
 
 """
-    basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1)
+    basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=channel(150.0 eV))
 
 Construct simple model of an EDS detector with incomplete charge collection at
 low X-ray energies.
 """
-basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=1) =
+function basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
+    lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
     SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), lld)
+end

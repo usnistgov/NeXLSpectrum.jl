@@ -57,13 +57,26 @@ end
 
 abstract type FilteredLabel <: Label end
 
-struct ReferenceLabel <: FilteredLabel
+abstract type ReferenceLabel <: FilteredLabel end
+
+struct SpectrumLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
 end
 
-Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
-Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
+
+Base.show(io::IO, refLab::SpectrumLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
+Base.isequal(rl1::SpectrumLabel, rl2::SpectrumLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
+
+struct CharXRayLabel <: ReferenceLabel
+    spec::Spectrum
+    roi::UnitRange{Int}
+    xrays::Vector{CharXRay}
+end
+
+Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
+Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
+    isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
 
 struct UnknownLabel <: FilteredLabel
     spec::Spectrum
@@ -126,6 +139,24 @@ function filterImpl(
     return ( roiff, data[roiff], filtered[roiff] )
 end
 
+function Base.filter(
+    spec::Spectrum,
+    det::Detector,
+    cxrs::AbstractVector{CharXRay},
+    filt::AbstractMatrix{Float64},
+    scale::Float64=1.0,
+    ampl::Float64=1.0e-4,
+    tol::Float64=1.0e-6
+)::Vector{FilteredReference}
+    res=[]
+    for (lbl, roi) in labeledextents(cxrs, det, ampl)
+        back = spec[roi] - modelBackground(spec, roi, inner(brightest(lbl)))
+        f = filterImpl(spec, roi, filt, tol)
+        push!(res, FilteredReference(CharXRayLabel(spec, roi, lbl), scale, roi, f..., back))
+    end
+    return res
+end
+
 """
     filter(
       spec::Spectrum,
@@ -149,7 +180,7 @@ function Base.filter(
 )::FilteredReference
     back = spec[roi] - modelBackground(spec, roi, ashell)
     f = filterImpl(spec, roi, filt, tol)
-    return FilteredReference(ReferenceLabel(spec, roi), scale, roi, f..., back)
+    return FilteredReference(SpectrumLabel(spec, roi), scale, roi, f..., back)
 end
 
 """
@@ -267,7 +298,7 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filt::AbstractMat
     diag = map(d -> max(d, 1.0), data[roi])
     covar = zeros(Float64, roi.stop)
     for r in roi
-        ff = filt[r,roi]
+        ff = filt[r,roi] # a sparse vector
         covar[r]=(ff.*ff)'diag
     end
     return FilteredUnknownW(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
@@ -277,14 +308,20 @@ end
 """
     covariance(fd::FilteredUnknown, roi::UnitRange{Int})
 
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
-fully encompass the filtered edata in <code>fd</code>.
+Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
+<code>roi</code> must fully encompass the filtered edata in <code>fd</code>.
 """
 function covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
     # Unknown case
     nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
     return fd.covariance[nz]
 end
+
+"""
+    computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
+
+Computes the residual spectrum for the specified unknown.
+"""
 
 function computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
     res = copy(unk.data)
@@ -354,7 +391,7 @@ function fitcontiguousp(unk::FilteredUnknownG, ffs::Array{FilteredReference}, ch
 end
 
 """
-Weighted least squares
+Weighted least squares using the diagonal from the FilteredUnknownG covariance.
 """
 function fitcontiguousw(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
@@ -384,7 +421,7 @@ function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, c
 end
 
 """
-Ordinary least squares
+Ordinary least squares for either FilteredUnknown[G|W]
 """
 function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
@@ -406,14 +443,34 @@ struct FilterFitResult
     residual::Vector{Float64}
 end
 
+"""
+    kratios(ffr::FilterFitResult)
+
+The k-ratios as a UncertainValues object
+"""
+kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
+unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
+residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
+
 tabulate(ffrs::Array{FilterFitResult}, withUnc=false) =
     NeXLUncertainties.tabulate([r.kratios for r in ffrs],withUnc)
+
+function details(io::IO, ffr::FilterFitResult)
+    println(io, "  Unknown:   $(ffr.label)")
+    for l in labels(ffr)
+        println(io, "   $(l): $(ffr[l])")
+    end
+end
+
+details(ffr::FilterFitResult) = details(stdout,ffr)
+
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 
 NeXLUncertainties.value(label::ReferenceLabel, ffr::FilterFitResult) = value(label, ffr.kratios)
-
 NeXLUncertainties.σ(label::ReferenceLabel, ffr::FilterFitResult) = σ(label, ffr.kratios)
+NeXLUncertainties.getindex(ffr::FilterFitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
+NeXLUncertainties.labels(ffr::FilterFitResult) = labels(ffr.kratios)
 
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})
     # Join the UnitRanges into contiguous UnitRanges

@@ -22,6 +22,7 @@ Metadata is identified by a symbol. Predefined symbols include
     :StagePosition # A Dict with entries :X, :Y, :Z, :R, :TX in millimeters and degrees
     :Comment       # A string
     :Composition   # A Material
+	:Elements      # A collection of elements in the material
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
     :Coating       # A Film (eg. 10 nm of C|Au etc.)
@@ -269,6 +270,9 @@ Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
 
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
+elements(spec::Spectrum) =
+	haskey(spec, :Elements) ? get(spec, :Elements) :
+		(haskey(spec, :Composition) ? collect(keys(spec[:Composition])) : missing)
 
 """
     dose(spec::Spectrum, def=missing)
@@ -437,7 +441,7 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
     bl=estimateBackground(counts(spec),chs.start,5)
     bh=estimateBackground(counts(spec),chs.stop,5)
     ec = channel(energy(ash),spec)
-    if (ec<chs.stop) && (bl(ec-chs.start)>bh(ec-chs.stop)) && (energy(ec,spec)<2.0e3)
+    if (ec<chs.stop) && (bl(ec-chs.start)>bh(ec-chs.stop)) && (energy(ash) < 2.0e3)
         res=zeros(Float64,length(chs))
         for y in chs.start:ec-1
             res[y-chs.start+1]=bl(y-chs.start)
