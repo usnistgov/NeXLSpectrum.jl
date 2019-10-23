@@ -260,7 +260,9 @@ Base.get(spec::Spectrum, sym::Symbol, def) = get(spec.properties,sym,def)
 
 Base.getindex(spec::Spectrum,sym::Symbol) = spec.properties[sym]
 
-Base.getindex(spec::Spectrum,idx) = spec.counts[idx]
+Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
+
+Base.get(spec::Spectrum, idx::Int, def=0) = get(spec.counts, idx, def)
 
 Base.setindex!(spec::Spectrum, val, sym::Symbol) =
     spec.properties[sym] = val
