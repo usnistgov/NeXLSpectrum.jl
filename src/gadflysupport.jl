@@ -13,32 +13,12 @@ const NeXLPalette = ( # This palette - https://flatuicolors.com/palette/nl
 	RGB(18/255, 203/255, 196/255), RGB(196/255, 229/255, 56/255),
 	RGB(253/255, 167/255, 223/255), RGB(237/255, 76/255, 103/255) )
 
-function charLayer(spec, cxrs::AbstractArray{CharXRay})
-    d=Dict{Any,Array{CharXRay}}()
-    for cxr in cxrs
-        d[(element(cxr),family(cxr))] = push!(get(d, (element(cxr), family(cxr)), []), cxr)
-    end
-    x, y = [], []
-    for cs in values(d)
-        br=brightest(cs)
-        ch = channel(energy(br), spec)
-        if (ch>=1) && (ch<length(spec))
-            ich = spec[ch]
-            for c in cs
-                push!(x, energy(c))
-                push!(y, ich*weight(c))
-            end
-        end
-    end
-    return layer(x=x, y=y, Geom.hair, Geom.point, Theme(default_color="gray" ))
-end
-
 """
     Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing)::Plot
 
 Plot a Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
 """
-Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing, norm=:None, lld=100.0)::Plot
+Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing, norm=:None, lld=100.0)::Plot =
 	plot([spec], klms=klms, xmin=xmin, xmax=xmax, norm=norm, lld=lld)
 
 """
@@ -64,7 +44,7 @@ function Gadfly.plot(specs::AbstractVector{Spectrum}; klms=[], xmin=0.0, xmax=no
 	    for cxr in cxrs
 	        d[(element(cxr),family(cxr))] = push!(get(d, (element(cxr), family(cxr)), []), cxr)
 	    end
-	    x, y = [], []
+	    x, y, label = [], [], []
 	    for cs in values(d)
 	        br=brightest(cs)
 			ich = maximum(get(spec,channel(energy(br), spec)) for spec in specs)
@@ -72,10 +52,11 @@ function Gadfly.plot(specs::AbstractVector{Spectrum}; klms=[], xmin=0.0, xmax=no
 	            for c in cs
 	                push!(x, energy(c))
 	                push!(y, ich*weight(c))
+					push!(label, weight(c) > 0.1 ? "$(element(c).symbol)" : "")
 	            end
 	        end
 	    end
-	    return layer(x=x, y=y, Geom.hair, Geom.point, Theme(default_color="gray" ))
+	    return layer(x=x, y=y, label=label, Geom.hair, Geom.point, Geom.label, Theme(default_color="gray" ))
 	end
 	ylbl = "Counts"
 	if norm==:Dose
@@ -96,8 +77,8 @@ function Gadfly.plot(specs::AbstractVector{Spectrum}; klms=[], xmin=0.0, xmax=no
 		mchs = max(chs.start, channel(lld,spec)):chs.stop  # Ignore zero strobe...
         maxI = maximum( [ maxI, maximum(spec.counts[mchs]) ] )
         maxE = maximum( [ maxE, mE ] )
-		clr = NeXLPalette[(i-1) % length(NeXLPalette)+1]
-		push!(names, name(spec))
+		clr = NeXLSpectrum.NeXLPalette[(i-1) % length(NeXLSpectrum.NeXLPalette)+1]
+		push!(names, spec[:Name])
 		push!(colors, clr)
         push!(layers, layer(x=energyscale(spec)[chs], y=spec.counts[chs], Geom.step, Theme(default_color=clr)))
     end
