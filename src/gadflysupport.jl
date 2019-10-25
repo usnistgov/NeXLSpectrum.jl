@@ -85,7 +85,7 @@ function Gadfly.plot(
     names, layers, colors=[], [],[]
     for (i, spec) in enumerate(specs)
 		mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec),spec)) : xmax
-        chs = max(1,channel(xmin,spec)):channel(mE,spec) :
+        chs = max(1,channel(xmin,spec)):channel(mE,spec)
 		mchs = max(chs.start, channel(dlld(spec),spec)):chs.stop  # Ignore zero strobe...
         maxI = maximum( [ maxI, maximum(spec.counts[mchs]) ] )
         maxE = maximum( [ maxE, mE ] )
