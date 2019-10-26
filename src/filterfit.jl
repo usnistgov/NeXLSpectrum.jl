@@ -204,7 +204,7 @@ function Base.filter(
 )::FilteredReference
     back = spec[roi] - modelBackground(spec, roi)
     f = filterImpl(spec, roi, filt, tol)
-    return FilteredReference(ReferenceLabel(spec, roi), scale, roi, f..., back)
+    return FilteredReference(SpectrumLabel(spec, roi), scale, roi, f..., back)
 end
 
 
@@ -239,9 +239,10 @@ function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filt::AbstractMat
     filtered = filt * data
     roi = 1:findlast(f -> f ≠ 0.0, filtered)
     # max(d,1.0) is necessary to ensure the variances are positive
-    diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
-    # diag = Diagonal(map(d -> max(d, 1.0), data[roi]))
-    covar = filt[roi,roi] * diag * transpose(filt[roi,roi])
+    # diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
+    diag = Diagonal(map(d -> max(d, 1.0), data[roi]))
+    froi = filt[roi,roi]
+    covar = froi * diag * transpose(froi)
     @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in filter(...)::FilterUnknown."
     checkcovariance!(covar)
     return FilteredUnknownG(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
@@ -365,14 +366,14 @@ Generalized least squares (my implementation)
 """
 function fitcontiguousg(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
-    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
-        A[:, i] = extract(ffs[i], chs)
+        x[:, i] = extract(ffs[i], chs)
     end
     # Build labels and scale
-    xlbls = collect(ff.identifier for ff in ffs)
+    lbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
-    return scale * glssvd(extract(unk, chs), A, covariance(unk, chs), xlbls)
+    return scale * glssvd(extract(unk, chs), x, covariance(unk, chs), lbls)
 end
 
 """
@@ -380,14 +381,14 @@ Generalized least squares (pseudo-inverse)
 """
 function fitcontiguousp(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
-    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
-        A[:, i] = extract(ffs[i], chs)
+        x[:, i] = extract(ffs[i], chs)
     end
     # Build labels and scale
-    xlbls = collect(ff.identifier for ff in ffs)
+    lbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
-    return scale * glspinv(extract(unk, chs), A, covariance(unk, chs), xlbls)
+    return scale * glspinv(extract(unk, chs), x, covariance(unk, chs), lbls)
 end
 
 """
@@ -395,14 +396,29 @@ Weighted least squares using the diagonal from the FilteredUnknownG covariance.
 """
 function fitcontiguousw(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
-    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
-        A[:, i] = extract(ffs[i], chs)
+        x[:, i] = extract(ffs[i], chs)
     end
     # Build labels and scale
-    xlbls = collect(ff.identifier for ff in ffs)
+    lbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
-    return scale * wlssvd(extract(unk, chs), A, diag(covariance(unk, chs)), xlbls)
+    return scale * glspinv(extract(unk, chs), x, Diagonal(diag(covariance(unk, chs))), lbls)
+end
+
+"""
+Weighted least squares using the diagonal from the FilteredUnknownG covariance.
+"""
+function fitcontiguousw2(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+    # Build the fitting matrix
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    for i in eachindex(ffs)
+        x[:, i] = extract(ffs[i], chs)
+    end
+    # Build labels and scale
+    lbls = collect(ff.identifier for ff in ffs)
+    scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
+    return scale * wlssvd(extract(unk, chs), x, diag(covariance(unk, chs)), lbls)
 end
 
 """
@@ -410,14 +426,15 @@ Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
-    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
-        A[:, i] = extract(ffs[i], chs)
+        x[:, i] = extract(ffs[i], chs)
     end
     # Build labels and scale
-    xlbls = collect(ff.identifier for ff in ffs)
+    lbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
-    return scale * wlssvd(extract(unk, chs), A, covariance(unk, chs), xlbls)
+    # return scale * wlssvd(extract(unk, chs), A, covariance(unk, chs), xlbls)
+    return scale * wlspinv(extract(unk, chs), x, covariance(unk, chs), lbls)
 end
 
 """
@@ -425,14 +442,15 @@ Ordinary least squares for either FilteredUnknown[G|W]
 """
 function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     # Build the fitting matrix
-    A = Matrix{Float64}(undef, (length(chs), length(ffs)))
+    x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
-        A[:, i] = extract(ffs[i], chs)
+        x[:, i] = extract(ffs[i], chs)
     end
     # Build labels and scale
-    xlbls = collect(ff.identifier for ff in ffs)
+    lbls = collect(ff.identifier for ff in ffs)
     scale = Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
-    return scale * olssvd(extract(unk, chs), A, 1.0, xlbls)
+    # return scale * olssvd(extract(unk, chs), A, 1.0, xlbls)
+    return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end
 
 struct FilterFitResult
