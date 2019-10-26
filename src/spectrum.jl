@@ -174,7 +174,7 @@ Read an ISO/EMSA format spectrum from a disk file at the specified path.
 """
 function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
     open(filename,"r") do f
-        energy, counts = LinearEnergyScale(0.0,10.0), Float64[]
+        energy, counts = LinearEnergyScale(0.0,10.0), Int[]
         props = Dict{Symbol,Any}()
         props[:Filename]=filename
         inData, lx = 0, 0
@@ -196,7 +196,7 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                     for cc in split(line, ",")
                         num = match(r"[-+]?[0-9]*\.?[0-9]+", cc)
                         if num ≠ nothing
-                            append!(counts, floor(Int, parse(Float64, num.match)))
+                            append!(counts, round(Int, parse(Float64, num.match), RoundNearestTiesAway))
                         end
                         inData=inData+1
                     end
@@ -254,17 +254,17 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
     end
 end
 
-setproperty!(spec::Spectrum, sym::Symbol, val) = setindex!(props,sym,val)
+setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
 
-Base.get(spec::Spectrum, sym::Symbol, def) = get(spec.properties,sym,def)
+Base.get(spec::Spectrum, sym::Symbol, def::Any=missing) = get(spec.properties, sym, def)
 
-Base.getindex(spec::Spectrum,sym::Symbol) = spec.properties[sym]
+Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
 
 Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
 
-Base.get(spec::Spectrum, idx::Int, def=0) = get(spec.counts, idx, def)
+Base.get(spec::Spectrum, idx::Int, def=convert(typeof(spec.counts[1]), 0)) = get(spec.counts, idx, def)
 
-Base.setindex!(spec::Spectrum, val, sym::Symbol) =
+Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) =
     spec.properties[sym] = val
 
 Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
@@ -272,9 +272,18 @@ Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
 
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
-elements(spec::Spectrum) =
-	haskey(spec, :Elements) ? get(spec, :Elements) :
-		(haskey(spec, :Composition) ? collect(keys(spec[:Composition])) : missing)
+"""
+    elements(spec::Spectrum, withcoating = false, def=missing)
+
+Returns a list of the elements associated with this spectrum. <code>withcoating</code> determines whether the coating
+elements are also added.
+"""
+function elements(spec::Spectrum, withcoating=false, def=missing)
+	res = haskey(spec, :Elements) ? spec[:Elements] :
+		(haskey(spec, :Composition) ? collect(keys(spec[:Composition])) : [])
+	append!(res, withcoating && haskey(spec, :Coating) ? keys(material(spec[:Coating])) : [])
+	return length(res) == 0 ? def : res
+end
 
 """
     dose(spec::Spectrum, def=missing)
@@ -291,7 +300,9 @@ end
 
 The length of a spectrum is the number of channels.
 """
-Base.length(spec::Spectrum) = size(spec.counts)[1]
+Base.length(spec::Spectrum) = length(spec.counts)
+
+Base.eachindex(spec::Spectrum) = 1:length(spec.counts)
 
 """
     NeXLCore.energy(ch::Int, spec::Spectrum)
@@ -299,6 +310,13 @@ Base.length(spec::Spectrum) = size(spec.counts)[1]
 The energy of the start of the ch-th channel.
 """
 NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
+
+"""
+    width(ch::Int, spec::Spectrum)::Float64
+
+Returns the width of the <code>ch</code> channel
+"""
+width(ch::Int,spec::Spectrum) = energy(ch+1,spec) - energy(ch,spec)
 
 """
     channel(eV::Float64, spec::Spectrum)
@@ -321,6 +339,38 @@ Creates a copy of the spectrum counts data as the specified Number type.
 """
 counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}) where {T<:Real} =
     map(n->convert(numType,n), spec.counts[channels])
+
+
+"""
+    normalizeDoseWidth(spec::Spectrum)::Vector{Float64}
+
+Normalize the channel intensities to counts/(nA⋅s⋅eV).  Good for comparing spectra collected at different detector
+channel widths.
+"""
+function normalizeDoseWidth(spec::Spectrum, defDose=missing)::Vector{Float64}
+	ds=dose(spec, defDose)
+	if ismissing(ds)
+		error("The required spectrum dose in not available in normalizeDoseWidth(spec).")
+	end
+	return map(ch->convert(Float64,spec.counts[ch])/(ds*width(ch,spec)), eachindex(spec.counts))
+end
+
+"""
+	findmax(spec::Spectrum, chs::UnitRange{Int})
+
+Returns the (maximum intensity, channel index) over the specified range of channels
+"""
+function Base.findmax(spec::Spectrum, chs::UnitRange{Int})
+	max=findmax(spec.counts[chs])
+	return (max[1]+chs.start-1, max[2])
+end
+
+"""
+	findmax(spec::Spectrum)
+
+Returns the (maximum intensity, channel index) over all channels
+"""
+Base.findmax(spec::Spectrum) = findmax(spec.counts)
 
 """
    integrate(spec, channels)

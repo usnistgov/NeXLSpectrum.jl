@@ -18,16 +18,29 @@ const NeXLPalette = ( # This palette - https://flatuicolors.com/palette/nl
 
 Plot a Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
 """
-Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing, norm=:None, lld=missing, yscale=1.05, ytransform=identity)::Plot =
-	plot([spec], klms=klms, xmin=xmin, xmax=xmax, norm=norm, lld=lld, yscale=yscale, ytransform=identity)
+Gadfly.plot(spec::Spectrum; klms=[], edges=[], autoklms=false, xmin=0.0, xmax=missing, norm=:None, lld=missing, yscale=1.05, ytransform=identity)::Plot =
+	plot([spec], klms=klms, edges=edges, autoklms=autoklms, xmin=xmin, xmax=xmax, norm=norm, lld=lld, yscale=yscale, ytransform=identity)
 
 """
-    plot(specs::Vector{Spectrum}; klms=[], xmin=0.0, xmax=nothing, norm=:None)
+    plot(
+	    specs::AbstractVector{Spectrum};
+	    klms=[],
+	    edges=[],
+	    autoklms = false,
+	    xmin=0.0,
+	    xmax=missing,
+	    norm=:None,
+	    lld=missing,
+	    yscale=1.05,
+	    ytransform = identity
+    )::Plot
 
 Plot a multiple spectra on a single plot using Gadfly.
 
-    norm = :None|:Sum|:Dose|:Peak
+    norm = :None|:Sum|:Dose|:Peak|:DoseWidth
 	klms = [ Element &| CharXRay ]
+	edges = [ Element &| AtomicShell ]
+	autoklms = false # Add KLMs based on elements in spectra
 	lld = missing # missing defaults to 100.0  eV (low level discriminator for peak and intensity scaling)
 	xmin = 0.0 # Min energy (eV)
 	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
@@ -37,6 +50,8 @@ Plot a multiple spectra on a single plot using Gadfly.
 function Gadfly.plot(
 	specs::AbstractVector{Spectrum};
 	klms=[],
+	edges=[],
+	autoklms = false,
 	xmin=0.0,
 	xmax=missing,
 	norm=:None,
@@ -44,14 +59,19 @@ function Gadfly.plot(
 	yscale=1.05,
 	ytransform = identity
 )::Plot
-	dlld(spec) = ismissing(lld) ? (haskey(spec,:Detector) ? lld(spec[:Detector]) : 100.0) : lld
-	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0)::AbstractVector{Spectrum} =
-		collect( Spectrum(sp.energy, (def/dose(sp))*sp.counts, copy(sp.properties)) for sp in specs)
-	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6)::AbstractVector{Spectrum} =
-		collect( Spectrum(sp.energy, (total/sum(sp.counts[channel(dlld(sp),sp):end])) * sp.counts, copy(sp.properties)) for sp in specs)
-	normalizePeak(specs::AbstractVector{Spectrum}, height=100.0)::AbstractVector{Spectrum} =
-		collect( Spectrum(sp.energy, (height/maximum(sp.counts[channel(dlld(sp),sp):end])) * sp.counts, copy(sp.properties)) for sp in specs)
-	function klmLayer(specs, cxrs::AbstractArray{CharXRay})
+	dlld(spec) = channel(ismissing(lld) ? (haskey(spec,:Detector) ? lld(spec[:Detector]) : 100.0) : lld, spec)
+	# The normalize functions return a Vector{Vector{Float64}}
+	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
+		normalizeDoseWidth.(specs)
+	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0) =
+		collect( (def/dose(sp))*counts(sp, Float64) for sp in specs)
+	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6) =
+		collect( (total/integrate(sp,dlld(sp):length(sp))) * counts(sp, Float64) for sp in specs)
+	normalizePeak(specs::AbstractVector{Spectrum}, height=100.0) =
+		collect( (height/findmax(sp, dlld(sp):length(sp))[1]) * counts(sp, Float64) for sp in specs)
+	normalizeNone(specs::AbstractVector{Spectrum}) =
+		collect( counts(sp, Float64) for sp in specs)
+	function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
 	    d=Dict{Any,Array{CharXRay}}()
 	    for cxr in cxrs
 	        d[(element(cxr),family(cxr))] = push!(get(d, (element(cxr), family(cxr)), []), cxr)
@@ -59,7 +79,7 @@ function Gadfly.plot(
 	    x, y, label = [], [], []
 	    for cs in values(d)
 	        br=brightest(cs)
-			ich = maximum(get(spec,channel(energy(br), spec)) for spec in specs)
+			ich = maximum(specdata[i][channel(energy(br), spec)] for (i,spec) in enumerate(specs))
 	        if ich > 0
 	            for c in cs
 	                push!(x, energy(c))
@@ -68,43 +88,77 @@ function Gadfly.plot(
 	            end
 	        end
 	    end
-	    return layer(x=x, y=y, label=label, Geom.hair, Geom.point, Geom.label, Theme(default_color="gray" ))
+	    return layer(x=x, y=y, label=label, Geom.hair, Geom.point, Geom.label(position=:above), Theme(default_color="gray" ))
 	end
-	ylbl = "Counts"
+	function edgeLayer(maxI, ashs::AbstractArray{AtomicShell})
+		maxCapacity(ashs) = largest
+	    d=Dict{Any,Array{AtomicShell}}()
+	    for ash in ashs
+	        d[(element(ash),family(ash))] = push!(get(d, (element(ash), family(ash)), []), ash)
+	    end
+	    x, y, label = [], [], []
+	    for ass in values(d)
+	        br=ass[findmax(capacity.(ass))[2]]
+            for ash in ass
+                push!(x, energy(ash))
+                push!(y, ytransform(maxI*capacity(ash)/capacity(br)))
+                push!(label, "$(ash)")
+            end
+	    end
+	    return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:right), Theme(default_color="lightgray" ))
+	end
 	if norm==:Dose
-		specs=normalizeDose(specs)
+		specdata=normalizeDose(specs)
 		ylbl = "Counts/(nA⋅s)"
 	elseif norm==:Sum
-		specs=normalizeSum(specs)
+		specdata=normalizeSum(specs)
 		ylbl = "Normalized (Σ=10⁶)"
 	elseif norm==:Peak
-		specs=normalizePeak(specs)
+		specdata=normalizePeak(specs)
 		ylbl = "Peak (%)"
+	elseif norm==:DoseWidth
+		specdata=normalizeDoseWidth(specs)
+		ylbl = "Counts/(nA⋅s⋅eV)"
+	else
+		specdata=normalizeNone(specs)
+		ylbl = "Counts"
 	end
     maxI, maxE = 16, 1.0e3
     names, layers, colors=[], [],[]
     for (i, spec) in enumerate(specs)
-		mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec),spec)) : xmax
+		mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : xmax
         chs = max(1,channel(xmin,spec)):channel(mE,spec)
-		mchs = max(chs.start, channel(dlld(spec),spec)):chs.stop  # Ignore zero strobe...
-        maxI = maximum( [ maxI, maximum(spec.counts[mchs]) ] )
-        maxE = maximum( [ maxE, mE ] )
+		mchs = max(chs.start, dlld(spec)):chs.stop  # Ignore zero strobe...
+        maxI = max(maxI, maximum(specdata[i][mchs]))
+        maxE = max(maxE, mE)
 		clr = NeXLSpectrum.NeXLPalette[(i-1) % length(NeXLSpectrum.NeXLPalette)+1]
 		push!(names, spec[:Name])
 		push!(colors, clr)
-        push!(layers, layer(x=energyscale(spec)[chs], y=ytransform.(spec.counts[chs]), Geom.step, Theme(default_color=clr)))
+        push!(layers, layer(x=energyscale(spec)[chs], y=ytransform.(specdata[i][chs]), Geom.step, Theme(default_color=clr)))
     end
-	tr(elm::Element) = characteristic(elm,alltransitions,1.0e-3,xmax)
-    tr(cxr::CharXRay) = [ cxr ]
-    pklms = mapreduce(klm->tr(klm),append!,klms)
-	if length(pklms)>0
-		push!(layers, klmLayer(specs,pklms))
+	maxE = ismissing(xmax) ? maxE : xmax
+	append!(klms, autoklms ? mapreduce(s->NeXLSpectrum.elements(s, true, []), append!, specs) : [])
+	if length(klms)>0
+		tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE)
+	    tr(cxr::CharXRay) = [ cxr ]
+	    pklms = mapreduce(klm->tr(klm),append!,klms)
+		if length(pklms)>0
+			push!(layers, klmLayer(specdata,pklms))
+		end
+	end
+	if length(edges)>0
+		shs(elm::Element) = atomicshells(elm, maxE)
+		shs(ash::AtomicShell) = [ ash ]
+		pedges = mapreduce(ash->shs(ash), append!, edges)
+		if length(pedges)>0
+			push!(layers, edgeLayer(0.5*maxI,pedges))
+		end
 	end
     plot(layers...,
         Guide.XLabel("Energy (eV)"), Guide.YLabel(ylbl),
         Scale.x_continuous(format=:plain), Scale.y_continuous(format=:plain),
 		Guide.manual_color_key(length(specs)>1 ? "Spectra" : "Spectrum", names, colors),
-        Coord.Cartesian(ymin=0, ymax=ytransform(yscale*maxI), xmin=xmin, xmax=ismissing(xmax) ? maxE : xmax))
+        Coord.Cartesian(ymin=0, ymax=ytransform(yscale*maxI), xmin=xmin, xmax=maxE))
 end
 
 """
