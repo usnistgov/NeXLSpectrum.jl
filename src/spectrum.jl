@@ -347,7 +347,7 @@ counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}) where {T<:Rea
 Normalize the channel intensities to counts/(nA⋅s⋅eV).  Good for comparing spectra collected at different detector
 channel widths.
 """
-function normalizeDoseWidth(spec::Spectrum, defDose=missing)::Vector{Float64}
+function normalizedosewidth(spec::Spectrum, defDose=missing)::Vector{Float64}
 	ds=dose(spec, defDose)
 	if ismissing(ds)
 		error("The required spectrum dose in not available in normalizeDoseWidth(spec).")

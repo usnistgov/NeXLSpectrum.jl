@@ -62,7 +62,7 @@ function Gadfly.plot(
 	dlld(spec) = channel(ismissing(lld) ? (haskey(spec,:Detector) ? lld(spec[:Detector]) : 100.0) : lld, spec)
 	# The normalize functions return a Vector{Vector{Float64}}
 	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
-		normalizeDoseWidth.(specs)
+		normalizedosewidth.(specs)
 	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0) =
 		collect( (def/dose(sp))*counts(sp, Float64) for sp in specs)
 	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6) =
