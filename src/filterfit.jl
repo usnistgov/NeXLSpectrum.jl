@@ -162,7 +162,7 @@ end
       spec::Spectrum,
       roi::UnitRange{Int},
       filter::AbstractMatrix{Float64},
-      ashell::AtomicShell,
+      ashell::AtomicSubShell,
       scale = 1.0,
       tol = 1.0e-6
     )::FilteredReference
@@ -174,7 +174,7 @@ function Base.filter(
     spec::Spectrum,
     roi::UnitRange{Int},
     filt::AbstractMatrix{Float64},
-    ashell::AtomicShell,
+    ashell::AtomicSubShell,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6
 )::FilteredReference

@@ -58,7 +58,7 @@ function Base.show(io::IO, spec::Spectrum)
     step = maxCh ÷ cols
     max = maximum(spec.counts)
     maxes = fill(0.0,cols)
-    for i in 1:cols
+	for i in 1:cols
         maxes[i] = rows*(maximum(spec.counts[(i-1)*step+1:i*step])/max)
     end
     for r in 1:rows
@@ -130,7 +130,7 @@ function parsecoating(value::AbstractString)::Union{Film,Missing}
 			mat = parse2stdcmp(Material, value[i+7:end])
 			return Film(mat,thickness)
 		catch err
-			warn("Error parsing $(value) as a coating $(value)")
+			@warn "Error parsing $(value) as a coating $(value)"
 		end
 	end
     return missing
@@ -262,6 +262,10 @@ Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
 
 Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
 
+Base.getindex(spec::Spectrum, sr::StepRange{Int64,Int64}) = spec.counts[sr]
+
+Base.getindex(spec::Spectrum, ur::UnitRange{Int64}) = spec.counts[ur]
+
 Base.get(spec::Spectrum, idx::Int, def=convert(typeof(spec.counts[1]), 0)) = get(spec.counts, idx, def)
 
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) =
@@ -269,6 +273,12 @@ Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) =
 
 Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
     spec.counts[idx] = convert(typeof(spec.counts[1]), val)
+
+Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) =
+    spec.counts[ur] = vals
+
+Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) =
+    spec.counts[sr] = vals
 
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
@@ -476,11 +486,11 @@ function estimateBackground(data::AbstractArray{Float64}, channel::Int, width::I
 end
 
 """
-    modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
+    modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
 
 spec: A spectrum containing a peak centered on chs
 chs:  A range of channels containing a peak
-ash:  The edge (as an AtomicShell)
+ash:  The edge (as an AtomicSubShell)
 
 A simple model for modeling the background under a characteristic x-ray peak. The model
 fits a line to low and high energy background regions around chs.start and chs.end. If
@@ -489,7 +499,7 @@ at the same energy, then a negative going edge is fit between the two. Otherwise
 is fit between the low energy side and the high energy side. This model only works when
 there are no peak interference over the range chs.
 """
-function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)
+function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
     bl=estimateBackground(counts(spec),chs.start,5)
     bh=estimateBackground(counts(spec),chs.stop,5)
     ec = channel(energy(ash),spec)
@@ -534,13 +544,13 @@ end
 
 Extract the characteristic intensity for the peak located within chs with an edge at ash.
 """
-function extractcharacteristic(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Vector{Float64}
+function extractcharacteristic(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Vector{Float64}
     return counts(spec,chs,Float64)-modelBackground(spec,chs,ash)
 end
 
 
 """
-    peak(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+    peak(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
 
 Estimates the peak intensity for the characteristic X-ray in the specified range of channels.
 """
@@ -548,7 +558,7 @@ peak(spec::Spectrum, chs::UnitRange{Int})::Float64 =
     return sum(counts(spec,chs,Float64))- back(spec,chs)
 
 """
-    back(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+    back(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
 
 Estimates the background intensity for the characteristic X-ray in the specified range of channels.
 """
@@ -556,12 +566,12 @@ back(spec::Spectrum, chs::UnitRange{Int})::Float64 = sum(modelBackground(spec,ch
 
 
 """
-    peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+    peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
 
 Estimates the peak-to-background ratio for the characteristic X-ray intensity in the specified range of channels
-which encompass the specified AtomicShell.
+which encompass the specified AtomicSubShell.
 """
-function peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicShell)::Float64
+function peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
     back = sum(modelBackground(spec,chs,ash))
     return (sum(counts(spec,chs,Float64))-back)/back
 end

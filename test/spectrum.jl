@@ -27,7 +27,7 @@ using NeXLCore
 
     @testset "Spectrum" begin
         s1 = Spectrum(LinearEnergyScale(0.0,10.0),collect(1:2048),
-            Dict{Symbol,Any}([(:BeamEnergy, 20.0), (:LiveTime,60.0)]))
+            Dict{Symbol,Any}([(:BeamEnergy, 20.0e3), (:LiveTime,60.0)]))
 
         @test s1[:LiveTime]==60.0
         @test s1[100]==100

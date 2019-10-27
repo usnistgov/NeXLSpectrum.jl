@@ -39,7 +39,7 @@ Plot a multiple spectra on a single plot using Gadfly.
 
     norm = :None|:Sum|:Dose|:Peak|:DoseWidth
 	klms = [ Element &| CharXRay ]
-	edges = [ Element &| AtomicShell ]
+	edges = [ Element &| AtomicSubShell ]
 	autoklms = false # Add KLMs based on elements in spectra
 	lld = missing # missing defaults to 100.0  eV (low level discriminator for peak and intensity scaling)
 	xmin = 0.0 # Min energy (eV)
@@ -74,7 +74,7 @@ function Gadfly.plot(
 	function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
 	    d=Dict{Any,Array{CharXRay}}()
 	    for cxr in cxrs
-	        d[(element(cxr),family(cxr))] = push!(get(d, (element(cxr), family(cxr)), []), cxr)
+	        d[(element(cxr),shell(cxr))] = push!(get(d, (element(cxr), shell(cxr)), []), cxr)
 	    end
 	    x, y, label = [], [], []
 	    for cs in values(d)
@@ -90,11 +90,11 @@ function Gadfly.plot(
 	    end
 	    return layer(x=x, y=y, label=label, Geom.hair, Geom.point, Geom.label(position=:above), Theme(default_color="gray" ))
 	end
-	function edgeLayer(maxI, ashs::AbstractArray{AtomicShell})
+	function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
 		maxCapacity(ashs) = largest
-	    d=Dict{Any,Array{AtomicShell}}()
+	    d=Dict{Any,Array{AtomicSubShell}}()
 	    for ash in ashs
-	        d[(element(ash),family(ash))] = push!(get(d, (element(ash), family(ash)), []), ash)
+	        d[(element(ash),shell(ash))] = push!(get(d, (element(ash), shell(ash)), []), ash)
 	    end
 	    x, y, label = [], [], []
 	    for ass in values(d)
@@ -147,8 +147,8 @@ function Gadfly.plot(
 		end
 	end
 	if length(edges)>0
-		shs(elm::Element) = atomicshells(elm, maxE)
-		shs(ash::AtomicShell) = [ ash ]
+		shs(elm::Element) = atomicsubshells(elm, maxE)
+		shs(ash::AtomicSubShell) = [ ash ]
 		pedges = mapreduce(ash->shs(ash), append!, edges)
 		if length(pedges)>0
 			push!(layers, edgeLayer(0.5*maxI,pedges))
