@@ -10,10 +10,10 @@ version = "0.3.1"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryProvider]]
-deps = ["Libdl", "Logging", "SHA"]
-git-tree-sha1 = "c7361ce8a2129f20b0e05a89f7070820cfed6648"
+deps = ["Libdl", "SHA"]
+git-tree-sha1 = "29995a7b317bbd06be147e1974a3541ce2502dca"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.6"
+version = "0.5.7"
 
 [[BoteSalvatICX]]
 deps = ["Requires"]
@@ -23,11 +23,17 @@ repo-url = "https://github.com/USNISTGOV/BoteSalvatICX.jl"
 uuid = "fe54227b-96c7-489b-9963-dd1ce2905f30"
 version = "0.0.1"
 
+[[CSTParser]]
+deps = ["Tokenize"]
+git-tree-sha1 = "99dda94f5af21a4565dc2b97edf6a95485f116c3"
+uuid = "00ebfdb7-1f24-5e51-bd34-a7502290713f"
+version = "1.0.0"
+
 [[CSV]]
-deps = ["CategoricalArrays", "DataFrames", "Dates", "Mmap", "Parsers", "PooledArrays", "Profile", "Tables", "Unicode", "WeakRefStrings"]
-git-tree-sha1 = "5e7c67bc2873b347cd20ee742c93d243f3df9e93"
+deps = ["CategoricalArrays", "DataFrames", "Dates", "FilePathsBase", "LazyArrays", "Mmap", "Parsers", "PooledArrays", "Profile", "Tables", "Unicode", "WeakRefStrings"]
+git-tree-sha1 = "0c3201d16c65a1453be158189d48df7c357eb7fb"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.5.13"
+version = "0.5.14"
 
 [[CategoricalArrays]]
 deps = ["Compat", "DataAPI", "Future", "JSON", "Missings", "Printf", "Reexport", "Unicode"]
@@ -72,9 +78,9 @@ version = "0.19.4"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "f94423c68f2e47db0d6f626a26d4872266e0ec3d"
+git-tree-sha1 = "1fe8fad5fc84686dcbc674aa255bc867a64f8132"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.17.2"
+version = "0.17.5"
 
 [[DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -100,6 +106,18 @@ repo-rev = "master"
 repo-url = "https://github.com/USNISTGOV/FFAST.jl"
 uuid = "10506e09-08cd-5f0b-aee5-631de1bcc925"
 version = "0.0.2"
+
+[[FilePathsBase]]
+deps = ["Dates", "LinearAlgebra", "Printf", "Test", "UUIDs"]
+git-tree-sha1 = "2ee1d999c462425e2f848524f732ed51bc1ab63a"
+uuid = "48062228-2e41-5def-b9a4-89aafe57970f"
+version = "0.6.2"
+
+[[FillArrays]]
+deps = ["LinearAlgebra", "Random", "SparseArrays"]
+git-tree-sha1 = "de38b0253ade98340fabaf220f368f6144541938"
+uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
+version = "0.7.4"
 
 [[FixedPointNumbers]]
 git-tree-sha1 = "d14a6fa5890ea3a7e5dcab6811114f132fec2b4b"
@@ -131,6 +149,12 @@ git-tree-sha1 = "b34d7cef7b337321e97d22242c3c2b91f476748e"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 version = "0.21.0"
 
+[[LazyArrays]]
+deps = ["FillArrays", "LinearAlgebra", "MacroTools", "StaticArrays"]
+git-tree-sha1 = "01ec151cd0418fb05294b0230471765e0a65adb1"
+uuid = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+version = "0.12.3"
+
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
@@ -143,6 +167,12 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[[MacroTools]]
+deps = ["CSTParser", "Compat", "DataStructures", "Test", "Tokenize"]
+git-tree-sha1 = "d6e9dedb8c92c3465575442da456aec15a89ff76"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.1"
 
 [[Markdown]]
 deps = ["Base64"]
@@ -165,15 +195,17 @@ version = "0.7.0"
 
 [[NeXLCore]]
 deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "PeriodicTable", "Printf", "Requires", "Unitful"]
-path = "C:\\Users\\nicho\\.julia\\dev\\NeXLCore"
+git-tree-sha1 = "3d06b0ce2f8b08a156b04937c18876fa7e6f1a69"
+repo-rev = "master"
+repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl.git"
 uuid = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
 version = "0.0.2"
 
 [[NeXLUncertainties]]
 deps = ["DataFrames", "LinearAlgebra", "Printf", "SparseArrays"]
-git-tree-sha1 = "e1e086888c6c3394bc4c441eb74cdae27cbdc9b2"
+git-tree-sha1 = "d6f0f14f7ce27332d27d1e8449f4d4b8335bf300"
 repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLUncertainties.jl"
+repo-url = "https://github.com/NicholasWMRitchie/NeXLUncertainties.jl.git"
 uuid = "7127f3d6-1721-46bc-bb38-8fc703dd438e"
 version = "0.0.2"
 
@@ -261,6 +293,12 @@ version = "0.3.1"
 deps = ["LinearAlgebra", "Random"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
+[[StaticArrays]]
+deps = ["LinearAlgebra", "Random", "Statistics"]
+git-tree-sha1 = "1085ffbf5fd48fdba64ef8e902ca429c4e1212d3"
+uuid = "90137ffa-7385-5640-81b9-e52037218182"
+version = "0.11.1"
+
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -292,6 +330,11 @@ deps = ["Crayons", "Printf", "Test", "Unicode"]
 git-tree-sha1 = "b80671c06f8f8bae08c55d67b5ce292c5ae2660c"
 uuid = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 version = "0.5.0"
+
+[[Tokenize]]
+git-tree-sha1 = "dfcdbbfb2d0370716c815cbd6f8a364efb6f42cf"
+uuid = "0796e94c-ce3b-5d07-9a54-7f471281c624"
+version = "0.5.6"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]
