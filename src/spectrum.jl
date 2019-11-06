@@ -13,7 +13,8 @@ end;
 A structure to hold spectrum data (energy scale, counts and metadata).
 Metadata is identified by a symbol. Predefined symbols include
     :BeamEnergy    # In eV
-    :Elevation     # In degrees
+	:Elevation     # In radians
+	:TakeOffAngle  # In radians
     :LiveTime      # In seconds
     :RealTime      # In seconds
     :ProbeCurrent  # In nano-amps
@@ -102,32 +103,12 @@ function split_emsa_header_item(line::AbstractString)
     end
 end
 
-function parsed2stdcmp(value::AbstractString)::Material
-	try
-		sp=split(value,",")
-		name=sp[1]
-		mf = Dict{Element,Float64}()
-		den = missing
-		for item in sp[2:end]
-			if item[1]=='(' && item[end]==')'
-				sp2=split(item[2:end-1],":")
-				mf[element(sp2[1])]=parse(Float64,sp2[2])
-			else
-				den = parse(Float64,item)
-			end
-		end
-		return material(name, mf, den)
-	catch err
-		warn("Error parsing composition $(value) - $(err)")
-	end
-end
-
 function parsecoating(value::AbstractString)::Union{Film,Missing}
     i=findfirst(value," nm of ")
 	if !ismissing(i)
 		try
 			thk = parse(Float64,value[1:i])*1.0e-7 // cm
-			mat = parse2stdcmp(Material, value[i+7:end])
+			mat = parsedtsa2comp(Material, value[i+7:end])
 			return Film(mat,thickness)
 		catch err
 			@warn "Error parsing $(value) as a coating $(value)"
@@ -224,7 +205,7 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                     elseif key == "OWNER"
                         props[:Owner]=value
                     elseif key == "ELEVANGLE"
-                        props[:Elevation] = parse(Float64, value)
+                        props[:TakeOffAngle] = (props[:Elevation] = deg2rad(parse(Float64, value)))
                     elseif key == "XPOSITION"
                         stgpos[:X] = parse(Float64, value)
                     elseif key == "YPOSITION"
@@ -235,7 +216,7 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
                         prev = getindex(props,:Comment,missing)
                         props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
                     elseif key== "#D2STDCMP"
-                        props[:Composition] = parsed2stdcmp(value)
+                        props[:Composition] = parsedtsa2comp(value)
                     elseif key== "#CONDCOATING"
                         props[:Coating] = parsecoating(value)
                     end
