@@ -32,7 +32,7 @@ Construct a LinearEnergyScale from the zero offset (in eV) and channel width (in
 eV/channel).
 """
     function LinearEnergyScale(off::Float64, width::Float64)
-        @assert(width>0.0,"Channel width must be greater than 0 in LinearEnergyScale.")
+        @assert width>0.0 "Channel width must be greater than 0 in LinearEnergyScale."
         return new(off,width)
     end
 end
