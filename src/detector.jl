@@ -145,9 +145,10 @@ struct MnKaResolution <: Resolution
 end
 
 """"
-    linewidth(eV::Float64, fwhm::Float64, fwhmenergy::Float64 = 5898.7)
+    resolution(eV::Float64, res::MnKaResolution)
 
-Chuck Fiori's simple function relating the FWHM at eV to the FWHM at another energy.
+The FWHM at eV for the MnKaResolution model.  Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at
+another energy.
 """
 resolution(eV::Float64, res::MnKaResolution) =
     sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka))
@@ -185,16 +186,16 @@ struct MnKaPlusICC <: Resolution
 end
 
 """"
-    linewidth(eV::Float64, fwhm::Float64, fwhmenergy::Float64 = 5898.7)
+    resolution(eV::Float64, res::MnKaPlusICC)
 
-Chuck Fiori's simple function relating the FWHM at eV to the FWHM at another energy plus
-a term to account for incomplete charge collection.
+The FWHM at eV in the MnKaPlusICC model.  Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at
+another energy plus a term to account for incomplete charge collection.
 """
 resolution(eV::Float64, res::MnKaPlusICC) =
     sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka)) + max(0.0, res.icc*(1.0-max(0.0,eV)/res.iccmax))
 
 """"
-    profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
+    profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC)
 
 Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
 with the specified resolution.
@@ -233,7 +234,7 @@ Implements:
 
     channelcount(det::Detector)::Int
     scale(det::Detector)::EnergyScale
-    resolution(eV::Float64, det::Detector)::Float64
+    resolution(eV::Float64, det::Detector)::Float64 # FWHM at eV
     energy(ch::Int, det::Detector)::Float64
     channel(eV::Float64, det::Detector)::Int
     profile(energy::Float64, xrayE::Float64, det::Detector)
@@ -445,5 +446,5 @@ low X-ray energies.
 """
 function basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
     lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
-    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), lld)
+    SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), max(1,lld))
 end

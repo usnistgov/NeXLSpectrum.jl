@@ -49,8 +49,16 @@ export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 
 include("llsq.jl")
 include("filterfit.jl")
+export TopHatFilter # Struct representing a fitting filter
+export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
+export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
+
+export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
+export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
+export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
+
 export buildfilter
-export estimateBackground
+export estimatebackground
 export extract
 export covariance
 export ascontiguous
