@@ -4,6 +4,38 @@ using LinearAlgebra
 using NeXLUncertainties
 using TimerOutputs
 
+
+"""
+    FittingFilterType
+
+Represents different fitting filter models.  A fitting filter is a linear operator that is 1) symmetric about the
+center, and 2) the sum of the elements must be zero.  The standard filter is a top-hat shape, although Gaussian,
+triangular, Savitsky-Golay and other shapes are also possible.
+"""
+abstract type FittingFilterType end
+
+"""
+    VariableWidthFilter
+
+A top-hat filter that varies in width with the FWHM of the detector.
+"""
+struct VariableWidthFilter <: FittingFilterType end # Variable width filter
+
+"""
+    ConstantWidthFilter
+
+A top-hat filter that has constant width determined by FWHM at Mn Kα for all channels.
+"""
+struct ConstantWidthFilter <: FittingFilterType end # Constant width filter
+
+"""
+    GaussianWidthFilter
+
+A Gaussian-shaped filter that varies in width with the FWHM of the detector.  The Gaussian is offset to ensure the
+sum of the filter elements is zero.
+"""
+struct GaussianWidthFilter <: FittingFilterType end # A variable width Gaussian filter
+
 """
 The TopHatFilter struct represents a zero-sum symmetric second-derivative-like filter that when applied to
 spectral data has the property of suppressing constant and slowly varying signals (like the continuum) while
@@ -30,11 +62,13 @@ implemented as element-by-element multiplies and dot products.  Thus storing the
 efficient in both memory and CPU.
 """
 struct TopHatFilter
+    filttype::Type{<:FittingFilterType}
+    detector::Detector
     offsets::Vector{Int}  # offset to start of filter in row
     filters::Vector{Vector{Float64}} # Filter data
     weights::AbstractVector{Float64} # Correlation compensation weights
 
-    function TopHatFilter(filt::AbstractMatrix{Float64}, wgts::AbstractVector{Float64})
+    function TopHatFilter(ty::Type{<:FittingFilterType}, det::Detector, filt::AbstractMatrix{Float64}, wgts::AbstractVector{Float64})
         # Extract the contiguous non-zero elements out
         dim = size(filt)[1]
         offsets = zeros(dim)
@@ -47,15 +81,12 @@ struct TopHatFilter
                 filts[r] = [ row[start:stop]... ]
             end
         end
-        return new(offsets, filts, wgts)
+        return new(ty, det, offsets, filts, wgts)
     end
 end
 
-abstract type FittingFilterType end
-
-struct VariableWidthFilter <: FittingFilterType end # Variable width, sparse filter
-struct ConstantWidthFilter <: FittingFilterType end # Constant width, sparse filter
-
+Base.show(io::IO, thf::TopHatFilter) =
+    print(io, "$(thf.filttype)[$(thf.detector)]")
 
 """
     buildfilter(det::Detector, a::Float64=1.0, b::Float64=1.0)::TopHatFilter
@@ -77,8 +108,8 @@ function buildfilter(
     a::Float64 = 1.0, # Top
     b::Float64 = 1.0  # Base
 )::TopHatFilter
-    resf(::Type{VariableWidthFilter}, ee, det) = resolution(ee, det) # FWHM at ee
-    resf(::Type{ConstantWidthFilter}, ee, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
+    resf(::Type{VariableWidthFilter}, center, det) = resolution(center, det) # FWHM at center
+    resf(::Type{ConstantWidthFilter}, center, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
     intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
     filtint(e0, e1, minb, mina, maxa, maxb) =
         intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
@@ -88,32 +119,59 @@ function buildfilter(
     cc = channelcount(det)
     filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
     for ch1 in eachindex(wgts)
-        ee = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
-        res = resf(ty, ee, det)
-        ea = ( ee - 0.5 * a * res, ee + 0.5 * a * res )
+        center = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
+        res = resf(ty, center, det)
+        ea = ( center - 0.5 * a * res, center + 0.5 * a * res )
         eb = ( ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res )
         chmin, chmax = channel(eb[1], det), channel(eb[2], det)
-        if true
-            if (chmin>=det.lld) && (chmax<=cc)
-                for ch2 in chmin:chmax
-                    filt[ch1, ch2] = filtint(energy(ch2, det), energy(ch2 + 1, det), eb[1], ea[1], ea[2], eb[2])
-                end
+        if (chmin>=1) && (chmax<=cc)
+            for i in 0:(chmax-chmin)÷2
+                filt[ch1, chmax-i] =
+                    (filt[ch1, i+chmin] = filtint(energy(i+chmin, det), energy(i+chmin + 1, det), eb[1], ea[1], ea[2], eb[2]))
             end
-        else
-            for ch2 in max(chmin, det.lld):min(chmax, cc)
-                filt[ch1, ch2] = filtint(energy(ch2, det), energy(ch2 + 1, det), eb[1], ea[1], ea[2], eb[2])
-            end
-        end
-        # Ensure the sum is zero...
-        if chmin<det.lld
-            filt[ch1,det.lld] = -sum(filt[ch1, det.lld+1:chmax])
-        else
-            filt[ch1, min(cc,chmax)] = -sum(filt[ch1,chmin:min(cc,chmax)-1])
+            filt[ch1, chmax]= (filt[ch1, chmin]-=sum(filt[ch1,chmin:min(cc,chmax)])/2.0)
+            @assert abs(sum(filt[ch1,:]))<1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert all(i->filt[ch1,i]==filt[ch1,chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
         end
         m, n = M(eb[1], ea[1]), N(ea...)
         wgts[ch1] = ((2.0*m+1.0)*(2.0*n))/(2.0*m+1.0+2.0*n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
     end
-    return TopHatFilter(filt, wgts)
+    @assert all(r->abs(sum(r))<1.0e-12, eachrow(filt)) "A filter does not sum to zero."
+    return TopHatFilter(ty, det, filt, wgts)
+end
+
+"""
+    buildfilter(::Type{GaussianWidthFilter}, det::Detector, a::Float64=1.0, b::Float64=1.0)::TopHatFilter
+
+Build a top-hat filter with Gaussian shape whose width varies with the detector's resolution as a function of X-ray
+energy for the specified detector with the specified top and base parameters.
+"""
+function buildfilter(
+    ty::Type{GaussianWidthFilter},
+    det::Detector,
+    a::Float64 = 1.0,
+    b::Float64 = 5.0 # Width
+)::TopHatFilter
+    filtint(center, ee, gw) = exp(-0.5*((ee-center)/gw)^2)
+    cc = channelcount(det)
+    filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
+    for ch1 in eachindex(wgts)
+        center = energy(ch1, det) # midpoint of channel
+        res = a * gaussianwidth(resolution(center, det))
+        ex = ( center - 0.5 * b * res, center + 0.5 * b * res )
+        chmin, chmax = channel(ex[1], det), channel(ex[2], det)
+        if (chmin>=1) && (chmax<=cc)
+            for i in 0:(chmax-chmin)÷2 # Ensure that it is symmetric
+                filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin+i, det), res))
+            end
+            # Offset the Gaussian to ensure the sum is zero.
+            filt[ch1, chmin:chmax] .-= sum(filt[ch1,chmin:chmax])/length(chmin:chmax)
+            @assert abs(sum(filt[ch1,:]))<1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert all(i->filt[ch1,i]==filt[ch1,chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
+        end
+        wgts[ch1] = 1.0
+    end
+    return TopHatFilter(ty, det, filt, wgts)
 end
 
 abstract type FilteredLabel <: Label end
@@ -191,7 +249,8 @@ function filterImpl(
     range(i) = filter.offsets[i] : filter.offsets[i] + length(filter.filters[i]) - 1
     apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
         [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
-    data = counts(spec, Float64) # Extract the spectrum data as Float64 to match the filter
+    # Extract the spectrum data as Float64 to match the filter
+    data = counts(spec, Float64, true)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
@@ -200,7 +259,11 @@ function filterImpl(
     # Compute the filtered data
     filtered = apply(filter, data)
     maxval = maximum(filtered)
-    roiff = findfirst(f -> abs(f) > tol * maxval, filtered):findlast(f -> abs(f) > tol * maxval, filtered)
+    ff = findfirst(f -> abs(f) > tol * maxval, filtered)
+    if isnothing(ff)
+        error("There doesn't appear to be any data in $(spec[:Name]))")
+    end
+    roiff = ff:findlast(f -> abs(f) > tol * maxval, filtered)
     return ( roiff, data[roiff], filtered[roiff] )
 end
 
@@ -323,7 +386,8 @@ function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filter::TopHatFil
         push!(rs, roi.stop), push!(cs, roi.stop), push!(vs, 0.0) # force the size
         return sparse(rs, cs, vs)
     end
-    data = counts(spec, Float64) # Extract the spectrum data
+    @info "Performing a generalized fit using a $filter."
+    data = counts(spec, Float64, true)
     # Compute the filtered data
     filtered = apply(filter, data)
     roi = 1:findlast(f -> f ≠ 0.0, filtered)
@@ -383,7 +447,8 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFil
         [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
     covariance(filter, data) =
         [ dot(filter.filters[r] .* data[range(r)], filter.filters[r]) for r in eachindex(data) ]
-    data = counts(spec, Float64) # Extract the spectrum data
+    @info "Performing a weighted fit using a $filter."
+    data = counts(spec, Float64, true)
     # Compute the filtered data
     filtered = apply(filter, data)
     roi = 1:findlast(f -> f ≠ 0.0, filtered)

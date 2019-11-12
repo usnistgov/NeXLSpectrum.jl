@@ -44,6 +44,8 @@ struct Spectrum
     end
 end
 
+Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
+
 channelcount(spec::Spectrum) = length(spec.counts)
 
 function Base.show(io::IO, spec::Spectrum)
@@ -117,17 +119,14 @@ function parsecoating(value::AbstractString)::Union{Film,Missing}
     return missing
 end
 
-function readEMSA(filename::AbstractString, det::Detector)::Union{Spectrum,Nothing}
-	spec = readEMSA(fieldname)
-	if !isnothing(spec)
-		if abs(channel(energy(1,det))-1)>1
-			error("Spectrum and detector calibrations don't match - Offset.")
-		end
-		test = det.channelcount/2
-		if abs(channel(energy(test,det))-test)>1
-			error("Spectrum and detector calibrations don't match - Gain.")
-		end
-		spec[:Detector] = det
+function readEMSA(filename::AbstractString, det::Detector)::Spectrum
+	spec = readEMSA(filename)
+	if abs(channel(energy(1, det),spec)-1)>1
+		error("Spectrum and detector calibrations don't match - Offset.")
+	end
+	test = det.channelcount÷2
+	if abs(channel(energy(test,det),spec)-test)>1
+		error("Spectrum and detector calibrations don't match - Gain.")
 	end
 	return spec
 end
@@ -153,7 +152,7 @@ matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
 
 Read an ISO/EMSA format spectrum from a disk file at the specified path.
 """
-function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
+function readEMSA(filename::AbstractString)::Spectrum
     open(filename,"r") do f
         energy, counts = LinearEnergyScale(0.0,10.0), Int[]
         props = Dict{Symbol,Any}()
@@ -165,10 +164,10 @@ function readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
             if (lx ≤ 2)
                 res = split_emsa_header_item(line)
                 if (res==nothing) || ((lx==1) && (res[1]!="FORMAT" || uppercase(res[2])!="EMSA/MAS SPECTRAL DATA FILE"))
-                    return nothing
+                    error("This file does not have the correct header to be an EMSA/MAS spectrum file.")
                 end
                 if (res==nothing) || ((lx==2) && (res[1]!="VERSION" || res[2]!="1.0"))
-                    return nothing
+                    error("This file is not a VERSION=1.0 EMSA/MAS spectrum file.")
                 end
             elseif inData>0
                 if startswith(line, "#ENDOFDATA")
@@ -317,19 +316,35 @@ The index of the channel containing the specified energy.
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 
 """
-    counts(spec::Spectrum, numType::Type{T})::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
 
-Creates a copy of the spectrum counts data as the specified Number type.
+Creates a copy of the spectrum counts data as the specified Number type. If the spectrum has a :Detector
+property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
+by setting all channels less-than-or-equal to det.lld to zero.
 """
-counts(spec::Spectrum, numType::Type{T}=Float64) where {T<:Number} = map(n->convert(numType,n), spec.counts)
+function counts(spec::Spectrum, numType::Type{T}=Float64, applyLLD=false) where {T<:Number}
+ 	res = map(n->convert(numType,n), spec.counts)
+	if applyLLD && haskey(spec,:Detector)
+		fill!(view(res,1:lld(spec[:Detector])),zero(numType))
+	end
+    return res
+end
+
 
 """
-    counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T})::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
 
-Creates a copy of the spectrum counts data as the specified Number type.
+Creates a copy of the spectrum counts data as the specified Number type.  If the spectrum has a :Detector
+property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
+by setting all channels less-than-or-equal to det.lld to zero.
 """
-counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}) where {T<:Real} =
-    map(n->convert(numType,n), spec.counts[channels])
+function counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false) where {T<:Real}
+	res = map(n->convert(numType,n), spec.counts[channels])
+	if applyLLD && haskey(spec, :Detector)
+		fill!(view(res,1:lld(spec[:Detector])-channels.start+1),zero(numType))
+	end
+	return res
+end
 
 
 """
@@ -443,14 +458,18 @@ Subsample the counts data in a spectrum according to a statistically valid algor
 function subsample(spec::Spectrum, frac::Float64)::Spectrum
 	@assert frac>0.0 "frac must be larger than zero."
 	@assert frac<=1.0 "frac must be less than or equal to 1.0."
-    ss(n, f) = n > 0 ? mapreduce(i -> rand() < f ? 1 : 0, + , 1:n) : 0
+	@assert haskey(spec, :LiveTime) "Please specify a :LiveTime in subsample"
+    ss(n, f) = n > 0 ? sum(rand() <= f ? 1 : 0 for _ in 1:n) : 0
     frac = max(0.0, min(frac, 1.0))
 	if frac<1.0
 	    props = deepcopy(spec.properties)
-	    props[:LiveTime]=frac*get(spec, :LiveTime, 1.0)
-	    props[:RealTime]=frac*get(spec, :RealTime, 1.0)
+	    props[:LiveTime]=frac*spec[:LiveTime] # Must have
+		if haskey(spec, :RealTime)
+	    	props[:RealTime]=frac*spec[:RealTime] # Might have
+		end
 	    return Spectrum(spec.energy, map(n -> ss(floor(Int,n), frac), spec.counts), props)
 	else
+		@warn "Not actually subsampling the spectrum because $frac > 1.0."
 		return spec
 	end
 end
