@@ -66,6 +66,7 @@ export fitcontiguousg, fitcontiguousp, fitcontiguousw, fitcontiguouso
 export filterfit
 export filteredresidual
 export FilterFitResult
+export fit
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

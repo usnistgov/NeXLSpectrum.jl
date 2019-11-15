@@ -17,6 +17,11 @@ function olssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, sigma::N, xLabels::V
     return uvs(xLabels, genInv*y, cov)
 end
 
+"""
+    olspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+
+Solves the ordinary least squares problem a⋅x = y for x using the pseudo-inverse for AbstractFloat-based types.
+"""
 function olspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, sigma::N, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     genInv = pinv(a, rtol=1.0e-6)
     return uvs(xLabels, genInv*y, sigma*genInv*transpose(genInv))
@@ -25,7 +30,7 @@ end
 """
     glspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
 
-Solves the generalized least squares problem a⋅x = y for b using the pseudo-inverse for AbstractFloat-based types.
+Solves the generalized least squares problem a⋅x = y for x using the pseudo-inverse for AbstractFloat-based types.
 """
 function glspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     xtiv=transpose(a)*pinv(v, tol)
@@ -56,7 +61,7 @@ function wlssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{
 end
 
 """
-    glssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+    wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
 
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """

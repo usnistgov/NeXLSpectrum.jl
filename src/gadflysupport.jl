@@ -1,5 +1,6 @@
 using .Gadfly
 using Colors
+using Printf
 
 const NeXLPalette = ( # This palette - https://flatuicolors.com/palette/nl
 	RGB(234/255, 32/255, 39/255), RGB(27/255, 20/255, 100/255),
@@ -18,8 +19,29 @@ const NeXLPalette = ( # This palette - https://flatuicolors.com/palette/nl
 
 Plot a Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
 """
-Gadfly.plot(spec::Spectrum; klms=[], edges=[], autoklms=false, xmin=0.0, xmax=missing, norm=:None, lld=missing, yscale=1.05, ytransform=identity)::Plot =
-	plot([spec], klms=klms, edges=edges, autoklms=autoklms, xmin=xmin, xmax=xmax, norm=norm, lld=lld, yscale=yscale, ytransform=identity)
+Gadfly.plot( #
+ 	spec::Spectrum;
+	klms=[],
+	edges=[],
+	autoklms=false,
+	xmin=0.0,
+	xmax=missing,
+	norm=:None,
+	lld=missing,
+	yscale=1.05,
+	ytransform=identity
+)::Plot =
+	plot( #
+		[spec],
+		klms=klms,
+		edges=edges,
+		autoklms=autoklms,
+		xmin=xmin,
+		xmax=xmax,
+		norm=norm,
+		lld=lld,
+		yscale=yscale,
+		ytransform=identity)
 
 """
     plot(
@@ -59,18 +81,18 @@ function Gadfly.plot(
 	yscale=1.05,
 	ytransform = identity
 )::Plot
-	dlld(spec) = channel(ismissing(lld) ? (haskey(spec,:Detector) ? lld(spec[:Detector]) : 100.0) : lld, spec)
+	dlld(spec) = channel(ismissing(lld) ? (haskey(spec,:Detector) ? energy(lld(spec[:Detector]),spec) : 100.0) : lld, spec)
 	# The normalize functions return a Vector{Vector{Float64}}
 	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
 		normalizedosewidth.(specs)
 	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0) =
-		collect( (def/dose(sp))*counts(sp, Float64) for sp in specs)
+		collect( (def/dose(sp))*counts(sp, Float64, true) for sp in specs)
 	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6) =
-		collect( (total/integrate(sp,dlld(sp):length(sp))) * counts(sp, Float64) for sp in specs)
+		collect( (total/integrate(sp,dlld(sp):length(sp))) * counts(sp, Float64, true) for sp in specs)
 	normalizePeak(specs::AbstractVector{Spectrum}, height=100.0) =
-		collect( (height/findmax(sp, dlld(sp):length(sp))[1]) * counts(sp, Float64) for sp in specs)
+		collect( (height/findmax(sp, dlld(sp):length(sp))[1]) * counts(sp, Float64, true) for sp in specs)
 	normalizeNone(specs::AbstractVector{Spectrum}) =
-		collect( counts(sp, Float64) for sp in specs)
+		collect( counts(sp, Float64, true) for sp in specs)
 	function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
 	    d=Dict{Any,Array{CharXRay}}()
 	    for cxr in cxrs
@@ -167,34 +189,24 @@ end
 Plot the fitting filter and the spectrum from which it was derived.  Vertical red
 lines represent the principle ROC.
 """
-function Gadfly.plot(fd::FilteredDatum)
-    p1=layer(x=fd.ffroi, y=fd.filtered, Geom.step, Theme(default_color=NeXLPalette[1]),
-        xintercept=[fd.roi.start, fd.roi.stop], Geom.vline(color=["firebrick","firebrick"]))
-    p2=layer(x=fd.ffroi, y=fd.data, Geom.step, Theme(default_color=NeXLPalette[2]))
-	lyrs = ( p1, p2 )
-    lbls = [ "Filtered", "Raw" ]
-	if (fd isa FilteredReference) && (!ismissing(fd.back))
-        bck = fd.data[fd.roi.start-fd.ffroi.start+1:fd.roi.stop-fd.ffroi.start+1]-fd.back
-		p3=layer(x=fd.roi, y=bck, Geom.step, Theme(default_color=NeXLPalette[3]))
-		lyrs = ( p1, p2, p3 )
-        push!(lbls, "Background")
-	end
-    plot(lyrs...,Coord.cartesian(xmin=fd.ffroi.start, xmax=fd.ffroi.stop),
-            Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title(repr(fd)),
-            Guide.manual_color_key("", lbls, NeXLPalette[1:length(lbls)]))
-end
-
-"""
-    Gadfly.plot(ffr::FilterFitResult)
-
-Plot the unknown and the residual spectrum.
-"""
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=missing)
-	if ismissing(roi)
-		roi = ffr.roi
-	end
-	p1=layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=NeXLPalette[1]))
-    p2=layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2]))
-    plot(p1,p2,Coord.cartesian(xmin=roi.start, xmax=roi.stop),
+	roilt(l1,l2) = isless(l1.roi.start,l2.roi.start)
+	xx(i) = i % 4 + (i÷4)%2
+	roi = ismissing(roi) ? ffr.roi : roi
+	layers = [ layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=NeXLPalette[1])),
+	    	layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2])) ]
+    mx, prev, i = 4.0*maximum(ffr.residual), -1000, -1
+    for lbl in sort(labels(NeXLSpectrum.kratios(ffr)),lt=roilt)
+        i = (lbl.roi.start>prev+length(roi)÷40) || (i==4) ? 0 : i + 1
+        labels = ["", name(lbl.xrays)]
+		# Plot the ROI
+		push!(layers, layer(x=[lbl.roi.start,lbl.roi.stop], y=mx*[0.5+0.1*i,0.5+0.1*i], label=labels,
+                Geom.line, Geom.point, Geom.label(position=:right), Theme(default_color="gray")))
+		# Plot the k-ratio as a label above ROI
+		push!(layers, layer(x=[0.5*(lbl.roi.start+lbl.roi.stop)],y=mx*[0.5+0.1*i],
+				label=[@sprintf("%1.4f",value(lbl,ffr))], Geom.label(position=:above), Theme(default_color="gray")))
+		prev=lbl.roi.stop
+    end
+    plot(layers..., Coord.cartesian(xmin=roi.start, xmax=roi.stop, ymin=0.0, ymax=mx),
             Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title("$(ffr.label)"))
 end

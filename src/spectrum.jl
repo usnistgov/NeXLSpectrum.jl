@@ -106,12 +106,12 @@ function split_emsa_header_item(line::AbstractString)
 end
 
 function parsecoating(value::AbstractString)::Union{Film,Missing}
-    i=findfirst(value," nm of ")
-	if !ismissing(i)
+    i=findfirst(" nm of ",value)
+	if !isnothing(i)
 		try
-			thk = parse(Float64,value[1:i])*1.0e-7 // cm
-			mat = parsedtsa2comp(Material, value[i+7:end])
-			return Film(mat,thickness)
+			thk = parse(Float64, value[1:i.start-1])*1.0e-7 # cm
+			mat = parsedtsa2comp(value[i.stop+1:end])
+			return Film(mat,thk)
 		catch err
 			@warn "Error parsing $(value) as a coating $(value)"
 		end
@@ -119,16 +119,41 @@ function parsecoating(value::AbstractString)::Union{Film,Missing}
     return missing
 end
 
-function readEMSA(filename::AbstractString, det::Detector)::Spectrum
+"""
+    apply(spec::Spectrum, det::SimpleEDS)::Spectrum
+
+Applys the specified detector to this spectrum by ensuring that the energy scales match and spec[:Detector] = det.
+Creates a copy of the original spectrum unless the detector is already det.
+"""
+
+function apply(spec::Spectrum, det::SimpleEDS)::Spectrum
+	if (haskey(spec,:Detector)) && (spec[:Detector] == det )
+		return spec
+	else
+		props = copy(spec.properties)
+		props[:Detector] = det
+		return Spectrum(det.scale, spec.counts, props)
+	end
+end
+
+"""
+    readEMSA(filename::AbstractString, det::Detector, force::Bool=false)::Spectrum
+
+Read an EMSA file and apply the specified detector.  If force is false and the detector and
+read calibration don't match then the function errors.
+"""
+function readEMSA(filename::AbstractString, det::Detector, force::Bool=false)::Spectrum
 	spec = readEMSA(filename)
-	if abs(channel(energy(1, det),spec)-1)>1
-		error("Spectrum and detector calibrations don't match - Offset.")
+	if !force
+		if abs(channel(energy(1, det),spec)-1)>1
+			error("Spectrum and detector calibrations don't match - Offset.")
+		end
+		test = det.channelcount÷2
+		if abs(channel(energy(test,det),spec)-test)>1
+			error("Spectrum and detector calibrations don't match - Gain.")
+		end
 	end
-	test = det.channelcount÷2
-	if abs(channel(energy(test,det),spec)-test)>1
-		error("Spectrum and detector calibrations don't match - Gain.")
-	end
-	return spec
+	return apply(spec, det)
 end
 
 """
@@ -427,7 +452,7 @@ Total integral of all counts from the LLD to the beam energy
 """
 function integrate(spec::Spectrum)
 	det = get(spec, :Detector, missing)
-	last = channel(get(spec, :BeamEnergy, energy(length(spec.counts),spec)),spec)
+	last = min(haskey(spec,:BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
 	first = !ismissing(det) ? lld(det) : 1
 	return integrate(spec,first:last)
 end
