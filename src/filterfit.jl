@@ -219,15 +219,14 @@ Base.isequal(rl1::SpectrumLabel, rl2::SpectrumLabel) = isequal(rl1.roi, rl2.roi)
 """
     CharXRayLabel
 
-A FilteredLabel that Represents a reference spectrum associated with a set of characteristic x-rays (CharXRay) objects
-over a contiguous range of spectrum channels.
+A ReferenceLabel<:FilteredLabel  that Represents a reference spectrum associated with a set of characteristic x-rays
+(CharXRay) objects over a contiguous range of spectrum channels.
 """
 struct CharXRayLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
     xrays::Vector{CharXRay}
 end
-
 
 """
    xrays(cl::CharXRayLabel)
@@ -239,6 +238,25 @@ xrays(cl::CharXRayLabel) = cl.xrays
 Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
+
+"""
+    EscapeLabel
+
+A ReferenceLabel<:FilteredLabel that Represents a reference spectrum associated with an escape peak from a set of
+characteristic x-rays (CharXRay) objects over a contiguous range of spectrum channels.
+"""
+struct EscapeLabel <: ReferenceLabel
+    spec::Spectrum
+    roi::UnitRange{Int}
+    xrays::Vector{CharXRay}
+    escape::CharXRay # The X-ray that escaped the detector
+end
+
+Base.show(io::IO, esc::EscapeLabel) = print(io, "$(element(escape).symbol)esc[$(name(xrays))]")
+Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
+    isequal(el1.roi, el2.roi) && isequal(el1.escape, el2.escape) &&
+    isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
+
 
 """
     UnknownLabel
@@ -329,6 +347,7 @@ function Base.filter(
     end
     return res
 end
+
 
 """
     filter(

@@ -271,7 +271,11 @@ EnergyScale associated with this detector.
 """
 scale(det::SimpleEDS)::EnergyScale =
     det.scale
+"""
+    lld(det::SimpleEDS)
 
+Low level detector in channels
+"""
 lld(det::SimpleEDS) = det.lld
 
 """

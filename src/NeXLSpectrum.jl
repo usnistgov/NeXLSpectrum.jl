@@ -22,6 +22,7 @@ export extent # Determine the energy extent of x-ray lines on a detector ( Emin,
 export extents # Determines contiguous channel extents from a set of characteristic lines or an element
 export labeledextents # Like extents but labeled with a vector of the characteristic x-ray lines in each extent
 export matching # Build a detector to match a spectrum
+export lld # Low-level discriminator in eV
 
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")

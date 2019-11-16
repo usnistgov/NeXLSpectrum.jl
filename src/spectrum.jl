@@ -350,7 +350,7 @@ by setting all channels less-than-or-equal to det.lld to zero.
 function counts(spec::Spectrum, numType::Type{T}=Float64, applyLLD=false) where {T<:Number}
  	res = map(n->convert(numType,n), spec.counts)
 	if applyLLD && haskey(spec,:Detector)
-		fill!(view(res,1:lld(spec[:Detector])),zero(numType))
+		fill!(view(res,1:lld(spec)),zero(numType))
 	end
     return res
 end
@@ -366,10 +366,17 @@ by setting all channels less-than-or-equal to det.lld to zero.
 function counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false) where {T<:Real}
 	res = map(n->convert(numType,n), spec.counts[channels])
 	if applyLLD && haskey(spec, :Detector)
-		fill!(view(res,1:lld(spec[:Detector])-channels.start+1),zero(numType))
+		fill!(view(res,1:lld(spec)-channels.start+1),zero(numType))
 	end
 	return res
 end
+
+"""
+    lld(spec::Spectrum)
+
+Gets the low-level discriminator associated with this spectrum if there is one.
+"""
+lld(spec::Spectrum) = haskey(spec.properties,:Detector) ? lld(spec.properties[:Detector]) : 1
 
 
 """
@@ -451,10 +458,16 @@ end
 Total integral of all counts from the LLD to the beam energy
 """
 function integrate(spec::Spectrum)
-	det = get(spec, :Detector, missing)
 	last = min(haskey(spec,:BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
-	first = !ismissing(det) ? lld(det) : 1
-	return integrate(spec,first:last)
+	return integrate(spec,lld(spec):last)
+end
+
+"""
+    findmax(spec::Spectrum)
+"""
+function findmax(spec::Spectrum)
+	last = min(haskey(spec,:BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
+	return findmax(spec.counts, lld(spec):last)
 end
 
 """

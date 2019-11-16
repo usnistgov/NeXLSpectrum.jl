@@ -23,11 +23,12 @@ Gadfly.plot( #
  	spec::Spectrum;
 	klms=[],
 	edges=[],
+	escapes=[],
+	coincidences=[],
 	autoklms=false,
 	xmin=0.0,
 	xmax=missing,
 	norm=:None,
-	lld=missing,
 	yscale=1.05,
 	ytransform=identity
 )::Plot =
@@ -35,11 +36,12 @@ Gadfly.plot( #
 		[spec],
 		klms=klms,
 		edges=edges,
+		escapes=escapes,
+		coincidences=coincidences,
 		autoklms=autoklms,
 		xmin=xmin,
 		xmax=xmax,
 		norm=norm,
-		lld=lld,
 		yscale=yscale,
 		ytransform=identity)
 
@@ -48,11 +50,12 @@ Gadfly.plot( #
 	    specs::AbstractVector{Spectrum};
 	    klms=[],
 	    edges=[],
+		escapes=[],
+		coincidences=[],
 	    autoklms = false,
 	    xmin=0.0,
 	    xmax=missing,
 	    norm=:None,
-	    lld=missing,
 	    yscale=1.05,
 	    ytransform = identity
     )::Plot
@@ -63,7 +66,6 @@ Plot a multiple spectra on a single plot using Gadfly.
 	klms = [ Element &| CharXRay ]
 	edges = [ Element &| AtomicSubShell ]
 	autoklms = false # Add KLMs based on elements in spectra
-	lld = missing # missing defaults to 100.0  eV (low level discriminator for peak and intensity scaling)
 	xmin = 0.0 # Min energy (eV)
 	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
 	yscale = 1.05 # Fraction of max intensity for ymax
@@ -73,24 +75,24 @@ function Gadfly.plot(
 	specs::AbstractVector{Spectrum};
 	klms=[],
 	edges=[],
+	escapes=[],
+	coincidences=[],
 	autoklms = false,
 	xmin=0.0,
 	xmax=missing,
 	norm=:None,
-	lld=missing,
 	yscale=1.05,
 	ytransform = identity
 )::Plot
-	dlld(spec) = channel(ismissing(lld) ? (haskey(spec,:Detector) ? energy(lld(spec[:Detector]),spec) : 100.0) : lld, spec)
 	# The normalize functions return a Vector{Vector{Float64}}
 	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
 		normalizedosewidth.(specs)
 	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0) =
 		collect( (def/dose(sp))*counts(sp, Float64, true) for sp in specs)
 	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6) =
-		collect( (total/integrate(sp,dlld(sp):length(sp))) * counts(sp, Float64, true) for sp in specs)
+		collect( (total/integrate(sp)) * counts(sp, Float64, true) for sp in specs)
 	normalizePeak(specs::AbstractVector{Spectrum}, height=100.0) =
-		collect( (height/findmax(sp, dlld(sp):length(sp))[1]) * counts(sp, Float64, true) for sp in specs)
+		collect( (height/findmax(sp)[1]) * counts(sp, Float64, true) for sp in specs)
 	normalizeNone(specs::AbstractVector{Spectrum}) =
 		collect( counts(sp, Float64, true) for sp in specs)
 	function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
@@ -113,8 +115,7 @@ function Gadfly.plot(
 	    return layer(x=x, y=y, label=label, Geom.hair, Geom.point, Geom.label(position=:above), Theme(default_color="gray" ))
 	end
 	function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
-		maxCapacity(ashs) = largest
-	    d=Dict{Any,Array{AtomicSubShell}}()
+		d=Dict{Any,Array{AtomicSubShell}}()
 	    for ash in ashs
 	        d[(element(ash),shell(ash))] = push!(get(d, (element(ash), shell(ash)), []), ash)
 	    end
@@ -129,6 +130,35 @@ function Gadfly.plot(
 	    end
 	    return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:right), Theme(default_color="lightgray" ))
 	end
+	function siEscapeLayer(crxs)
+		x, y, label = [], [], []
+		for xrs in crxs
+			eesc = energy(xrs)-energy(n"Si K-L3")
+			if eesc>0.0
+				ich = maximum(get(specdata[i], channel(eesc, spec), 0.0) for (i,spec) in enumerate(specs))
+	 	        push!(x, eesc)
+				push!(y, ytransform(ich))
+				push!(label, "$(element(xrs).symbol)\nesc")
+			end
+		end
+		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="lightgray" ))
+	end
+	function sumPeaks(cxrs)
+		x, y, label = [], [], []
+		for (i, xrs1) in enumerate(cxrs)
+			for xrs2 in cxrs[i:end] # place each pair once...
+				eesc = energy(xrs1)+energy(xrs2)
+				ich = maximum(get(specdata[i], channel(eesc, spec), 0.0) for (i,spec) in enumerate(specs))
+				if ich>0.0
+		 	        push!(x, eesc)
+					push!(y, ytransform(ich))
+					push!(label, "$(element(xrs1).symbol)\n+\n$(element(xrs2).symbol)")
+				end
+			end
+		end
+		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="lightgray" ))
+	end
+
 	if norm==:Dose
 		specdata=normalizeDose(specs)
 		ylbl = "Counts/(nA⋅s)"
@@ -150,7 +180,7 @@ function Gadfly.plot(
     for (i, spec) in enumerate(specs)
 		mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : xmax
         chs = max(1,channel(xmin,spec)):channel(mE,spec)
-		mchs = max(chs.start, dlld(spec)):chs.stop  # Ignore zero strobe...
+		mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
 		clr = NeXLSpectrum.NeXLPalette[(i-1) % length(NeXLSpectrum.NeXLPalette)+1]
@@ -175,6 +205,12 @@ function Gadfly.plot(
 		if length(pedges)>0
 			push!(layers, edgeLayer(0.5*maxI,pedges))
 		end
+	end
+	if length(escapes)>0
+		push!(layers, siEscapeLayer(escapes))
+	end
+	if length(coincidences)>0
+		push!(layers, sumPeaks(coincidences))
 	end
     plot(layers...,
         Guide.XLabel("Energy (eV)"), Guide.YLabel(ylbl),
