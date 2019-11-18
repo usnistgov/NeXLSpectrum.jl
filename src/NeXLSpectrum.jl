@@ -9,6 +9,8 @@ export LinearEnergyScale # A linear detector energy calibration function
 export Resolution # Abstract: Detector resolution function
 export MnKaResolution # Fiori function resolution function
 export Detector # Abstract: X-ray detector
+export EscapeArtifact # An escape peak
+export SpectrumFeature # A CharXRay or EscapeArtifact (ComptonArtifact)
 export SimpleEDS # A simple EDS detector model
 export channel # energy to channel
 #export NeXLCore.energy # channel to energy

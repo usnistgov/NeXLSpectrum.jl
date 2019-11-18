@@ -225,6 +225,42 @@ down to an intensity of ampl.  Relative line weights are taken into account.
 extent(cxr::CharXRay, res::Resolution, ampl::Float64) =
     extent(energy(cxr) ,res, min(0.999,ampl/weight(cxr)))
 
+
+struct EscapeArtifact
+    xray::CharXRay
+    escape::CharXRay
+    function EscapeArtifact(xray::CharXRay, escape::CharXRay=n"Si K-L3")
+        @assert energy(xray) > energy(escape) "The energy($xray) must be larger than energy($escape)"
+        return new(xray, escape)
+    end
+end
+
+Core.show(io::IO, esc::EscapeArtifact) = print(io, "Esc[$(esc.xray)]")
+
+"""
+    SpectrumFeature
+
+A union representing the different type of features that can appear in a spectrum.
+"""
+SpectrumFeature = Union{CharXRay, EscapeArtifact} # ComptonArtifact
+
+"""
+    extent(escape::EscapeArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
+
+The extent of an escape artifact is determined by the resolution of the detector at the energy of the escape peak.
+"""
+extent(esc::EscapeArtifact, res::Resolution, ampl::Float64=0.01) =
+    extent(energy(esc), res, min(0.999,ampl/weight(esc.xray)))
+
+NeXLCore.energy(esc::EscapeArtifact) = energy(esc.xray) - energy(esc.escape)
+
+"""
+    weight(esc::EscapeArtifact, factor=0.01)
+
+The weight of an EscapeArtifact which is factor * weight(esc.xray).
+"""
+NeXLCore.weight(esc::EscapeArtifact, factor=0.01) = factor * weight(esc.xray)
+
 """
     Detector
 
@@ -239,6 +275,7 @@ Implements:
     channel(eV::Float64, det::Detector)::Int
     profile(energy::Float64, xrayE::Float64, det::Detector)
     lld(det::Detector)::Int
+    escapes(det::Detector, )
 """
 abstract type Detector end
 
@@ -313,6 +350,17 @@ profile(energy::Float64, xrayE::Float64, det::Detector) =
     profile(energy, xrayE, det.resolution)
 
 """
+    visible(cxrs::AbstractVector{SpectrumFeature}, det::Detector)
+
+Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
+channel).
+"""
+function visible(cxrs::AbstractVector{SpectrumFeature}, det::Detector)
+    eMin, eMax = energy(lld(det), det), energy(det.channelcount+1, det)
+    return filter(cxr->(energy(cxr)>eMin) && (energy(cxr)<eMax), cxrs)
+end
+
+"""
     visible(cxrs::AbstractVector{CharXRay}, det::Detector)
 
 Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
@@ -324,21 +372,26 @@ function visible(cxrs::AbstractVector{CharXRay}, det::Detector)
 end
 
 """
-    extent(cxrs::CharXRay, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
+    extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
 
 Computes the channel range encompassed by the specified set of x-ray transitions
 down to an intensity of ampl.  Relative line weights are taken into account.
 """
-extent(cxrs::CharXRay, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
+extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
     extent(cxrs, det.resolution, ampl)
 
+
 """
-    extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)
+    extents(cxrs::AbstractVector{SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
 
 Determine the contiguous ranges of channels over which the specified collection of X-rays will be measured on
 the specified detector.  The ampl determines the extent of each peak.
 """
-function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
+function extents( #
+    cxrs::AbstractVector{SpectrumFeature},
+    det::Detector, #
+    ampl::Float64
+)::Vector{UnitRange{Int}}
     function ascontiguous(rois)
         join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
         srois = sort(rois)
@@ -354,19 +407,29 @@ function extents(cxrs::AbstractArray{CharXRay,1},det::Detector,ampl::Float64)::V
     end
     inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
     # Note: extent(cxr,...) takes line weight into account
-    es=map(cxr->extent(cxr, det.resolution, ampl), filter(cxr->weight(cxr)>ampl, visible(cxrs, det)))
+    es=map(cxr->extent(cxr, det, ampl), filter(cxr->weight(cxr)>ampl, visible(cxrs, det)))
     return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
 end
+
+"""
+    extents(cxrs::AbstractVector{CharXRay},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
+
+Determine the contiguous ranges of channels over which the specified collection of X-rays will be measured on
+the specified detector.  The ampl determines the extent of each peak.
+"""
+extents( #
+    cxrs::AbstractVector{CharXRay},
+    det::Detector, #
+    ampl::Float64
+)::Vector{UnitRange{Int}} =
+    extents(convert(AbstractVector{SpectrumFeature}, cxrs), det, ampl)
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(visible(characteristic(elm,alltransitions),det),det,ampl)
 
-extents(elms::Vector{Element}, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
-    extents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
-
 """
     function labeledextents(
-        cxrs::AbstractArray{CharXRay,1},
+        cxrs::AbstractVector{CharXRay},
         det::Detector,
         ampl::Float64
     )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
@@ -376,15 +439,15 @@ contiguous interval over which all the X-rays in the interval are sufficiently c
 interfere with each other on the specified detector.
 """
 function labeledextents(
-    cxrs::AbstractArray{CharXRay,1},
+    cxrs::AbstractVector{SpectrumFeature},
     det::Detector,
     ampl::Float64
-)::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+)::Vector{Tuple{Vector{SpectrumFeature},UnitRange{Int}}}
     fcxrs = filter(cxr-> weight(cxr)>ampl, visible(cxrs, det))
-    es = map(xr -> extent(xr, det.resolution, ampl), fcxrs) # CharXRay -> energy ranges
+    es = map(xr -> extent(xr, det, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
-    res = Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}()
+    res = Vector{Tuple{Vector{SpectrumFeature},UnitRange{Int}}}()
     if length(le) > 0
         curX, curInt = [le[1][1]], le[1][2]
         for (cxr, interval) in le[2:end]
@@ -401,36 +464,6 @@ function labeledextents(
     end
     return res
 end
-
-"""
-    function labeledextents(
-        elm::Element,  # All CharXRay for this element
-        det::Detector,
-        ampl::Float64,
-        maxE::Float64=energy(det.channelcount+1, det) # full detector range
-    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
-
-Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
-contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
-interfere with each other on the specified detector.
-"""
-labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=1.0e6) =
-    labeledextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
-
-"""
-    function labeledextents(
-        elm::Vector{Element},  # All CharXRay for these elements
-        det::Detector,
-        ampl::Float64,
-        maxE::Float64=energy(det.channelcount+1, det)
-    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
-
-Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
-contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
-interfere with each other on the specified detector.
-"""
-labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64, maxE::Float64=energy(det.channelcount+1, det)) =
-    labeledextents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
 
 """
     basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = channel(150.0 eV))

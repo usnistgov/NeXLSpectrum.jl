@@ -141,7 +141,7 @@ function Gadfly.plot(
 				push!(label, "$(element(xrs).symbol)\nesc")
 			end
 		end
-		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="lightgray" ))
+		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="black" ))
 	end
 	function sumPeaks(cxrs)
 		x, y, label = [], [], []
@@ -156,7 +156,7 @@ function Gadfly.plot(
 				end
 			end
 		end
-		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="lightgray" ))
+		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="gray" ))
 	end
 
 	if norm==:Dose

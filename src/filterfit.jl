@@ -248,15 +248,15 @@ characteristic x-rays (CharXRay) objects over a contiguous range of spectrum cha
 struct EscapeLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
-    xrays::Vector{CharXRay}
-    escape::CharXRay # The X-ray that escaped the detector
+    escapes::Vector{EscapeArtifact}
+    EscapeLabel(spc::Spectrum, roi::UnitRange{Int}, escs::AbstractVector{EscapeArtifact}) =
+        new(spc, roi, convert(Vector{EscapeArtifact},escs))
 end
 
-Base.show(io::IO, esc::EscapeLabel) = print(io, "$(element(escape).symbol)esc[$(name(xrays))]")
+Base.show(io::IO, escl::EscapeLabel) = print(io, "Ecs[$(name([esc.xray for esc in escl.escapes]))]")
 Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
     isequal(el1.roi, el2.roi) && isequal(el1.escape, el2.escape) &&
     isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
-
 
 """
     UnknownLabel
@@ -330,20 +330,33 @@ function _filter(
     return ( roiff, data[roiff], filtered[roiff] )
 end
 
+Base.convert(::AbstractVector{SpectrumFeature}, x::AbstractVector{CharXRay})::AbstractVector{SpectrumFeature} = x
+
 function Base.filter(
     spec::Spectrum,
     det::Detector,
-    cxrs::AbstractVector{CharXRay},
+    cxrs::AbstractVector{SpectrumFeature},
     filter::TopHatFilter,
-    scale::Float64=1.0,
-    ampl::Float64=1.0e-4,
-    tol::Float64=1.0e-6
+    scale::Float64=1.0;
+    ampl::Float64=1.0e-4
 )::Vector{FilteredReference}
+    cxronly(lbl)::Vector{CharXRay} = Base.filter(l->l isa CharXRay, lbl)
+    esconly(lbl)::Vector{EscapeArtifact} = Base.filter(l->l isa EscapeArtifact, lbl)
+    buildlabel(spec, roi, lbl)::ReferenceLabel =
+        if all(l->l isa EscapeArtifact, lbl)
+            return EscapeLabel(spec, roi, esconly(lbl))
+        else
+            return CharXRayLabel(spec, roi, cxronly(lbl))
+        end
+    mb(spec, roi, lbl) =
+        all(l->l isa EscapeArtifact, lbl) ? #
+            modelBackground(spec, roi) : #
+            modelBackground(spec, roi, inner(brightest(cxronly(lbl))))
     res=[]
     for (lbl, roi) in labeledextents(cxrs, det, ampl)
-        charonly = spec[roi] - modelBackground(spec, roi, inner(brightest(lbl)))
-        f = _filter(spec, roi, filter, tol)
-        push!(res, FilteredReference(CharXRayLabel(spec, roi, lbl), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2]))
+        charonly = spec[roi] - mb(spec, roi, lbl)
+        f = _filter(spec, roi, filter, 1.0e-6)
+        push!(res, FilteredReference(buildlabel(spec, roi, lbl), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2]))
     end
     return res
 end
