@@ -248,15 +248,17 @@ characteristic x-rays (CharXRay) objects over a contiguous range of spectrum cha
 struct EscapeLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
-    escapes::Vector{EscapeArtifact}
+    xrays::Vector{EscapeArtifact}
     EscapeLabel(spc::Spectrum, roi::UnitRange{Int}, escs::AbstractVector{EscapeArtifact}) =
         new(spc, roi, convert(Vector{EscapeArtifact},escs))
 end
 
-Base.show(io::IO, escl::EscapeLabel) = print(io, "Ecs[$(name([esc.xray for esc in escl.escapes]))]")
+Base.show(io::IO, escl::EscapeLabel) = print(io, name(escl))
 Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
-    isequal(el1.roi, el2.roi) && isequal(el1.escape, el2.escape) &&
-    isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
+    isequal(el1.roi, el2.roi) && isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
+NeXLCore.name(escl::EscapeLabel) = "Ecs[$(name([esc.xray for esc in escl.xrays]))]"
+
+
 
 """
     UnknownLabel
@@ -331,6 +333,15 @@ function _filter(
 end
 
 Base.convert(::AbstractVector{SpectrumFeature}, x::AbstractVector{CharXRay})::AbstractVector{SpectrumFeature} = x
+
+charFeature(elm::Element, tr::Tuple{Vararg{Transition}}; minweight=1.0e-3, maxE=1.0e6) =
+    convert(AbstractVector{SpectrumFeature},characteristic(elm, tr, minweight, maxE))
+
+escapeFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight=0.1, maxE=1.0e6, escape=n"Si K-L3") =
+    convert(AbstractVector{SpectrumFeature}, map(tr->EscapeArtifact(tr,escape), characteristic(elm, trs, minweight, maxE)))
+
+comptonFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight=1.0e-3) =
+    convert(AbstractVector{SpectrumFeature}, map(tr->ComptonArtifact(tr,escape), characteristic(elm, trs, minweight, maxE)))
 
 function Base.filter(
     spec::Spectrum,

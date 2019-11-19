@@ -233,7 +233,8 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=m
 	    	layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2])) ]
     mx, prev, i = 4.0*maximum(ffr.residual), -1000, -1
     for lbl in sort(labels(NeXLSpectrum.kratios(ffr)),lt=roilt)
-        i = (lbl.roi.start>prev+length(roi)÷40) || (i==4) ? 0 : i + 1
+		# This logic keeps the labels on different lines (mostly...)
+        i, prev = (lbl.roi.start>prev+length(roi)÷10) || (i==4) ? ( 0, lbl.roi.stop ) : (i + 1, prev)
         labels = ["", name(lbl.xrays)]
 		# Plot the ROI
 		push!(layers, layer(x=[lbl.roi.start,lbl.roi.stop], y=mx*[0.5+0.1*i,0.5+0.1*i], label=labels,
@@ -241,7 +242,6 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=m
 		# Plot the k-ratio as a label above ROI
 		push!(layers, layer(x=[0.5*(lbl.roi.start+lbl.roi.stop)],y=mx*[0.5+0.1*i],
 				label=[@sprintf("%1.4f",value(lbl,ffr))], Geom.label(position=:above), Theme(default_color="gray")))
-		prev=lbl.roi.stop
     end
     plot(layers..., Coord.cartesian(xmin=roi.start, xmax=roi.stop, ymin=0.0, ymax=mx),
             Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title("$(ffr.label)"))

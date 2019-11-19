@@ -235,22 +235,44 @@ struct EscapeArtifact
     end
 end
 
-Core.show(io::IO, esc::EscapeArtifact) = print(io, "Esc[$(esc.xray)]")
+Core.show(io::IO, esc::EscapeArtifact) = print(io, name(esc))
+NeXLCore.name(esc::EscapeArtifact) =  "Esc[$(esc.xray)]"
+NeXLCore.name(escs::AbstractVector{EscapeArtifact}) =  "Esc[$(name(map(esc->esc.xray, escs)))]"
 
-"""
-    SpectrumFeature
 
-A union representing the different type of features that can appear in a spectrum.
-"""
-SpectrumFeature = Union{CharXRay, EscapeArtifact} # ComptonArtifact
+struct ComptonArtifact
+    xray::CharXRay
+    angle::Float64
+    function ComptonArtifact(prim::CharXRay, θ::Float64)
+        @assert (θ>=0.0) && (θ<=deg2rad(180.0)) "The angle must be between 0.0 and π"
+        return new(prim, θ)
+    end
+end
 
-"""
-    extent(escape::EscapeArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
+Base.show(io::IO, ca::ComptonArtifact) = print(io,name(ca))
+NeXLCore.name(ca::ComptonArtifact) =  "Compton[$(ca.xray) at $(rad2deg(ca.angle))°]"
+NeXLCore.name(cas::AbstractVector{ComptonArtifact}) =  "Compton[$(name(map(ca->ca.xray, cas)))]"
 
-The extent of an escape artifact is determined by the resolution of the detector at the energy of the escape peak.
+function Base.show(io::IO, cas::AbstractVector{ComptonArtifact})
+    angles = union(map(ca->ca.angle,cas))
+    items=[]
+    for angle in union(map(ca->ca.angle,cas))
+        cxrs = map(ca->ca.xray, filter(ca->ca.angle==angle, cas))
+        push!(items, "$(name(cxrs)) at $(rad2deg(angle))°")
+    end
+    print(io, "Compton[$(join(items,","))]")
+end
+
+NeXLCore.energy(ca::ComptonArtifact) = energy(ca.xray) * NeXLCore.comptonShift(ca.angle, energy(ca.xray))
+NeXLCore.weight(esc::ComptonArtifact) = weight(esc.xray)
 """
-extent(esc::EscapeArtifact, res::Resolution, ampl::Float64=0.01) =
-    extent(energy(esc), res, min(0.999,ampl/weight(esc.xray)))
+    extent(escape::ComptonArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
+
+The extent of a Compton artifact is determined by the resolution of the detector at the energy of the Compton peak.
+"""
+extent(ca::ComptonArtifact, res::Resolution, ampl::Float64=1.0e-4) =
+    extent(energy(ca), res, min(0.999,ampl/weight(ca.xray)))
+
 
 NeXLCore.energy(esc::EscapeArtifact) = energy(esc.xray) - energy(esc.escape)
 
@@ -260,6 +282,22 @@ NeXLCore.energy(esc::EscapeArtifact) = energy(esc.xray) - energy(esc.escape)
 The weight of an EscapeArtifact which is factor * weight(esc.xray).
 """
 NeXLCore.weight(esc::EscapeArtifact, factor=0.01) = factor * weight(esc.xray)
+
+"""
+    extent(escape::EscapeArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
+
+The extent of an escape artifact is determined by the resolution of the detector at the energy of the escape peak.
+"""
+extent(esc::EscapeArtifact, res::Resolution, ampl::Float64=0.01) =
+    extent(energy(esc), res, min(0.999,ampl/weight(esc.xray)))
+
+
+"""
+    SpectrumFeature
+
+A union representing the different type of peaky features (helpful and harmful) that can appear in a spectrum.
+"""
+SpectrumFeature = Union{CharXRay, EscapeArtifact, ComptonArtifact}
 
 """
     Detector
@@ -279,6 +317,14 @@ Implements:
 """
 abstract type Detector end
 
+"""
+    extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
+
+Computes the channel range encompassed by the specified set of x-ray transitions
+down to an intensity of ampl.  Relative line weights are taken into account.
+"""
+extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
+    extent(cxrs, det.resolution, ampl)
 
 """
     SimpleEDS
@@ -370,16 +416,6 @@ function visible(cxrs::AbstractVector{CharXRay}, det::Detector)
     eMin, eMax = energy(lld(det), det), energy(det.channelcount+1, det)
     return filter(cxr->(energy(cxr)>eMin) && (energy(cxr)<eMax), cxrs)
 end
-
-"""
-    extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
-
-Computes the channel range encompassed by the specified set of x-ray transitions
-down to an intensity of ampl.  Relative line weights are taken into account.
-"""
-extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
-    extent(cxrs, det.resolution, ampl)
-
 
 """
     extents(cxrs::AbstractVector{SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}

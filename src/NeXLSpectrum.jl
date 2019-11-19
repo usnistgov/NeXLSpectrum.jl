@@ -29,7 +29,7 @@ export lld # Low-level discriminator in eV
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")
 export Spectrum
-export name # A human friendly name for the spectrum
+#export NeXLCore.name # A human friendly name for the spectrum
 export channel # channel for energy
 export width # width of channel ch
 #export NeXLCore.energy # energy for channel
