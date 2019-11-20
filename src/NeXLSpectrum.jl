@@ -54,10 +54,16 @@ include("filterfit.jl")
 export TopHatFilter # Struct representing a fitting filter
 export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
 export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
+export GaussianFilter # An alternative filter definition based on an offset Gaussian
 
 export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
+
+# Different types of spectrum features that can be fit ROIs
+export charFeature    # Characteristic peaks
+export comptonFeature # Compton shifted characteristic peaks
+export escapeFeature  # Escape artifact peaks
 
 export buildfilter
 export estimatebackground

@@ -61,13 +61,20 @@ Gadfly.plot( #
     )::Plot
 
 Plot a multiple spectra on a single plot using Gadfly.
+Required:
 
-    norm = :None|:Sum|:Dose|:Peak|:DoseWidth
-	klms = [ Element &| CharXRay ]
+	specs::AbstractVector{Spectrum};
+
+Named:
+
+    klms = [ Element &| CharXRay ]
 	edges = [ Element &| AtomicSubShell ]
+	escapes = [ CharXRay ],
+	coincidences = [ CharXRay ]
 	autoklms = false # Add KLMs based on elements in spectra
 	xmin = 0.0 # Min energy (eV)
 	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
+	norm = :None|:Sum|:Dose|:Peak|:DoseWidth
 	yscale = 1.05 # Fraction of max intensity for ymax
 	ytransform = identity | log10 | sqrt | ???
 """
