@@ -144,6 +144,8 @@ struct MnKaResolution <: Resolution
     fwhmatmnka::Float64
 end
 
+Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn Kα")
+
 """"
     resolution(eV::Float64, res::MnKaResolution)
 
@@ -338,6 +340,10 @@ struct SimpleEDS <: Detector
     resolution::Resolution
     lld::Int # low level discriminator
 end
+
+Base.show(io::IO, seds::SimpleEDS) =
+    print(io, "EDS[$(seds.channelcount) channels, $(seds.scale), $(seds.resolution)]")
+
 
 """
     channelcount(det::SimpleEDS)

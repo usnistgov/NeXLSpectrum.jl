@@ -80,11 +80,11 @@ function Base.show(io::IO, spec::Spectrum)
 end
 
 """
-    tabulate(spec::Spectrum)
+    Base.convert(::Type{DataFrame}, spec::Spectrum)
 
 Converts the spectrum energy and counts data into a table.
 """
-tabulate(spec::Spectrum)::DataFrame =
+Base.convert(::Type{DataFrame}, spec::Spectrum)::DataFrame =
     DataFrame(E=energyscale(spec),I=counts(spec))
 
 function split_emsa_header_item(line::AbstractString)
@@ -649,20 +649,23 @@ function details(io::IO, spec::Spectrum)
 			for elm1 in keys(comp)
 				for ext1 in extents(elm1, det, 1.0e-4)
 					print(io, "            ROI:   $(elm1.symbol)[$(ext1)]")
-					printi=true
+					intersects=[]
 					for elm2 in comp2
 						if elm2 ≠ elm1
 							for ext2 in extents(elm2, det, 1.0e-4)
 								if length(intersect(ext1,ext2))>0
-									print(io, "\n              Warning: $(elm1.symbol)[$(ext1)] intersects with $(elm2.symbol)[$(ext2)]")
-									printi=false
+									push!(intersects,"$(elm2.symbol)[$(ext2)]")
 								end
 							end
 						end
 					end
-					p, b = peak(spec, ext1), back(spec,ext1)
-					σ = p/sqrt(b)
-					println(io, printi ? " = $(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))" : "")
+					if length(intersects)>0
+						println(io, " intersects $(join(intersects,", "))")
+					else
+						p, b = peak(spec, ext1), back(spec,ext1)
+						σ = p/sqrt(b)
+						println(io, " = $(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))")
+					end
 				end
 			end
 		end

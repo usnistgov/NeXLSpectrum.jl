@@ -227,20 +227,19 @@ lines represent the principle ROC.
 """
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=missing)
 	roilt(l1,l2) = isless(l1.roi.start,l2.roi.start)
-	xx(i) = i % 4 + (i÷4)%2
 	roi = ismissing(roi) ? ffr.roi : roi
 	layers = [ layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=NeXLPalette[1])),
-	    	layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2])) ]
-    mx, prev, i = 4.0*maximum(ffr.residual), -1000, -1
+	    	   layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2])) ]
+    mx, prev, i = 3.0*maximum(ffr.residual), -1000, -1
     for lbl in sort(labels(NeXLSpectrum.kratios(ffr)),lt=roilt)
 		# This logic keeps the labels on different lines (mostly...)
-        i, prev = (lbl.roi.start>prev+length(roi)÷10) || (i==4) ? ( 0, lbl.roi.stop ) : (i + 1, prev)
+        i, prev = (lbl.roi.start>prev+length(roi)÷10) || (i==6) ? ( 0, lbl.roi.stop ) : (i + 1, prev)
         labels = ["", name(lbl.xrays)]
 		# Plot the ROI
-		push!(layers, layer(x=[lbl.roi.start,lbl.roi.stop], y=mx*[0.5+0.1*i,0.5+0.1*i], label=labels,
+		push!(layers, layer(x=[lbl.roi.start,lbl.roi.stop], y=mx*[0.4+0.1*i,0.4+0.1*i], label=labels,
                 Geom.line, Geom.point, Geom.label(position=:right), Theme(default_color="gray")))
 		# Plot the k-ratio as a label above ROI
-		push!(layers, layer(x=[0.5*(lbl.roi.start+lbl.roi.stop)],y=mx*[0.5+0.1*i],
+		push!(layers, layer(x=[0.5*(lbl.roi.start+lbl.roi.stop)],y=mx*[0.4+0.1*i],
 				label=[@sprintf("%1.4f",value(lbl,ffr))], Geom.label(position=:above), Theme(default_color="gray")))
     end
     plot(layers..., Coord.cartesian(xmin=roi.start, xmax=roi.stop, ymin=0.0, ymax=mx),

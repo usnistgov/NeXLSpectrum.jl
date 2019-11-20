@@ -685,8 +685,8 @@ kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
 residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 
-tabulate(ffrs::Array{FilterFitResult}, withUnc=false) =
-    NeXLUncertainties.tabulate([r.kratios for r in ffrs],withUnc)
+Base.convert(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false) =
+    convert(DataFrame, [r.kratios for r in ffrs],withUnc)
 
 function details(io::IO, ffr::FilterFitResult)
     println(io, "  Unknown:   $(ffr.label)")
@@ -762,11 +762,32 @@ end
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
+
+This function is designed to reperform the fit if one or more k-ratio is less-than-or-equal-to zero.  The
+FilteredReference corresponding to the negative value is removed from the fit and the fit is reperformed. How the
+non-positive value is handled is determine by forcezeros. If forcezeros=true, then the returned k-ratio for the
+non-positive value will be set to zero (but the uncertainty remains the fitted one).  However, if forcezeros=false,
+then the final non-positive k-ratio is returned along with the associated uncertainty.  forcezeros=false is better
+when a number of fit k-ratio sets are combined to produce an averaged k-ratio with reduced uncertainty. forcezeros=true
+would bias the result positive.
 """
-function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww)::FilterFitResult
-    fitrois = ascontiguous(map(fd->fd.ffroi, ffs))
-    @info "Fitting $(length(ffs)) references in $(length(fitrois)) blocks - $fitrois"
-    kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois))
+function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww, forcezeros=true)::FilterFitResult
+    trimmed, refit, removed, retained = copy(ffs), true, Vector{UncertainValues}(), nothing # start with all the FilteredReference
+    while refit
+        fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
+        # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
+        retained = map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
+        kr = cat(retained)
+        refit = false
+        for lbl in labels(kr)
+            if value(lbl, kr) <= 0.0
+                splice!(trimmed, findfirst(ff->ff.identifier==lbl, trimmed))
+                push!(removed, uvs([lbl],[forcezeros ? 0.0 : value(lbl, kr)],reshape([σ(lbl, kr)],(1,1))))
+                refit=true
+            end
+        end
+    end # while
+    kr = cat(append!(retained, removed))
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, _computeResidual(unk, ffs, kr))
 end
 
@@ -780,8 +801,11 @@ function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array
     return unk.filtered - mapreduce(scaled, +, ffs)
 end
 
-fit(ty::Type{<:FilteredUnknown}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}) =
-    filterfit(filter(ty, unk, filt, 1.0/dose(unk)),refs)
+fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
+    filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, fitcontiguousww, forcezeros)
 
-fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}) =
-    fit(FilteredUnknownW, unk, filt, refs)
+fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
+    filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, fitcontiguousw, forcezeros)
+
+fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
+    fit(FilteredUnknownW, unk, filt, refs, forcezeros)

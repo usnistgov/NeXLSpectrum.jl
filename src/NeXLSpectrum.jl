@@ -43,7 +43,6 @@ export subsample # Sub-sample a spectrum
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
-export tabulate # Converts a Spectrum to a DataFrame
 export details # Outputs useful details about a spectrum
 export peak # Estimates the peak intensity
 export back # Estimates the background intensity
