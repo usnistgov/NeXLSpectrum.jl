@@ -1,9 +1,7 @@
 using SparseArrays
 using Polynomials
 using LinearAlgebra
-using NeXLUncertainties
 using TimerOutputs
-
 
 """
     FittingFilterType
@@ -686,10 +684,10 @@ kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
 residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 
-Base.convert(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false) =
-    convert(DataFrame, [r.kratios for r in ffrs],withUnc)
+NeXLCore.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
+    asa(DataFrame, [r.kratios for r in ffrs], withUnc)
 
-function Base.convert(::Type{DataFrame}, ffr::FilterFitResult)
+function NeXLCore.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
     lbl, klbl, kr, dkr, roi1, roi2, peak, back =
         UnknownLabel[], ReferenceLabel[], Float64[], Float64[], Int[], Int[], Float64[], Float64[]
     for kl in labels(ffr.kratios)

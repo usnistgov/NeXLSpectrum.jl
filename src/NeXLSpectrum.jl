@@ -1,6 +1,8 @@
 module NeXLSpectrum
 
 using NeXLCore
+using NeXLUncertainties
+
 using Requires
 
 include("detector.jl")

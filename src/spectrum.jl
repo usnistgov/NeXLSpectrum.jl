@@ -72,11 +72,11 @@ function Base.show(io::IO, spec::Spectrum)
 end
 
 """
-    Base.convert(::Type{DataFrame}, spec::Spectrum)
+    asa(::Type{DataFrame}, spec::Spectrum)
 
-Converts the spectrum energy and counts data into a table.
+Converts the spectrum energy and counts data into a DataFrame.
 """
-Base.convert(::Type{DataFrame}, spec::Spectrum)::DataFrame =
+NeXLCore.asa(::Type{DataFrame}, spec::Spectrum)::DataFrame =
     DataFrame(E=energyscale(spec),I=counts(spec))
 
 function split_emsa_header_item(line::AbstractString)
@@ -642,16 +642,16 @@ estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
 
 
 """
-    asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
+    NeXLCore.asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
 
 Outputs a description of the data in the spectrum.
 """
-function asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
+function NeXLCore.asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
 	_asname(comp) = ismissing(comp) ? missing : name(comp)
 	unf, unl, uns = Union{Float64, Missing}, Union{Film, Nothing}, Union{String, Missing}
-	name, e0, pc, lt, rt, coat, integ, comp = String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
+	nme, e0, pc, lt, rt, coat, integ, comp = String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
 	for spec in specs
-		push!(name, spec[:Name])
+		push!(nme, spec[:Name])
 		push!(e0, get(spec, :BeamEnergy, missing))
 		push!(pc, get(spec, :ProbeCurrent, missing))
 		push!(lt, get(spec, :LiveTime, missing))
@@ -660,7 +660,7 @@ function asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
 		push!(integ, integrate(spec))
 		push!(comp, _asname(get(spec,:Composition, missing)))
 	end
-	return DataFrame(Name=name, BeamEnergy=e0, ProbeCurrent=pc, LiveTime=lt,
+	return DataFrame(Name=nme, BeamEnergy=e0, ProbeCurrent=pc, LiveTime=lt,
 						RealTime=rt, Coating=coat, Integral=integ, Material=comp)
 end
 
