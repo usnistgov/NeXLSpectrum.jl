@@ -674,6 +674,7 @@ struct FilterFitResult
     roi::UnitRange{Int}
     raw::Vector{Float64}
     residual::Vector{Float64}
+    peakback::Dict{<:ReferenceLabel,NTuple{2, Float64}}
 end
 
 """
@@ -688,14 +689,22 @@ residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 Base.convert(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false) =
     convert(DataFrame, [r.kratios for r in ffrs],withUnc)
 
-function details(io::IO, ffr::FilterFitResult)
-    println(io, "  Unknown:   $(ffr.label)")
-    for l in labels(ffr)
-        println(io, "   $(l): $(ffr[l])")
+function Base.convert(::Type{DataFrame}, ffr::FilterFitResult)
+    lbl, klbl, kr, dkr, roi1, roi2, peak, back =
+        UnknownLabel[], ReferenceLabel[], Float64[], Float64[], Int[], Int[], Float64[], Float64[]
+    for kl in labels(ffr.kratios)
+        push!(lbl,ffr.label)
+        push!(klbl, kl)
+        push!(roi1, kl.roi.start)
+        push!(roi2, kl.roi.stop)
+        push!(kr, value(kl, ffr.kratios))
+        push!(dkr, σ(kl, ffr.kratios))
+        pb = ffr.peakback[kl]
+        push!(peak, pb[1])
+        push!(back, pb[2])
     end
+    return DataFrame(Label=lbl, Feature=klbl, Start=roi1, Stop=roi2, K=kr, dK=dkr, Peak=peak, Back=back)
 end
-
-details(ffr::FilterFitResult) = details(stdout,ffr)
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 
@@ -728,6 +737,20 @@ function _computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, k
     return res
 end
 
+# Internal: Computes the peak and background count based on the fit k-ratios
+function _computecounts( #
+    unk::FilteredUnknown, #
+    ffs::Array{FilteredReference}, #
+    kr::UncertainValues, #
+)::Dict{<:ReferenceLabel,NTuple{2, Float64}}
+    res = Dict{ReferenceLabel,NTuple{2, Float64}}()
+    for ff in ffs
+        su = sum(unk.data[ff.roi])
+        res[ff.identifier] = (su, su - sum((value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly))
+    end
+    return res
+end
+
 """
     filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
@@ -738,7 +761,8 @@ function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = f
     fitrois = ascontiguous(map(fd->fd.ffroi, ffs))  # Divide up into contiguous rois
     @info "Fitting $(length(ffs)) references in $(length(fitrois)) blocks - $fitrois"
     kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois)) # fit each roi
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, _computeResidual(unk, ffs, kr)) # Return results
+    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb) # Return results
 end
 
 """
@@ -753,7 +777,8 @@ function filterfit_all(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg
     fr = minimum(ff.ffroi.start for ff in ffs)-20:maximum(ff.ffroi.stop for ff in ffs)+20  # Make one large roi
     @info "Fitting $(length(ffs)) references in 1 block - $fr"
     kr = alg(unk, ffs, fr) # Fit the roi
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, _computeResidual(unk, ffs, kr)) # Return results
+    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb) # Return results
 end
 
 
@@ -788,7 +813,8 @@ function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = f
         end
     end # while
     kr = cat(append!(retained, removed))
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, _computeResidual(unk, ffs, kr))
+    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
 end
 
 """

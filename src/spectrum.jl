@@ -170,6 +170,12 @@ matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
 Read an ISO/EMSA format spectrum from a disk file at the specified path.
 """
 function readEMSA(filename::AbstractString)::Spectrum
+	function _cleanname(value)
+		name = startswith(value,"Bruker AXS spectrum") ? value[21:end] : value
+		name = startswith(name,"Bruker Nano spectrum") ? name[22:end] : name
+		name = endswith(name, ".txt") ? name[1:end-4] : name
+		return name
+	end
     open(filename,"r") do f
         energy, counts = LinearEnergyScale(0.0,10.0), Int[]
         props = Dict{Symbol,Any}()
@@ -220,7 +226,7 @@ function readEMSA(filename::AbstractString)::Spectrum
                     elseif key == "OFFSET"
                         energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
                     elseif key == "TITLE"
-                        props[:Name]=value
+                        props[:Name]=_cleanname(value)
                     elseif key == "OWNER"
                         props[:Owner]=value
                     elseif key == "ELEVANGLE"
@@ -249,7 +255,12 @@ function readEMSA(filename::AbstractString)::Spectrum
 						sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
 						props[:FWHMMnKa] = sc*parse(Float64, value)
 					elseif key == "#IDENT" # Bruker
-						props[:XRFAnode] = parse(Element, value)
+						elm = nothing
+						try
+							props[:XRFAnode] = parse(Element, value)
+						catch
+							# Just ignore it
+						end
 					end
                 end
             end
@@ -628,6 +639,30 @@ Estimates the k-ratio from niave models of peak and background intensity.  Only 
 """
 estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
     peak(unk, chs)*dose(std)/(peak(std, chs)*dose(unk))
+
+
+"""
+    asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
+
+Outputs a description of the data in the spectrum.
+"""
+function asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
+	_asname(comp) = ismissing(comp) ? missing : name(comp)
+	unf, unl, uns = Union{Float64, Missing}, Union{Film, Nothing}, Union{String, Missing}
+	name, e0, pc, lt, rt, coat, integ, comp = String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
+	for spec in specs
+		push!(name, spec[:Name])
+		push!(e0, get(spec, :BeamEnergy, missing))
+		push!(pc, get(spec, :ProbeCurrent, missing))
+		push!(lt, get(spec, :LiveTime, missing))
+		push!(rt, get(spec, :RealTime, missing))
+		push!(coat, get(spec, :Coating, nothing))
+		push!(integ, integrate(spec))
+		push!(comp, _asname(get(spec,:Composition, missing)))
+	end
+	return DataFrame(Name=name, BeamEnergy=e0, ProbeCurrent=pc, LiveTime=lt,
+						RealTime=rt, Coating=coat, Integral=integ, Material=comp)
+end
 
 """
     describe(io, spec::Spectrum)
