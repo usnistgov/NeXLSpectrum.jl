@@ -49,30 +49,22 @@ Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.p
 channelcount(spec::Spectrum) = length(spec.counts)
 
 function Base.show(io::IO, spec::Spectrum)
-    print(io, "Spectrum[")
-    print(io, "name = ",get(spec, :Name, "None"),", ")
-    println(io, "owner = ",get(spec, :Owner, "Unknown"))
+    println(io, "Spectrum[name = $(get(spec, :Name, "None")), owner = $(get(spec, :Owner, "Unknown"))]")
     cols, rows = 80, 16
     # how much to plot
-    e0_eV = haskey(spec,:BeamEnergy) ?
-        e0_eV=spec.properties[:BeamEnergy] :
-        energy(length(spec), spec)
-    maxCh = min(channel(e0_eV, spec),length(spec))
-    step = maxCh ÷ cols
-    max = maximum(spec.counts)
-    maxes = fill(0.0,cols)
-	for i in 1:cols
-        maxes[i] = rows*(maximum(spec.counts[(i-1)*step+1:i*step])/max)
-    end
+    e0_eV = haskey(spec,:BeamEnergy) ? spec[:BeamEnergy] : energy(length(spec), spec)
+    maxCh = min(channel(e0_eV, spec), length(spec))
+    step, max = maxCh ÷ cols, maximum(spec.counts)
+    maxes = [ rows*(maximum(spec.counts[(i-1)*step+1:i*step])/max) for i in 1:cols ]
     for r in 1:rows
         ss=""
         for i in 1:cols
             ss = ss * (r ≥ rows - maxes[i] ? "*" : " ")
         end
         if r==1
-            println(io, ss, " ", max)
+            println(io, "$ss $max")
         elseif r==rows
-            println(io, ss," ",0.001*get(spec,:BeamEnergy,-1.0)," keV]")
+            println(io, "$ss $(0.001*e0_eV) keV]")
         else
             println(io, ss)
         end
@@ -93,7 +85,7 @@ function split_emsa_header_item(line::AbstractString)
         tmp = uppercase(strip(SubString(line,2:p.start-1)))
         pp = findfirst("-",tmp)
         if pp ≠ nothing
-            key, mod = strip(SubString(tmp,0::pp.start-1)), strip(SubString(tmp,pp.start+1))
+            key, mod = strip(SubString(tmp,1:pp.start-1)), strip(SubString(tmp,pp.stop+1))
         else
             key, mod = tmp, nothing
         end
@@ -182,7 +174,7 @@ function readEMSA(filename::AbstractString)::Spectrum
         energy, counts = LinearEnergyScale(0.0,10.0), Int[]
         props = Dict{Symbol,Any}()
         props[:Filename]=filename
-        inData, lx = 0, 0
+        inData, lx, xpcscale = 0, 0, 1.0
         stgpos = Dict{Symbol,Float64}()
         for line in eachline(f)
             lx+=1
@@ -209,13 +201,16 @@ function readEMSA(filename::AbstractString)::Spectrum
             elseif startswith(line,"#")
                 res = split_emsa_header_item(line)
                 if res ≠ nothing
-                    key, value = res
+                    key, value, mod = res
                     if key == "SPECTRUM"
                         inData = 1
                     elseif key == "BEAMKV"
                         props[:BeamEnergy]=1000.0*parse(Float64,value) # in eV
                     elseif key == "XPERCHAN"
-                        energy = LinearEnergyScale(energy.offset, parse(Float64,value))
+						xperch=parse(Float64,value)
+						xpcscale = isnothing(mod) ? (xperch < 0.1 ? 1000.0 : 1.0) :  # Guess likely eV or keV
+										(isequal(mod,"KEV") ? 1000.0 : 1.0)
+                        energy = LinearEnergyScale(xpcscale*energy.offset, xpcscale*xperch)
                     elseif key == "LIVETIME"
                         props[:LiveTime]=parse(Float64,value)
                     elseif key == "REALTIME"
@@ -223,7 +218,7 @@ function readEMSA(filename::AbstractString)::Spectrum
                     elseif key == "PROBECUR"
                         props[:ProbeCurrent]=parse(Float64,value)
                     elseif key == "OFFSET"
-                        energy = LinearEnergyScale(parse(Float64,value), energy.width)
+                        energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
                     elseif key == "TITLE"
                         props[:Name]=value
                     elseif key == "OWNER"
@@ -239,11 +234,23 @@ function readEMSA(filename::AbstractString)::Spectrum
                     elseif key == "COMMENT"
                         prev = getindex(props,:Comment,missing)
                         props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
-                    elseif key== "#D2STDCMP"
+                    elseif key == "#D2STDCMP"
                         props[:Composition] = parsedtsa2comp(value)
-                    elseif key== "#CONDCOATING"
+                    elseif key == "#CONDCOATING"
                         props[:Coating] = parsecoating(value)
-                    end
+                    elseif key =="#RTDET" # Bruker
+						props[:DetectorModel] = value
+					elseif key == "#TDEADLYR" # Bruker
+						@assert isnothing(mod) || (!isequal(mod,"CM")) "Unexpected scale -$mod"
+						props[:DeadLayer] = parse(Float64, value)
+					elseif key == "#FANO" # Bruker
+						props[:Fano] = parse(Float64, value)
+					elseif key == "#MNFWHM" # Bruker
+						sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
+						props[:FWHMMnKa] = sc*parse(Float64, value)
+					elseif key == "#IDENT" # Bruker
+						props[:XRFAnode] = parse(Element, value)
+					end
                 end
             end
         end
