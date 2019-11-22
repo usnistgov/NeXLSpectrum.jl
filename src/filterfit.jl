@@ -181,22 +181,11 @@ end
 """
     FilteredLabel
 
-An abstract type associated with labels of filtered spectrum data objects.
+An abstract type associated with labels of filtered spectrum data objects.  structs that extend FilteredLabel should
+have <code>.spec</code> members.
 """
 abstract type FilteredLabel <: Label end
 
-"""
-    ReferenceLabel
-
-A label associated with reference spectra.  The label encapsulates the original spectrum and the range of channels
-represented by this reference object.
-"""
-abstract type ReferenceLabel <: FilteredLabel end
-
-struct SpectrumLabel <: ReferenceLabel
-    spec::Spectrum
-    roi::UnitRange{Int}
-end
 """
     spectrum(fl::FilteredLabel)::Spectrum
 
@@ -205,14 +194,29 @@ The spectrum associated with a FilteredLabel-based type.
 spectrum(fl::FilteredLabel) = fl.spec
 
 """
+    ReferenceLabel
+
+A label associated with reference spectra.  The label encapsulates the original spectrum and the range of channels
+represented by this reference object.  structs that extend ReferenceLabel should have <code>.roi</code> and
+<code>.spec</code> members.
+"""
+abstract type ReferenceLabel <: FilteredLabel end
+
+"""
    channels(rl::ReferenceLabel)::UnitRange{Int}
 
 The range of channels associated with the specified ReferenceLabel.
 """
 channels(rl::ReferenceLabel) = rl.roi
 
-Base.show(io::IO, refLab::SpectrumLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
-Base.isequal(rl1::SpectrumLabel, rl2::SpectrumLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
+Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
+Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
+Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
+    return isequal(rl1.roi,rl2.roi) ?
+        isless(rl1.spec[:Name], rl2.spec[:Name]) :
+        (  isequal(rl1.roi.start, rl2.roi.start) ?
+             isless(rl1.roi.stop, rl2.roi.stop) :
+             isless(rl1.roi.start, rl2.roi.start))
 
 """
     CharXRayLabel
@@ -256,8 +260,6 @@ Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
     isequal(el1.roi, el2.roi) && isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
 NeXLCore.name(escl::EscapeLabel) = "Ecs[$(name([esc.xray for esc in escl.xrays]))]"
 
-
-
 """
     UnknownLabel
 
@@ -269,6 +271,7 @@ end
 
 Base.show(io::IO, unk::UnknownLabel) = print(io, "Unknown[$(unk.spec[:Name])]")
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
+spectrum(unkl::UnknownLabel) = unkl.spec
 
 abstract type FilteredDatum end
 
@@ -394,7 +397,7 @@ function Base.filter(
 )::FilteredReference
     charonly = spec[roi] - modelBackground(spec, roi, ashell)
     f = _filter(spec, roi, filter, tol)
-    return FilteredReference(SpectrumLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
+    return FilteredReference(UnknownLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
 end
 
 """
@@ -418,7 +421,7 @@ function Base.filter(
 )::FilteredReference
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, filter, tol)
-    return FilteredReference(SpectrumLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
+    return FilteredReference(UnknownLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
 end
 
 """
@@ -684,14 +687,27 @@ kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
 residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 
+"""
+    peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64
+
+The peak-to-background ratio as determined from the raw and residual spectra integrated over
+the fit region-of-interest and scaled to <code>backwidth</code> eV of continuum (nominally 10 eV).
+"""
+function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidth::Float64=10.0)::Float64
+    unk = spectrum(unknown(ffr))
+    peak, back = ffr.peakback[klabel]
+    return (peak*(energy(klabel.roi.stop,unk)-energy(klabel.roi.start,unk))) / (backwidth*back)
+end
+
 NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
     asa(DataFrame, [r.kratios for r in ffrs], withUnc)
 
 function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
-    lbl, klbl, kr, dkr, roi1, roi2, peak, back =
-        UnknownLabel[], ReferenceLabel[], Float64[], Float64[], Int[], Int[], Float64[], Float64[]
+    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
+        UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
     for kl in labels(ffr.kratios)
         push!(lbl,ffr.label)
+        push!(std, spectrum(kl)[:Name])
         push!(klbl, kl)
         push!(roi1, kl.roi.start)
         push!(roi2, kl.roi.stop)
@@ -700,8 +716,9 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFra
         pb = ffr.peakback[kl]
         push!(peak, pb[1])
         push!(back, pb[2])
+        push!(ptob, peaktobackground(ffr, kl))
     end
-    return DataFrame(Label=lbl, Feature=klbl, Start=roi1, Stop=roi2, K=kr, dK=dkr, Peak=peak, Back=back)
+    return DataFrame(Label=lbl, Feature=klbl, Reference=std, Start=roi1, Stop=roi2, K=kr, dK=dkr, Peak=peak, Back=back, PtoB=ptob)
 end
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
