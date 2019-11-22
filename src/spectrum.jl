@@ -76,7 +76,7 @@ end
 
 Converts the spectrum energy and counts data into a DataFrame.
 """
-NeXLCore.asa(::Type{DataFrame}, spec::Spectrum)::DataFrame =
+NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum)::DataFrame =
     DataFrame(E=energyscale(spec),I=counts(spec))
 
 function split_emsa_header_item(line::AbstractString)
@@ -642,11 +642,11 @@ estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
 
 
 """
-    NeXLCore.asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
+    NeXLUncertainties.asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
 
 Outputs a description of the data in the spectrum.
 """
-function NeXLCore.asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
+function NeXLUncertainties.asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
 	_asname(comp) = ismissing(comp) ? missing : name(comp)
 	unf, unl, uns = Union{Float64, Missing}, Union{Film, Nothing}, Union{String, Missing}
 	nme, e0, pc, lt, rt, coat, integ, comp = String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]

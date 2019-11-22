@@ -684,10 +684,10 @@ kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
 residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 
-NeXLCore.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
+NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
     asa(DataFrame, [r.kratios for r in ffrs], withUnc)
 
-function NeXLCore.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
+function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
     lbl, klbl, kr, dkr, roi1, roi2, peak, back =
         UnknownLabel[], ReferenceLabel[], Float64[], Float64[], Int[], Int[], Float64[], Float64[]
     for kl in labels(ffr.kratios)
