@@ -269,7 +269,7 @@ struct UnknownLabel <: FilteredLabel
     spec::Spectrum
 end
 
-Base.show(io::IO, unk::UnknownLabel) = print(io, "Unknown[$(unk.spec[:Name])]")
+Base.show(io::IO, unk::UnknownLabel) = print(io, unk.spec[:Name])
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
 spectrum(unkl::UnknownLabel) = unkl.spec
 
@@ -450,7 +450,7 @@ struct FilteredUnknownG <: FilteredUnknown
     covariance::AbstractMatrix{Float64} # Channel covariance
 end
 
-Base.show(io::IO, fd::FilteredUnknown) = print(io, "Unknown[$(fd.identifier)]")
+Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
 
 """
     filter(spec::Spectrum, filter::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum

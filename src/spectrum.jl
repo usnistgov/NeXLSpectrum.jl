@@ -170,12 +170,6 @@ matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
 Read an ISO/EMSA format spectrum from a disk file at the specified path.
 """
 function readEMSA(filename::AbstractString)::Spectrum
-	function _cleanname(value)
-		name = startswith(value,"Bruker AXS spectrum") ? value[21:end] : value
-		name = startswith(name,"Bruker Nano spectrum") ? name[22:end] : name
-		name = endswith(name, ".txt") ? name[1:end-4] : name
-		return name
-	end
     open(filename,"r") do f
         energy, counts = LinearEnergyScale(0.0,10.0), Int[]
         props = Dict{Symbol,Any}()
@@ -226,7 +220,7 @@ function readEMSA(filename::AbstractString)::Spectrum
                     elseif key == "OFFSET"
                         energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
                     elseif key == "TITLE"
-                        props[:Name]=_cleanname(value)
+                        props[:Name]=value
                     elseif key == "OWNER"
                         props[:Owner]=value
                     elseif key == "ELEVANGLE"
@@ -265,13 +259,17 @@ function readEMSA(filename::AbstractString)::Spectrum
                 end
             end
         end
-        if startswith( props[:Name], "Bruker Nano")
+        if startswith( props[:Name], "Bruker")
             if haskey(props, :Composition)
                 props[:Name]=name(props[:Composition])
             else
-                props[:Name]=basename(filename[1:end-4])
+				path = splitpath(filename)
+                props[:Name]=path[end]
             end
         end
+		if endswith(props[:Name],".txt") || endswith(props[:Name],".msa")
+			props[:Name] = props[:Name][1:end-4]
+		end
         props[:StagePosition] = stgpos
         return Spectrum(energy, counts, props)
     end
