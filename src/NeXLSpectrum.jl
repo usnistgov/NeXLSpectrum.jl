@@ -42,6 +42,7 @@ export integrate # Integrate range of channels
 export energyscale # Energy scale function
 export elements # A collection of the Elements in the spectrum
 export subsample # Sub-sample a spectrum
+export subdivide # Divide the counts among n spectra
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity

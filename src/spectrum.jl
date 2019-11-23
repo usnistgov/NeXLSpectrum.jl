@@ -533,16 +533,17 @@ end
 Splits the event data in one spectrum into n spectra by assigning each event
 to a pseudo-random choice of one of the n result spectra.  Produces n spectra
 that act as though the original spectrum was collected in n time intervals
-of LiveTime/n.
+of LiveTime/n.  This is quite slow because it needs to call rand() for each
+count in the spectrum (not just each channel).
 """
 function subdivide(spec::Spectrum, n::Int)::Array{Spectrum}
-	tmp, res = zeros(Int, n), zeros(Int,n,length(spec.counts))
+	res = zeros(Int,n,length(spec.counts))
 	for ch in eachindex(spec.counts)
-		tmp.=0
-		for i in 1:floor(Int,spec[ch])
-			tmp[rand(1:n)]+=1 # Place each count into one of the n result spectra
+		# Assign each event to one and only one detector
+		si = rand(1:n, floor(Int,spec[ch]))
+		for i in 1:n
+			res[i,ch]=count(e->e==i,si)
 		end
-		res[:,ch]=tmp
 	end
 	specs = Spectrum[]
 	for i in 1:n
