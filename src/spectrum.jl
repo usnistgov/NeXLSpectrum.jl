@@ -527,6 +527,35 @@ function subsample(spec::Spectrum, frac::Float64)::Spectrum
 		return spec
 	end
 end
+"""
+    subdivide(spec::Spectrum, n::Int)::Array{Spectrum}
+
+Splits the event data in one spectrum into n spectra by assigning each event
+to a pseudo-random choice of one of the n result spectra.  Produces n spectra
+that act as though the original spectrum was collected in n time intervals
+of LiveTime/n.
+"""
+function subdivide(spec::Spectrum, n::Int)::Array{Spectrum}
+	tmp, res = zeros(Int, n), zeros(Int,n,length(spec.counts))
+	for ch in eachindex(spec.counts)
+		tmp.=0
+		for i in 1:floor(Int,spec[ch])
+			tmp[rand(1:n)]+=1 # Place each count into one of the n result spectra
+		end
+		res[:,ch]=tmp
+	end
+	specs = Spectrum[]
+	for i in 1:n
+		props = deepcopy(spec.properties)
+		props[:Name] = "Sub[$(spec[:Name]),$(i) of $(n)]"
+		props[:LiveTime]=spec[:LiveTime]/n # Must have
+		if haskey(spec, :RealTime)
+			props[:RealTime]=spec[:RealTime]/n # Might have
+		end
+		push!(specs,Spectrum(spec.energy, res[i,:], props))
+	end
+	return specs
+end
 
 
 """
