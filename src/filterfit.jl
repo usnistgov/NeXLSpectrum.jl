@@ -108,12 +108,12 @@ function buildfilter(
 )::TopHatFilter
     resf(::Type{VariableWidthFilter}, center, det) = resolution(center, det) # FWHM at center
     resf(::Type{ConstantWidthFilter}, center, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
-    intersect(a, b, c, d) = max(0.0, min(b, d) - max(a, c)) # Length of intersection [a,b) with [c,d)
+    intersect(aa, bb, cc, dd) = max(0.0, min(bb, dd) - max(aa, cc)) # Length of intersection [a,b) with [c,d)
     filtint(e0, e1, minb, mina, maxa, maxb) =
         intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
         intersect(maxa, maxb, e0, e1) * (-0.5 / (maxb - maxa))
-    M(minb, mina) = channel(mina, det) - channel(minb, det)   # base length in channels
-    N(mina, maxa) = (channel(maxa, det) - channel(mina, det))/2 # Top length in channels
+    M(astop, astart) = (channel(astop, det) - channel(astart, det) - 1.0)/2.0   # base length in channels
+    N(bstart, astart) = channel(astart, det) - channel(bstart, det) # Top length in channels
     cc = channelcount(det)
     filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
     for ch1 in eachindex(wgts)
@@ -131,10 +131,10 @@ function buildfilter(
             @assert abs(sum(filt[ch1,:]))<1.0e-12 "Filter $ch1 does not sum to zero."
             @assert all(i->filt[ch1,i]==filt[ch1,chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
         end
-        m, n = M(eb[1], ea[1]), N(ea...)
-        @assert m>0.0 "m=$m!!!!"
-        @assert n>0.0 "n=$n!!!!"
-        wgts[ch1] = ((2.0*m+1.0)*(2.0*n))/(2.0*m+1.0+2.0*n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
+        m, n = M(ea[2], ea[1]), N(eb[1], ea[1])
+        @assert m>0.0 "m=$(m)!!!!"
+        @assert n>0.0 "n=$(n)!!!!"
+        wgts[ch1] = 3.0*((2.0*m+1.0)*(2.0*n))/(2.0*m+1.0+2.0*n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
     end
     @assert all(r->abs(sum(r))<1.0e-12, eachrow(filt)) "A filter does not sum to zero."
     return TopHatFilter(ty, det, filt, wgts)
@@ -154,7 +154,7 @@ function buildfilter(
     ty::Type{GaussianFilter},
     det::Detector,
     a::Float64 = 1.0,
-    b::Float64 = 5.0 # Width
+    b::Float64 = 6.0 # Width
 )::TopHatFilter
     filtint(center, ee, gw) = exp(-0.5*((ee-center)/gw)^2)
     cc = channelcount(det)
@@ -433,67 +433,7 @@ full covariance calculation for the generalized model is so expensive relative t
 """
 abstract type FilteredUnknown <: FilteredDatum end
 
-
-"""
-    FilteredUnknownG
-
-Represents the unknown in a filter fit using the full generalized fitting model.  This model is expensive to
-calculate but uses the full generalized linear fitting model which produces the correct fit covariances.
-"""
-struct FilteredUnknownG <: FilteredUnknown
-    identifier::UnknownLabel # A way of identifying this filtered datum
-    scale::Float64 # A dose or other scale correction factor
-    roi::UnitRange{Int} # ROI for the raw data
-    ffroi::UnitRange{Int} # ROI for the filtered data
-    data::Vector{Float64} # Spectrum data over ffroi
-    filtered::Vector{Float64} # Filtered spectrum data over ffroi
-    covariance::AbstractMatrix{Float64} # Channel covariance
-end
-
 Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
-
-"""
-    filter(spec::Spectrum, filter::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
-
-For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
-"""
-function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filter::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownG
-    range(i) = filter.offsets[i] : filter.offsets[i] + length(filter.filters[i]) - 1
-    apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
-    function covariance(roi, data, filter) # Calculated the full covariance matrix
-        off(r, o) = r.start-o+1:r.stop-o+1
-        rs, cs, vs = Vector{Int}(), Vector{Int}(), Vector{Float64}()
-        res = zeros( ( length(roi), length(roi) ) )
-        bdata = map(d -> max(d, 1.0), data)
-        for r in roi
-            rr, rf, ro = range(r), filter.filters[r], filter.offsets[r]
-            for c in roi
-                ii = intersect(rr, range(c))
-                if length(ii) > 0
-                    cf, co = filter.filters[c], filter.offsets[c]
-                    # The next line is the core time sink...
-                    v = dot( view(rf, off(ii, ro)) .* view(bdata, ii) , view(cf, off(ii, co)))
-                    if v ≠ 0.0
-                        push!(rs, r), push!(cs, c), push!(vs, v)
-                    end
-                end
-            end
-        end
-        push!(rs, roi.stop), push!(cs, roi.stop), push!(vs, 0.0) # force the size
-        return sparse(rs, cs, vs)
-    end
-    data = counts(spec, Float64, true)
-    # Compute the filtered data
-    filtered = apply(filter, data)
-    roi = 1:findlast(f -> f ≠ 0.0, filtered)
-    # max(d,1.0) is necessary to ensure the variances are positive
-    # diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
-    covar = covariance(roi, data, filter)
-    @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in filter(...)::FilterUnknown."
-    checkcovariance!(covar)
-    return FilteredUnknownG(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
-end
 
 """
     FilteredUnknownW
@@ -504,7 +444,7 @@ optimistic resulting covariance matrix.
 struct FilteredUnknownW <: FilteredUnknown
     identifier::UnknownLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
-    roi::UnitRange{Int} # ROI for the raw data
+    roi::UnitRange{Int} # ROI for the raw data (always 1:...)
     ffroi::UnitRange{Int} # ROI for the filtered data
     data::Vector{Float64} # Spectrum data over ffroi
     filtered::Vector{Float64} # Filtered spectrum data over ffroi
@@ -540,9 +480,6 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFil
     return FilteredUnknownW(UnknownLabel(spec), scale, roi, roi, data, filtered, covar)
 end
 
-
-
-
 """
     extract(fd::FilteredReference, roi::UnitRange{Int})
 
@@ -559,40 +496,23 @@ function extract(fd::FilteredReference, roi::UnitRange{Int})
 end
 
 """
-    extract(fd::FilteredUnknown, roi::UnitRange{Int})
+    extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64}
 
-Extract the filtered data representing the specified range.  <code>roi</code> must fully encompass the filtered
-data in <code>fd</code>.
+Extract the filtered data representing the specified range.  <code>roi</code> must be fully contained within the
+filtered data in <code>fd</code>.
 """
-function extract(fd::FilteredUnknown, roi::UnitRange{Int})
-    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
-    return copy(fd.filtered[nz])
-end
+extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} =
+    fd.filtered[roi]
 
-
-"""
-    covariance(fd::FilteredUnknownG, roi::UnitRange{Int})
-
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
-fully encompass the filtered edata in <code>fd</code>.
-"""
-function covariance(fd::FilteredUnknownG, roi::UnitRange{Int})
-    # Unknown case
-    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
-    return Matrix(fd.covariance[nz,nz])
-end
 
 """
     covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
 
 Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
-<code>roi</code> must fully encompass the filtered edata in <code>fd</code>.
+<code>roi</code> must be fully contained within the data in <code>fd</code>.
 """
-function covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
-    # Unknown case
-    nz = roi.start-fd.ffroi.start+1:roi.stop-fd.ffroi.start+1
-    return fd.covariance[nz]
-end
+covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::AbstractVector{Float64} =
+    fd.covariance[roi]
 
 # _buildXXX - Helpers for fitcontiguousX functions...
 function _buildmodel(ffs::Array{FilteredReference}, chs::UnitRange{Int})::Matrix{Float64}
@@ -606,37 +526,6 @@ _buildlabels(ffs::Array{FilteredReference}) = collect(ff.identifier for ff in ff
 _buildscale(unk::FilteredUnknown, ffs::Array{FilteredReference}) =
      Diagonal( [ unk.scale / ffs[i].scale for i in eachindex(ffs) ] )
 
-"""
-Generalized least squares (my implementation)
-"""
-function fitcontiguousg(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * glssvd(extract(unk, chs), x, covariance(unk, chs), lbls)
-end
-
-"""
-Generalized least squares (pseudo-inverse)
-"""
-function fitcontiguousp(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * glspinv(extract(unk, chs), x, covariance(unk, chs), lbls)
-end
-
-"""
-Weighted least squares using the diagonal from the FilteredUnknownG covariance.
-"""
-function fitcontiguousw(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * glspinv(extract(unk, chs), x, Diagonal(diag(covariance(unk, chs))), lbls)
-end
-
-"""
-Weighted least squares using the diagonal from the FilteredUnknownG covariance.
-"""
-function fitcontiguousw2(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * wlssvd(extract(unk, chs), x, diag(covariance(unk, chs)), lbls)
-end
 
 """
 Weighted least squares for FilteredUnknownW
@@ -654,7 +543,6 @@ function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end
-
 
 """
     FilterFitResult
@@ -700,7 +588,7 @@ function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidt
 end
 
 NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
-    asa(DataFrame, [r.kratios for r in ffrs], withUnc)
+    hcat(DataFrame(Name=[r.label for r in ffrs]), asa(DataFrame, [r.kratios for r in ffrs], withUnc))
 
 function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
     lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
@@ -767,37 +655,6 @@ function _computecounts( #
 end
 
 """
-    filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
-
-Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
-By default use the generalized LLSQ fitting (pseudo-inverse implementation).
-"""
-function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
-    fitrois = ascontiguous(map(fd->fd.ffroi, ffs))  # Divide up into contiguous rois
-    @info "Fitting $(length(ffs)) references in $(length(fitrois)) blocks - $fitrois"
-    kr = cat(map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois)) # fit each roi
-    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb) # Return results
-end
-
-"""
-    filterfit_all(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
-
-
-Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
-Fits all the references as one large linear equation rather than breaking them up into contiguous blocks.
-By default use the generalized LLSQ fitting (pseudo-inverse implementation).
-"""
-function filterfit_all(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
-    fr = minimum(ff.ffroi.start for ff in ffs)-20:maximum(ff.ffroi.stop for ff in ffs)+20  # Make one large roi
-    @info "Fitting $(length(ffs)) references in 1 block - $fr"
-    kr = alg(unk, ffs, fr) # Fit the roi
-    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb) # Return results
-end
-
-
-"""
     filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
@@ -844,9 +701,6 @@ end
 
 fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
     filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, fitcontiguousww, forcezeros)
-
-fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
-    filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, fitcontiguousw, forcezeros)
 
 fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
     fit(FilteredUnknownW, unk, filt, refs, forcezeros)

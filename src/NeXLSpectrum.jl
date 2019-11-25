@@ -60,7 +60,6 @@ export ConstantWidthFilter # An alternative filter definition that holds the fil
 export GaussianFilter # An alternative filter definition based on an offset Gaussian
 
 export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
-export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
 
 # Different types of spectrum features that can be fit ROIs
@@ -78,6 +77,10 @@ export filterfit
 export filteredresidual
 export FilterFitResult
 export fit
+
+# The implementation for generalized filter-fit.
+include("generalizedff.jl")
+export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

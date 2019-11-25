@@ -30,13 +30,25 @@ end
 """
     glspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
 
-Solves the generalized least squares problem a⋅x = y for x using the pseudo-inverse for AbstractFloat-based types.
+Solve the generalized least squares problem y = x β + ϵ for β where ϵ ~ v σ using the pseudo-inverse.
 """
-function glspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    xtiv=transpose(a)*pinv(v, tol)
-    xtivx = pinv(xtiv*a, tol)
-    return uvs(xLabels, xtivx*xtiv*y, xtivx)
+function glspinv(y::AbstractVector{N}, x::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+    txiv=transpose(x)*pinv(v)
+    yp, ixp = txiv * y, pinv(txiv * x)
+    return uvs(xLabels, ixp*yp, ixp)
 end
+
+"""
+    glsinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+
+Solve the generalized least squares problem y = x β + ϵ for β where ϵ ~ v σ using the inverse.
+"""
+function glsinv(y::AbstractVector{N}, x::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+    txiv=transpose(x)*inv(v)
+    yp, ixp = txiv * y, inv(txiv * x)
+    return uvs(xLabels, ixp*yp, ixp)
+end
+
 
 """
     glssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
@@ -45,8 +57,9 @@ Solves the generalized least squares problem a⋅x = y for x using singular valu
 """
 function glssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     checkcovariance!(cov)
-    w = cov_whitening(cov)
-    olssvd(w*y, w*a, 1.0, xLabels, tol)
+    w = cov_whitening(Matrix(cov))
+    #olssvd(w*y, w*a, 1.0, xLabels, tol)
+    return olspinv(w*y, w*a, 1.0, xLabels, tol)
 end
 
 
@@ -71,7 +84,7 @@ function wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector
 end
 
 """
-    glssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+    wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
 
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """
