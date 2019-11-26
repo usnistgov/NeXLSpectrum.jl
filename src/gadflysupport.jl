@@ -37,6 +37,20 @@ const NeXLPalette = ( # This palette - DTSA-II plus https://flatuicolors.com/pal
     RGB(237 / 255, 76 / 255, 103 / 255),
 )
 
+NeXLSpectrumStyle = style(
+        background_color=nothing,
+        panel_fill = RGB(253/255, 253/255, 241/255),
+        grid_color=RGB(255/255, 223/255, 223/255),
+        grid_color_focused=RGB(255/255, 200/255, 200/255),
+        grid_line_style=:solid,
+        major_label_color =RGB(32/255,32/255,32/255),
+        major_label_font_size = 9pt,
+        panel_stroke = RGB(32/255,32/255,32/255),
+        plot_padding = [2pt],
+        key_title_font_size = 9pt,
+        key_position=:right # :bottom
+    )
+
 """
     Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing)::Plot
 
@@ -53,7 +67,8 @@ Gadfly.plot( #
 	xmax=missing,
 	norm=:None,
 	yscale=1.05,
-	ytransform=identity
+	ytransform=identity,
+	style=NeXLSpectrumStyle
 )::Plot =
 	plot( #
 		[spec],
@@ -80,7 +95,8 @@ Gadfly.plot( #
 	    xmax=missing,
 	    norm=:None,
 	    yscale=1.05,
-	    ytransform = identity
+	    ytransform = identity,
+		style=NeXLSpectrumStyle
     )::Plot
 
 Plot a multiple spectra on a single plot using Gadfly.
@@ -100,6 +116,7 @@ Named:
 	norm = :None|:Sum|:Dose|:Peak|:DoseWidth
 	yscale = 1.05 # Fraction of max intensity for ymax
 	ytransform = identity | log10 | sqrt | ???
+	style=NeXLSpectrumStyle (or another Gadfly.style)
 """
 function Gadfly.plot(
 	specs::AbstractVector{Spectrum};
@@ -112,7 +129,8 @@ function Gadfly.plot(
 	xmax=missing,
 	norm=:None,
 	yscale=1.05,
-	ytransform = identity
+	ytransform = identity,
+	style=NeXLSpectrumStyle
 )::Plot
 	# The normalize functions return a Vector{Vector{Float64}}
 	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
@@ -188,7 +206,6 @@ function Gadfly.plot(
 		end
 		return layer(x=x, y=y, label=label, Geom.hair, Geom.label(position=:above), Theme(default_color="gray" ))
 	end
-
 	if norm==:Dose
 		specdata=normalizeDose(specs)
 		ylbl = "Counts/(nA⋅s)"
@@ -242,11 +259,13 @@ function Gadfly.plot(
 	if length(coincidences)>0
 		push!(layers, sumPeaks(coincidences))
 	end
-    plot(layers...,
-        Guide.XLabel("Energy (eV)"), Guide.YLabel(ylbl),
-        Scale.x_continuous(format=:plain), Scale.y_continuous(format=:plain),
-		Guide.manual_color_key(length(specs)>1 ? "Spectra" : "Spectrum", names, colors),
-        Coord.Cartesian(ymin=0, ymax=ytransform(yscale*maxI), xmin=xmin, xmax=maxE))
+	Gadfly.with_theme(style) do
+	    plot(layers...,
+	        Guide.XLabel("Energy (eV)"), Guide.YLabel(ylbl),
+	        Scale.x_continuous(format=:plain), Scale.y_continuous(format=:plain),
+			Guide.manual_color_key(length(specs)>1 ? "Spectra" : "Spectrum", names, colors),
+	        Coord.Cartesian(ymin=0, ymax=ytransform(yscale*maxI), xmin=xmin, xmax=maxE))
+	end
 end
 
 """
