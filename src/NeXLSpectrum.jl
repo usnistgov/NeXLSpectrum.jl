@@ -53,7 +53,7 @@ export estkratio # Estimate the k-ratio from two spectra for a ROI
 export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 
 include("llsq.jl")
-include("filterfit.jl")
+include("filterfit_wls.jl")
 export TopHatFilter # Struct representing a fitting filter
 export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
 export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
@@ -79,7 +79,7 @@ export FilterFitResult
 export fit
 
 # The implementation for generalized filter-fit.
-include("generalizedff.jl")
+include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 
 function __init__()
