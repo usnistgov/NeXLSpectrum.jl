@@ -12,24 +12,33 @@ end;
     Spectrum
 A structure to hold spectrum data (energy scale, counts and metadata).
 Metadata is identified by a symbol. Predefined symbols include
+
     :BeamEnergy    # In eV
 	:Elevation     # In radians
 	:TakeOffAngle  # In radians
+	:WorkingDistance # In cm
     :LiveTime      # In seconds
     :RealTime      # In seconds
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
-    :StagePosition # A Dict with entries :X, :Y, :Z, :R, :TX in millimeters and degrees
+    :StagePosition # A Dict{Symbol,Float64} with entries :X, :Y, :Z, :R, :TX in cm and degrees
     :Comment       # A string
     :Composition   # A Material
 	:Elements      # A collection of elements in the material
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
     :Coating       # A Film (eg. 10 nm of C|Au etc.)
+	:AcquisitionTime # Date and time of acquisition (DateTime struct)
+
+Less common items
+
+	:ImageMag	   # Magnification (assuming a 3.5" image) of the first image
+	:ImageZoom     # Additional zoom for second image in a two image TIFF
 
 Not all spectra will define all properties.
 If spec is a Spectrum then
+
     spec[123] # will return the number of counts in channel 123
     spec[134.] # will return the number of counts in the channel at energy 134.0 eV
     spec[:Comment] # will return the property comment
