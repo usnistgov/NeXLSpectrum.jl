@@ -315,7 +315,7 @@ Implements:
     channel(eV::Float64, det::Detector)::Int
     profile(energy::Float64, xrayE::Float64, det::Detector)
     lld(det::Detector)::Int
-    escapes(det::Detector, )
+    visible(sf::SpectrumFeature, det::Detector)
 """
 abstract type Detector end
 
@@ -392,6 +392,14 @@ The channel index in which the specified energy X-ray belongs.
 channel(eV::Float64, det::SimpleEDS) =
     channel(eV, det.scale)
 
+"""
+    visible(sf::SpectrumFeature, det::Detector)
+
+Is <code>sf</code> visible on the specified Detector?
+"""
+visible(sf::SpectrumFeature, det::SimpleEDS) =
+    (energy(sf)>energy(lld(det), det)) && (energy(sf)<energy(det.channelcount+1, det))
+
 """"
     profile(energy::Float64, xrayE::Float64, det::Detector)
 
@@ -401,27 +409,15 @@ with the specified resolution.
 profile(energy::Float64, xrayE::Float64, det::Detector) =
     profile(energy, xrayE, det.resolution)
 
+
 """
     visible(cxrs::AbstractVector{SpectrumFeature}, det::Detector)
 
 Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
 channel).
 """
-function visible(cxrs::AbstractVector{SpectrumFeature}, det::Detector)
-    eMin, eMax = energy(lld(det), det), energy(det.channelcount+1, det)
-    return filter(cxr->(energy(cxr)>eMin) && (energy(cxr)<eMax), cxrs)
-end
-
-"""
-    visible(cxrs::AbstractVector{CharXRay}, det::Detector)
-
-Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
-channel).
-"""
-function visible(cxrs::AbstractVector{CharXRay}, det::Detector)
-    eMin, eMax = energy(lld(det), det), energy(det.channelcount+1, det)
-    return filter(cxr->(energy(cxr)>eMin) && (energy(cxr)<eMax), cxrs)
-end
+visible(sfs::AbstractVector{<:SpectrumFeature}, det::Detector) =
+    filter(sf->visible(sf,det), sfs)
 
 """
     extents(cxrs::AbstractVector{SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
