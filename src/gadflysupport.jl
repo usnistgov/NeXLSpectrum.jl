@@ -2,40 +2,8 @@ using .Gadfly
 using Colors
 using Printf
 
-const NeXLPalette = ( # This palette - DTSA-II plus https://flatuicolors.com/palette/nl
-    RGB(255 / 255, 66 / 255, 14 / 255),
-    RGB(0 / 255, 69 / 255, 134 / 255),
-    RGB(87 / 255, 157 / 255, 28 / 255),
-    RGB(126 / 255, 0 / 255, 33 / 255),
-    RGB(131 / 255, 202 / 255, 255 / 255),
-    RGB(49 / 255, 64 / 255, 4 / 255),
-    RGB(174 / 255, 207 / 255, 0 / 255),
-    RGB(75 / 255, 31 / 255, 111 / 255),
-    RGB(255 / 255, 149 / 255, 14 / 255),
-    RGB(197 / 255, 0 / 255, 11 / 255),
-    RGB(0 / 255, 132 / 255, 209 / 255),
-    RGB(255 / 255, 211 / 255, 32 / 255),
-    RGB(234 / 255, 32 / 255, 39 / 255),
-    RGB(27 / 255, 20 / 255, 100 / 255),
-    RGB(0 / 255, 98 / 255, 102 / 255),
-    RGB(87 / 255, 88 / 255, 187 / 255),
-    RGB(11 / 2551, 30 / 255, 81 / 255),
-    RGB(247 / 255, 159 / 255, 31 / 255),
-    RGB(18 / 255, 137 / 255, 167 / 255),
-    RGB(163 / 255, 203 / 255, 56 / 255),
-    RGB(217 / 255, 128 / 255, 250 / 255),
-    RGB(181 / 255, 52 / 255, 113 / 255),
-    RGB(238 / 255, 90 / 255, 36 / 255),
-    RGB(6 / 255, 82 / 255, 221 / 255),
-    RGB(0 / 255, 148 / 255, 50 / 255),
-    RGB(153 / 255, 128 / 255, 250 / 255),
-    RGB(131 / 255, 52 / 255, 113 / 255),
-    RGB(255 / 255, 195 / 255, 18 / 255),
-    RGB(18 / 255, 203 / 255, 196 / 255),
-    RGB(196 / 255, 229 / 255, 56 / 255),
-    RGB(253 / 255, 167 / 255, 223 / 255),
-    RGB(237 / 255, 76 / 255, 103 / 255),
-)
+const NeXLPalette = distinguishable_colors(66, Color[ RGB(253/255, 253/255, 241/255), RGB(0,0,0), colorant"DodgerBlue4" ])[3:end]
+const NeXLColorblind =  distinguishable_colors(66, Color[ RGB(253/255, 253/255, 241/255), RGB(0,0,0), colorant"DodgerBlue4" ], transform=deuteranopic)[3:end]
 
 NeXLSpectrumStyle = style(
         background_color=nothing,
@@ -68,7 +36,8 @@ Gadfly.plot( #
 	norm=:None,
 	yscale=1.05,
 	ytransform=identity,
-	style=NeXLSpectrumStyle
+	style=NeXLSpectrumStyle,
+	colorblind=false
 )::Plot =
 	plot( #
 		[spec],
@@ -130,7 +99,8 @@ function Gadfly.plot(
 	norm=:None,
 	yscale=1.05,
 	ytransform = identity,
-	style=NeXLSpectrumStyle
+	style=NeXLSpectrumStyle,
+	palette=NeXLPalette
 )::Plot
 	# The normalize functions return a Vector{Vector{Float64}}
 	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
@@ -230,7 +200,7 @@ function Gadfly.plot(
 		mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
-		clr = NeXLSpectrum.NeXLPalette[(i-1) % length(NeXLSpectrum.NeXLPalette)+1]
+		clr = palette[(i-1) % length(palette)+1]
 		push!(names, spec[:Name])
 		push!(colors, clr)
         push!(layers, layer(x=energyscale(spec)[chs], y=ytransform.(specdata[i][chs]), Geom.step, Theme(default_color=clr)))
@@ -274,11 +244,11 @@ end
 Plot the fitting filter and the spectrum from which it was derived.  Vertical red
 lines represent the principle ROC.
 """
-function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=missing)
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=missing; palette=NeXLPalette)
 	roilt(l1,l2) = isless(l1.roi.start,l2.roi.start)
 	roi = ismissing(roi) ? ffr.roi : roi
-	layers = [ layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=NeXLPalette[1])),
-	    	   layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=NeXLPalette[2])) ]
+	layers = [ layer(x=roi, y=ffr.raw[roi], Geom.step, Theme(default_color=palette[1])),
+	    	   layer(x=roi, y=ffr.residual[roi], Geom.step, Theme(default_color=palette[2])) ]
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0*maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(labels(NeXLSpectrum.kratios(ffr)),lt=roilt)
 		# This logic keeps the labels on different lines (mostly...)
