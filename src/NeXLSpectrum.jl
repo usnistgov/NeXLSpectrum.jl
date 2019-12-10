@@ -1,9 +1,9 @@
 module NeXLSpectrum
 
-using NeXLCore
-using NeXLUncertainties
-
+using Reexport
 using Requires
+
+@reexport using NeXLCore
 
 include("detector.jl")
 export EnergyScale # Abstract: Detector energy calibration function
