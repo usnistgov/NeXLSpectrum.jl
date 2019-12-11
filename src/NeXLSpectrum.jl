@@ -35,7 +35,6 @@ export Spectrum
 export channel # channel for energy
 export width # width of channel ch
 #export NeXLCore.energy # energy for channel
-export readEMSA # Read an EMSA file
 export dose # Spectrum probe dose
 export counts # Spectrum channel data
 export integrate # Integrate range of channels
@@ -51,6 +50,10 @@ export peak # Estimates the peak intensity
 export back # Estimates the background intensity
 export estkratio # Estimate the k-ratio from two spectra for a ROI
 export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
+
+include("emsa.jl")
+export readEMSA # Read an EMSA file
+
 
 include("llsq.jl")
 include("filterfit_wls.jl")

@@ -43,19 +43,39 @@ If spec is a Spectrum then
     spec[134.] # will return the number of counts in the channel at energy 134.0 eV
     spec[:Comment] # will return the property comment
 """
-struct Spectrum
+struct Spectrum{T<:Real} <: AbstractVector{T}
     energy::EnergyScale
-    counts::Array{<:Real}
+    counts::Vector{T}
     properties::Dict{Symbol,Any}
-    function Spectrum(energy::EnergyScale, data::Array{<:Real},props::Dict{Symbol,Any})
-        props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
-        return new(energy, data, props)
+
+    function Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
+		props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
+        return new{typeof(data[1])}(energy, data, props)
     end
 end
 
+# Make it act like an AbstractVector
+Base.eltype(spec::Spectrum) = Spectrum
+Base.length(spec::Spectrum) = length(spec.counts)
+Base.ndims(spec::Spectrum) = ndims(spec.counts)
+Base.size(spec::Spectrum) = size(spec.counts)
+Base.size(spec::Spectrum, n) = size(spec.counts, n)
+Base.axes(spec::Spectrum) = axes(spec.counts)
+Base.axes(spec::Spectrum, n) = axes(spec.counts, n)
+Base.eachindex(spec::Spectrum) = eachindex(spec.counts)
+Base.stride(spec::Spectrum, k) = stride(spec.counts, k)
+Base.strides(spec::Spectrum) = strides(spec.counts)
+Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
+Base.getindex(spec::Spectrum, sr::StepRange{Int64,Int64}) = spec.counts[sr]
+Base.getindex(spec::Spectrum, ur::UnitRange{Int64}) = spec.counts[ur]
+Base.get(spec::Spectrum, idx::Int, def=convert(typeof(spec.counts[1]), 0)) = get(spec.counts, idx, def)
+Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
+    spec.counts[idx] = convert(typeof(spec.counts[1]), val)
+Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) =
+    spec.counts[ur] = vals
+Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) =
+    spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
-
-channelcount(spec::Spectrum) = length(spec.counts)
 
 function Base.show(io::IO, spec::Spectrum)
     println(io, "Spectrum[name = $(get(spec, :Name, "None")), owner = $(get(spec, :Owner, "Unknown"))]")
@@ -88,38 +108,6 @@ Converts the spectrum energy and counts data into a DataFrame.
 NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum)::DataFrame =
     DataFrame(E=energyscale(spec),I=counts(spec))
 
-function split_emsa_header_item(line::AbstractString)
-    p = findfirst(":",line)
-    if p ≠ nothing
-        tmp = uppercase(strip(SubString(line,2:p.start-1)))
-        pp = findfirst("-",tmp)
-        if pp ≠ nothing
-            key, mod = strip(SubString(tmp,1:pp.start-1)), strip(SubString(tmp,pp.stop+1))
-        else
-            key, mod = tmp, nothing
-        end
-        value = strip(SubString(line,p.stop+1))
-        # println(key," = ",value)
-        return (key, value, mod)
-    else
-        return nothing
-    end
-end
-
-function parsecoating(value::AbstractString)::Union{Film,Missing}
-    i=findfirst(" nm of ",value)
-	if !isnothing(i)
-		try
-			thk = parse(Float64, value[1:i.start-1])*1.0e-7 # cm
-			mat = parsedtsa2comp(value[i.stop+1:end])
-			return Film(mat,thk)
-		catch err
-			@warn "Error parsing $(value) as a coating $(value)"
-		end
-	end
-    return missing
-end
-
 """
     apply(spec::Spectrum, det::SimpleEDS)::Spectrum
 
@@ -138,32 +126,12 @@ function apply(spec::Spectrum, det::SimpleEDS)::Spectrum
 end
 
 """
-    readEMSA(filename::AbstractString, det::Detector, force::Bool=false)::Spectrum
-
-Read an EMSA file and apply the specified detector.  If force is false and the detector and
-read calibration don't match then the function errors.
-"""
-function readEMSA(filename::AbstractString, det::Detector, force::Bool=false)::Spectrum
-	spec = readEMSA(filename)
-	if !force
-		if abs(channel(energy(1, det),spec)-1)>1
-			error("Spectrum and detector calibrations don't match - Offset.")
-		end
-		test = det.channelcount÷2
-		if abs(channel(energy(test,det),spec)-test)>1
-			error("Spectrum and detector calibrations don't match - Gain.")
-		end
-	end
-	return apply(spec, det)
-end
-
-"""
 	matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS
 
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
 matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS =
-	SimpleEDS(channelcount(spec), spec.energy, res, lld)
+	SimpleEDS(length(spec), spec.energy, res, lld)
 
 """
 	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS
@@ -171,144 +139,15 @@ matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS =
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
 matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
-	SimpleEDS(channelcount(spec), spec.energy, MnKaResolution(resMnKa), lld)
+	SimpleEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
 
-"""
-    readEMSA(filename::AbstractString)::Union{Spectrum,Nothing}
 
-Read an ISO/EMSA format spectrum from a disk file at the specified path.
-"""
-function readEMSA(filename::AbstractString)::Spectrum
-    open(filename,"r") do f
-        energy, counts = LinearEnergyScale(0.0,10.0), Int[]
-        props = Dict{Symbol,Any}()
-        props[:Filename]=filename
-        inData, lx, xpcscale = 0, 0, 1.0
-        stgpos = Dict{Symbol,Float64}()
-        for line in eachline(f)
-            lx+=1
-            if (lx ≤ 2)
-                res = split_emsa_header_item(line)
-                if (res==nothing) || ((lx==1) && (res[1]!="FORMAT" || uppercase(res[2])!="EMSA/MAS SPECTRAL DATA FILE"))
-                    error("This file does not have the correct header to be an EMSA/MAS spectrum file.")
-                end
-                if (res==nothing) || ((lx==2) && (res[1]!="VERSION" || res[2]!="1.0"))
-                    error("This file is not a VERSION=1.0 EMSA/MAS spectrum file.")
-                end
-            elseif inData>0
-                if startswith(line, "#ENDOFDATA")
-                    break
-                else
-                    for cc in split(line, ",")
-                        num = match(r"[-+]?[0-9]*\.?[0-9]+", cc)
-                        if num ≠ nothing
-                            append!(counts, round(Int, parse(Float64, num.match), RoundNearestTiesAway))
-                        end
-                        inData=inData+1
-                    end
-                end
-            elseif startswith(line,"#")
-                res = split_emsa_header_item(line)
-                if res ≠ nothing
-                    key, value, mod = res
-                    if key == "SPECTRUM"
-                        inData = 1
-                    elseif key == "BEAMKV"
-                        props[:BeamEnergy]=1000.0*parse(Float64,value) # in eV
-                    elseif key == "XPERCHAN"
-						xperch=parse(Float64,value)
-						xpcscale = isnothing(mod) ? (xperch < 0.1 ? 1000.0 : 1.0) :  # Guess likely eV or keV
-										(isequal(mod,"KEV") ? 1000.0 : 1.0)
-                        energy = LinearEnergyScale(xpcscale*energy.offset, xpcscale*xperch)
-                    elseif key == "LIVETIME"
-                        props[:LiveTime]=parse(Float64,value)
-                    elseif key == "REALTIME"
-                        props[:RealTime]=parse(Float64,value)
-                    elseif key == "PROBECUR"
-                        props[:ProbeCurrent]=parse(Float64,value)
-                    elseif key == "OFFSET"
-                        energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
-                    elseif key == "TITLE"
-                        props[:Name]=value
-                    elseif key == "OWNER"
-                        props[:Owner]=value
-                    elseif key == "ELEVANGLE"
-                        props[:TakeOffAngle] = (props[:Elevation] = deg2rad(parse(Float64, value)))
-                    elseif key == "XPOSITION"
-                        stgpos[:X] = parse(Float64, value)
-                    elseif key == "YPOSITION"
-                        stgpos[:Y] = parse(Float64, value)
-                    elseif key == "ZPOSITION"
-                        stgpos[:Z] = parse(Float64, value)
-                    elseif key == "COMMENT"
-                        prev = getindex(props,:Comment,missing)
-                        props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
-                    elseif key == "#D2STDCMP"
-                        props[:Composition] = parsedtsa2comp(value)
-                    elseif key == "#CONDCOATING"
-                        props[:Coating] = parsecoating(value)
-                    elseif key =="#RTDET" # Bruker
-						props[:DetectorModel] = value
-					elseif key == "#TDEADLYR" # Bruker
-						@assert isnothing(mod) || (!isequal(mod,"CM")) "Unexpected scale -$mod"
-						props[:DeadLayer] = parse(Float64, value)
-					elseif key == "#FANO" # Bruker
-						props[:Fano] = parse(Float64, value)
-					elseif key == "#MNFWHM" # Bruker
-						sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
-						props[:FWHMMnKa] = sc*parse(Float64, value)
-					elseif key == "#IDENT" # Bruker
-						elm = nothing
-						try
-							props[:XRFAnode] = parse(Element, value)
-						catch
-							# Just ignore it
-						end
-					end
-                end
-            end
-        end
-        if startswith( props[:Name], "Bruker")
-            if haskey(props, :Composition)
-                props[:Name]=name(props[:Composition])
-            else
-				path = splitpath(filename)
-                props[:Name]=path[end]
-            end
-        end
-		if endswith(props[:Name],".txt") || endswith(props[:Name],".msa")
-			props[:Name] = props[:Name][1:end-4]
-		end
-        props[:StagePosition] = stgpos
-        return Spectrum(energy, counts, props)
-    end
-end
 
 setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
-
 Base.get(spec::Spectrum, sym::Symbol, def::Any=missing) = get(spec.properties, sym, def)
-
 Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
-
-Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
-
-Base.getindex(spec::Spectrum, sr::StepRange{Int64,Int64}) = spec.counts[sr]
-
-Base.getindex(spec::Spectrum, ur::UnitRange{Int64}) = spec.counts[ur]
-
-Base.get(spec::Spectrum, idx::Int, def=convert(typeof(spec.counts[1]), 0)) = get(spec.counts, idx, def)
-
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) =
     spec.properties[sym] = val
-
-Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
-    spec.counts[idx] = convert(typeof(spec.counts[1]), val)
-
-Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) =
-    spec.counts[ur] = vals
-
-Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) =
-    spec.counts[sr] = vals
 
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
@@ -334,15 +173,6 @@ function dose(spec::Spectrum, def=missing)::Union{Float64,Missing}
     res = get(spec.properties,:LiveTime, missing)*get(spec,:ProbeCurrent, missing)
     return isequal(res,missing) ? def : res
 end
-
-"""
-    length(spec::Spectrum)
-
-The length of a spectrum is the number of channels.
-"""
-Base.length(spec::Spectrum) = length(spec.counts)
-
-Base.eachindex(spec::Spectrum) = 1:length(spec.counts)
 
 """
     NeXLCore.energy(ch::Int, spec::Spectrum)

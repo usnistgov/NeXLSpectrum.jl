@@ -37,7 +37,7 @@ Gadfly.plot( #
 	yscale=1.05,
 	ytransform=identity,
 	style=NeXLSpectrumStyle,
-	colorblind=false
+	palette=NeXLPalette
 )::Plot =
 	plot( #
 		[spec],
@@ -50,7 +50,9 @@ Gadfly.plot( #
 		xmax=xmax,
 		norm=norm,
 		yscale=yscale,
-		ytransform=identity)
+		ytransform=identity,
+		style=style,
+		palette=palette)
 
 """
     plot(
@@ -65,7 +67,8 @@ Gadfly.plot( #
 	    norm=:None,
 	    yscale=1.05,
 	    ytransform = identity,
-		style=NeXLSpectrumStyle
+		style=NeXLSpectrumStyle,
+		palette=NeXLPalette
     )::Plot
 
 Plot a multiple spectra on a single plot using Gadfly.
@@ -86,6 +89,7 @@ Named:
 	yscale = 1.05 # Fraction of max intensity for ymax
 	ytransform = identity | log10 | sqrt | ???
 	style=NeXLSpectrumStyle (or another Gadfly.style)
+	palette = NeXLPalette | NeXLColorblind | Color[ ... ] # Colors for spectra...
 """
 function Gadfly.plot(
 	specs::AbstractVector{Spectrum};
