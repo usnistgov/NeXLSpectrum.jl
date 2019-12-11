@@ -25,7 +25,7 @@ NeXLSpectrumStyle = style(
 Plot a Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
 """
 Gadfly.plot( #
- 	spec::Spectrum;
+ 	spec::Spectrum{<:Real};
 	klms=[],
 	edges=[],
 	escapes=[],
@@ -40,7 +40,7 @@ Gadfly.plot( #
 	palette=NeXLPalette
 )::Plot =
 	plot( #
-		[spec],
+		Spectrum[spec],
 		klms=klms,
 		edges=edges,
 		escapes=escapes,
@@ -107,15 +107,15 @@ function Gadfly.plot(
 	palette=NeXLPalette
 )::Plot
 	# The normalize functions return a Vector{Vector{Float64}}
-	normalizeDoseWidth(specs::AbstractVector{Spectrum}, def=1.0) =
+	normalizeDoseWidth(specs, def=1.0) =
 		normalizedosewidth.(specs)
-	normalizeDose(specs::AbstractVector{Spectrum}, def=1.0) =
+	normalizeDose(specs, def=1.0) =
 		collect( (def/dose(sp))*counts(sp, Float64, true) for sp in specs)
-	normalizeSum(specs::AbstractVector{Spectrum}, total=1.0e6) =
+	normalizeSum(specs, total=1.0e6) =
 		collect( (total/integrate(sp)) * counts(sp, Float64, true) for sp in specs)
-	normalizePeak(specs::AbstractVector{Spectrum}, height=100.0) =
+	normalizePeak(specs, height=100.0) =
 		collect( (height/findmax(sp)[1]) * counts(sp, Float64, true) for sp in specs)
-	normalizeNone(specs::AbstractVector{Spectrum}) =
+	normalizeNone(specs) =
 		collect( counts(sp, Float64, true) for sp in specs)
 	function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
 	    d=Dict{Any,Array{CharXRay}}()
@@ -268,3 +268,5 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing, UnitRange{Int}}=m
     plot(layers..., Coord.cartesian(xmin=roi.start, xmax=roi.stop, ymin=min(1.1*miny,0.0), ymax=maxy),
             Guide.XLabel("Channels"), Guide.YLabel("Counts"), Guide.title("$(ffr.label)"))
 end
+
+@info "Loading NeXLSpectrum Gadfly support"

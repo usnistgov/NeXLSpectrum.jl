@@ -6,7 +6,7 @@ using PeriodicTable
 
 let spectrumIndex = 1
     global spectrumCounter() = (spectrumIndex += 1)
-end;
+end
 
 """
     Spectrum
