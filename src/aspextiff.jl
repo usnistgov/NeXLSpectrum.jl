@@ -197,15 +197,7 @@ function detectAspexTIFF(ios)
     return res
 end
 
-const ASPEX_TIFF = format"ASPEX TIFF"
-
-function FileIO.load(file::File{ASPEX_TIFF}; withImgs=false)
-    open(filename) do ios
-        return load(Stream(ASPEX_TIFF,ios))
-    end
-end
-
-function FileIO.load(ios::Stream{ASPEX_TIFF}; withImgs=false)
+function readAspexTIFF(ios::IOStream; withImgs=false)
     number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     res = missing
     ti = _TIFFInternals(ios)
@@ -244,12 +236,24 @@ function FileIO.load(ios::Stream{ASPEX_TIFF}; withImgs=false)
     return res
 end
 
-function FileIO.save(f::Stream{ASPEX_TIFF}, data)
-    @error "Saving to ASPEX TIFF streams is not implemented"
+const ASPEX_TIFF = format"ASPEX TIFF"
+
+load(ios::Stream{ASPEX_TIFF}; withImgs=false) =
+    readAspexTIFF(ios, withImgs)
+
+function load(file::File{ASPEX_TIFF}; withImgs=false)
+    open(filename) do ios
+        return readAspexTIFF(ios)
+    end
 end
 
-function FileIO.save(f::File{ASPEX_TIFF}, data)
-    @error "Saving to ASPEX TIFF files is not implemented"
+
+function save(f::Stream{ASPEX_TIFF}, data)
+    @error "Saving to ASPEX TIFF streams is not implemented. Probably never will be."
+end
+
+function save(f::File{ASPEX_TIFF}, data)
+    @error "Saving to ASPEX TIFF files is not implemented. Probably never will be."
 end
 
 FileIO.add_format(ASPEX_TIFF, detectAspexTIFF, [".tif", ".tiff"])

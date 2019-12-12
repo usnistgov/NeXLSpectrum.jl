@@ -53,7 +53,8 @@ export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 
 include("emsa.jl")
 export readEMSA # Read an EMSA file
-
+include("aspextiff.jl")
+export readAspexTIFF
 
 include("llsq.jl")
 include("filterfit_wls.jl")

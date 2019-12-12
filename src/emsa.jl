@@ -192,23 +192,22 @@ end
 
 const ISO_EMSA = format"ISO/EMSA"
 
-function FileIO.load(file::File{ISO_EMSA})
+function load(file::File{ISO_EMSA})
     open(filename) do ios
         return load(Stream(ISO_EMSA,ios))
     end
 end
 
-
-function FileIO.load(ios::Stream{ISO_EMSA})
+function load(ios::Stream{ISO_EMSA})
 	return readEMSA(ios.io,Float64)
 end
 
-function FileIO.save(f::Stream{ISO_EMSA}, data)
-    @error "Saving to ISO/EMSA streams is not implemented"
+function save(f::Stream{ISO_EMSA}, data)
+    @error "Saving to ISO/EMSA streams is not implemented - should be..."
 end
 
-function FileIO.save(f::File{ISO_EMSA}, data)
-    @error "Saving to ISO/EMSA files is not implemented"
+function save(f::File{ISO_EMSA}, data)
+    @error "Saving to ISO/EMSA files is not implemented - should be..."
 end
 
 FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa"])
