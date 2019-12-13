@@ -1,136 +1,140 @@
 using Images
 
 """
-    HyperSpectrum
+    Signal
 
 The multidimensional equivalent of Spectrum.  A megapixel spectrum image
-might be constructed as HyperSpectrum(energy, props, (4096, 1024, 2048)) where
+might be constructed as Signal(energy, props, (4096, 1024, 2048)) where
 there are 4096 channels, 1024 rows and 2048 columns.  HyperSpectra may be 1, 2,
 .. N dimensional but since they reside in memory, there are practical limits.
 
-A type for data sets containing multiple closely related spectra.  A HyperSpectrum is
-slighly more restricted than an Array{Spectrum,N} because all the Spectra in a HyperSpectrum are
+A type for data sets containing multiple closely related spectra.  A Signal is
+slighly more restricted than an Array{Spectrum,N} because all the Spectra in a Signal are
 assumed to have certain properties in common -  the EnergyScale and a set of common Spectrum
 properties.  You can also specify an efficient packing of the data by using
 UInt8, UInt16, ... etc as required to hold the data.
 
-HyperSpectrum maintains the data as an abstract array but provides functions to
+Signal maintains the data as an abstract array but provides functions to
 extract individual points or sets of points as Spectrum.
 
 Special property tags:
 
     :Elapse  # Total elapse time for map (so hs[:RealTime] ≈ hs[:Elapse]/length(hs)
 """
-struct HyperSpectrum{T<:Real} <: AbstractArray{T, N}
+struct Signal{T<:Real, N} <: AbstractArray{T, N}
     energy::EnergyScale
     properties::Dict{Symbol, Any}
-    counts::Array{T, N}
+    counts::Array{T,N}
 
-    HyperSpectrum(energy::EnergeScale, properties::Dict{Symbol,Any}, sz::NTuple{N,Int}, T::Type{<:Real}=Int16) =
-        new(energy, properties, Array{T}(zero(T),sz))
+    Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, sz::Tuple{Int, Vararg{Int}}, ty::Type{<:Real}) =
+         new{ty, Int}(energy, properties, zeros(ty, sz))
+    Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, data::AbstractArray) =
+        new{typeof(data[1]), Int}(energy, properties, data)
+
 end
 
-getindex(hs::HyperSpectrum, ci::CartesianIndex) =
-    hs.counts[ci]
-getindex(hs::HyperSpectrum, ci::Tuple{Vararg{Integer, N}}) =
-    getindex(hsd.counts, CartesianIndex(ci))
-setindex!(hs::HyperSpectrum, v::Real, ci::CartesianIndex) =
-    setindex(hs.counts, v, ci)
-setindex!(hs::HyperSpectrum, v::Real, ci::Tuple{Vararg{Integer, N}}) =
-    setindex(hs.counts, v, CartesianIndex(ci))
-eltype(hs::HyperSpectrum) = eltype(hs.counts)
-length(hs::HyperSpectrum) = length(hs.counts)
-ndims(hs::HyperSpectrum) = ndims(hs.counts)
-size(hs::HyperSpectrum) = size(hs.counts)
-size(hs::HyperSpectrum, n) = size(hs.counts, n)
-axes(hs::HyperSpectrum) = axes(hs.counts)
-axes(hs::HyperSpectrum, n) = axes(hs.counts, n)
-eachindex(hs::HyperSpectrum) = eachindex(hs.counts)
-stride(hs::HyperSpectrum, k) = stride(hs.counts, k)
-stides(hs::HyperSpectrum) = strides(hs.counts)
+Base.show(io::IOStream, sig::Signal) =
+    print(io,"Signal[$(sig.energy),$(size(sig.counts))]")
 
-energy(hs::HyperSpectrum, ch) = energy(ch, hs.energy)
-channel(hs::HyperSpectrum, energy) = channel(energy, hs.energy)
+Base.getindex(sig::Signal, ci::CartesianIndex) =
+    sig.counts[ci]
+Base.setindex!(sig::Signal, v::Real, ci::CartesianIndex) =
+    setindex(sig.counts, v, ci)
+Base.setindex!(sig::Signal, v::Real, ci::Tuple{Integer, Vararg{Integer}}) =
+    setindex(sig.counts, v, CartesianIndex(ci))
+Base.eltype(sig::Signal) = eltype(sig.counts)
+Base.length(sig::Signal) = length(sig.counts)
+Base.ndims(sig::Signal) = ndims(sig.counts)
+Base.size(sig::Signal) = size(sig.counts)
+Base.size(sig::Signal, n) = size(sig.counts, n)
+Base.axes(sig::Signal) = axes(sig.counts)
+Base.axes(sig::Signal, n) = axes(sig.counts, n)
+Base.eachindex(sig::Signal) = eachindex(sig.counts)
+Base.stride(sig::Signal, k) = stride(sig.counts, k)
+Base.strides(sig::Signal) = strides(sig.counts)
 
-"""
-    HyperSpectrumS
-
-Convert the Array{<:Real, N} perspective into a Array{Spectrum{<:Real}, N} perspective.
-
-Special property tags:
-
-    :Elapse  # Total elapse time for map (so hs[:RealTime] ≈ hs[:Elapse]/length(hs)
-    :Cartesian # The pixel index of a Spectrum extracted from a HyperSpectrumS
-"""
-asspectra(hs::HyperSpectrum) = HyperSpectrumS(hs)
+NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
+channel(sig::Signal, energy) = channel(energy, sig.energy)
 
 """
-    writecounts(ios::IOStream, hs::HyperSpectrum)
+    writecounts(ios::IOStream, hs::Signal)
 
 Write the counts data directly in binary to the specified stream.
 """
-writecounts(ios::IOStream, hs::HyperSpectrum) =
+writecounts(ios::IOStream, hs::Signal) =
     write(ios, hs.counts)
 
 """
-    readcounts(ios::IOStream, hs::HyperSpectrum)
+    readcounts(ios::IOStream, hs::Signal)
 
 Read counts data directly in binary from the specified stream.
 """
-readcounts(ios::IOStream, T::Type{<:Real}, size::NTuple{Int, N}) =
-    read(ios, Array{T}(undef, size))
+readcounts(ios::IOStream, T::Type{<:Real}, size::Tuple{Integer, Vararg{Integer}}) =
+    read!(ios, Array{T}(undef, size))
 
 
 """
     readraw(ios::IOStream, T::Type{<:Real}, size::NTuple{Int, N}, energy::EnergyScale, props::Dict{Symbol,Any}) =
 
-Construct a full HyperSpectrum from the counts data in binary from the specified stream.
+Construct a full Signal from the counts data in binary from the specified stream.
 """
-readraw(ios::IOStream, T::Type{<:Real}, size::NTuple{Int, N}, energy::EnergyScale, props::Dict{Symbol,Any}) =
-    HyperSpectrum(energy, props, readcounts(ios, T, size))
+readraw(ios::IOStream, T::Type{<:Real}, size::Tuple{Integer, Vararg{Integer}}, energy::EnergyScale, props::Dict{Symbol,Any}) =
+    Signal(energy, props, readcounts(ios, T, size))
 
 
 """
-    HyperSpectrumS
+    HyperSpectrum
 
-HyperSpectrumS is a wrapper around HyperSpectrum to facilitate access of the
+HyperSpectrum is a wrapper around Signal to facilitate access of the
 the data as individual Spectrum objects.
 """
-
-struct HyperSpectrumS <: AbstractArray{Spectrum, N}
-    hs::HyperSpectrum
+struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
+    hs::Signal{T, N}
     index::CartesianIndices # Spectrum indices
 
-    HyperSpectrumS(hs::HyperSpectrum) = new(hs,CartesianIndices(size(hs)[2:end]))
+    HyperSpectrum(hs::Signal) =
+        new{typeof(hs.counts[1]),Int}(hs, CartesianIndices(size(hs.counts)[2:end]))
 end
 
-eltype(hss::HyperSpectrumS) = Spectrum
-length(hss::HyperSpectrumS) = length(hs.index)
-ndims(hss::HyperSpectrumS) = ndims(hs.index)
-size(hss::HyperSpectrumS) = size(hs.index)
-size(hss::HyperSpectrumS, n) = size(hs.index, n)
-axes(hss::HyperSpectrumS) = axes(hs.index)
-axes(hss::HyperSpectrumS, n) = axes(hs.index, n)
-eachindex(hss::HyperSpectrumS) = hs.index
-stride(hss::HyperSpectrumS, k) = stride(hs.index, k)
-stides(hss::HyperSpectrumS) = strides(hs.index)
+"""
+    HyperSpectrum
 
-function getindex(hss::HyperSpectrumS, ci::CartesianIndex)::Spectrum
+Convert the Array{<:Real, N} perspective into a Array{Spectrum{<:Real}, N} perspective.
+
+Special property tags:
+
+    :Cartesian # The pixel index of a Spectrum extracted from a HyperSpectrum
+"""
+ashyperspectrum(hs::Signal) = HyperSpectrum(hs)
+
+
+Base.eltype(hss::HyperSpectrum) = Spectrum
+Base.length(hss::HyperSpectrum) = length(hs.index)
+Base.ndims(hss::HyperSpectrum) = ndims(hs.index)
+Base.size(hss::HyperSpectrum) = size(hs.index)
+Base.size(hss::HyperSpectrum, n) = size(hs.index, n)
+Base.axes(hss::HyperSpectrum) = axes(hs.index)
+Base.axes(hss::HyperSpectrum, n) = axes(hs.index, n)
+Base.eachindex(hss::HyperSpectrum) = hs.index
+Base.stride(hss::HyperSpectrum, k) = stride(hs.index, k)
+Base.strides(hss::HyperSpectrum) = strides(hs.index)
+
+function Base.getindex(hss::HyperSpectrum, ci::CartesianIndex)::Spectrum
     so(i) = i*size(hss.hs.counts, 1)
     props = copy(hss.hs.props)
     props[:Cartesian] = [ ci.I ]
     return Spectrum(hss.hs.energy, props, hss.hs.counts[:, ci])
 end
 
-getindex(hss::HyperSpectrumS, i::Int)::Spectrum =
-    getindex(hss::HyperSpectrumS, hss.index[i])
+Base.getindex(hss::HyperSpectrum, i::Int)::Spectrum =
+    getindex(hss::HyperSpectrum, hss.index[i])
 
 """
-    sum(hss::HyperSpectrumS, filt::Function)
+    sum(hss::HyperSpectrum, filt::Function)
 
 Produce a sum spectrum from those pixels at idx for which filt(hss, idx)==true.
 """
-function sum(hss::HyperSpectrumS, filt::Function)
+function Base.sum(hss::HyperSpectrum, filt::Function)
     include = map(i->filt(hss, i), hss.index)
     a = copy(hss.counts[:, include[1]])
     cis = [ include[1].I ]
@@ -146,20 +150,22 @@ function sum(hss::HyperSpectrumS, filt::Function)
 end
 
 """
-   plane(hss::HyperSpectrumS, chs::UnitRange)
+   plane(hss::HyperSpectrum, chs::UnitRange)
 
 Sum a consecutive series of channel planes into a single Array representing an image plane.
 """
-function plane(hss::HyperSpectrumS, chs::UnitRange)
-    res = Array{Float64}(undef, size(hss.index))
-    for idx in hss.index
-        res[i] = sum(hss.hs.counts[chs, idx])
+function plane(hs::Signal, chs::UnitRange)
+    res = Array{Float64}(undef, size(hs)[2:end])
+    for idx in eachindex(res)
+        res[i] = sum(hs.counts[chs, idx])
     end
     return res
 end
 
+plane(hs::HyperSpectrum,chs::UnitRange) =
+    plane(hss.sig,chs)
 """
-    countmap(hss::HyperSpectrum, chs::UnitRange)
+    countmap(hss::Signal, chs::UnitRange)
 
 Create a count map from the specified contiguous range of channels.
 """

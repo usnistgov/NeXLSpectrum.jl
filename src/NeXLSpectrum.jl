@@ -56,6 +56,16 @@ export readEMSA # Read an EMSA file
 include("aspextiff.jl")
 export readAspexTIFF
 
+include("hyperspectrum.jl")
+export Signal  # The base class that makes hyperspectral data look like an Array of Real
+export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
+export ashyperspectrum # Converts a Signal into a HyperSpectrum
+export writecounts # write a Signal to IOStream
+export readcounts  # read a Signal from an IOStream
+export readraw # read a Signal from an IOStream
+export plane # Sum planes in a HyperSpectrum
+export countmap # Convert the planes as a Gray-scale image
+
 include("llsq.jl")
 include("filterfit_wls.jl")
 export TopHatFilter # Struct representing a fitting filter
@@ -85,6 +95,8 @@ export fit
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
+
+
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
