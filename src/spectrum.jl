@@ -35,6 +35,7 @@ Less common items
 
 	:ImageMag	   # Magnification (assuming a 3.5" image) of the first image
 	:ImageZoom     # Additional zoom for second image in a two image TIFF
+	:Operator      # Analyst in ASPEX TIFF files
 
 Not all spectra will define all properties.
 If spec is a Spectrum then
