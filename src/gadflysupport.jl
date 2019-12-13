@@ -210,7 +210,7 @@ function Gadfly.plot(
         push!(layers, layer(x=energyscale(spec)[chs], y=ytransform.(specdata[i][chs]), Geom.step, Theme(default_color=clr)))
     end
 	maxE = ismissing(xmax) ? maxE : xmax
-	append!(klms, autoklms ? mapreduce(s->NeXLSpectrum.elements(s, true, []), append!, specs) : [])
+	append!(klms, autoklms ? mapreduce(s->elms(s, true, []), append!, specs) : [])
 	if length(klms)>0
 		tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE)
 	    tr(cxr::CharXRay) = [ cxr ]

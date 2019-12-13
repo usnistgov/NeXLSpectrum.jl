@@ -235,9 +235,9 @@ function readAspexTIFF(ios::IOStream; withImgs=false, astype::Type{<:Real}=Float
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            res[:Image]=load(Stream(format"TIFF",ios))
+            res[:Image]=FileIO.load(Stream(format"TIFF",ios))
         catch err
-            @info "Unable to read images from $(ios.name) due to $(err)"
+            @info "Unable to read images from $(ios)."
         end
     end
     return res
