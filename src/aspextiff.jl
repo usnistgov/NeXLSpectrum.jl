@@ -10,6 +10,7 @@ using NeXLSpectrum
 using Dates
 using FileIO
 using Images
+using ImageMagick
 
 const _TIFF_TYPES = (
     ( "byte", UInt8 ),
@@ -196,6 +197,12 @@ function detectAspexTIFF(ios)
     return res
 end
 
+function readAspexTIFF(file::AbstractString; withImgs=false, astype::Type{<:Real}=Float64)
+    open(file) do ios
+        return readAspexTIFF(ios, withImgs=withImgs, astype=astype)
+    end
+end
+
 function readAspexTIFF(ios::IOStream; withImgs=false, astype::Type{<:Real}=Float64)
     floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
@@ -227,10 +234,10 @@ function readAspexTIFF(ios::IOStream; withImgs=false, astype::Type{<:Real}=Float
     end
     if withImgs && (!ismissing(res))
         try
-            seekstart(ios.io)
-            res[:Image]=load(Stream(format"TIFF",ios.io))
+            seekstart(ios)
+            res[:Image]=load(Stream(format"TIFF",ios))
         catch err
-            @error "Unable to read images from $(ios.name)."
+            @info "Unable to read images from $(ios.name) due to $(err)"
         end
     end
     return res
