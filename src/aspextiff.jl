@@ -10,6 +10,7 @@ using NeXLSpectrum
 using Dates
 using FileIO
 using Images
+using ImageMagick
 
 const _TIFF_TYPES = (
     ( "byte", UInt8 ),
@@ -108,8 +109,7 @@ const TIFF_SOFTWARE = 305 # ASCII
 function _parseDesc(desc::AbstractString)
     number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     date, time = missing, missing
-    res=Dict{Symbol, Float64}()
-    stagePos = Dict{Symbol,Any}()
+    res, stagePos = Dict{Symbol, Any}(), Dict{Symbol,Float64}()
     for item in split(desc,"\n")
         (k, v) = split(item,"=")
         k = uppercase(k)
@@ -127,15 +127,15 @@ function _parseDesc(desc::AbstractString)
                     time=Time(DateTime(v,"H:M:S \\A\\M"))
                 end # try
             elseif k=="OPERATOR"
-                res[:Owner] = v
+                res[:Operator] = string(v)
             elseif k=="ACCELERATING_VOLTAGE"
                 res[:BeamEnergy] = 1000.0*number(v)
             elseif k=="WORKING_DISTANCE"
                 res[:WorkingDistance] = 0.1*number(v)
             elseif k=="COMMENT"
-                res[:Name] = v
+                res[:Name] = string(v)
             elseif k=="SAMPLE_DESCRIPTION"
-                res[:Comment] = v
+                res[:Comment] = string(v)
             elseif k=="LIVE_TIME"
                 res[:LiveTime] = number(v)
             elseif k=="ACQUISITION_TIME"
@@ -197,8 +197,15 @@ function detectAspexTIFF(ios)
     return res
 end
 
-function readAspexTIFF(ios::IOStream; withImgs=false)
-    number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
+function readAspexTIFF(file::AbstractString; withImgs=false, astype::Type{<:Real}=Float64)
+    open(file) do ios
+        return readAspexTIFF(ios, withImgs=withImgs, astype=astype)
+    end
+end
+
+function readAspexTIFF(ios::IOStream; withImgs=false, astype::Type{<:Real}=Float64)
+    floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
+    number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     res = missing
     ti = _TIFFInternals(ios)
     for ifd in ti.ifds
@@ -211,12 +218,12 @@ function readAspexTIFF(ios::IOStream; withImgs=false)
         syo = get(ifd, TIFF_SPECTRAL_YOFF, missing)
         if !ismissing(sp)
             @assert !(ismissing(sxr)||ismissing(sxo)) "X gain and offset data is missing from ASPEX TIFF spectrum"
-            evperch = number(ismissing(sxr) ? "10 eV/ch" : String(sxr.tagData))
-            offset = number(ismissing(sxo) ? "0 eV" : String(sxo.tagData))
+            evperch = floatonly(ismissing(sxr) ? "10 eV/ch" : String(sxr.tagData))
+            offset = floatonly(ismissing(sxo) ? "0 eV" : String(sxo.tagData))
             yoff = number(ismissing(syo) ? "0 counts" : String(syo.tagData))
             yres = number(ismissing(syr) ? "1 counts" : String(syr.tagData))
             energy = LinearEnergyScale(offset, evperch)
-            data = map(i->yoff+yres*convert(Float64,i), sp.tagData)
+            data = map(i->yoff+yres*convert(astype,i), sp.tagData)
             props = _parseDesc(String(id.tagData))
             if !ismissing(sw)
                 props[:Instrument] = String(sw.tagData)
@@ -227,10 +234,10 @@ function readAspexTIFF(ios::IOStream; withImgs=false)
     end
     if withImgs && (!ismissing(res))
         try
-            seekstart(ios.io)
-            res[:Image]=load(Stream(format"TIFF",ios.io))
+            seekstart(ios)
+            res[:Image]=FileIO.load(Stream(format"TIFF",ios))
         catch err
-            @error "Unable to read images from $(ios.name)."
+            @info "Unable to read images from $(ios)."
         end
     end
     return res

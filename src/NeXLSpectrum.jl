@@ -39,7 +39,6 @@ export dose # Spectrum probe dose
 export counts # Spectrum channel data
 export integrate # Integrate range of channels
 export energyscale # Energy scale function
-export elements # A collection of the Elements in the spectrum
 export subsample # Sub-sample a spectrum
 export subdivide # Divide the counts among n spectra
 export modelbackground # Model a background region
@@ -50,6 +49,10 @@ export peak # Estimates the peak intensity
 export back # Estimates the background intensity
 export estkratio # Estimate the k-ratio from two spectra for a ROI
 export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
+
+export minproperties # A list of the minimum required properties
+export hasminrequired # Checks whether a spectrum has necessary properties
+export requiredbutmissing # Lists missing properties
 
 include("emsa.jl")
 export readEMSA # Read an EMSA file

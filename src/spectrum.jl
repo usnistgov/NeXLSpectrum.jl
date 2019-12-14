@@ -10,7 +10,14 @@ end
 
 """
     Spectrum
-A structure to hold spectrum data (energy scale, counts and metadata).
+A structure to hold spectrum data (energy scale, counts and metadata). Spectrum implements indexing using various
+different mechanisms.  If spec is a Spectrum then
+
+    spec[123] # will return the number of counts in channel 123
+	spec[123:223] # will return a Vector of counts from channel 123:223
+    spec[134.] # will return the number of counts in the channel at energy 134.0 eV
+    spec[:Comment] # will return the property named :Comment
+
 Metadata is identified by a symbol. Predefined symbols include
 
     :BeamEnergy    # In eV
@@ -24,24 +31,21 @@ Metadata is identified by a symbol. Predefined symbols include
     :Owner         # A string
     :StagePosition # A Dict{Symbol,Float64} with entries :X, :Y, :Z, :R, :TX in cm and degrees
     :Comment       # A string
-    :Composition   # A Material
+    :Composition   # A Material (known composition, not measured)
 	:Elements      # A collection of elements in the material
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
     :Coating       # A Film (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (DateTime struct)
+	:Signature     # Dict{Element,Real} with the "particle signature"
 
 Less common items
 
 	:ImageMag	   # Magnification (assuming a 3.5" image) of the first image
 	:ImageZoom     # Additional zoom for second image in a two image TIFF
+	:Operator      # Analyst in ASPEX TIFF files
 
 Not all spectra will define all properties.
-If spec is a Spectrum then
-
-    spec[123] # will return the number of counts in channel 123
-    spec[134.] # will return the number of counts in the channel at energy 134.0 eV
-    spec[:Comment] # will return the property comment
 """
 struct Spectrum{T<:Real} <: AbstractVector{T}
     energy::EnergyScale
@@ -76,6 +80,30 @@ Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) =
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) =
     spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
+
+"""
+	minrequired(::Type{Spectrum})
+
+Returns the minimum required properties.  Other classes implement this to check whether a Spectrum has all the
+necessary properties for the specified algorithm or data structure.
+"""
+minproperties(::Type{Spectrum}) = ( :Name )
+
+
+"""
+    hasminrequired(ty::Type, spec::Spectrum)
+
+Does this spectrum have the minimal set of required properties?
+"""
+hasminrequired(ty::Type, spec::Spectrum) = all(haskey(spec.properties, a) for a in minproperties(ty))
+
+"""
+    requiredbutmissing(ty::Type, spec::Spectrum)
+
+List any required but missing properties.
+"""
+requiredbutmissing(ty::Type, spec::Spectrum) = filter(a->!haskey(spec.property,a), minproperties(ty))
+
 
 function Base.show(io::IO, spec::Spectrum)
     println(io, "Spectrum[name = $(get(spec, :Name, "None")), owner = $(get(spec, :Owner, "Unknown"))]")
@@ -141,26 +169,35 @@ Build an EDSDetector to match the channel count and energy scale in this spectru
 matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS =
 	SimpleEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
 
-
-
 setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
 Base.get(spec::Spectrum, sym::Symbol, def::Any=missing) = get(spec.properties, sym, def)
 Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) =
     spec.properties[sym] = val
 
+Base.keys(spec::Spectrum) = keys(spec.properties)
+
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties,sym)
 
 """
-    elements(spec::Spectrum, withcoating = false, def=missing)
+    elms(spec::Spectrum, withcoating = false, def=missing)
 
 Returns a list of the elements associated with this spectrum. <code>withcoating</code> determines whether the coating
 elements are also added.
 """
-function elements(spec::Spectrum, withcoating=false, def=missing)
-	res = haskey(spec, :Elements) ? spec[:Elements] :
-		(haskey(spec, :Composition) ? collect(keys(spec[:Composition])) : [])
-	append!(res, withcoating && haskey(spec, :Coating) ? keys(material(spec[:Coating])) : [])
+function NeXLCore.elms(spec::Spectrum, withcoating=false, def=missing)
+	if haskey(spec, :Elements)
+		res =  spec[:Elements]
+	elseif haskey(spec, :Composition)
+		res = collect(keys(spec[:Composition]))
+	elseif haskey(spec, :Signature)
+		res = collect(keys(spec[:Signature]))
+	else
+		res=[]
+	end
+	if withcoating && haskey(spec, :Coating)
+		append!(res,  keys(material(spec[:Coating])))
+	end
 	return length(res) == 0 ? def : res
 end
 
