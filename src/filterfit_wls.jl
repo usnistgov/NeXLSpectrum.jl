@@ -66,7 +66,12 @@ struct TopHatFilter
     filters::Vector{Vector{Float64}} # Filter data
     weights::AbstractVector{Float64} # Correlation compensation weights
 
-    function TopHatFilter(ty::Type{<:FittingFilterType}, det::Detector, filt::AbstractMatrix{Float64}, wgts::AbstractVector{Float64})
+    function TopHatFilter(
+        ty::Type{<:FittingFilterType},
+        det::Detector,
+        filt::AbstractMatrix{Float64},
+        wgts::AbstractVector{Float64},
+    )
         # Extract the contiguous non-zero elements out
         dim = size(filt)[1]
         offsets = zeros(dim)
@@ -76,15 +81,14 @@ struct TopHatFilter
             if !isnothing(start)
                 stop = findlast(i -> i ≠ 0.0, row)
                 offsets[r] = start
-                filts[r] = [ row[start:stop]... ]
+                filts[r] = [row[start:stop]...]
             end
         end
         return new(ty, det, offsets, filts, wgts)
     end
 end
 
-Base.show(io::IO, thf::TopHatFilter) =
-    print(io, "$(thf.filttype)[$(thf.detector)]")
+Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector)]")
 
 """
     buildfilter(det::Detector, a::Float64=1.0, b::Float64=2.0)::TopHatFilter
@@ -104,7 +108,7 @@ function buildfilter(
     ty::Type{<:FittingFilterType},
     det::Detector,
     a::Float64 = 1.0, # Top
-    b::Float64 = 2.0  # Base
+    b::Float64 = 2.0,  # Base
 )::TopHatFilter
     resf(::Type{VariableWidthFilter}, center, det) = resolution(center, det) # FWHM at center
     resf(::Type{ConstantWidthFilter}, center, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
@@ -112,31 +116,37 @@ function buildfilter(
     filtint(e0, e1, minb, mina, maxa, maxb) =
         intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
         intersect(maxa, maxb, e0, e1) * (-0.5 / (maxb - maxa))
-    M(astop, astart) = (channel(astop, det) - channel(astart, det) - 1.0)/2.0   # base length in channels
+    M(astop, astart) = (channel(astop, det) - channel(astart, det) - 1.0) / 2.0   # base length in channels
     N(bstart, astart) = channel(astart, det) - channel(bstart, det) # Top length in channels
     cc = channelcount(det)
     filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
     for ch1 in eachindex(wgts)
         center = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
         res = resf(ty, center, det)
-        ea = ( center - 0.5 * a * res, center + 0.5 * a * res )
-        eb = ( ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res )
+        ea = (center - 0.5 * a * res, center + 0.5 * a * res)
+        eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
         chmin, chmax = channel(eb[1], det), channel(eb[2], det)
-        if (chmin>=1) && (chmax<=cc)
-            for i in 0:(chmax-chmin)÷2
-                filt[ch1, chmax-i] =
-                    (filt[ch1, i+chmin] = filtint(energy(i+chmin, det), energy(i+chmin + 1, det), eb[1], ea[1], ea[2], eb[2]))
+        if (chmin >= 1) && (chmax <= cc)
+            for i = 0:(chmax-chmin)÷2
+                filt[ch1, chmax-i] = (filt[ch1, i+chmin] = filtint(
+                    energy(i + chmin, det),
+                    energy(i + chmin + 1, det),
+                    eb[1],
+                    ea[1],
+                    ea[2],
+                    eb[2],
+                ))
             end
-            filt[ch1, chmax]= (filt[ch1, chmin]-=sum(filt[ch1,chmin:min(cc,chmax)])/2.0)
-            @assert abs(sum(filt[ch1,:]))<1.0e-12 "Filter $ch1 does not sum to zero."
-            @assert all(i->filt[ch1,i]==filt[ch1,chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
+            filt[ch1, chmax] = (filt[ch1, chmin] -= sum(filt[ch1, chmin:min(cc, chmax)]) / 2.0)
+            @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
         end
         m, n = M(ea[2], ea[1]), N(eb[1], ea[1])
-        @assert m>0.0 "m=$(m)!!!!"
-        @assert n>0.0 "n=$(n)!!!!"
-        wgts[ch1] = 3.0*((2.0*m+1.0)*(2.0*n))/(2.0*m+1.0+2.0*n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
+        @assert m > 0.0 "m=$(m)!!!!"
+        @assert n > 0.0 "n=$(n)!!!!"
+        wgts[ch1] = 3.0 * ((2.0 * m + 1.0) * (2.0 * n)) / (2.0 * m + 1.0 + 2.0 * n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
     end
-    @assert all(r->abs(sum(r))<1.0e-12, eachrow(filt)) "A filter does not sum to zero."
+    @assert all(r -> abs(sum(r)) < 1.0e-12, eachrow(filt)) "A filter does not sum to zero."
     return TopHatFilter(ty, det, filt, wgts)
 end
 
@@ -154,24 +164,24 @@ function buildfilter(
     ty::Type{GaussianFilter},
     det::Detector,
     a::Float64 = 1.0,
-    b::Float64 = 6.0 # Width
+    b::Float64 = 6.0, # Width
 )::TopHatFilter
-    filtint(center, ee, gw) = exp(-0.5*((ee-center)/gw)^2)
+    filtint(center, ee, gw) = exp(-0.5 * ((ee - center) / gw)^2)
     cc = channelcount(det)
     filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
     for ch1 in eachindex(wgts)
         center = energy(ch1, det) # midpoint of channel
         res = a * gaussianwidth(resolution(center, det))
-        ex = ( center - 0.5 * b * res, center + 0.5 * b * res )
+        ex = (center - 0.5 * b * res, center + 0.5 * b * res)
         chmin, chmax = channel(ex[1], det), channel(ex[2], det)
-        if (chmin>=1) && (chmax<=cc)
-            for i in 0:(chmax-chmin)÷2 # Ensure that it is symmetric
-                filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin+i, det), res))
+        if (chmin >= 1) && (chmax <= cc)
+            for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
+                filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
             end
             # Offset the Gaussian to ensure the sum is zero.
-            filt[ch1, chmin:chmax] .-= sum(filt[ch1,chmin:chmax])/length(chmin:chmax)
-            @assert abs(sum(filt[ch1,:]))<1.0e-12 "Filter $ch1 does not sum to zero."
-            @assert all(i->filt[ch1,i]==filt[ch1,chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
+            filt[ch1, chmin:chmax] .-= sum(filt[ch1, chmin:chmax]) / length(chmin:chmax)
+            @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
         end
         wgts[ch1] = 1.0
     end
@@ -210,13 +220,11 @@ The range of channels associated with the specified ReferenceLabel.
 channels(rl::ReferenceLabel) = rl.roi
 
 Base.show(io::IO, refLab::ReferenceLabel) = print(io::IO, "$(refLab.spec[:Name])[$(refLab.roi)]")
-Base.isequal(rl1::ReferenceLabel, rl2::ReferenceLabel) = isequal(rl1.roi, rl2.roi) && isequal(rl1.spec, rl2.spec)
-Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
-    return isequal(rl1.roi,rl2.roi) ?
-        isless(rl1.spec[:Name], rl2.spec[:Name]) :
-        (  isequal(rl1.roi.start, rl2.roi.start) ?
-             isless(rl1.roi.stop, rl2.roi.stop) :
-             isless(rl1.roi.start, rl2.roi.start))
+
+_hashrl(spec,roi,xrays) = xor(xor(hash(spec), hash(roi)), hash(xrays))
+
+Base.isequal(c1::ReferenceLabel, c2::ReferenceLabel) =
+    (hash(c1) == hash(c2)) && isequal(c1.roi, c2.roi) && isequal(c1.xrays, c2.xrays) && isequal(c1.spec, c2.spec)
 
 """
     CharXRayLabel
@@ -228,7 +236,11 @@ struct CharXRayLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
     xrays::Vector{CharXRay}
+    hash::UInt
+    CharXRayLabel(spec::Spectrum, roi::UnitRange{Int}, xrays::Vector{CharXRay}) =
+        new(spec, roi, xrays, _hashrl(spec,roi,xrays))
 end
+
 
 """
    xrays(cl::CharXRayLabel)
@@ -240,6 +252,10 @@ xrays(cl::CharXRayLabel) = cl.xrays
 Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
+Base.isless(rl1::CharXRayLabel, rl2::CharXRayLabel) =
+    return isequal(rl1.roi, rl2.roi) ? isless(rl1.spec[:Name], rl2.spec[:Name]) :
+           (isequal(rl1.roi.start, rl2.roi.start) ? isless(rl1.roi.stop, rl2.roi.stop) :
+            isless(rl1.roi.start, rl2.roi.start))
 
 """
     EscapeLabel
@@ -251,13 +267,20 @@ struct EscapeLabel <: ReferenceLabel
     spec::Spectrum
     roi::UnitRange{Int}
     xrays::Vector{EscapeArtifact}
+    hash::UInt
+
     EscapeLabel(spc::Spectrum, roi::UnitRange{Int}, escs::AbstractVector{EscapeArtifact}) =
-        new(spc, roi, convert(Vector{EscapeArtifact},escs))
+        new(spc, roi, convert(Vector{EscapeArtifact}, escs), _hashrl(spc,roi,escs))
 end
 
 Base.show(io::IO, escl::EscapeLabel) = print(io, name(escl))
 Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
     isequal(el1.roi, el2.roi) && isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
+Base.isless(rl1::EscapeLabel, rl2::EscapeLabel) =
+    return isequal(rl1.roi, rl2.roi) ? isless(rl1.spec[:Name], rl2.spec[:Name]) :
+           (isequal(rl1.roi.start, rl2.roi.start) ? isless(rl1.roi.stop, rl2.roi.stop) :
+            isless(rl1.roi.start, rl2.roi.start))
+
 NeXLCore.name(escl::EscapeLabel) = "Ecs[$(name([esc.xray for esc in escl.xrays]))]"
 
 """
@@ -306,15 +329,10 @@ Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
-function _filter(
-    spec::Spectrum,
-    roi::UnitRange{Int},
-    filter::TopHatFilter,
-    tol::Float64
-)
-    range(i) = filter.offsets[i] : filter.offsets[i] + length(filter.filters[i]) - 1
+function _filter(spec::Spectrum, roi::UnitRange{Int}, filter::TopHatFilter, tol::Float64)
+    range(i) = filter.offsets[i]:filter.offsets[i]+length(filter.filters[i])-1
     apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
+        [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
     # Extract the spectrum data as Float64 to match the filter
     data = counts(spec, Float64, true)
     # Determine tangents to the two background end points
@@ -330,45 +348,59 @@ function _filter(
         error("There doesn't appear to be any data in $(spec[:Name]))")
     end
     roiff = ff:findlast(f -> abs(f) > tol * maxval, filtered)
-    return ( roiff, data[roiff], filtered[roiff] )
+    return (roiff, data[roiff], filtered[roiff])
 end
 
 Base.convert(::AbstractVector{SpectrumFeature}, x::AbstractVector{CharXRay})::AbstractVector{SpectrumFeature} = x
 
-charFeature(elm::Element, tr::Tuple{Vararg{Transition}}; minweight=1.0e-3, maxE=1.0e6) =
-    convert(AbstractVector{SpectrumFeature},characteristic(elm, tr, minweight, maxE))
+charFeature(elm::Element, tr::Tuple{Vararg{Transition}}; minweight = 1.0e-3, maxE = 1.0e6) =
+    convert(AbstractVector{SpectrumFeature}, characteristic(elm, tr, minweight, maxE))
 
-escapeFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight=0.1, maxE=1.0e6, escape=n"Si K-L3") =
-    convert(AbstractVector{SpectrumFeature}, map(tr->EscapeArtifact(tr,escape), characteristic(elm, trs, minweight, maxE)))
+escapeFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight = 0.1, maxE = 1.0e6, escape = n"Si K-L3") =
+    convert(
+        AbstractVector{SpectrumFeature},
+        map(tr -> EscapeArtifact(tr, escape), characteristic(elm, trs, minweight, maxE)),
+    )
 
-comptonFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight=1.0e-3) =
-    convert(AbstractVector{SpectrumFeature}, map(tr->ComptonArtifact(tr,escape), characteristic(elm, trs, minweight, maxE)))
+comptonFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight = 1.0e-3) = convert(
+    AbstractVector{SpectrumFeature},
+    map(tr -> ComptonArtifact(tr, escape), characteristic(elm, trs, minweight, maxE)),
+)
 
 function Base.filter(
     spec::Spectrum,
     det::Detector,
     cxrs::AbstractVector{SpectrumFeature},
     filter::TopHatFilter,
-    scale::Float64=1.0;
-    ampl::Float64=1.0e-4
+    scale::Float64 = 1.0;
+    ampl::Float64 = 1.0e-4,
 )::Vector{FilteredReference}
-    cxronly(lbl)::Vector{CharXRay} = Base.filter(l->l isa CharXRay, lbl)
-    esconly(lbl)::Vector{EscapeArtifact} = Base.filter(l->l isa EscapeArtifact, lbl)
+    cxronly(lbl)::Vector{CharXRay} = Base.filter(l -> l isa CharXRay, lbl)
+    esconly(lbl)::Vector{EscapeArtifact} = Base.filter(l -> l isa EscapeArtifact, lbl)
     buildlabel(spec, roi, lbl)::ReferenceLabel =
-        if all(l->l isa EscapeArtifact, lbl)
+        if all(l -> l isa EscapeArtifact, lbl)
             return EscapeLabel(spec, roi, esconly(lbl))
         else
             return CharXRayLabel(spec, roi, cxronly(lbl))
         end
-    mb(spec, roi, lbl) =
-        all(l->l isa EscapeArtifact, lbl) ? #
-            modelBackground(spec, roi) : #
-            modelBackground(spec, roi, inner(brightest(cxronly(lbl))))
-    res=[]
+    mb(spec, roi, lbl) = all(l -> l isa EscapeArtifact, lbl) ? #
+    modelBackground(spec, roi) : #
+    modelBackground(spec, roi, inner(brightest(cxronly(lbl))))
+    res = []
     for (lbl, roi) in labeledextents(cxrs, det, ampl)
         charonly = spec[roi] - mb(spec, roi, lbl)
         f = _filter(spec, roi, filter, 1.0e-6)
-        push!(res, FilteredReference(buildlabel(spec, roi, lbl), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2]))
+        push!(
+            res,
+            FilteredReference(
+                buildlabel(spec, roi, lbl),
+                scale,
+                roi,
+                f...,
+                charonly,
+                filter.weights[(roi.start+roi.stop)÷2],
+            ),
+        )
     end
     return res
 end
@@ -393,11 +425,18 @@ function Base.filter(
     filter::TopHatFilter,
     ashell::AtomicSubShell,
     scale::Float64 = 1.0,
-    tol::Float64 = 1.0e-6
+    tol::Float64 = 1.0e-6,
 )::FilteredReference
     charonly = spec[roi] - modelBackground(spec, roi, ashell)
     f = _filter(spec, roi, filter, tol)
-    return FilteredReference(UnknownLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
+    return FilteredReference(
+        UnknownLabel(spec, roi),
+        scale,
+        roi,
+        f...,
+        charonly,
+        filter.weights[(roi.start+roi.stop)÷2],
+    )
 end
 
 """
@@ -417,11 +456,18 @@ function Base.filter(
     roi::UnitRange{Int},
     filter::TopHatFilter,
     scale::Float64 = 1.0,
-    tol::Float64 = 1.0e-6
+    tol::Float64 = 1.0e-6,
 )::FilteredReference
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, filter, tol)
-    return FilteredReference(UnknownLabel(spec, roi), scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
+    return FilteredReference(
+        UnknownLabel(spec, roi),
+        scale,
+        roi,
+        f...,
+        charonly,
+        filter.weights[(roi.start+roi.stop)÷2],
+    )
 end
 
 """
@@ -466,11 +512,11 @@ For filtering the unknown spectrum. Process the full Spectrum with the specified
 least squares model.
 """
 function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
-    range(i) = filter.offsets[i] : filter.offsets[i] + length(filter.filters[i]) - 1
+    range(i) = filter.offsets[i]:filter.offsets[i]+length(filter.filters[i])-1
     apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
+        [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
     covariance(filter, data) = # The diagnonal elements of the full covariance matrix
-        [ dot(filter.filters[r] .* view(data,range(r)), filter.filters[r]) for r in eachindex(data) ]
+        [dot(filter.filters[r] .* view(data, range(r)), filter.filters[r]) for r in eachindex(data)]
     data = counts(spec, Float64, true)
     # Compute the filtered data
     filtered = apply(filter, data)
@@ -487,8 +533,8 @@ Extract the filtered data representing the specified range.  <code>roi</code> mu
 data in <code>fd</code>.
 """
 function extract(fd::FilteredReference, roi::UnitRange{Int})
-    @assert fd.ffroi.start>=roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
-    @assert fd.ffroi.stop<=roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
+    @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
+    @assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
     data = zeros(Float64, length(roi))
     nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
     data[nz] = fd.filtered
@@ -501,8 +547,7 @@ end
 Extract the filtered data representing the specified range.  <code>roi</code> must be fully contained within the
 filtered data in <code>fd</code>.
 """
-extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} =
-    fd.filtered[roi]
+extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
 
 
 """
@@ -511,8 +556,7 @@ extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} =
 Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
 <code>roi</code> must be fully contained within the data in <code>fd</code>.
 """
-covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::AbstractVector{Float64} =
-    fd.covariance[roi]
+covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::AbstractVector{Float64} = fd.covariance[roi]
 
 # _buildXXX - Helpers for fitcontiguousX functions...
 function _buildmodel(ffs::Array{FilteredReference}, chs::UnitRange{Int})::Matrix{Float64}
@@ -524,15 +568,15 @@ function _buildmodel(ffs::Array{FilteredReference}, chs::UnitRange{Int})::Matrix
 end
 _buildlabels(ffs::Array{FilteredReference}) = collect(ff.identifier for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::Array{FilteredReference}) =
-     Diagonal( [ unk.scale / ffs[i].scale for i in eachindex(ffs) ] )
+    Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
 
 
 """
 Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    wgts = [ ff.covscale for ff in ffs ]
+    x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
+    wgts = [ff.covscale for ff in ffs]
     return scale * wlspinv(extract(unk, chs), x, covariance(unk, chs), wgts, lbls)
 end
 
@@ -540,7 +584,7 @@ end
 Ordinary least squares for either FilteredUnknown[G|W]
 """
 function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
-    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
+    x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end
 
@@ -563,7 +607,7 @@ struct FilterFitResult
     roi::UnitRange{Int}
     raw::Vector{Float64}
     residual::Vector{Float64}
-    peakback::Dict{<:ReferenceLabel,NTuple{2, Float64}}
+    peakback::Dict{<:ReferenceLabel,NTuple{2,Float64}}
 end
 
 """
@@ -581,20 +625,28 @@ residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
 The peak-to-background ratio as determined from the raw and residual spectra integrated over
 the fit region-of-interest and scaled to <code>backwidth</code> eV of continuum (nominally 10 eV).
 """
-function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidth::Float64=10.0)::Float64
+function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidth::Float64 = 10.0)::Float64
     unk = spectrum(unknown(ffr))
     peak, back = ffr.peakback[klabel]
-    return (peak*(energy(klabel.roi.stop,unk)-energy(klabel.roi.start,unk))) / (backwidth*back)
+    return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) / (backwidth * back)
 end
 
-NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc=false)::DataFrame =
-    hcat(DataFrame(Name=[r.label for r in ffrs]), asa(DataFrame, [r.kratios for r in ffrs], withUnc))
+NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc = false)::DataFrame =
+    hcat(DataFrame(Name = [r.label for r in ffrs]), asa(DataFrame, [r.kratios for r in ffrs], withUnc))
 
 function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
-    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
-        UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
+    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
+        ReferenceLabel[],
+        String[],
+        Float64[],
+        Float64[],
+        Int[],
+        Int[],
+        Float64[],
+        Float64[],
+        Float64[]
     for kl in labels(ffr.kratios)
-        push!(lbl,ffr.label)
+        push!(lbl, ffr.label)
         push!(std, spectrum(kl)[:Name])
         push!(klbl, kl)
         push!(roi1, kl.roi.start)
@@ -606,7 +658,18 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFra
         push!(back, pb[2])
         push!(ptob, peaktobackground(ffr, kl))
     end
-    return DataFrame(Label=lbl, Feature=klbl, Reference=std, Start=roi1, Stop=roi2, K=kr, dK=dkr, Peak=peak, Back=back, PtoB=ptob)
+    return DataFrame(
+        Label = lbl,
+        Feature = klbl,
+        Reference = std,
+        Start = roi1,
+        Stop = roi2,
+        K = kr,
+        dK = dkr,
+        Peak = peak,
+        Back = back,
+        PtoB = ptob,
+    )
 end
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
@@ -614,6 +677,7 @@ Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 NeXLUncertainties.value(label::ReferenceLabel, ffr::FilterFitResult) = value(label, ffr.kratios)
 NeXLUncertainties.σ(label::ReferenceLabel, ffr::FilterFitResult) = σ(label, ffr.kratios)
 NeXLUncertainties.getindex(ffr::FilterFitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
+Base.keys(ffr::FilterFitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FilterFitResult) = labels(ffr.kratios)
 
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})
@@ -645,14 +709,17 @@ function _computecounts( #
     unk::FilteredUnknown, #
     ffs::Array{FilteredReference}, #
     kr::UncertainValues, #
-)::Dict{<:ReferenceLabel,NTuple{2, Float64}}
-    res = Dict{ReferenceLabel,NTuple{2, Float64}}()
+)::Dict{<:ReferenceLabel,NTuple{2,Float64}}
+    res = Dict{ReferenceLabel,NTuple{2,Float64}}()
     for ff in ffs
         su = sum(unk.data[ff.roi])
         res[ff.identifier] = (su, su - sum((value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly))
     end
     return res
 end
+
+
+using TimerOutputs
 
 """
     filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
@@ -668,19 +735,20 @@ then the final non-positive k-ratio is returned along with the associated uncert
 when a number of fit k-ratio sets are combined to produce an averaged k-ratio with reduced uncertainty. forcezeros=true
 would bias the result positive.
 """
-function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww, forcezeros=true)::FilterFitResult
+function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
     trimmed, refit, removed, retained = copy(ffs), true, Vector{UncertainValues}(), nothing # start with all the FilteredReference
     while refit
-        fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
-        # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
-        retained = map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
-        kr = cat(retained)
         refit = false
-        for lbl in labels(kr)
-            if value(lbl, kr) <= 0.0
-                splice!(trimmed, findfirst(ff->ff.identifier==lbl, trimmed))
-                push!(removed, uvs([lbl],[forcezeros ? 0.0 : value(lbl, kr)],reshape([σ(lbl, kr)],(1,1))))
-                refit=true
+        fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
+        retained = map(fr -> alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
+        kr = cat(retained)
+        if forcezeros
+            for lbl in keys(kr)
+                if value(lbl, kr) < 0.0
+                    splice!(trimmed, findfirst(ff -> ff.identifier == lbl, trimmed))
+                    push!(removed, uvs([lbl], [0.0], reshape([σ(lbl, kr)], (1, 1))))
+                    refit = true
+                end
             end
         end
     end # while
@@ -699,8 +767,8 @@ function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array
     return unk.filtered - mapreduce(scaled, +, ffs)
 end
 
-fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
-    filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, fitcontiguousww, forcezeros)
+fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
+    filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
 
-fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true) =
+fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
     fit(FilteredUnknownW, unk, filt, refs, forcezeros)

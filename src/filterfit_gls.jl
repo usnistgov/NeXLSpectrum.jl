@@ -80,7 +80,7 @@ function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = f
      retained = map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
      kr = cat(retained)
      refit = false
-     for lbl in labels(kr)
+     for lbl in keys(kr)
          if value(lbl, kr) <= 0.0
              splice!(trimmed, findfirst(ff->ff.identifier==lbl, trimmed))
              push!(removed, uvs([lbl],[forcezeros ? 0.0 : value(lbl, kr)], reshape([σ(lbl, kr)], (1,1))))

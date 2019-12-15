@@ -33,7 +33,7 @@ include("spectrum.jl")
 export Spectrum
 #export NeXLCore.name # A human friendly name for the spectrum
 export channel # channel for energy
-export width # width of channel ch
+export channelwidth # width of channel ch
 #export NeXLCore.energy # energy for channel
 export dose # Spectrum probe dose
 export counts # Spectrum channel data
