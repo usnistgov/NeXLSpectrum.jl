@@ -190,6 +190,108 @@ function readEMSA(filename::AbstractString, det::Detector, force::Bool=false, T:
 	return apply(spec, det)
 end
 
+function writeEMSA(filename::AbstractString, spec::Spectrum)
+	open(filename,"w") do ios
+		writeEMSA(ios, spec)
+	end
+end
+
+function writeEMSA(io::IOStream, spec::Spectrum)
+	forceascii(ss) = map(c-> Int(c)&0x80==0 ? c : '?', ss)
+	# "#FORMAT      : EMSA/MAS Spectral Data File"
+	writeline(io, tag, data, extra="") =
+		println(io,"#$(tag)$(repeat(' ',12-(length(tag)+length(extra))))$(extra): $(forceascii(data))")
+	writeline(io, "FORMAT","EMSA/MAS Spectral Data File")
+	writeline(io, "VERSION","1.0")
+	writeline(io, "TITLE",spec[:Name])
+	if haskey(spec,:AcquisitionTime)
+		dt = spec[:AcquisitionTime]
+		writeline(io, "DATE",uppercase(Dates.format(dt, "d-m-yyyy"))) # 25-FEB-2022
+		writeline(io, "TIME",Times.format(dt, "HH:MM")) # 15:32
+	end
+	if haskey(spec,:Owner)
+		writeline(io, "OWNER","")
+	end
+	writeline(io, "NPOINTS","$(length(spec))")
+	writeline(io, "NCOLUMNS","1")
+	writeline(io, "XUNITS","eV")
+	writeline(io, "YUNITS","counts")
+	if spec.energy isa LinearEnergyScale
+		writeline(io, "DATATYPE","Y")
+		writeline(io, "XPERCHAN","$(spec.energy.width)")
+		writeline(io, "OFFSET", "$(spec.energy.offset)")
+	else
+		writeline(io, "DATATYPE","XY")
+		dx = (energy(length(spec),spec)-energy(1,spec))/(length(spec)-1.0) # Mean width
+		writeline(io, "XPERCHAN","$(dx)")
+		writeline(io, "OFFSET", "$(energy(spec,1))") # energy of first channel
+	end
+	writeline(io, "SIGNALTYPE","EDS")
+	if haskey(spec,:LiveTime)
+		writeline(io, "LIVETIME","$(spec[:LiveTime])")
+	end
+	if haskey(spec,:RealTime)
+		writeline(io, "REALTIME","$(spec[:RealTime])")
+	end
+	if haskey(spec,:BeamEnergy)
+		writeline(io, "BEAMKV","$(0.001*spec[:BeamEnergy])")
+	end
+	if haskey(spec,:ProbeCurrent)
+		writeline(io,"PROBECUR","$(spec[:ProbeCurrent])")
+	end
+	if haskey(spec,:TakeOffAngle)
+		writeline(io, "ELEVANGLE","$(rad2deg(spec[:TakeOffAngle]))")
+	end
+	if haskey(spec,:Azimuthal)
+		writeline(io, "AZIMANGLE","$(rad2deg(spec[:Azimuthal]))")
+	end
+	if haskey(spec,:StagePosition)
+		sp=spec[:StagePosition]
+		for (tag, sym) in ( ("XPOSITION", :X ), ("YPOSITION", :Y ), ("ZPOSITION", :Z ) )
+			if haskey(sp, sym)
+				writeline(io, tag, "$(10.0*sp[sym])","mm")
+			end
+		end
+	end
+	if haskey(spec,:Composition)
+		writeline(io, "#D2STDCMP",todtsa2comp(spec[:Composition]))
+	end
+	if haskey(spec,:Specimen)
+		writeline(io,"#SPECIMEN","$(spec[:Specimen])")
+	end
+	if haskey(spec,:Coating)
+		cc = props[:Coating]
+		writeline(io, "#CONDCOATING", "$(1.0e7*cc.thickness) nm of $(todtsa2comp(cc.material))")
+	end
+	if haskey(spec,:DetectorModel)
+		writeline(io, "#RTDET",spec[:DetectorModel]) # Bruker
+	end
+	if haskey(spec,:DeadLayer)
+		writeline(io, "#TDEADLYR", spec[:DeadLayer])  # Bruker
+	end
+	if haskey(spec,:Fano)
+		writeline(io, "#FANO",spec[:Fano]) # Bruker
+	end
+	if haskey(spec, :FWHMMnKa)
+		writeline(io, "#MNFWHM", spec[:FWHMMnKa], "EV") # Bruker
+	end
+	if haskey(spec, :XRFAnode)
+		writeline(io, "#IDENT", spec[:XRFAnode]) # Bruker
+	end
+	if spec.energy isa LinearEnergyScale
+		writeline(io, "SPECTRUM","Spectrum data follows in counts")
+		for i in eachindex(spec)
+			println(io,spec.counts[i])
+		end
+	else
+		writeline(io, "SPECTRUM","Spectrum data follows in energy, counts")
+		for i in eachindex(spec)
+			println(io,"$(energy(i,spec)), $(spec.counts[i])")
+		end
+	end
+	writeline(io, "#ENDOFDATA","")
+end
+
 const ISO_EMSA = format"ISO/EMSA"
 
 function load(file::File{ISO_EMSA})
@@ -202,12 +304,14 @@ function load(ios::Stream{ISO_EMSA})
 	return readEMSA(ios.io,Float64)
 end
 
-function save(f::Stream{ISO_EMSA}, data)
-    @error "Saving to ISO/EMSA streams is not implemented - should be..."
+function save(f::Stream{ISO_EMSA}, spec::Spectrum)
+    writeEMSA(f.io, spec)
 end
 
 function save(f::File{ISO_EMSA}, data)
-    @error "Saving to ISO/EMSA files is not implemented - should be..."
+	open(f) do ios
+		writeEMSA(ios)
+	end
 end
 
 FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa"])

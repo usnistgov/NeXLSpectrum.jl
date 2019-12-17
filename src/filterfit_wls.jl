@@ -617,7 +617,11 @@ The k-ratios as a UncertainValues object
 """
 kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
-residual(ffr::FilterFitResult)::Vector{Float64} = ffr.residual
+function residual(ffr::FilterFitResult)::Spectrum
+    props = copy(ffr.label.spec.properties)
+    props[:Name]="Residual[$(ffr.label.spec.properties[:Name])]"
+    return Spectrum(ffr.label.spec.energy, ffr.residual, props)
+end
 
 """
     peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64

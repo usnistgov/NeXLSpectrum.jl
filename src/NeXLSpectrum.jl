@@ -56,8 +56,11 @@ export requiredbutmissing # Lists missing properties
 
 include("emsa.jl")
 export readEMSA # Read an EMSA file
+export writeEMSA # Write an EMSA file
+# Also implements FileIO save(...) and load(...) for "ISO EMSA"
 include("aspextiff.jl")
 export readAspexTIFF
+# Also implements FileIO save(...) and load(...) for "ASPEX TIFF"
 
 include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real

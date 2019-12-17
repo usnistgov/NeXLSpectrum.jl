@@ -22,14 +22,15 @@ Metadata is identified by a symbol. Predefined symbols include
 
     :BeamEnergy    # In eV
 	:Elevation     # In radians
-	:TakeOffAngle  # In radians
+	:TakeOffAngle  # In radians (Detector position)
+    :Azimuthal     # In radians (Detector position)
 	:WorkingDistance # In cm
     :LiveTime      # In seconds
     :RealTime      # In seconds
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
-    :StagePosition # A Dict{Symbol,Float64} with entries :X, :Y, :Z, :R, :TX in cm and degrees
+    :StagePosition # A Dict{Symbol,Float64} with entries :X, :Y, :Z, :R, :T, B: in cm and degrees
     :Comment       # A string
     :Composition   # A Material (known composition, not measured)
 	:Elements      # A collection of elements in the material
