@@ -2,16 +2,6 @@ using .Gadfly
 using Colors
 using Printf
 
-const NeXLPalette = distinguishable_colors(
-    66,
-    Color[RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), colorant"DodgerBlue4"],
-)[3:end]
-const NeXLColorblind = distinguishable_colors(
-    66,
-    Color[RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), colorant"DodgerBlue4"],
-    transform = deuteranopic,
-)[3:end]
-
 NeXLSpectrumStyle = style(
     background_color = nothing,
     panel_fill = RGB(253 / 255, 253 / 255, 241 / 255),
@@ -44,7 +34,7 @@ Gadfly.plot( #
     yscale = 1.05,
     ytransform = identity,
     style = NeXLSpectrumStyle,
-    palette = NeXLPalette,
+    palette = NeXLCore.NeXLPalette,
 )::Plot = plot( #
     Spectrum[spec],
     klms = klms,
@@ -75,7 +65,7 @@ Gadfly.plot( #
 	    yscale=1.05,
 	    ytransform = identity,
 		style=NeXLSpectrumStyle,
-		palette=NeXLPalette
+		palette=NeXLCore.NeXLPalette
     )::Plot
 
 Plot a multiple spectra on a single plot using Gadfly.
@@ -96,7 +86,7 @@ Named:
 	yscale = 1.05 # Fraction of max intensity for ymax
 	ytransform = identity | log10 | sqrt | ???
 	style=NeXLSpectrumStyle (or another Gadfly.style)
-	palette = NeXLPalette | NeXLColorblind | Color[ ... ] # Colors for spectra...
+	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Color[ ... ] # Colors for spectra...
 """
 function Gadfly.plot(
     specs::AbstractVector{Spectrum};
@@ -111,7 +101,7 @@ function Gadfly.plot(
     yscale = 1.05,
     ytransform = identity,
     style = NeXLSpectrumStyle,
-    palette = NeXLPalette,
+    palette = NeXLCore.NeXLPalette,
 )::Plot
 # The normalize functions return a Vector{Vector{Float64}}
     normalizeDoseWidth(specs, def = 1.0) = normalizedosewidth.(specs)
@@ -282,12 +272,12 @@ function Gadfly.plot(
 end
 
 """
-    plot(fd::FilteredData)
+    plot(fd::FilteredData, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
 
 Plot the fitting filter and the spectrum from which it was derived.  Vertical red
 lines represent the principle ROC.
 """
-function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLPalette)
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
     roilt(l1, l2) = isless(l1.roi.start, l2.roi.start)
     roi = ismissing(roi) ? ffr.roi : roi
     layers = [

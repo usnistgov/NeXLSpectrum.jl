@@ -1,6 +1,6 @@
 name = "NeXLSpectrum"
 uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
-version = "0.0.2"
+version = "0.0.3-dev"
 
 [deps]
 BoteSalvatICX = "fe54227b-96c7-489b-9963-dd1ce2905f30"
