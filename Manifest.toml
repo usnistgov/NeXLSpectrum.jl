@@ -154,11 +154,11 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FFAST]]
 deps = ["CSV", "DataFrames", "Requires"]
-git-tree-sha1 = "1d191a388144103d3b19bb42b236067a00e06e28"
+git-tree-sha1 = "706aa577e16c8dc50e3150bae43aa64e0c02bd6b"
 repo-rev = "master"
 repo-url = "https://github.com/usnistgov/FFAST.jl"
 uuid = "10506e09-08cd-5f0b-aee5-631de1bcc925"
-version = "0.0.2"
+version = "0.0.3-dev"
 
 [[FFTViews]]
 deps = ["CustomUnitRanges", "FFTW"]
@@ -407,7 +407,7 @@ version = "0.3.3"
 
 [[NeXLCore]]
 deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "NeXLUncertainties", "PeriodicTable", "PhysicalConstants", "Printf", "Reexport", "Requires", "Unitful"]
-git-tree-sha1 = "052ee3ed4076fb242d3d3261214ddc844cb39272"
+git-tree-sha1 = "f48c28ee46d286c058b3e0b645e787efb6f41cff"
 repo-rev = "master"
 repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl.git"
 uuid = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
@@ -415,11 +415,11 @@ version = "0.0.3-dev"
 
 [[NeXLMatrixCorrection]]
 deps = ["BoteSalvatICX", "DataFrames", "FFAST", "Memoization", "NeXLCore", "NeXLUncertainties", "PeriodicTable", "Reexport", "Requires", "TimerOutputs"]
-git-tree-sha1 = "b2d61b28ec0d45a465c844bdb1a91332f21405d8"
+git-tree-sha1 = "25ec0b5956dcfbd8cc2efc22b40b751c80b3539c"
 repo-rev = "master"
 repo-url = "https://github.com/NicholasWMRitchie/NeXLMatrixCorrection.jl.git"
 uuid = "3ab34fdf-2fe8-473b-9b20-30f5809db337"
-version = "0.0.1"
+version = "0.0.3-dev"
 
 [[NeXLUncertainties]]
 deps = ["DataFrames", "LinearAlgebra", "Printf", "SparseArrays"]
