@@ -231,8 +231,8 @@ function Gadfly.plot(
     maxI, maxE = 16, 1.0e3
     names, layers, colors = [], [], []
     for (i, spec) in enumerate(specs)
-        mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : xmax
-        chs = max(1, channel(xmin, spec)):channel(mE, spec)
+        mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : convert(Float64,xmax)
+        chs = max(1, channel(convert(Float64,xmin), spec)):channel(mE, spec)
         mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
@@ -244,7 +244,7 @@ function Gadfly.plot(
             layer(x = energyscale(spec)[chs], y = ytransform.(specdata[i][chs]), Geom.step, Theme(default_color = clr)),
         )
     end
-    maxE = ismissing(xmax) ? maxE : xmax
+    maxE = ismissing(xmax) ? maxE : convert(Float64, xmax)
     append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), append!, specs) : [])
     if length(klms) > 0
         tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE)
@@ -276,7 +276,7 @@ function Gadfly.plot(
             Scale.x_continuous(format = :plain),
             Scale.y_continuous(format = :plain),
             Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, colors),
-            Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = xmin, xmax = maxE),
+            Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
         )
     end
 end
