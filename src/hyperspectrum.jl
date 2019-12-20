@@ -25,12 +25,12 @@ struct Signal{T<:Real, N} <: AbstractArray{T, N}
     energy::EnergyScale
     properties::Dict{Symbol, Any}
     counts::Array{T,N}
+    hash::UInt
 
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, sz::Tuple{Int, Vararg{Int}}, ty::Type{<:Real}) =
-         new{ty, Int}(energy, properties, zeros(ty, sz))
+         new{ty, Int}(energy, properties, zeros(ty, sz), reduce(hash,(energy, properties, UInt(0x12347863))))
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, data::AbstractArray) =
-        new{typeof(data[1]), Int}(energy, properties, data)
-
+        new{typeof(data[1]), Int}(energy, properties, data, reduce(hash,(energy, properties, hash(data))))
 end
 
 Base.show(io::IOStream, sig::Signal) =
@@ -85,8 +85,8 @@ readraw(ios::IOStream, T::Type{<:Real}, size::Tuple{Integer, Vararg{Integer}}, e
 """
     HyperSpectrum
 
-HyperSpectrum is a wrapper around Signal to facilitate access of the
-the data as individual Spectrum objects.
+HyperSpectrum is a wrapper around Signal to facilitate access to the
+the data as Spectrum objects.
 """
 struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
     hs::Signal{T, N}

@@ -62,7 +62,7 @@ end
 
 _hashsp(e, d, p) = xor(hash(e),xor(hash(d),hash(p)))
 
-Base.hash(spec::Spectrum) = spec.hash
+Base.hash(spec::Spectrum, h::UInt) = hash(spec.hash, h)
 Base.isequal(spec1::Spectrum, spec2::Spectrum) =
     (hash(spec1) == hash(spec2)) &&
     isequal(spec1.energy, spec2.energy) &&

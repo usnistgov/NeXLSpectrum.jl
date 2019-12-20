@@ -249,6 +249,8 @@ A list of the X-rays associated with this CharXRayLabel.
 """
 xrays(cl::CharXRayLabel) = cl.xrays
 
+element(cl::CharXRayLabel) = element(cl.xrays[1])
+
 Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
@@ -617,11 +619,24 @@ The k-ratios as a UncertainValues object
 """
 kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
+"""
+    residual(ffr::FilterFitResult)::Spectrum
+
+A Spectrum containing the histogram representing the unknown spectrum
+minus the fitted characteristic peaks shapes times the best fit coefficient.
+"""
 function residual(ffr::FilterFitResult)::Spectrum
     props = copy(ffr.label.spec.properties)
     props[:Name]="Residual[$(ffr.label.spec.properties[:Name])]"
     return Spectrum(ffr.label.spec.energy, ffr.residual, props)
 end
+
+"""
+    characteristiccounts(ffr::FiterFitResult)
+
+Number of spectrum counts that were accounted for by the fitted elements.
+"""
+characteristiccounts(ffr::FilterFitResult,strip::AbstractArray{Element}) = sum(element(ref) in strip ? 0.0 : v[1]-v[2] for (ref,v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
 
 """
     peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64
