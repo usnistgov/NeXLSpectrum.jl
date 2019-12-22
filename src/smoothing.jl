@@ -98,4 +98,5 @@ function applyfilter(spec::Spectrum, filt, applyLLD = true)
         return res
 end
 
-filtered(spec::Spectrum, filt)::Spectrum = Spectrum(spec.energy, applyfilter(spec, filter), copy(spec.properties))
+filtered(spec::Spectrum, filt, applyLLD = true)::Spectrum =
+        Spectrum(spec.energy, applyfilter(spec, filter, applyLLD), copy(spec.properties))
