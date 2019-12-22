@@ -249,7 +249,7 @@ A list of the X-rays associated with this CharXRayLabel.
 """
 xrays(cl::CharXRayLabel) = cl.xrays
 
-element(cl::CharXRayLabel) = element(cl.xrays[1])
+NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 
 Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
@@ -632,11 +632,11 @@ function residual(ffr::FilterFitResult)::Spectrum
 end
 
 """
-    characteristiccounts(ffr::FiterFitResult)
+    characteristiccounts(ffr::FiterFitResult, strip)
 
-Number of spectrum counts that were accounted for by the fitted elements.
+Number of spectrum counts that were accounted for by the fitted elements with the `strip` Element(s) removed.
 """
-characteristiccounts(ffr::FilterFitResult,strip::AbstractArray{Element}) = sum(element(ref) in strip ? 0.0 : v[1]-v[2] for (ref,v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
+characteristiccounts(ffr::FilterFitResult,strip) = sum(element(ref) in strip ? 0.0 : v[1]-v[2] for (ref,v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
 
 """
     peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64

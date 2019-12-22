@@ -73,15 +73,15 @@ version = "0.8.1"
 
 [[ColorVectorSpace]]
 deps = ["ColorTypes", "Colors", "FixedPointNumbers", "LinearAlgebra", "SpecialFunctions", "Statistics", "StatsBase"]
-git-tree-sha1 = "1e18457a9336c63de2a757630d514727a6ed90fc"
+git-tree-sha1 = "59a561934dc2ad6aba4f500aa839c0f1b8fa8314"
 uuid = "c3611d14-8923-5661-9e6a-0046d554d3a4"
-version = "0.8.1"
+version = "0.8.2"
 
 [[Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "InteractiveUtils", "Printf", "Reexport"]
-git-tree-sha1 = "c9c1845d6bf22e34738bee65c357a69f416ed5d1"
+git-tree-sha1 = "5ae09fba6989add2f55282453b46d68398f1c5ec"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
-version = "0.9.6"
+version = "0.10.0"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
@@ -200,10 +200,10 @@ deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[Graphics]]
-deps = ["Colors", "LinearAlgebra", "NaNMath"]
-git-tree-sha1 = "58ae9effc8844860ad126a7a3fb8c01f9c3768a2"
+deps = ["Colors", "Compat", "NaNMath"]
+git-tree-sha1 = "e3ead4211073d4117a0d2ef7d1efc5c8092c8412"
 uuid = "a2bd30eb-e257-5431-a919-1863eab51364"
-version = "1.0.0"
+version = "0.4.0"
 
 [[IdentityRanges]]
 deps = ["OffsetArrays", "Test"]
@@ -219,15 +219,15 @@ version = "0.6.1"
 
 [[ImageCore]]
 deps = ["ColorTypes", "Colors", "FFTW", "FixedPointNumbers", "Graphics", "MappedArrays", "OffsetArrays", "PaddedViews", "Reexport"]
-git-tree-sha1 = "b175312f91d3d9f90c7a9aa0d8fe5cee50df7365"
+git-tree-sha1 = "17a646b2b4f018d36170a99cb6a690773bb69ede"
 uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
-version = "0.8.6"
+version = "0.8.7"
 
 [[ImageDistances]]
-deps = ["ColorVectorSpace", "Colors", "Distances", "ImageCore", "LinearAlgebra", "MappedArrays", "Statistics"]
-git-tree-sha1 = "24b194fdc362bbb8cc6c26cfb8ad6789a06ea282"
+deps = ["ColorVectorSpace", "Colors", "Distances", "FixedPointNumbers", "ImageCore"]
+git-tree-sha1 = "aa69ce81260bcb5e950a5e3b48ccca15447c6d8c"
 uuid = "51556ac3-7006-55f5-8cb3-34580c88182d"
-version = "0.2.6"
+version = "0.2.4"
 
 [[ImageFiltering]]
 deps = ["CatIndices", "ColorVectorSpace", "Colors", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "FixedPointNumbers", "ImageCore", "LinearAlgebra", "MappedArrays", "OffsetArrays", "Requires", "StaticArrays", "Statistics", "TiledIteration"]
@@ -272,16 +272,15 @@ uuid = "02fcd773-0e25-5acc-982a-7f6622650795"
 version = "0.8.0"
 
 [[Images]]
-deps = ["AxisArrays", "Base64", "ColorTypes", "ColorVectorSpace", "Colors", "FileIO", "FixedPointNumbers", "Graphics", "ImageAxes", "ImageCore", "ImageDistances", "ImageFiltering", "ImageMetadata", "ImageMorphology", "ImageShow", "ImageTransformations", "IndirectArrays", "MappedArrays", "OffsetArrays", "Random", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "TiledIteration"]
-git-tree-sha1 = "f499fbf6fa63bf1296aff5028a30226861359014"
+deps = ["AxisArrays", "Base64", "ColorTypes", "ColorVectorSpace", "Colors", "FileIO", "FixedPointNumbers", "Graphics", "ImageAxes", "ImageCore", "ImageDistances", "ImageFiltering", "ImageMetadata", "ImageMorphology", "ImageShow", "ImageTransformations", "IndirectArrays", "MappedArrays", "OffsetArrays", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "TiledIteration"]
+git-tree-sha1 = "1aae59fc0e34e47dfb111113bb6e9a65d7bafe81"
 uuid = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
-version = "0.19.2"
+version = "0.18.0"
 
 [[IndirectArrays]]
-deps = ["Compat", "Test"]
-git-tree-sha1 = "b6e249be10a3381b2c72ac82f2d13d70067cb2bd"
+git-tree-sha1 = "c2a145a145dc03a7620af1444e0264ef907bd44f"
 uuid = "9b13fd28-a010-5f03-acff-a1bbcff69959"
-version = "0.5.0"
+version = "0.5.1"
 
 [[IntelOpenMP_jll]]
 deps = ["Libdl", "Pkg"]
@@ -406,26 +405,20 @@ uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "0.3.3"
 
 [[NeXLCore]]
-deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "NeXLUncertainties", "PeriodicTable", "PhysicalConstants", "Printf", "Reexport", "Requires", "Unitful"]
-git-tree-sha1 = "f48c28ee46d286c058b3e0b645e787efb6f41cff"
-repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLCore.jl.git"
+deps = ["BoteSalvatICX", "CSV", "Colors", "DataFrames", "FFAST", "NeXLUncertainties", "PeriodicTable", "PhysicalConstants", "Pkg", "Printf", "Reexport", "Requires", "Unitful"]
+path = "C:\\Users\\nicho\\.julia\\dev\\NeXLCore"
 uuid = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
 version = "0.0.3-dev"
 
 [[NeXLMatrixCorrection]]
 deps = ["BoteSalvatICX", "DataFrames", "FFAST", "Memoization", "NeXLCore", "NeXLUncertainties", "PeriodicTable", "Reexport", "Requires", "TimerOutputs"]
-git-tree-sha1 = "25ec0b5956dcfbd8cc2efc22b40b751c80b3539c"
-repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLMatrixCorrection.jl.git"
+path = "C:\\Users\\nicho\\.julia\\dev\\NeXLMatrixCorrection"
 uuid = "3ab34fdf-2fe8-473b-9b20-30f5809db337"
 version = "0.0.3-dev"
 
 [[NeXLUncertainties]]
 deps = ["DataFrames", "LinearAlgebra", "Printf", "SparseArrays"]
-git-tree-sha1 = "94fc80aeb6151725ee793c6d8e7414e7a7620a2c"
-repo-rev = "master"
-repo-url = "https://github.com/NicholasWMRitchie/NeXLUncertainties.jl.git"
+path = "C:\\Users\\nicho\\.julia\\dev\\NeXLUncertainties"
 uuid = "7127f3d6-1721-46bc-bb38-8fc703dd438e"
 version = "0.0.3-dev"
 
@@ -487,9 +480,10 @@ uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 version = "0.6.0"
 
 [[PooledArrays]]
-git-tree-sha1 = "6e8c38927cb6e9ae144f7277c753714861b27d14"
+deps = ["DataAPI"]
+git-tree-sha1 = "b1333d4eced1826e15adbdf01a4ecaccca9d353c"
 uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "0.5.2"
+version = "0.5.3"
 
 [[Printf]]
 deps = ["Unicode"]
