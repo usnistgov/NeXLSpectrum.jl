@@ -218,14 +218,16 @@ function Gadfly.plot(
         specdata = normalizeNone(specs)
         ylbl = "Counts"
     end
-    maxI, maxE = 16, 1.0e3
+    maxI, maxE, maxE0 = 16, 1.0e3, 1.0e3
     names, layers, colors = [], [], []
     for (i, spec) in enumerate(specs)
         mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : convert(Float64,xmax)
+        mE0 = get(spec, :BeamEnergy, missing)
         chs = max(1, channel(convert(Float64,xmin), spec)):channel(mE, spec)
         mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
+        maxE0 = ismissing(mE0) ? maxE0 : max(maxE0, mE0)
         clr = palette[(i-1)%length(palette)+1]
         push!(names, spec[:Name])
         push!(colors, clr)
@@ -234,10 +236,9 @@ function Gadfly.plot(
             layer(x = energyscale(spec)[chs], y = ytransform.(specdata[i][chs]), Geom.step, Theme(default_color = clr)),
         )
     end
-    maxE = ismissing(xmax) ? maxE : convert(Float64, xmax)
     append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), append!, specs) : [])
     if length(klms) > 0
-        tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE)
+        tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE0)
         tr(cxr::CharXRay) = [cxr]
         pklms = mapreduce(klm -> tr(klm), append!, klms)
         if length(pklms) > 0
@@ -245,7 +246,7 @@ function Gadfly.plot(
         end
     end
     if length(edges) > 0
-        shs(elm::Element) = atomicsubshells(elm, maxE)
+        shs(elm::Element) = atomicsubshells(elm, maxE0)
         shs(ash::AtomicSubShell) = [ash]
         pedges = mapreduce(ash -> shs(ash), append!, edges)
         if length(pedges) > 0
