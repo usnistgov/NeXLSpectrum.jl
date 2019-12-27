@@ -562,7 +562,7 @@ estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) = peak(unk, chs) * 
 """
     NeXLUncertainties.asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
 
-Outputs a description of the data in the spectrum.
+Returns a DataFrame that summarizes the list of spectra.
 """
 function NeXLUncertainties.asa(::Type{DataFrame}, specs::AbstractVector{Spectrum})::DataFrame
     _asname(comp) = ismissing(comp) ? missing : name(comp)
@@ -587,6 +587,44 @@ function NeXLUncertainties.asa(::Type{DataFrame}, specs::AbstractVector{Spectrum
         Coating = coat,
         Integral = integ,
         Material = comp,
+    )
+end
+
+"""
+    NeXLUncertainties.asa(::Type{DataFrame}, spec::AbstractDict{Element, Spectrum})::DataFrame
+
+Returns a DataFrame that summarizes a dictionary of standard spectra.
+"""
+function NeXLUncertainties.asa(::Type{DataFrame}, stds::AbstractDict{Element,Spectrum})::DataFrame
+    _asname(comp) = ismissing(comp) ? missing : name(comp)
+    unf, unl, uns = Union{Float64,Missing}, Union{Film,Nothing}, Union{String,Missing}
+    elm, zs, mfs, nme, e0, pc, lt, rt, coat, integ, comp = String[], Int[], Float64[], String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
+    for el in sort(collect(keys(stds)))
+        spec = stds[el]
+        push!(elm, el.symbol)
+        push!(zs, el.number)
+        push!(nme, spec[:Name])
+        push!(mfs, ismissing(spec[:Composition]) ? missing : spec[:Composition][el])
+        push!(e0, get(spec, :BeamEnergy, missing))
+        push!(pc, get(spec, :ProbeCurrent, missing))
+        push!(lt, get(spec, :LiveTime, missing))
+        push!(rt, get(spec, :RealTime, missing))
+        push!(coat, get(spec, :Coating, nothing))
+        push!(integ, integrate(spec))
+        push!(comp, _asname(get(spec, :Composition, missing)))
+    end
+    return DataFrame(
+        Element=elm,
+        Z = zs,
+        Name = nme,
+        Material = comp,
+        MassFrac = mfs,
+        BeamEnergy = e0,
+        ProbeCurrent = pc,
+        LiveTime = lt,
+        RealTime = rt,
+        Coating = coat,
+        Integral = integ,
     )
 end
 
@@ -647,3 +685,29 @@ end
 Outputs a description of the data in the spectrum to standard output.
 """
 details(spec::Spectrum) = details(stdout, spec)
+
+function commonproperties(props1::Dict{Symbol, Any}, props2::Dict{Symbol, Any})
+    res = Dict{Symbol, Any}()
+    for (key, sp1) in props1
+        if isequal(sp1, get(props2, key, missing))
+            res[key]=sp1
+        end
+    end
+    return res
+end
+
+commonproperties(specs::AbstractArray{Spectrum}) =
+    reduce((props,sp2)->commonproperties(props, sp2.properties), specs[2:end], specs[1].properties)
+
+function maxspectrum(spec1::Spectrum, spec2::Spectrum)
+    maxi(a, b) = collect(max(a[i],b[i]) for i in eachindex(a))
+    props = commonproperties(spec1.properties, spec2.properties)
+    props[:Name] = "MaxSpectrum"
+    return Spectrum(spec1.energy, maxi(counts(spec1), counts(spec2)), props)
+end
+
+maxspectrum(specs::AbstractArray{Spectrum}) =
+    reduce(maxspectrum, specs)
+
+maxspectrum(specs::Vararg{Spectrum}) =
+    reduce(maxspectrum, specs)
