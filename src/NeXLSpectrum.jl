@@ -91,8 +91,6 @@ export escapeFeature  # Escape artifact peaks
 
 export buildfilter
 export estimatebackground
-export extract
-export covariance
 export ascontiguous
 export fitcontiguousg, fitcontiguousp, fitcontiguousw, fitcontiguouso
 export filterfit
@@ -103,8 +101,6 @@ export fit
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
-
-
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
