@@ -664,7 +664,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFra
         Float64[],
         Float64[],
         Float64[]
-    for kl in labels(ffr.kratios)
+    for kl in sortedlabels(ffr.kratios)
         push!(lbl, ffr.label)
         push!(std, spectrum(kl)[:Name])
         push!(klbl, kl)
