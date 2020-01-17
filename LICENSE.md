@@ -1,4 +1,4 @@
-Copyright (c) 2019: Nicholas W. M. Ritchie
+Copyright (c) 2019-2020: Nicholas W. M. Ritchie
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
