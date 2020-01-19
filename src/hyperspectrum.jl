@@ -24,24 +24,26 @@ Special property tags:
 struct Signal{T<:Real, N} <: AbstractArray{T, N}
     energy::EnergyScale
     properties::Dict{Symbol, Any}
-    counts::Array{T,N}
+    counts::Array{T, N}
     hash::UInt
 
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, sz::Tuple{Int, Vararg{Int}}, ty::Type{<:Real}) =
-         new{ty, Int}(energy, properties, zeros(ty, sz), reduce(hash,(energy, properties, UInt(0x12347863))))
+         new{ty, Int}(energy, properties, zeros(ty, sz), reduce(hash, hash.(energy, properties, UInt(0x12347863))))
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, data::AbstractArray) =
-        new{typeof(data[1]), Int}(energy, properties, data, reduce(hash,(energy, properties, hash(data))))
+        new{typeof(data[1]), ndims(data)}(energy, properties, data, mapreduce(hash,hash,(energy, properties, data)))
 end
 
-Base.show(io::IOStream, sig::Signal) =
+Base.show(io::IO, sig::Signal) =
     print(io,"Signal[$(sig.energy),$(size(sig.counts))]")
 
 Base.getindex(sig::Signal, ci::CartesianIndex) =
     sig.counts[ci]
+Base.getindex(sig::Signal, ci...) =
+    sig.counts[ci...]
 Base.setindex!(sig::Signal, v::Real, ci::CartesianIndex) =
     setindex(sig.counts, v, ci)
-Base.setindex!(sig::Signal, v::Real, ci::Tuple{Integer, Vararg{Integer}}) =
-    setindex(sig.counts, v, CartesianIndex(ci))
+Base.setindex!(sig::Signal, v::Real, ci...) =
+    setindex(sig.counts, v, ci...)
 Base.eltype(sig::Signal) = eltype(sig.counts)
 Base.length(sig::Signal) = length(sig.counts)
 Base.ndims(sig::Signal) = ndims(sig.counts)
@@ -56,31 +58,50 @@ Base.strides(sig::Signal) = strides(sig.counts)
 NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
 channel(sig::Signal, energy) = channel(energy, sig.energy)
 
+function asimage(sig::Signal, ch)
+    if typeof(hs.counts[1])==UInt8
+        return normedview(N0f8,raw.counts[ch,:,:])
+    elseif typeof(hs.counts[1])==UInt16
+        return normedview(N0f16,raw.counts[ch,:,:])
+    end
+end
+
+function compressed(sig::Signal)
+    maxval = maximum(sig.counts)
+    if (typeof(sig.counts[1]) in ( UInt16, UInt32 )) && (maxval <= 255)
+        res = convert(Array{UInt8,ndims(sig.counts)},sig.counts)
+        return Signal(sig.energy, sig.properties, res)
+    elseif (typeof(sig.counts[1]) isa UInt32 ) && (maxval <= 65535)
+        res = convert(Array{UInt16,ndims(sig.counts)},sig.counts)
+        return Signal(sig.energy, sig.properties, res)
+    elseif (typeof(sig.counts[1]) in ( Int16, Int32 )) && (maxval <= 127)
+        res = convert(Array{Int8,ndims(sig.counts)},sig.counts)
+        return Signal(sig.energy, sig.properties, res)
+    elseif (typeof(sig.counts[1]) isa Int32 ) && (maxval <= 32767)
+        res = convert(Array{Int16,ndims(sig.counts)},sig.counts)
+        return Signal(sig.energy, sig.properties, res)
+    elseif typeof(sig.counts[1]) isa Float64
+        res = convert(Array{Float32,ndims(sig.counts)},sig.counts)
+        return Signal(sig.energy, sig.properties, res)
+    end
+    return sig
+end
+
 """
-    writecounts(ios::IOStream, hs::Signal)
+   plane(hss::Signal, chs::UnitRange, normalize=false)
 
-Write the counts data directly in binary to the specified stream.
+Sum a consecutive series of channel planes into a single Array representing an image plane.
 """
-writecounts(ios::IOStream, hs::Signal) =
-    write(ios, hs.counts)
-
-"""
-    readcounts(ios::IOStream, hs::Signal)
-
-Read counts data directly in binary from the specified stream.
-"""
-readcounts(ios::IOStream, T::Type{<:Real}, size::Tuple{Integer, Vararg{Integer}}) =
-    read!(ios, Array{T}(undef, size))
-
-
-"""
-    readraw(ios::IOStream, T::Type{<:Real}, size::NTuple{Int, N}, energy::EnergyScale, props::Dict{Symbol,Any}) =
-
-Construct a full Signal from the counts data in binary from the specified stream.
-"""
-readraw(ios::IOStream, T::Type{<:Real}, size::Tuple{Integer, Vararg{Integer}}, energy::EnergyScale, props::Dict{Symbol,Any}) =
-    Signal(energy, props, readcounts(ios, T, size))
-
+function plane(sig::Signal, chs::UnitRange, normalize=false)
+    res = Array{Float64}(undef, size(hs)[2:end])
+    for idx in eachindex(res)
+        res[i] = sum(hs.counts[chs, idx])
+    end
+    if normalize
+        res/=maximum(res)
+    end
+    return res
+end
 
 """
     HyperSpectrum
@@ -89,11 +110,11 @@ HyperSpectrum is a wrapper around Signal to facilitate access to the
 the data as Spectrum objects.
 """
 struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
-    hs::Signal{T, N}
+    hs::Signal{T}
     index::CartesianIndices # Spectrum indices
 
-    HyperSpectrum(hs::Signal) =
-        new{typeof(hs.counts[1]),Int}(hs, CartesianIndices(size(hs.counts)[2:end]))
+    HyperSpectrum(sig::Signal) =
+        new{typeof(sig.counts[1]),ndims(sig.counts)-1}(sig, CartesianIndices(size(sig.counts)[2:end]))
 end
 
 """
@@ -105,19 +126,19 @@ Special property tags:
 
     :Cartesian # The pixel index of a Spectrum extracted from a HyperSpectrum
 """
-ashyperspectrum(hs::Signal) = HyperSpectrum(hs)
+ashyperspectrum(sig::Signal) = HyperSpectrum(sig)
 
 
 Base.eltype(hss::HyperSpectrum) = Spectrum
-Base.length(hss::HyperSpectrum) = length(hs.index)
-Base.ndims(hss::HyperSpectrum) = ndims(hs.index)
-Base.size(hss::HyperSpectrum) = size(hs.index)
-Base.size(hss::HyperSpectrum, n) = size(hs.index, n)
-Base.axes(hss::HyperSpectrum) = axes(hs.index)
-Base.axes(hss::HyperSpectrum, n) = axes(hs.index, n)
-Base.eachindex(hss::HyperSpectrum) = hs.index
-Base.stride(hss::HyperSpectrum, k) = stride(hs.index, k)
-Base.strides(hss::HyperSpectrum) = strides(hs.index)
+Base.length(hss::HyperSpectrum) = length(hss.index)
+Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
+Base.size(hss::HyperSpectrum) = size(hss.index)
+Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
+Base.axes(hss::HyperSpectrum) = axes(hss.index)
+Base.axes(hss::HyperSpectrum, n) = axes(hss.index, n)
+Base.eachindex(hss::HyperSpectrum) = hss.index
+Base.stride(hss::HyperSpectrum, k) = stride(hss.index, k)
+Base.strides(hss::HyperSpectrum) = strides(hss.index)
 
 function Base.getindex(hss::HyperSpectrum, ci::CartesianIndex)::Spectrum
     so(i) = i*size(hss.hs.counts, 1)
@@ -149,18 +170,6 @@ function Base.sum(hss::HyperSpectrum, filt::Function)
     return Spectrum(hss.energy, props, a)
 end
 
-"""
-   plane(hss::HyperSpectrum, chs::UnitRange)
-
-Sum a consecutive series of channel planes into a single Array representing an image plane.
-"""
-function plane(hs::Signal, chs::UnitRange)
-    res = Array{Float64}(undef, size(hs)[2:end])
-    for idx in eachindex(res)
-        res[i] = sum(hs.counts[chs, idx])
-    end
-    return res
-end
 
 plane(hs::HyperSpectrum,chs::UnitRange) =
     plane(hss.sig,chs)

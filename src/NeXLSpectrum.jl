@@ -68,11 +68,15 @@ include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real
 export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
 export ashyperspectrum # Converts a Signal into a HyperSpectrum
-export writecounts # write a Signal to IOStream
-export readcounts  # read a Signal from an IOStream
-export readraw # read a Signal from an IOStream
 export plane # Sum planes in a HyperSpectrum
 export countmap # Convert the planes as a Gray-scale image
+export compressed # Compresses Integer type data down to the smallest size that will hold the max value.
+
+include("rplraw.jl")
+export RPLHeader
+export readrplraw # Read a RPL/RAW file into a Signal
+export readrpl # Read the RPL file into a RPLHeader
+export writerplraw # Write a Signal into a RPL/RAW
 
 include("llsq.jl")
 include("filterfit_wls.jl")
