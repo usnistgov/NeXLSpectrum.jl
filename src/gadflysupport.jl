@@ -17,12 +17,12 @@ NeXLSpectrumStyle = style(
 )
 
 """
-    Gadfly.plot(spec::Spectrum; klms=[], xmin=0.0, xmax=nothing)::Plot
+    Gadfly.plot(spec::AbstractVector{Spectrum{<:Real}}; klms=[], xmin=0.0, xmax=nothing)::Plot
 
-Plot a Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
+Plot a Vector of Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
 """
 Gadfly.plot( #
-    spec::Spectrum{<:Real};
+    specs::AbstractVector{Spectrum{<:Real}};
     klms = [],
     edges = [],
     escapes = [],
@@ -36,7 +36,7 @@ Gadfly.plot( #
     style = NeXLSpectrumStyle,
     palette = NeXLCore.NeXLPalette,
 )::Plot = plot( #
-    Spectrum[spec],
+    specs...,
     klms = klms,
     edges = edges,
     escapes = escapes,
@@ -53,7 +53,7 @@ Gadfly.plot( #
 
 """
     plot(
-	    specs::AbstractVector{Spectrum};
+	    specs::Spectrum...;
 	    klms=[],
 	    edges=[],
 		escapes=[],
@@ -89,7 +89,7 @@ Named:
 	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Color[ ... ] # Colors for spectra...
 """
 function Gadfly.plot(
-    specs::AbstractVector{Spectrum};
+    specs::Spectrum{<:Real}...;
     klms = [],
     edges = [],
     escapes = [],
@@ -326,4 +326,4 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     )
 end
 
-@info "Loading NeXLSpectrum Gadfly support"
+@info "Loading Gadfly support into NeXLSpectrum."

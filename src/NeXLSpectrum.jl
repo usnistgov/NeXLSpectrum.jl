@@ -69,8 +69,11 @@ export Signal  # The base class that makes hyperspectral data look like an Array
 export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
 export ashyperspectrum # Converts a Signal into a HyperSpectrum
 export plane # Sum planes in a HyperSpectrum
-export countmap # Convert the planes as a Gray-scale image
+export countmap # Convert a range of data channels into a Gray-scale image
+export countmaps # Convert a vector of ranges-of-channels into Gray-scale images
 export compressed # Compresses Integer type data down to the smallest size that will hold the max value.
+export maxpixel # Bright's max-pixel derived spectrum
+export indexofmaxpixel # Index producing the max pixel
 
 include("rplraw.jl")
 export RPLHeader

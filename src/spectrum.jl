@@ -116,7 +116,7 @@ requiredbutmissing(ty::Type, spec::Spectrum) = filter(a -> !haskey(spec.property
 function Base.show(io::IO, spec::Spectrum)
     comp = get(spec, :Composition, missing)
     comp = ismissing(comp) ? "Unknown" : name(comp)
-    println(
+    print(
         io,
         "Spectrum[$(get(spec, :Name, "None")), $(get(spec,:BeamEnergy,missing)/1000.0) keV,  $(comp), $(sum(spec.counts))]",
     )
