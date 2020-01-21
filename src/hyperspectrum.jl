@@ -57,8 +57,14 @@ Base.stride(sig::Signal, k) = stride(sig.counts, k)
 Base.strides(sig::Signal) = strides(sig.counts)
 
 NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
-channel(sig::Signal, energy) = channel(energy, sig.energy)
+NeXLCore.channel(sig::Signal, energy) = channel(energy, sig.energy)
 
+
+"""
+    compressed(sig::Signal)
+
+Returns a Signal with smaller or equal storage space to `sig` without losing any infomation.
+"""
 function compressed(sig::Signal)
     maxval = maximum(sig.counts)
     if (typeof(sig.counts[1]) in ( UInt16, UInt32 )) && (maxval <= 255)
@@ -139,8 +145,8 @@ end
     indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices)
     indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices)
 
-Find the coordinates producing the maximum value in data[ch] withing 'cis' or full
-spatial dimensions otherwise.
+Find the coordinates producing the maximum value in data[ch] or data[:] within 'cis' or full
+spatial dimensions.
 """
 function indexofmaxpixel(sig::Signal, ch::Int, cis::CartesianIndices)
     maxidx, max = cis[1], sig.counts[ch, cis[1]]
@@ -274,11 +280,16 @@ function Base.getindex(hss::HyperSpectrum, idx...)::Spectrum
 end
 
 Base.getindex(hss::HyperSpectrum, i::Int)::Spectrum =
-    getindex(hss::HyperSpectrum, hss.index[i]...)
+    getindex(hss, hss.index[i]...)
 Base.getindex(hss::HyperSpectrum, sy::Symbol) =
     getindex(hss.signal.properties, sy)
 Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) =
     setindex!(hss.signal.properties, val, sy)
+
+NeXLCore.energy(hs::HyperSpectrum, ch) = energy(ch, hs.signal.energy)
+channel(hs::HyperSpectrum, energy) = channel(energy, hs.signal.energy)
+rangeofenergies(hs::HyperSpectrum, ch) =
+    ( energy(ch, hs.signal.energy), energy(ch+1, hs.signal.energy) )
 
 """
     sum(hss::HyperSpectrum)
@@ -350,19 +361,6 @@ function countmaps(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
     return countmaps(hss.signal, achs)
 end
 
-"""
-    indexofmaxpixel(sig::Signal, ch::Int) # at channel `ch`
-    indexofmaxpixel(sig::Signal) # all channels
-    indexofmaxpixel(sig::Signal, ch::Int, cis::CartesianIndices)
-    indexofmaxpixel(sig::Signal, cis::CartesianIndices)
-    indexofmaxpixel(hs::HyperSpectrum, ch::Int) # at channel `ch`
-    indexofmaxpixel(hs::HyperSpectrum) # all channels
-    indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices)
-    indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices)
-
-Find the coordinates producing the maximum value in data[ch] withing 'cis' or full
-spatial dimensions otherwise.
-"""
 indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices) =
     indexofmaxpixel(hs.signal, ch, cis)
 

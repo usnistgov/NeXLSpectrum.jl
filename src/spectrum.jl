@@ -89,6 +89,8 @@ Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = val
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 
+rangeofenergies(spec::Spectrum, ch) = ( energy(ch, spec.energy), energy(ch+1, spec.energy) )
+
 """
 	minrequired(::Type{XXX})
 
