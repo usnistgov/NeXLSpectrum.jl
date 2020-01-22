@@ -57,7 +57,7 @@ Base.stride(sig::Signal, k) = stride(sig.counts, k)
 Base.strides(sig::Signal) = strides(sig.counts)
 
 NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
-NeXLCore.channel(sig::Signal, energy) = channel(energy, sig.energy)
+channel(sig::Signal, energy) = channel(energy, sig.energy)
 
 
 """
