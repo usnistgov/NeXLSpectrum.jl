@@ -203,7 +203,7 @@ function readAspexTIFF(file::AbstractString; withImgs=false, astype::Type{<:Real
     end
 end
 
-function readAspexTIFF(ios::IOStream; withImgs=false, astype::Type{<:Real}=Float64)
+function readAspexTIFF(ios::IO; withImgs=false, astype::Type{<:Real}=Float64)
     floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
     res = missing

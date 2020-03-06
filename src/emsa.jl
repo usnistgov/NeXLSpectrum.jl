@@ -62,12 +62,12 @@ function readEMSA(filename::AbstractString, T::Type{<:Real}=Float64)::Spectrum
 end
 
 """
-    readEMSA(ios::IOStream, T::Type{<:Real}=Float64)::Spectrum
+    readEMSA(ios::IO, T::Type{<:Real}=Float64)::Spectrum
 
 Read an ISO/EMSA format spectrum from a disk file at the specified path.
 T is the type of the channel data elements.
 """
-function readEMSA(f::IOStream, T::Type{<:Real}=Float64)::Spectrum
+function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
     energy, counts = LinearEnergyScale(0.0,10.0), T[]
     props = Dict{Symbol,Any}()
     props[:Filename]=filename
@@ -141,6 +141,8 @@ function readEMSA(f::IOStream, T::Type{<:Real}=Float64)::Spectrum
 					props[:DeadLayer] = parse(Float64, value)
 				elseif key == "#FANO" # Bruker
 					props[:Fano] = parse(Float64, value)
+				elseif key == "#WORKING"
+					props[:WorkingDistance] = 0.1*parse(Float64, split(value)[1])
 				elseif key == "#MNFWHM" # Bruker
 					sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
 					props[:FWHMMnKa] = sc*parse(Float64, value)
