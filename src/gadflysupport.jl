@@ -227,7 +227,7 @@ function Gadfly.plot(
         mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
-        maxE0 = ismissing(mE0) ? maxE0 : max(maxE0, mE0)
+        maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
         clr = palette[(i-1)%length(palette)+1]
         push!(names, spec[:Name])
         push!(colors, clr)
