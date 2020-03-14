@@ -30,10 +30,11 @@ Metadata is identified by a symbol. Predefined symbols include
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
-    :StagePosition # A Dict{Symbol,Float64} with entries :X, :Y, :Z, :R, :T, B: in cm and degrees
+    :StagePosition # A Dict{Symbol,Real} with entries :X, :Y, :Z, :R, :T, B: in cm and degrees
     :Comment       # A string
     :Composition   # A Material (known composition, not measured)
-	:Elements      # A collection of elements in the material
+    :Elements      # A collection of elements in the material
+    :ReferenceROIS # A collection of reference ROIs (as Vector{ReferenceROI})
     :Detector      # A Detector like a SimpleEDS
     :Filename      # Source filename
     :Coating       # A Film (eg. 10 nm of C|Au etc.)
@@ -151,7 +152,9 @@ end
 
 Converts the spectrum energy and counts data into a DataFrame.
 """
-NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum)::DataFrame = DataFrame(E = energyscale(spec), I = counts(spec))
+NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum; properties::Bool=false)::DataFrame =
+    properties ? DataFrame(Keys = [ keys(spec.properties)...], Values = repr.([values(spec.properties)...])) : #
+        DataFrame(E = energyscale(spec), I = counts(spec))
 
 """
     apply(spec::Spectrum, det::SimpleEDS)::Spectrum
