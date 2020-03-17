@@ -56,10 +56,28 @@ Read an ISO/EMSA format spectrum from a disk file at the specified path.
 T is the type of the channel data elements.
 """
 function readEMSA(filename::AbstractString, T::Type{<:Real}=Float64)::Spectrum
-	open(filename) do f
-		return readEMSA(f, T)
+	open(filename,"r") do f
+		res = readEMSA(f, T)
+		_setfilename(res, filename)
+		return res
 	end
 end
+
+function _setfilename(spec::Spectrum, filename::String)
+	spec[:Filename]=filename
+	if startswith( spec[:Name], "Bruker")
+		if haskey(spec, :Composition)
+			spec[:Name]=name(spec[:Composition])
+		else
+			path = splitpath(filename)
+			spec[:Name]=path[end]
+		end
+	end
+	if endswith(spec[:Name],".txt") || endswith(spec[:Name],".msa")
+		spec[:Name] = spec[:Name][1:end-4]
+	end
+end
+
 
 """
     readEMSA(ios::IO, T::Type{<:Real}=Float64)::Spectrum
@@ -157,17 +175,9 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
             end
         end
     end
-    if startswith( props[:Name], "Bruker")
-        if haskey(props, :Composition)
-            props[:Name]=name(props[:Composition])
-        else
-			path = splitpath(filename)
-            props[:Name]=path[end]
-        end
+    if startswith( props[:Name], "Bruker") && haskey(props, :Composition)
+        props[:Name]=name(props[:Composition])
     end
-	if endswith(props[:Name],".txt") || endswith(props[:Name],".msa")
-		props[:Name] = props[:Name][1:end-4]
-	end
     props[:StagePosition] = stgpos
     return Spectrum(energy, counts, props)
 end
