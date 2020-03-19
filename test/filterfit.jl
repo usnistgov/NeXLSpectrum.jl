@@ -7,7 +7,7 @@ using BenchmarkTools
 using CSV
 
 @testset "Filter" begin
-    eds = basicEDS(2048, 10.0, 0.0, 135.0)
+    eds = simpleEDS(2048, 10.0, 0.0, 135.0)
     filt = buildfilter(eds)
     # Each row sums to zero
     @test all(isapprox(sum(row), 0.0, atol = 1.0e-8) for row in eachrow(filt))
@@ -29,7 +29,7 @@ end
     mgo = readEMSA(path * "MgO std.msa")
     sio2 = readEMSA(path * "SiO2 std.msa")
 
-    det = basicEDS(4096, 10.0, 0.0, 132.0)
+    det = simpleEDS(4096, 10.0, 0.0, 132.0)
     ff = buildfilter(det)
 
     ok = filter(sio2, 34:66, ff, 1.0 / dose(sio2))
@@ -80,7 +80,7 @@ end
     mgo = readEMSA(path * "MgO std.msa")
     sio2 = readEMSA(path * "SiO2 std.msa")
 
-    det = basicEDSwICC(4096, 10.0, 0.0, 132.0)
+    det = simpleEDSwICC(4096, 10.0, 0.0, 132.0)
     ff = buildfilter(det)
 
     ampl = 0.00005
@@ -144,7 +144,7 @@ end
     ti = readEMSA("$(path)Ti std.msa")
     zn = readEMSA("$(path)Zn std.msa")
 
-    det = basicEDSwICC(4096, 5.01716, -484.20818, 126.0)
+    det = simpleEDSwICC(4096, 5.01716, -484.20818, 126.0)
     ff = buildfilter(det)
 
     ampl = 1e-4

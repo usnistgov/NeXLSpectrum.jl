@@ -48,28 +48,41 @@ using NeXLCore
         @test s1[:RealTime] == 90.0
     end
 
-    @testset "Detector" begin
-        eds = basicEDS(4096,5.0,-495.0,125.0)
+    @testset "SimpleEDS" begin
+        eds = simpleEDS(4096,5.0,-495.0,125.0)
         @test channelcount(eds) == 4096
         @test isapprox(resolution(10000.0,eds),160.0,atol=1.0)
         @test NeXLSpectrum.energy(2000,eds) == NeXLSpectrum.energy(2000,les)
         @test channel(NeXLSpectrum.energy(2000,eds),eds)==2000
     end
-
+    @testset "BasicEDS" begin
+        det3 = BasicEDS(4095, 0.0, 10.0, 126.0, 10, Dict('K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Cs", 'N'=>n"Pu"))
+        @test all(ch->channel(energy(ch,det3),det3)==ch,1:4096)
+        @test resolution(energy(n"Mn K-L3"),det3)==126.0
+        @test isapprox(resolution(energy(n"C K-L2"),det3),45.867,atol=0.001)
+        @test visible(n"C K-L2", det3)
+        @test !visible(n"Ca L3-M3", det3)
+        @test length(visible(characteristic(n"Sc",ltransitions), det3))>=7
+        @test !visible(n"Xe M3-N5",det3)
+        @test visible(n"Cs M3-N5",det3)
+        @test length(visible(characteristic(n"U",ntransitions),det3))==0
+        @test length(visible(characteristic(n"Pu",ntransitions),det3))==0 # Database doesn't contain any...
+        @test channel(n"Mn K-L3",det3)==channel(energy(n"Mn K-L3"),det3)
+    end
     @testset "readEMSA" begin
         path=@__DIR__
         sp = readEMSA("$(path)\\K412 spectra\\Al2O3 std.msa")
         @test sp[:BeamEnergy] == 20.0e3
         @test sp[:ProbeCurrent] == 1.10989
-        @test sp[:Elevation] == 35.0
+        @test sp[:Elevation] == deg2rad(35.0)
         @test sp[:LiveTime] == 1172.19288
         @test sp[:RealTime] == 1491.4828
         @test sp[:Owner] == "Unknown"
         @test sp[:Name] == "Al2O3 std"
         comp = sp[:Composition]
 
-        @test comp[n"O"] == 47.0749
-        @test comp[n"Al"] == 52.9251
+        @test isapprox(comp[n"O"], 0.470749, atol=1.0e-6)
+        @test isapprox(comp[n"Al"], 0.529251, atol=1.0e-6)
         @test comp[n"Zr"] == 0.0
         @test density(comp) == 4.00
 

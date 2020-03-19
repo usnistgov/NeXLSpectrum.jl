@@ -13,15 +13,18 @@ export MnKaResolution # Fiori function resolution function
 export Detector # Abstract: X-ray detector
 export EscapeArtifact # An escape peak
 export SpectrumFeature # A CharXRay or EscapeArtifact (ComptonArtifact)
+export EDSDetector # Abstract base for SimpleEDS and BasicEDS
 export SimpleEDS # A simple EDS detector model
+export BasicEDS # Adds min visibility by line family to SimpleEDS
 export channel # energy to channel
+export visible # Is a SpectrumFeature visible in the spectrum??
 #export NeXLCore.energy # channel to energy
 export linewidth # energy to linewidth
 export channelcount # Detector channel count
 export scale # Detector EnergyScale
 export resolution # Detector Resolution
-export basicEDS # Create a basic EDS detector
-export basicEDSwICC # Create a basic EDS detector with incomplete charge collection
+export simpleEDS # Create a basic EDS detector
+export simpleEDSwICC # Create a basic EDS detector with incomplete charge collection
 export extent # Determine the energy extent of x-ray lines on a detector ( Emin, Emax )
 export extents # Determines contiguous channel extents from a set of characteristic lines or an element
 export labeledextents # Like extents but labeled with a vector of the characteristic x-ray lines in each extent

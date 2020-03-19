@@ -327,6 +327,17 @@ down to an intensity of ampl.  Relative line weights are taken into account.
 """
 extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
     extent(cxrs, det.resolution, ampl)
+"""
+    EDSDetector
+
+Types extending EDSDetector must have member variables
+
+    channelcount::Int # Number of channels
+    scale::EnergyScale # Detector calibration funtion
+    resolution::Resolution # Detector lineshape function
+    lld::Int # low level discriminator
+"""
+abstract type EDSDetector <: Detector end
 
 """
     SimpleEDS
@@ -334,7 +345,7 @@ extent(cxrs::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Floa
 An implementation of the Detector abstract structure for a basic EDS detector.
 It includes models of the number of channels, EnergyScale and Resolution.
 """
-struct SimpleEDS <: Detector
+struct SimpleEDS <: EDSDetector
     channelcount::Int
     scale::EnergyScale
     resolution::Resolution
@@ -350,7 +361,7 @@ Base.show(io::IO, seds::SimpleEDS) =
 
 Number of detector channels.
 """
-channelcount(det::SimpleEDS) =
+channelcount(det::EDSDetector) =
     det.channelcount
 
 """
@@ -358,21 +369,21 @@ channelcount(det::SimpleEDS) =
 
 EnergyScale associated with this detector.
 """
-scale(det::SimpleEDS)::EnergyScale =
+scale(det::EDSDetector)::EnergyScale =
     det.scale
 """
-    lld(det::SimpleEDS)
+    lld(det::EDSDetector)
 
 Low level detector in channels
 """
-lld(det::SimpleEDS) = det.lld
+lld(det::EDSDetector) = det.lld
 
 """
     resolution(eV::Float64, det::SimpleEDS)
 
 Resolution of the detector in eV at the specified energy.
 """
-resolution(eV::Float64, det::SimpleEDS) =
+resolution(eV::Float64, det::EDSDetector) =
     resolution(eV, det.resolution)
 
 
@@ -381,7 +392,7 @@ resolution(eV::Float64, det::SimpleEDS) =
 
 Energy of the low-energy side of the ch-th detector bin.
 """
-NeXLCore.energy(ch::Int, det::SimpleEDS) =
+NeXLCore.energy(ch::Int, det::EDSDetector) =
     energy(ch, det.scale)
 
 """
@@ -389,8 +400,10 @@ NeXLCore.energy(ch::Int, det::SimpleEDS) =
 
 The channel index in which the specified energy X-ray belongs.
 """
-channel(eV::Float64, det::SimpleEDS) =
+channel(eV::Float64, det::EDSDetector) =
     channel(eV, det.scale)
+channel(sf::SpectrumFeature, det::EDSDetector) =
+    channel(energy(sf), det.scale)
 
 """
     visible(sf::SpectrumFeature, det::Detector)
@@ -406,7 +419,7 @@ visible(sf::SpectrumFeature, det::SimpleEDS) =
 Calculates the profile for an X-ray of xrayE (eV) for a detector
 with the specified resolution.
 """
-profile(energy::Float64, xrayE::Float64, det::Detector) =
+profile(energy::Float64, xrayE::Float64, det::EDSDetector) =
     profile(energy, xrayE, det.resolution)
 
 
@@ -491,22 +504,46 @@ function labeledextents(
 end
 
 """
-    basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = channel(150.0 eV))
+    simpleEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int = channel(150.0 eV))
 
 Construct simple model of an EDS detector.
 """
-function basicEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
+function simpleEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
     lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
     SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaResolution(fwhmatmnka), lld)
 end
 
 """
-    basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=channel(150.0 eV))
+    simpleEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=channel(150.0 eV))
 
 Construct simple model of an EDS detector with incomplete charge collection at
 low X-ray energies.
 """
-function basicEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
+function simpleEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
     lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
     SimpleEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), max(1,lld))
 end
+
+struct BasicEDS <: EDSDetector
+    channelcount::Int
+    scale::EnergyScale
+    resolution::Resolution
+    lld::Int # low level discriminator
+    minByFamily::Dict{Char,Element} # Dict( 'K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Ba", 'N'=>n"Pu" )
+    BasicEDS(channelcount::Int, zero::Float64, gain::Float64, fwhm::Float64, lld::Int, minByFamily::Dict{Char,Element}) =
+        new(channelcount, LinearEnergyScale(zero,gain), MnKaResolution(fwhm), lld, minByFamily)
+end
+
+"""
+    visible(sf::SpectrumFeature, det::Detector)
+
+Is <code>sf</code> visible on the specified Detector?
+"""
+visible(sf::SpectrumFeature, det::BasicEDS) =
+    (energy(sf)>energy(lld(det), det)) && #
+    (energy(sf)<energy(det.channelcount+1, det))
+
+visible(cxr::CharXRay, det::BasicEDS) =
+    (element(cxr)>=det.minByFamily[shell(cxr)]) && #
+    (energy(cxr)>energy(lld(det), det)) && #
+    (energy(cxr)<energy(det.channelcount+1, det))

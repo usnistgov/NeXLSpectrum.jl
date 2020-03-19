@@ -400,11 +400,11 @@ Returns an array with the bin-by-bin energies
 energyscale(spec::Spectrum) = energyscale(spec.energy, 1:length(spec))
 
 """
-    basicEDS(spec::Spectrum, fwhmatmnka::Float64)
+    simpleEDS(spec::Spectrum, fwhmatmnka::Float64)
 
 Build a SimpleEDS object for this spectrum with the specified FWHM at Mn Kα.
 """
-basicEDS(spec::Spectrum, fwhmatmnka::Float64) = SimpleEDS(length(spec), spec.energy, MnKaResolution(fwhmatmnka))
+simpleEDS(spec::Spectrum, fwhmatmnka::Float64) = SimpleEDS(length(spec), spec.energy, MnKaResolution(fwhmatmnka))
 
 
 """
