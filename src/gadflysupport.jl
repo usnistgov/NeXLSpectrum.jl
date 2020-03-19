@@ -286,7 +286,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
         layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
     ]
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
-    for lbl in sort([keys(NeXLSpectrum.kratios(ffr))], lt = roilt)
+    for lbl in sort(collect(keys(kratios(ffr))), lt = roilt)
         if value(lbl, ffr) > 0.0
 # This logic keeps the labels on different lines (mostly...)
             i, prev = (lbl.roi.start > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi.stop) : (i + 1, prev)

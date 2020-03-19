@@ -53,6 +53,9 @@ export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 export commonproperties
 export maxspectrum
 
+export maxproperty, minproperty # Min value of a property over a vector of spectra
+export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
+
 export minproperties # A list of the minimum required properties
 export hasminrequired # Checks whether a spectrum has necessary properties
 export requiredbutmissing # Lists missing properties
@@ -82,15 +85,18 @@ export readrplraw # Read a RPL/RAW file into a Signal
 export readrpl # Read the RPL file into a RPLHeader
 export writerplraw # Write a Signal into a RPL/RAW
 
-include("llsq.jl")
-include("filterfit_wls.jl")
+include("fitlabels.jl")
+export UnknownLabel#(spec)
+export CharXRayLabel#(spec,roi,xrays)
+export EscapeLabel#(spec,roi,xrays)
+
+include("filter.jl")
 export TopHatFilter # Struct representing a fitting filter
 export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
 export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
 export GaussianFilter # An alternative filter definition based on an offset Gaussian
 
 export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
-export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
 
 # Different types of spectrum features that can be fit ROIs
 export charFeature    # Characteristic peaks
@@ -103,9 +109,15 @@ export ascontiguous
 export fitcontiguousg, fitcontiguousp, fitcontiguousw, fitcontiguouso
 export filterfit
 export filteredresidual
+
+include("fitresult.jl")
 export FilterFitResult
 export fit
 
+include("llsq.jl")
+# The implementation for weighted filter-fit.
+include("filterfit_wls.jl")
+export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)

@@ -420,16 +420,16 @@ visible(sfs::AbstractVector{<:SpectrumFeature}, det::Detector) =
     filter(sf->visible(sf,det), sfs)
 
 """
-    extents(cxrs::AbstractVector{SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
+    extents(cxrs::AbstractVector{<:SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
 
 Determine the contiguous ranges of channels over which the specified collection of X-rays will be measured on
 the specified detector.  The ampl determines the extent of each peak.
 """
 function extents( #
-    cxrs::AbstractVector{SpectrumFeature},
+    cxrs::AbstractVector{T},
     det::Detector, #
     ampl::Float64
-)::Vector{UnitRange{Int}}
+)::Vector{UnitRange{Int}} where T <: SpectrumFeature
     function ascontiguous(rois)
         join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
         srois = sort(rois)
@@ -449,43 +449,30 @@ function extents( #
     return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
 end
 
-"""
-    extents(cxrs::AbstractVector{CharXRay},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
-
-Determine the contiguous ranges of channels over which the specified collection of X-rays will be measured on
-the specified detector.  The ampl determines the extent of each peak.
-"""
-extents( #
-    cxrs::AbstractVector{CharXRay},
-    det::Detector, #
-    ampl::Float64
-)::Vector{UnitRange{Int}} =
-    extents(convert(AbstractVector{SpectrumFeature}, cxrs), det, ampl)
-
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(visible(characteristic(elm,alltransitions),det),det,ampl)
 
 """
     function labeledextents(
-        cxrs::AbstractVector{CharXRay},
+        cxrs::AbstractVector{T},
         det::Detector,
         ampl::Float64
-    )::Vector{Tuple{Vector{CharXRay},UnitRange{Int}}}
+    )::Vector{Tuple{Vector{T},UnitRange{Int}}} where T <: SpectrumFeature
 
-Creates a vector containing pairs containing a vector of CharXRay and an interval. The interval represents a
+Creates a vector containing pairs containing a vector of T <: SpectrumFeature and an interval. The interval represents a
 contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
 interfere with each other on the specified detector.
 """
 function labeledextents(
-    cxrs::AbstractVector{SpectrumFeature},
+    cxrs::AbstractVector{T},
     det::Detector,
     ampl::Float64
-)::Vector{Tuple{Vector{SpectrumFeature},UnitRange{Int}}}
+)::Vector{Tuple{Vector{T},UnitRange{Int}}} where T <: SpectrumFeature
     fcxrs = filter(cxr-> weight(cxr)>ampl, visible(cxrs, det))
     es = map(xr -> extent(xr, det, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
-    res = Vector{Tuple{Vector{SpectrumFeature},UnitRange{Int}}}()
+    res = Vector{Tuple{Vector{T},UnitRange{Int}}}()
     if length(le) > 0
         curX, curInt = [le[1][1]], le[1][2]
         for (cxr, interval) in le[2:end]

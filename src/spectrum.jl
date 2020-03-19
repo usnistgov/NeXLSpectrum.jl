@@ -116,6 +116,13 @@ List any required but missing properties.
 requiredbutmissing(ty::Type, spec::Spectrum) = filter(a -> !haskey(spec.property, a), minproperties(ty))
 
 
+maxproperty(specs, prop::Symbol) = maximum(spec->spec[prop], specs)
+minproperty(specs, prop::Symbol) = minimum(spec->spec[prop], specs)
+sameproperty(specs, prop::Symbol) =
+    all(spec->spec[prop]==specs[1][prop], specs) ? #
+        specs[1][prop] : #
+        error("The property $prop is not equal for all these spectra.")
+
 function Base.show(io::IO, spec::Spectrum)
     comp = get(spec, :Composition, missing)
     comp = ismissing(comp) ? "Unknown" : name(comp)
