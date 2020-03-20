@@ -92,6 +92,7 @@ include("fitlabels.jl")
 export UnknownLabel#(spec)
 export CharXRayLabel#(spec,roi,xrays)
 export EscapeLabel#(spec,roi,xrays)
+export charXRayLabels # Constructs CharXRayLabel(s)
 
 include("filter.jl")
 export TopHatFilter # Struct representing a fitting filter
@@ -116,6 +117,13 @@ export filteredresidual
 include("fitresult.jl")
 export FilterFitResult
 export fit
+export heterogeneity
+export peaktobackground
+export characteristiccounts
+export residual
+export spectrum
+export unknown
+export kratios
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.

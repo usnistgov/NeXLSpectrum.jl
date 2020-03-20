@@ -87,6 +87,15 @@ struct TopHatFilter
     end
 end
 
+function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
+    res = zeros(Float64, length(filt.filters))
+    res[filt.offsets[row]:filt.offsets[row]+length(filt.filters[row])-1] = filt.filters[row]
+    return res
+end
+
+Base.size(filt::TopHatFilter) = ( length(filt.filters), length(filt.filters) )
+
+
 Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector)]")
 
 """
@@ -351,6 +360,14 @@ function Base.filter(
         filter.weights[(roi.start+roi.stop)÷2],
     )
 end
+
+Base.filter(
+    labels::Vector{<:ReferenceLabel},
+    filt::TopHatFilter,
+    scale::Float64 = 1.0,
+    tol::Float64 = 1.0e-6,
+)::Vector{FilteredReference} =
+    map(lbl->filter(lbl,filt,scale,tol), labels)
 
 """
     filter(

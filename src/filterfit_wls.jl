@@ -45,8 +45,6 @@ function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, c
     return scale * wlspinv(extract(unk, chs), x, covariance(unk, chs), wgts, lbls)
 end
 
-
-
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})
     # Join the UnitRanges into contiguous UnitRanges
     join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
@@ -92,7 +90,7 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFil
 end
 
 """
-    filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
+    filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousww)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).

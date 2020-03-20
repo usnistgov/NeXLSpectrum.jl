@@ -57,16 +57,15 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
 
     function Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
         props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
-        return new{typeof(data[1])}(energy, data, props, _hashsp(energy,data,props))
+        return new{typeof(data[1])}(energy, data, props, _hashsp(energy, data, props))
     end
 end
 
-_hashsp(e, d, p) = xor(hash(e),xor(hash(d),hash(p)))
+_hashsp(e, d, p) = xor(hash(e), xor(hash(d), hash(p)))
 
 Base.hash(spec::Spectrum, h::UInt) = hash(spec.hash, h)
 Base.isequal(spec1::Spectrum, spec2::Spectrum) =
-    (hash(spec1) == hash(spec2)) &&
-    isequal(spec1.energy, spec2.energy) &&
+    (hash(spec1) == hash(spec2)) && isequal(spec1.energy, spec2.energy) &&
     isequal(spec1.properies, spec2.properties) && isequal(spec1.counts, spec2.counts)
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
@@ -90,7 +89,7 @@ Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = val
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 
-rangeofenergies(spec::Spectrum, ch) = ( energy(ch, spec.energy), energy(ch+1, spec.energy) )
+rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
 """
 	minrequired(::Type{XXX})
@@ -116,12 +115,11 @@ List any required but missing properties.
 requiredbutmissing(ty::Type, spec::Spectrum) = filter(a -> !haskey(spec.property, a), minproperties(ty))
 
 
-maxproperty(specs, prop::Symbol) = maximum(spec->spec[prop], specs)
-minproperty(specs, prop::Symbol) = minimum(spec->spec[prop], specs)
-sameproperty(specs, prop::Symbol) =
-    all(spec->spec[prop]==specs[1][prop], specs) ? #
-        specs[1][prop] : #
-        error("The property $prop is not equal for all these spectra.")
+maxproperty(specs, prop::Symbol) = maximum(spec -> spec[prop], specs)
+minproperty(specs, prop::Symbol) = minimum(spec -> spec[prop], specs)
+sameproperty(specs, prop::Symbol) = all(spec -> spec[prop] == specs[1][prop], specs) ? #
+    specs[1][prop] : #
+    error("The property $prop is not equal for all these spectra.")
 
 function Base.show(io::IO, spec::Spectrum)
     comp = get(spec, :Composition, missing)
@@ -159,9 +157,9 @@ end
 
 Converts the spectrum energy and counts data into a DataFrame.
 """
-NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum; properties::Bool=false)::DataFrame =
-    properties ? DataFrame(Keys = [ keys(spec.properties)...], Values = repr.([values(spec.properties)...])) : #
-        DataFrame(E = energyscale(spec), I = counts(spec))
+NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum; properties::Bool = false)::DataFrame =
+    properties ? DataFrame(Keys = [keys(spec.properties)...], Values = repr.([values(spec.properties)...])) : #
+    DataFrame(E = energyscale(spec), I = counts(spec))
 
 """
     apply(spec::Spectrum, det::SimpleEDS)::Spectrum
@@ -185,7 +183,7 @@ end
 
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
-matching(spec::Spectrum, res::Resolution, lld::Int = 1)::SimpleEDS = SimpleEDS(length(spec), spec.energy, res, lld)
+matching(spec::Spectrum, res::Resolution, lld::Int = 1)::EDSDetector = SimpleEDS(length(spec), spec.energy, res, lld)
 
 """
 	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS
@@ -194,6 +192,9 @@ Build an EDSDetector to match the channel count and energy scale in this spectru
 """
 matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::SimpleEDS =
     SimpleEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
+
+matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Char,Element})::BasicEDS =
+    BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
 
 setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
 Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties, sym, def)
@@ -443,7 +444,7 @@ count in the spectrum (not just each channel).
 function subdivide(spec::Spectrum, n::Int)::Array{Spectrum}
     res = zeros(Int, n, length(spec.counts))
     for ch in eachindex(spec.counts)
-# Assign each event to one and only one detector
+        # Assign each event to one and only one detector
         si = rand(1:n, floor(Int, spec[ch]))
         for i = 1:n
             res[i, ch] = count(e -> e == i, si)
@@ -610,7 +611,8 @@ Returns a DataFrame that summarizes a dictionary of standard spectra.
 function NeXLUncertainties.asa(::Type{DataFrame}, stds::AbstractDict{Element,Spectrum})::DataFrame
     _asname(comp) = ismissing(comp) ? missing : name(comp)
     unf, unl, uns = Union{Float64,Missing}, Union{Film,Nothing}, Union{String,Missing}
-    elm, zs, mfs, nme, e0, pc, lt, rt, coat, integ, comp = String[], Int[], Float64[], String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
+    elm, zs, mfs, nme, e0, pc, lt, rt, coat, integ, comp =
+        String[], Int[], Float64[], String[], unf[], unf[], unf[], unf[], unl[], Float64[], uns[]
     for el in sort(collect(keys(stds)))
         spec = stds[el]
         push!(elm, el.symbol)
@@ -626,7 +628,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, stds::AbstractDict{Element,Spe
         push!(comp, _asname(get(spec, :Composition, missing)))
     end
     return DataFrame(
-        Element=elm,
+        Element = elm,
         Z = zs,
         Name = nme,
         Material = comp,
@@ -698,28 +700,26 @@ Outputs a description of the data in the spectrum to standard output.
 """
 details(spec::Spectrum) = details(stdout, spec)
 
-function commonproperties(props1::Dict{Symbol, Any}, props2::Dict{Symbol, Any})
-    res = Dict{Symbol, Any}()
+function commonproperties(props1::Dict{Symbol,Any}, props2::Dict{Symbol,Any})
+    res = Dict{Symbol,Any}()
     for (key, sp1) in props1
         if isequal(sp1, get(props2, key, missing))
-            res[key]=sp1
+            res[key] = sp1
         end
     end
     return res
 end
 
 commonproperties(specs::AbstractArray{Spectrum}) =
-    reduce((props,sp2)->commonproperties(props, sp2.properties), specs[2:end], specs[1].properties)
+    reduce((props, sp2) -> commonproperties(props, sp2.properties), specs[2:end], specs[1].properties)
 
 function maxspectrum(spec1::Spectrum, spec2::Spectrum)
-    maxi(a, b) = collect(max(a[i],b[i]) for i in eachindex(a))
+    maxi(a, b) = collect(max(a[i], b[i]) for i in eachindex(a))
     props = commonproperties(spec1.properties, spec2.properties)
     props[:Name] = "MaxSpectrum"
     return Spectrum(spec1.energy, maxi(counts(spec1), counts(spec2)), props)
 end
 
-maxspectrum(specs::AbstractArray{Spectrum}) =
-    reduce(maxspectrum, specs)
+maxspectrum(specs::AbstractArray{Spectrum}) = reduce(maxspectrum, specs)
 
-maxspectrum(specs::Vararg{Spectrum}) =
-    reduce(maxspectrum, specs)
+maxspectrum(specs::Vararg{Spectrum}) = reduce(maxspectrum, specs)

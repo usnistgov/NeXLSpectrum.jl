@@ -2,7 +2,7 @@ using Test
 
 @testset "HyperSpectrum" begin
     les = LinearEnergyScale(0.0,10.0)
-    raw = readrplraw("C:\\Users\\nicho\\Desktop\\Hyperspec\\map[15]",les,Dict{Symbol,Any}(:LiveTime=>0.004, :BeamEnergy=>20.0e3))
+    raw = readrplraw("C:\\Users\\nritchie\\Desktop\\map[15]",les,Dict{Symbol,Any}(:LiveTime=>0.004, :BeamEnergy=>20.0e3))
 
     @test size(raw)==(2048,128,128)
     @test eltype(raw)==UInt16

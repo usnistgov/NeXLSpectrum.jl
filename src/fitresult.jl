@@ -1,3 +1,5 @@
+using Statistics
+
 """
     FilterFitResult
 
@@ -35,16 +37,19 @@ minus the fitted characteristic peaks shapes times the best fit coefficient.
 """
 function residual(ffr::FilterFitResult)::Spectrum
     props = copy(ffr.label.spec.properties)
-    props[:Name]="Residual[$(ffr.label.spec.properties[:Name])]"
+    props[:Name] = "Residual[$(ffr.label.spec.properties[:Name])]"
     return Spectrum(ffr.label.spec.energy, ffr.residual, props)
 end
+
+spectrum(ffr::FilterFitResult)::Spectrum = ffr.label.spec
 
 """
     characteristiccounts(ffr::FiterFitResult, strip)
 
 Number of spectrum counts that were accounted for by the fitted elements with the `strip` Element(s) removed.
 """
-characteristiccounts(ffr::FilterFitResult,strip) = sum(element(ref) in strip ? 0.0 : v[1]-v[2] for (ref,v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
+characteristiccounts(ffr::FilterFitResult, strip) =
+    sum(element(ref) in strip ? 0.0 : v[1] - v[2] for (ref, v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
 
 """
     peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64
@@ -58,21 +63,47 @@ function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidt
     return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) / (backwidth * back)
 end
 
-NeXLUncertainties.asa(::Type{DataFrame}, ffrs::Array{FilterFitResult}, withUnc = false)::DataFrame =
-    hcat(DataFrame(Name = [r.label for r in ffrs]), asa(DataFrame, [r.kratios for r in ffrs], withUnc))
+function NeXLUncertainties.asa(
+    ::Type{DataFrame},
+    ffrs::Array{FilterFitResult},
+    withUnc = false,
+    pivot = false,
+)::DataFrame
+    lbls = sort(collect(Set(Iterators.flatten(labels(r) for r in ffrs))))
+    if pivot
+        res = DataFrame(ROI = lbls)
+        for ffr in ffrs
+            vals = [value(lbl, ffr.kratios, missing) for lbl in lbls]
+            insertcols!(res, ncol(res) + 1, Symbol(repr(ffr.label)) => vals)
+            if withUnc
+                unc = [σ(lbl, ffr.kratios, missing) for lbl in lbls]
+                insertcols!(res, ncol(res) + 1, Symbol('Δ' * repr(ffr.label)) => unc)
+            end
+        end
+    else
+        rowLbls = [repr(ffr.label) for ffr in ffrs]
+        res = DataFrame(Symbol("Spectra") => rowLbls)
+        for lbl in lbls
+            vals = [value(lbl, ffr.kratios, missing) for ffr in ffrs]
+            insertcols!(res, ncol(res) + 1, Symbol(repr(lbl)) => vals)
+            if withUnc
+                unc = [σ(lbl, ffr.kratios, missing) for ffr in ffrs]
+                insertcols!(res, ncol(res) + 1, Symbol('Δ' * repr(lbl)) => unc)
+            end
+        end
+    end
+    return res
+end
 
+"""
+    asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
+
+Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
+"""
 function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
-    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
-        ReferenceLabel[],
-        String[],
-        Float64[],
-        Float64[],
-        Int[],
-        Int[],
-        Float64[],
-        Float64[],
-        Float64[]
-    for kl in sortedlabels(ffr.kratios)
+    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
+        UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
+    for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
         push!(lbl, ffr.label)
         push!(std, spectrum(kl)[:Name])
         push!(klbl, kl)
@@ -86,7 +117,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFra
         push!(ptob, peaktobackground(ffr, kl))
     end
     return DataFrame(
-        Label = lbl,
+        Spectrum = lbl,
         Feature = klbl,
         Reference = std,
         Start = roi1,
@@ -103,6 +134,7 @@ Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 
 NeXLUncertainties.value(label::ReferenceLabel, ffr::FilterFitResult) = value(label, ffr.kratios)
 NeXLUncertainties.σ(label::ReferenceLabel, ffr::FilterFitResult) = σ(label, ffr.kratios)
+NeXLUncertainties.uncertainty(label::ReferenceLabel, ffr::FilterFitResult) = uncertainty(label, ffr.kratios)
 NeXLUncertainties.getindex(ffr::FilterFitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
 Base.keys(ffr::FilterFitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FilterFitResult) = labels(ffr.kratios)
@@ -116,3 +148,16 @@ function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array
     scaled(ff) = (value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end
+
+Base.values(lbl::ReferenceLabel, ffrs::Vector{FilterFitResult}) = [value(lbl, ffr.kratios, 0.0) for ffr in ffrs]
+
+σs(lbl::ReferenceLabel, ffrs::Vector{FilterFitResult}) = [σ(lbl, ffr.kratios, 0.0) for ffr in ffrs]
+
+"""
+    heterogeneity(lbl::ReferenceLabel, ffrs::Vector{FilterFitResult})
+
+Computes the ratio of the standard deviation of the measured values over the mean calculated uncertainty
+from the fit.  A value near 1 means the sample appears homogeneous and a value greater than 1 means the sample
+appears heterogeneous.
+"""
+heterogeneity(lbl::ReferenceLabel, ffrs::Vector{FilterFitResult}) = std(values(lbl,ffrs))/mean(σs(lbl,ffrs))
