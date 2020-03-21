@@ -48,8 +48,10 @@ struct CharXRayLabel <: ReferenceLabel
     roi::UnitRange{Int}
     xrays::Vector{CharXRay}
     hash::UInt
-    CharXRayLabel(spec::Spectrum, roi::UnitRange{Int}, xrays::Vector{CharXRay}) =
+    function CharXRayLabel(spec::Spectrum, roi::UnitRange{Int}, xrays::Vector{CharXRay})
+        @assert all(xr->element(xr)==element(xrays[1]), xrays)
         new(spec, roi, xrays, _hashrl(spec,roi,xrays))
+    end
 end
 
 

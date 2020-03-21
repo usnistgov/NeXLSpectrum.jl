@@ -282,8 +282,8 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     roilt(l1, l2) = isless(l1.roi.start, l2.roi.start)
     roi = ismissing(roi) ? ffr.roi : roi
     layers = [
-        layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
         layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
+        layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(kratios(ffr))), lt = roilt)

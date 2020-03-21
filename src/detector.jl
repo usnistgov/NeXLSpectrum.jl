@@ -237,6 +237,8 @@ struct EscapeArtifact
     end
 end
 
+element(esc::EscapeArtifact) = element(esc.xray)
+
 Core.show(io::IO, esc::EscapeArtifact) = print(io, name(esc))
 NeXLCore.name(esc::EscapeArtifact) =  "Esc[$(esc.xray)]"
 NeXLCore.name(escs::AbstractVector{EscapeArtifact}) =  "Esc[$(name(map(esc->esc.xray, escs)))]"

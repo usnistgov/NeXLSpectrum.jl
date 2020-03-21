@@ -1,4 +1,3 @@
-using SparseArrays
 using Polynomials
 using LinearAlgebra
 
@@ -235,6 +234,7 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, filter::TopHatFilter, tol:
         [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
     # Extract the spectrum data as Float64 to match the filter
     data = counts(spec, Float64, true)
+    fill!(view(data, 1:lld(filter.detector)),0.0)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
@@ -331,6 +331,15 @@ function charXRayLabels(#
     return [ CharXRayLabel(spec,roi,xrays) for (xrays, roi) in lxs ]
 end
 
+
+charXRayLabels(#
+    spec::Spectrum, #
+    elm::Element, #
+    allelms::Vector{Element},
+    det::Detector, #
+    ampl::Float64, #
+    maxE::Float64=1.0e6)::Vector{CharXRayLabel} =
+    NeXLSpectrum.charXRayLabels(spec, elm, allelms, det, ampl, maxE)
 """
     Base.filter(
         charLabel::CharXRayLabel,
@@ -466,4 +475,15 @@ Ordinary least squares for either FilteredUnknown[G|W]
 function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
+end
+
+function selectBestRefs(refs::AbstractVector{FilteredReference})
+    return refs[1]  #Placeholder....
+    #allelms = Set(ref->element(ref.identifier) for ref in refs)
+    #refs = FilteredReference[]
+    #for elm in allelms
+    #    elmRefs = filter(ref->element(ref.identifier)==elm, refs)
+        # Pick the reference with the highest intensity
+
+    #end
 end

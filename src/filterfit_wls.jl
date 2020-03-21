@@ -1,4 +1,3 @@
-using SparseArrays
 using Polynomials
 using LinearAlgebra
 
@@ -82,6 +81,7 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFil
         [dot(filter.filters[r] .* view(data, range(r)), filter.filters[r]) for r in eachindex(data)]
     data = counts(spec, Float64, true)
     # Compute the filtered data
+    fill!(view(data, 1:lld(filter.detector)),0.0)
     filtered = apply(filter, data)
     roi = eachindex(filtered)
     # max(d,1.0) is necessary to ensure the variances are positive
@@ -125,8 +125,24 @@ function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = f
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
 end
 
-fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
-    filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
+function fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestRefs(refs)
+    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
+end
+
+function fit(ty::Type{FilteredUnknownW}, unk::AbstractVector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestRefs(refs)
+    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
+end
+
 
 fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
     fit(FilteredUnknownW, unk, filt, refs, forcezeros)
+
+function fit(ty::Type{FilteredUnknownW}, unks::Vector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestRefs(refs)
+    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros), unks)
+end
+
+fit(unks::Vector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
+    fit(FilteredUnknownW, unks, filt, refs, forcezeros)
