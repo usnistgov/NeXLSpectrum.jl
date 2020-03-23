@@ -116,6 +116,7 @@ export filteredresidual
 
 include("fitresult.jl")
 export FilterFitResult
+export findlabel
 export fit
 export heterogeneity
 export peaktobackground
@@ -124,6 +125,7 @@ export residual
 export spectrum
 export unknown
 export kratios
+export kratio
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.

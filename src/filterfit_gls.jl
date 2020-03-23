@@ -94,22 +94,6 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
 end
 
 """
-    filterfit_all(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousw)::UncertainValues
-
-
-Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
-Fits all the references as one large linear equation rather than breaking them up into contiguous blocks.
-By default use the generalized LLSQ fitting (pseudo-inverse implementation).
-"""
-function filterfit_all(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
-     fr = minimum(ff.ffroi.start for ff in ffs)-20:maximum(ff.ffroi.stop for ff in ffs)+20  # Make one large roi
-     @info "Fitting $(length(ffs)) references in 1 block - $fr"
-     kr = alg(unk, ffs, fr) # Fit the roi
-     resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb) # Return results
-end
-
-"""
 Generalized least squares (my implementation)
 """
 function fitcontiguousg(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
@@ -143,10 +127,10 @@ end
 
 function fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
+    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
 end
 
 function fit(ty::Type{FilteredUnknownG}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros), unks)
+    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
 end

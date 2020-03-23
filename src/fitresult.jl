@@ -130,6 +130,14 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFra
     )
 end
 
+function findlabel(ffr::FilterFitResult, cxr::CharXRay)
+    lbls = labels(ffr.kratios)
+    fa = findall(lbl -> (lbl isa CharXRayLabel) && (cxr in lbl.xrays), lbls)
+    @assert length(fa)≠0 "No label found for $cxr."
+    @assert length(fa)==1 "Multiple labels found for $cxr."
+    return lbls[fa[1]]
+end
+
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "$(ffr.label)")
 
 NeXLUncertainties.value(label::ReferenceLabel, ffr::FilterFitResult) = value(label, ffr.kratios)
@@ -138,6 +146,10 @@ NeXLUncertainties.uncertainty(label::ReferenceLabel, ffr::FilterFitResult) = unc
 NeXLUncertainties.getindex(ffr::FilterFitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
 Base.keys(ffr::FilterFitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FilterFitResult) = labels(ffr.kratios)
+function kratio(cxr::CharXRay, ffr::FilterFitResult)
+    lbl=findlabel(ffr, cxr)
+    return uv(value(lbl, ffr), σ(lbl, ffr))
+end
 
 """
     filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
