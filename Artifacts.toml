@@ -1,0 +1,6 @@
+[rplraw_test]
+git-tree-sha1 = "bc8a2e17ba3f5ec43ff6ee20f9ecfe52f66500c9"
+lazy=true
+  [[rplraw_test.download]]
+  sha256="5a9a838dd1bb0b8c2fce2e348757167320eca58acd1fd011475ad78bf3ede7f0"
+  url = "https://drive.google.com/uc?export=download&id=1Rfp6NbgUEV4A6KVije8hgU0ywt-rXLfE"
