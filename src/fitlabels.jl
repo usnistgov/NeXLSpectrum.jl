@@ -97,6 +97,7 @@ Base.isless(rl1::EscapeLabel, rl2::EscapeLabel) =
             isless(rl1.roi.start, rl2.roi.start))
 
 NeXLCore.name(escl::EscapeLabel) = "Ecs[$(name([esc.xray for esc in escl.xrays]))]"
+NeXLCore.element(escl::EscapeLabel) = element(escl.xrays[1])
 
 """
     UnknownLabel

@@ -25,7 +25,7 @@ function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filter::TopHatFil
         [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
     function covariance(roi, data, filter) # Calculated the full covariance matrix
         off(r, o) = r.start-o+1:r.stop-o+1
-        rs, cs, vs = Vector{Int}(), Vector{Int}(), Vector{Float64}()
+        rs, cs, vs = Int[], Int[], Float64[]
         res = zeros( ( length(roi), length(roi) ) )
         bdata = map(d -> max(d, 1.0), data)
         for r in roi
@@ -67,13 +67,13 @@ NeXLUncertainties.covariance(fd::FilteredUnknownG, roi::UnitRange{Int})::Abstrac
      fd.covariance[roi,roi]
 
 """
-    filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
+    filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
- trimmed, refit, removed, retained = copy(ffs), true, Vector{UncertainValues}(), nothing # start with all the FilteredReference
+function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
+ trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
  while refit
      fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
      # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
@@ -94,14 +94,14 @@ function filterfit(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = f
 end
 
 """
-    filterfit_all(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg=fitcontiguousw)::UncertainValues
+    filterfit_all(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousw)::UncertainValues
 
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 Fits all the references as one large linear equation rather than breaking them up into contiguous blocks.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit_all(unk::FilteredUnknownG, ffs::Array{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
+function filterfit_all(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousp)::FilterFitResult
      fr = minimum(ff.ffroi.start for ff in ffs)-20:maximum(ff.ffroi.stop for ff in ffs)+20  # Make one large roi
      @info "Fitting $(length(ffs)) references in 1 block - $fr"
      kr = alg(unk, ffs, fr) # Fit the roi
@@ -112,7 +112,7 @@ end
 """
 Generalized least squares (my implementation)
 """
-function fitcontiguousg(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousg(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * glssvd(extract(unk, chs), x, covariance(unk, chs), lbls)
 end
@@ -120,7 +120,7 @@ end
 """
 Generalized least squares (pseudo-inverse)
 """
-function fitcontiguousp(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousp(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * glspinv(extract(unk, chs), x, Matrix(covariance(unk, chs)), lbls)
 end
@@ -128,7 +128,7 @@ end
 """
 Weighted least squares using the diagonal from the FilteredUnknownG covariance.
 """
-function fitcontiguousw(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousw(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * glspinv(extract(unk, chs), x, Diagonal(diag(covariance(unk, chs))), lbls)
 end
@@ -136,10 +136,17 @@ end
 """
 Weighted least squares using the diagonal from the FilteredUnknownG covariance.
 """
-function fitcontiguousw2(unk::FilteredUnknownG, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousw2(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * wlssvd(extract(unk, chs), x, diag(covariance(unk, chs)), lbls)
 end
 
-fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros=true, ffalg=fitcontiguousg) =
-    filterfit(filter(ty, unk, filt, 1.0/dose(unk)), refs, ffalg, forcezeros)
+function fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestReferences(refs)
+    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
+end
+
+function fit(ty::Type{FilteredUnknownG}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestReferences(refs)
+    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros), unks)
+end

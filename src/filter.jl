@@ -92,8 +92,7 @@ function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
     return res
 end
 
-Base.size(filt::TopHatFilter) = ( length(filt.filters), length(filt.filters) )
-
+Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
 
 Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector)]")
 
@@ -121,7 +120,8 @@ function buildfilter(
     resf(::Type{ConstantWidthFilter}, center, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
     intersect(aa, bb, cc, dd) = max(0.0, min(bb, dd) - max(aa, cc)) # Length of intersection [a,b) with [c,d)
     filtint(e0, e1, minb, mina, maxa, maxb) =
-        intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) + intersect(mina, maxa, e0, e1) / (maxa - mina) +
+        intersect(minb, mina, e0, e1) * (-0.5 / (mina - minb)) +
+        intersect(mina, maxa, e0, e1) / (maxa - mina) +
         intersect(maxa, maxb, e0, e1) * (-0.5 / (maxb - maxa))
     M(astop, astart) = (channel(astop, det) - channel(astart, det) - 1.0) / 2.0   # base length in channels
     N(bstart, astart) = channel(astart, det) - channel(bstart, det) # Top length in channels
@@ -134,15 +134,11 @@ function buildfilter(
         eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
         chmin, chmax = channel(eb[1], det), channel(eb[2], det)
         if (chmin >= 1) && (chmax <= cc)
-            for i = 0:(chmax-chmin)÷2
-                filt[ch1, chmax-i] = (filt[ch1, i+chmin] = filtint(
-                    energy(i + chmin, det),
-                    energy(i + chmin + 1, det),
-                    eb[1],
-                    ea[1],
-                    ea[2],
-                    eb[2],
-                ))
+            for i in 0:(chmax-chmin)÷2
+                filt[ch1, chmax-i] = (
+                    filt[ch1, i+chmin] =
+                        filtint(energy(i + chmin, det), energy(i + chmin + 1, det), eb[1], ea[1], ea[2], eb[2])
+                )
             end
             filt[ch1, chmax] = (filt[ch1, chmin] -= sum(filt[ch1, chmin:min(cc, chmax)]) / 2.0)
             @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
@@ -182,7 +178,7 @@ function buildfilter(
         ex = (center - 0.5 * b * res, center + 0.5 * b * res)
         chmin, chmax = channel(ex[1], det), channel(ex[2], det)
         if (chmin >= 1) && (chmax <= cc)
-            for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
+            for i in 0:(chmax-chmin)÷2 # Ensure that it is symmetric
                 filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
             end
             # Offset the Gaussian to ensure the sum is zero.
@@ -234,7 +230,7 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, filter::TopHatFilter, tol:
         [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
     # Extract the spectrum data as Float64 to match the filter
     data = counts(spec, Float64, true)
-    fill!(view(data, 1:lld(filter.detector)),0.0)
+    fill!(view(data, 1:lld(filter.detector)), 0.0)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
@@ -276,16 +272,8 @@ function Base.filter(
     spec, roi = esc.spec, esc.roi
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, filter, tol)
-    return FilteredReference(
-        escLabel,
-        scale,
-        roi,
-        f...,
-        charonly,
-        filter.weights[(roi.start+roi.stop)÷2],
-    )
+    return FilteredReference(escLabel, scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
 end
-
 
 """
     function labeledextents(
@@ -299,14 +287,14 @@ Creates a vector containing pairs containing a vector of CharXRay and an interva
 contiguous interval over which all the X-rays in the interval are sufficiently close in energy that they will
 interfere with each other on the specified detector.
 """
-labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=1.0e6) =
+labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6) =
     labeledextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
 
 """
     charXRayLabels(#
       spec::Spectrum, #
       elm::Element, #
-      allElms::Vector{Element}, #
+      allElms::AbstractVector{Element}, #
       det::Detector, #
       ampl::Float64, #
       maxE::Float64=1.0e6)::Vector{CharXRayLabel}
@@ -318,28 +306,20 @@ interfere with 'elm' will not be included.
 function charXRayLabels(#
     spec::Spectrum, #
     elm::Element, #
-    allElms::Vector{Element}, #
+    allElms::AbstractVector{Element}, #
     det::Detector, #
     ampl::Float64, #
-    maxE::Float64=1.0e6)::Vector{CharXRayLabel}
+    maxE::Float64 = 1.0e6,
+)::Vector{CharXRayLabel}
     @assert elm in allElms "$elm must be in $allElms."
-    intersects(urs, roi) = !isnothing(findfirst(ur->length(intersect(ur,roi))>0, urs))
+    intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
     # Find all the ROIs associated with other elements
-    urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in filter(a->a ≠ elm, allElms)))
+    urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in filter(a -> a ≠ elm, allElms)))
     # Find elm's ROIs that don't intersect another element's ROI
-    lxs = filter(lx->!intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
-    return [ CharXRayLabel(spec,roi,xrays) for (xrays, roi) in lxs ]
+    lxs = filter(lx -> !intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
+    return [CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
-
-charXRayLabels(#
-    spec::Spectrum, #
-    elm::Element, #
-    allelms::Vector{Element},
-    det::Detector, #
-    ampl::Float64, #
-    maxE::Float64=1.0e6)::Vector{CharXRayLabel} =
-    NeXLSpectrum.charXRayLabels(spec, elm, allelms, det, ampl, maxE)
 """
     Base.filter(
         charLabel::CharXRayLabel,
@@ -357,8 +337,7 @@ function Base.filter(
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
-    ashellof(xrays) =
-        inner(xrays[argmax(jumpratio.(inner.(xrays)))])
+    ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
     spec, roi, ashell = charLabel.spec, charLabel.roi, ashellof(charLabel.xrays)
     return FilteredReference(
         charLabel,
@@ -371,12 +350,11 @@ function Base.filter(
 end
 
 Base.filter(
-    labels::Vector{<:ReferenceLabel},
+    labels::AbstractVector{<:ReferenceLabel},
     filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
-)::Vector{FilteredReference} =
-    map(lbl->filter(lbl,filt,scale,tol), labels)
+)::Vector{FilteredReference} = map(lbl -> filter(lbl, filt, scale, tol), labels)
 
 """
     filter(
@@ -418,7 +396,6 @@ abstract type FilteredUnknown <: FilteredDatum end
 
 Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
 
-
 """
     extract(fd::FilteredReference, roi::UnitRange{Int})
 
@@ -442,12 +419,12 @@ filtered data in <code>fd</code>.
 """
 extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
 
-_buildlabels(ffs::Array{FilteredReference}) = collect(ff.identifier for ff in ffs)
-_buildscale(unk::FilteredUnknown, ffs::Array{FilteredReference}) =
+_buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.identifier for ff in ffs)
+_buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
     Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
-function _computeResidual(unk::FilteredUnknown, ffs::Array{FilteredReference}, kr::UncertainValues)
+function _computeResidual(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, kr::UncertainValues)
     res = copy(unk.data)
     for ff in ffs
         res[ff.roi] -= (value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly
@@ -458,7 +435,7 @@ end
 # Internal: Computes the peak and background count based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
-    ffs::Array{FilteredReference}, #
+    ffs::AbstractVector{FilteredReference}, #
     kr::UncertainValues, #
 )::Dict{<:ReferenceLabel,NTuple{2,Float64}}
     res = Dict{ReferenceLabel,NTuple{2,Float64}}()
@@ -472,18 +449,30 @@ end
 """
 Ordinary least squares for either FilteredUnknown[G|W]
 """
-function fitcontiguouso(unk::FilteredUnknown, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguouso(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end
 
-function selectBestRefs(refs::AbstractVector{FilteredReference})
-    return refs[1]  #Placeholder....
-    #allelms = Set(ref->element(ref.identifier) for ref in refs)
-    #refs = FilteredReference[]
-    #for elm in allelms
-    #    elmRefs = filter(ref->element(ref.identifier)==elm, refs)
-        # Pick the reference with the highest intensity
+"""
+    selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
 
-    #end
+For each roi in each element, pick the best FilteredReference with the highest
+intensity in the filtered data.
+"""
+function selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
+    best = FilteredReference[]
+    elms = Set(element(ref.identifier) for ref in refs)
+    for elm in elms
+        rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
+        for ref in filter(ref -> element(ref.identifier) == elm, refs)
+            # Pick the reference with the largest filtered value
+            mrf = maximum(ref.filtered)
+            if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
+                rois[ref.roi] = (ref, mrf)
+            end
+        end
+        append!(best, map(v -> v[1], values(rois)))
+    end
+    return best
 end

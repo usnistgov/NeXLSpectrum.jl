@@ -65,7 +65,7 @@ end
 
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
-    ffrs::Array{FilterFitResult},
+    ffrs::AbstractVector{FilterFitResult},
     withUnc = false,
     pivot = false,
 )::DataFrame
@@ -140,11 +140,11 @@ Base.keys(ffr::FilterFitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FilterFitResult) = labels(ffr.kratios)
 
 """
-    filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64}
+    filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
 
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
-function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::Array{FilteredReference})::Vector{Float64}
+function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
     scaled(ff) = (value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end

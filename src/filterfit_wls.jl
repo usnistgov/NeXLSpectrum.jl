@@ -18,7 +18,7 @@ struct FilteredUnknownW <: FilteredUnknown
 end
 
 # _buildXXX - Helpers for fitcontiguousX functions...
-function _buildmodel(ffs::Array{FilteredReference}, chs::UnitRange{Int})::Matrix{Float64}
+function _buildmodel(ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::Matrix{Float64}
     x = Matrix{Float64}(undef, (length(chs), length(ffs)))
     for i in eachindex(ffs)
         x[:, i] = extract(ffs[i], chs)
@@ -38,7 +38,7 @@ NeXLUncertainties.covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::Abstrac
 """
 Weighted least squares for FilteredUnknownW
 """
-function fitcontiguousww(unk::FilteredUnknownW, ffs::Array{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguousww(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     wgts = [ff.covscale for ff in ffs]
     return scale * wlspinv(extract(unk, chs), x, covariance(unk, chs), wgts, lbls)
@@ -90,7 +90,7 @@ function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFil
 end
 
 """
-    filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg=fitcontiguousww)::UncertainValues
+    filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousww)::UncertainValues
 
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
@@ -103,8 +103,8 @@ then the final non-positive k-ratio is returned along with the associated uncert
 when a number of fit k-ratio sets are combined to produce an averaged k-ratio with reduced uncertainty. forcezeros=true
 would bias the result positive.
 """
-function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
-    trimmed, refit, removed, retained = copy(ffs), true, Vector{UncertainValues}(), nothing # start with all the FilteredReference
+function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
+    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
     while refit
         refit = false
         fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
@@ -125,24 +125,18 @@ function filterfit(unk::FilteredUnknownW, ffs::Array{FilteredReference}, alg = f
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
 end
 
-function fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
-    bestRefs = selectBestRefs(refs)
+function fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestReferences(refs)
     return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
 end
 
-function fit(ty::Type{FilteredUnknownW}, unk::AbstractVector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
-    bestRefs = selectBestRefs(refs)
-    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros)
-end
-
-
-fit(unk::Spectrum, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
-    fit(FilteredUnknownW, unk, filt, refs, forcezeros)
-
-function fit(ty::Type{FilteredUnknownW}, unks::Vector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true)
-    bestRefs = selectBestRefs(refs)
+function fit(ty::Type{FilteredUnknownW}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+    bestRefs = selectBestReferences(refs)
     return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), refs, fitcontiguousww, forcezeros), unks)
 end
 
-fit(unks::Vector{Spectrum}, filt::TopHatFilter, refs::Vector{FilteredReference}, forcezeros = true) =
+fit(unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true) =
+    fit(FilteredUnknownW, unk, filt, refs, forcezeros)
+
+fit(unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true) =
     fit(FilteredUnknownW, unks, filt, refs, forcezeros)

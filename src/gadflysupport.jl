@@ -111,7 +111,7 @@ function Gadfly.plot(
         collect((height / findmax(sp)[1]) * counts(sp, Float64, true) for sp in specs)
     normalizeNone(specs) = collect(counts(sp, Float64, true) for sp in specs)
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
-        d = Dict{Any,Array{CharXRay}}()
+        d = Dict{Any,Vector{CharXRay}}()
         for cxr in cxrs
             d[(element(cxr), shell(cxr))] = push!(get(d, (element(cxr), shell(cxr)), []), cxr)
         end
@@ -138,7 +138,7 @@ function Gadfly.plot(
         )
     end
     function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
-        d = Dict{Any,Array{AtomicSubShell}}()
+        d = Dict{Any,Vector{AtomicSubShell}}()
         for ash in ashs
             d[(element(ash), shell(ash))] = push!(get(d, (element(ash), shell(ash)), []), ash)
         end

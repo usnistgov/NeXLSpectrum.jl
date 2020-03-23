@@ -237,7 +237,7 @@ struct EscapeArtifact
     end
 end
 
-element(esc::EscapeArtifact) = element(esc.xray)
+NeXLCore.element(esc::EscapeArtifact) = element(esc.xray)
 
 Core.show(io::IO, esc::EscapeArtifact) = print(io, name(esc))
 NeXLCore.name(esc::EscapeArtifact) =  "Esc[$(esc.xray)]"
@@ -248,7 +248,7 @@ struct ComptonArtifact
     xray::CharXRay
     angle::Float64
     function ComptonArtifact(prim::CharXRay, θ::Float64)
-        @assert (θ>=0.0) && (θ<=deg2rad(180.0)) "The angle must be between 0.0 and π"
+        @assert (θ>=0.0) && (θ<=π) "The Compton scatter angle must be between 0.0 and π"
         return new(prim, θ)
     end
 end
@@ -256,6 +256,7 @@ end
 Base.show(io::IO, ca::ComptonArtifact) = print(io,name(ca))
 NeXLCore.name(ca::ComptonArtifact) =  "Compton[$(ca.xray) at $(rad2deg(ca.angle))°]"
 NeXLCore.name(cas::AbstractVector{ComptonArtifact}) =  "Compton[$(name(map(ca->ca.xray, cas)))]"
+NeXLCore.element(ca::ComptonArtifact) = element(xray)
 
 function Base.show(io::IO, cas::AbstractVector{ComptonArtifact})
     angles = union(map(ca->ca.angle,cas))
