@@ -13,45 +13,45 @@ using Images
 using ImageMagick
 
 const _TIFF_TYPES = (
-    ( "byte", UInt8 ),
-    ( "ASCII", UInt8 ),
-    ( "short", UInt16 ),
-    ( "long", UInt32 ),
-    ( "rational", Rational{UInt32} ),
-    ( "signed byte", Int8 ),
-    ( "undefined", Int8 ),
-    ( "signed short", Int16 ),
-    ( "signed long", Int32 ),
-    ( "signed rational", Rational{Int32} ),
-    ( "float", Float32 ),
-    ( "doble", Float64 )
+    ("byte", UInt8),
+    ("ASCII", UInt8),
+    ("short", UInt16),
+    ("long", UInt32),
+    ("rational", Rational{UInt32}),
+    ("signed byte", Int8),
+    ("undefined", Int8),
+    ("signed short", Int16),
+    ("signed long", Int32),
+    ("signed rational", Rational{Int32}),
+    ("float", Float32),
+    ("doble", Float64),
 )
 
-TIFFType = Union{UInt8, UInt16, UInt32, Rational{UInt32}, Int8, Int16, Int32, Rational{Int32}, Float32, Float64}
+TIFFType = Union{UInt8,UInt16,UInt32,Rational{UInt32},Int8,Int16,Int32,Rational{Int32},Float32,Float64}
 
 const LITTLE_ENDIAN = 1
 const BIG_ENDIAN = 2
 const NOT_TIFF = 3
 
 struct _ATField
-    tagId:: UInt16
+    tagId::UInt16
     tagType::UInt16
     tagCount::UInt32
     tagData
 
     function _ATField(ios, order)
-        tagId = read(ios,UInt16)
-        tagType = read(ios,UInt16)
+        tagId = read(ios, UInt16)
+        tagType = read(ios, UInt16)
         tagCount = read(ios, UInt32)
-        if tagCount*sizeof(_TIFF_TYPES[tagType][2])<=4
-            tagData = [ read(ios, _TIFF_TYPES[tagType][2]) for _ in 1:tagCount ]
-            extra = 4 - sizeof(_TIFF_TYPES[tagType][2]) *tagCount
-            seek(ios, position(ios)+extra) # make sure that we have read 4 bytes
+        if tagCount * sizeof(_TIFF_TYPES[tagType][2]) <= 4
+            tagData = [read(ios, _TIFF_TYPES[tagType][2]) for _ = 1:tagCount]
+            extra = 4 - sizeof(_TIFF_TYPES[tagType][2]) * tagCount
+            seek(ios, position(ios) + extra) # make sure that we have read 4 bytes
         else
-            tagOffset = read(ios,UInt32)
+            tagOffset = read(ios, UInt32)
             ret = position(ios)
             seek(ios, tagOffset)
-            tagData = [ read(ios, _TIFF_TYPES[tagType][2]) for _ in 1:tagCount ]
+            tagData = [read(ios, _TIFF_TYPES[tagType][2]) for _ = 1:tagCount]
             seek(ios, ret)
         end
         return new(tagId, tagType, tagCount, tagData)
@@ -63,14 +63,14 @@ struct _TIFFIFD
     ifdNext::UInt
     function _TIFFIFD(ios, order::Int)
         sz = read(ios, UInt16)
-        ifdTags = [_ATField(ios, order) for _ in 1:sz]
+        ifdTags = [_ATField(ios, order) for _ = 1:sz]
         ifdNext = read(ios, UInt32)
         return new(ifdTags, ifdNext)
     end
 end
 
 function Base.get(ifd::_TIFFIFD, id, def)
-    ff=findfirst(fld->fld.tagId==convert(UInt16,id), ifd.ifdTags)
+    ff = findfirst(fld -> fld.tagId == convert(UInt16, id), ifd.ifdTags)
     return isnothing(ff) ? missing : ifd.ifdTags[ff]
 end
 
@@ -78,9 +78,9 @@ struct _TIFFInternals
     ifds::Vector{_TIFFIFD}
     function _TIFFInternals(ios)
         magic = read(ios, UInt16)
-        order = magic==0x4D4D ? BIG_ENDIAN : (magic==0x4949  ? LITTLE_ENDIAN : NOT_TIFF)
+        order = magic == 0x4D4D ? BIG_ENDIAN : (magic == 0x4949 ? LITTLE_ENDIAN : NOT_TIFF)
         fortytwo = read(ios, UInt16)
-        if (order==NOT_TIFF) || (fortytwo ≠ 42)
+        if (order == NOT_TIFF) || (fortytwo ≠ 42)
             @error "This file is not a valid TIFF file."
         end
         if order ≠ LITTLE_ENDIAN
@@ -107,52 +107,52 @@ const TIFF_IMAGE_DESCRIPTION = 270 # ASCII
 const TIFF_SOFTWARE = 305 # ASCII
 
 function _parseDesc(desc::AbstractString)
-    number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
+    number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
     date, time = missing, missing
-    res, stagePos = Dict{Symbol, Any}(), Dict{Symbol,Float64}()
-    for item in split(desc,"\n")
-        (k, v) = split(item,"=")
+    res, stagePos = Dict{Symbol,Any}(), Dict{Symbol,Float64}()
+    for item in split(desc, "\n")
+        (k, v) = split(item, "=")
         k = uppercase(k)
         try
-            if k=="MAG"
+            if k == "MAG"
                 res[:ImageMag] = number(v)
-            elseif k=="ZOOM"
+            elseif k == "ZOOM"
                 res[:ImageZoom] = number(v)
-            elseif k=="ANALYSIS_DATE"
-                date=Date(DateTime(v,"m/d/Y"))
-            elseif k=="ANALYSIS_TIME"
+            elseif k == "ANALYSIS_DATE"
+                date = Date(DateTime(v, "m/d/Y"))
+            elseif k == "ANALYSIS_TIME"
                 try
-                    time=Time(DateTime(v,"H:M:S \\P\\M"))+Hour(12)
+                    time = Time(DateTime(v, "H:M:S \\P\\M")) + Hour(12)
                 catch
-                    time=Time(DateTime(v,"H:M:S \\A\\M"))
+                    time = Time(DateTime(v, "H:M:S \\A\\M"))
                 end # try
-            elseif k=="OPERATOR"
+            elseif k == "OPERATOR"
                 res[:Operator] = string(v)
-            elseif k=="ACCELERATING_VOLTAGE"
-                res[:BeamEnergy] = 1000.0*number(v)
-            elseif k=="WORKING_DISTANCE"
-                res[:WorkingDistance] = 0.1*number(v)
-            elseif k=="COMMENT"
+            elseif k == "ACCELERATING_VOLTAGE"
+                res[:BeamEnergy] = 1000.0 * number(v)
+            elseif k == "WORKING_DISTANCE"
+                res[:WorkingDistance] = 0.1 * number(v)
+            elseif k == "COMMENT"
                 res[:Name] = string(v)
-            elseif k=="SAMPLE_DESCRIPTION"
+            elseif k == "SAMPLE_DESCRIPTION"
                 res[:Comment] = string(v)
-            elseif k=="LIVE_TIME"
+            elseif k == "LIVE_TIME"
                 res[:LiveTime] = number(v)
-            elseif k=="ACQUISITION_TIME"
+            elseif k == "ACQUISITION_TIME"
                 res[:RealTime] = number(v)
-            elseif k=="DETECTOR_TILT"
+            elseif k == "DETECTOR_TILT"
                 res[:TakeOffAngle] = deg2rad(90.0 - number(v))
-            elseif k=="STAGE_X"
-                stagePos[:X] = 0.1*number(v)
-            elseif k=="STAGE_Y"
-                stagePos[:Y] = 0.1*number(v)
-            elseif k=="STAGE_Z"
-                stagePos[:Z] = 0.1*number(v)
-            elseif k=="STAGE_R"
+            elseif k == "STAGE_X"
+                stagePos[:X] = 0.1 * number(v)
+            elseif k == "STAGE_Y"
+                stagePos[:Y] = 0.1 * number(v)
+            elseif k == "STAGE_Z"
+                stagePos[:Z] = 0.1 * number(v)
+            elseif k == "STAGE_R"
                 stagePos[:R] = deg2rad(number(v))
-            elseif k=="STAGE_T"
+            elseif k == "STAGE_T"
                 stagePos[:T] = deg2rad(number(v))
-            elseif k=="STAGE_B"
+            elseif k == "STAGE_B"
                 stagePos[:T] = deg2rad(number(v))
             end
         catch
@@ -160,7 +160,7 @@ function _parseDesc(desc::AbstractString)
         end
     end
     if !isempty(stagePos)
-        res[:StagePosition]=stagePos
+        res[:StagePosition] = stagePos
     end
     if !ismissing(date)
         res[:AcquisitionTime] = ismissing(time) ? DateTime(date) : DateTime(date, time)
@@ -170,42 +170,33 @@ end
 
 function isAspexTIFF(filename)
     try
-        open(filename) do ios
+        open(filename, read = true) do ios
             return detectAspexTIFF(ios)
         end
     catch
-        # Oops!!!
+        return false
     end
-    return false
 end
 
 function detectAspexTIFF(ios)
-    res=false
     try
         seekstart(ios)
         ti = _TIFFInternals(ios)
-        for ifd in ti.ifds
-            # Look for a TIFF_SPECTRAL_DATA tag
-            if !ismissing(get(ifd, TIFF_SPECTRAL_DATA, missing))
-                res = true
-                break
-            end
-        end
+        return any(ifd->any(fld->fld.tagId==TIFF_SPECTRAL_DATA, ifd.ifdTags), ti.ifds)
     catch
-        # Oops!!!
-    end
-    return res
-end
-
-function readAspexTIFF(file::AbstractString; withImgs=false, astype::Type{<:Real}=Float64)
-    open(file) do ios
-        return readAspexTIFF(ios, withImgs=withImgs, astype=astype)
+        return false
     end
 end
 
-function readAspexTIFF(ios::IO; withImgs=false, astype::Type{<:Real}=Float64)
-    floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
-    number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",v)[1])
+function readAspexTIFF(file::AbstractString; withImgs = false, astype::Type{<:Real} = Float64)
+    open(file, read = true) do ios
+        return readAspexTIFF(ios, withImgs = withImgs, astype = astype)
+    end
+end
+
+function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64)
+    floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
+    number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
     res = missing
     ti = _TIFFInternals(ios)
     for ifd in ti.ifds
@@ -217,13 +208,13 @@ function readAspexTIFF(ios::IO; withImgs=false, astype::Type{<:Real}=Float64)
         syr = get(ifd, TIFF_SPECTRAL_YRES, missing)
         syo = get(ifd, TIFF_SPECTRAL_YOFF, missing)
         if !ismissing(sp)
-            @assert !(ismissing(sxr)||ismissing(sxo)) "X gain and offset data is missing from ASPEX TIFF spectrum"
+            @assert !(ismissing(sxr) || ismissing(sxo)) "X gain and offset data is missing from ASPEX TIFF spectrum"
             evperch = floatonly(ismissing(sxr) ? "10 eV/ch" : String(sxr.tagData))
             offset = floatonly(ismissing(sxo) ? "0 eV" : String(sxo.tagData))
             yoff = number(ismissing(syo) ? "0 counts" : String(syo.tagData))
             yres = number(ismissing(syr) ? "1 counts" : String(syr.tagData))
             energy = LinearEnergyScale(offset, evperch)
-            data = map(i->yoff+yres*convert(astype,i), sp.tagData)
+            data = map(i -> yoff + yres * convert(astype, i), sp.tagData)
             props = _parseDesc(String(id.tagData))
             if !ismissing(sw)
                 props[:Instrument] = String(sw.tagData)
@@ -235,7 +226,7 @@ function readAspexTIFF(ios::IO; withImgs=false, astype::Type{<:Real}=Float64)
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            res[:Image]=FileIO.load(Stream(format"TIFF",ios))
+            res[:Image] = FileIO.load(Stream(format"TIFF", ios))
         catch err
             @info "Unable to read images from $(ios)."
         end
@@ -245,10 +236,9 @@ end
 
 const ASPEX_TIFF = format"ASPEX TIFF"
 
-load(ios::Stream{ASPEX_TIFF}; withImgs=false) =
-    readAspexTIFF(ios, withImgs)
+load(ios::Stream{ASPEX_TIFF}; withImgs = false) = readAspexTIFF(ios, withImgs)
 
-function load(file::File{ASPEX_TIFF}; withImgs=false)
+function load(file::File{ASPEX_TIFF}; withImgs = false)
     open(filename) do ios
         return readAspexTIFF(ios)
     end
