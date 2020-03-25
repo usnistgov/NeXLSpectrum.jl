@@ -4,15 +4,7 @@ using ZipFile
 using NeXLSpectrum
 
 # Download the necessary data using the Artifact mechanism from Google Drive
-zip = artifact"rplraw_test"
-if !all(ext->isfile(joinpath(zip, "map[15]."*ext)), ("rpl", "raw"))
-    r = ZipFile.Reader(joinpath(zip, "map[15].zip"))
-    for f in r.files
-        open(joinpath(zip, f.name), "w") do outfile
-            write(outfile, read(f))
-        end
-    end
-end
+zip = artifact"rplraw"
 
 @testset "HyperSpectrum" begin
     les = LinearEnergyScale(0.0, 10.0)
@@ -42,4 +34,4 @@ end
     @test sum(raw)[:] == sum(hs)[:]
     @test all(sum(hs, (sig, i) -> sig[640, i] > 3) .<= sum(hs))
     @test all(sum(raw, (sig, i) -> sig[640, i] > 3) .<= sum(raw))
-end;
+end
