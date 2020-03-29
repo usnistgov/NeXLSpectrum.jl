@@ -93,6 +93,7 @@ function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
 end
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
+Base.length(filt::TopHatFilter) = length(filt.filters)
 
 Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector)]")
 
@@ -354,7 +355,8 @@ Base.filter(
     filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
-)::Vector{FilteredReference} = map(lbl -> filter(lbl, filt, scale, tol), labels)
+)::Vector{FilteredReference} = map(lbl -> filter(lbl, filt, scale, tol), #
+        filter(lbl->(lbl.roi.start>=1) && (lbl.roi.stop<=length(filt)), labels))
 
 """
     filter(

@@ -268,11 +268,14 @@ by setting all channels less-than-or-equal to det.lld to zero.
 function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) where {T<:Number}
     res = map(n -> convert(numType, n), spec.counts)
     if applyLLD && haskey(spec, :Detector)
-        fill!(view(res, 1:lld(spec)), zero(numType))
+        applylld(spec, lld(spec[:Detector]))
     end
     return res
 end
 
+function applylld(spec::Spectrum, lld::Int)
+    fill!(view(spec, 1:lld), spec[lld+1])
+end
 
 """
     counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
@@ -470,8 +473,13 @@ end
 Returns the tangent to the a quadratic fit to the counts data centered at channel with width
 """
 function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Poly
-    fit = polyfit(-width:width, data[max(1, channel - width):min(length(data), channel + width)], order)
-    return Poly([fit(0), polyder(fit)(0)])
+    minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
+    if maxCh - minCh >= order
+        fit = polyfit((minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
+        return Poly([fit(0), polyder(fit)(0)]) # Linear
+    else
+        return Poly([mean(data[minCh:maxCh]), 0.0])
+    end
 end
 
 """
