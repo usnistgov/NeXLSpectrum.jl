@@ -135,7 +135,7 @@ function buildfilter(
         eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)
         chmin, chmax = channel(eb[1], det), channel(eb[2], det)
         if (chmin >= 1) && (chmax <= cc)
-            for i in 0:(chmax-chmin)÷2
+            for i = 0:(chmax-chmin)÷2
                 filt[ch1, chmax-i] = (
                     filt[ch1, i+chmin] =
                         filtint(energy(i + chmin, det), energy(i + chmin + 1, det), eb[1], ea[1], ea[2], eb[2])
@@ -179,7 +179,7 @@ function buildfilter(
         ex = (center - 0.5 * b * res, center + 0.5 * b * res)
         chmin, chmax = channel(ex[1], det), channel(ex[2], det)
         if (chmin >= 1) && (chmax <= cc)
-            for i in 0:(chmax-chmin)÷2 # Ensure that it is symmetric
+            for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
                 filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
             end
             # Offset the Gaussian to ensure the sum is zero.
@@ -355,8 +355,13 @@ Base.filter(
     filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
-)::Vector{FilteredReference} = map(lbl -> filter(lbl, filt, scale, tol), #
-        filter(lbl->(lbl.roi.start>=1) && (lbl.roi.stop<=length(filt)), labels))
+)::Vector{FilteredReference} = map(
+    lbl -> filter(lbl, filt, scale, tol), #
+    filter(
+        lbl -> (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) && (weight(brightest(lbl.xrays)) > 1.0e-3),
+        labels,
+    ),
+)
 
 """
     filter(
@@ -451,7 +456,11 @@ end
 """
 Ordinary least squares for either FilteredUnknown[G|W]
 """
-function fitcontiguouso(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+function fitcontiguouso(
+    unk::FilteredUnknown,
+    ffs::AbstractVector{FilteredReference},
+    chs::UnitRange{Int},
+)::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end

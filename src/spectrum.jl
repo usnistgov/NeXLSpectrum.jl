@@ -65,7 +65,8 @@ _hashsp(e, d, p) = xor(hash(e), xor(hash(d), hash(p)))
 
 Base.hash(spec::Spectrum, h::UInt) = hash(spec.hash, h)
 Base.isequal(spec1::Spectrum, spec2::Spectrum) =
-    (hash(spec1) == hash(spec2)) && isequal(spec1.energy, spec2.energy) &&
+    (hash(spec1) == hash(spec2)) &&
+    isequal(spec1.energy, spec2.energy) &&
     isequal(spec1.properies, spec2.properties) && isequal(spec1.counts, spec2.counts)
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
@@ -497,9 +498,9 @@ is fit between the low energy side and the high energy side. This model only wor
 there are no peak interference over the range chs.
 """
 function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
-    bl = estimatebackground(counts(spec), chs.start, 5)
-    bh = estimatebackground(counts(spec), chs.stop, 5)
-    ec = channel(energy(ash), spec)
+    cnts, ec = counts(spec), channel(energy(ash), spec)
+    bl, bh = estimatebackground(cnts, chs.start, 5), estimatebackground(cnts, chs.stop, 5)
+    # bh = ch-> mean(cnts[chs.stop:min(length(cnts),chs.stop+5)])
     if (ec < chs.stop) && (bl(ec - chs.start) > bh(ec - chs.stop)) && (energy(ash) < 2.0e3)
         res = zeros(Float64, length(chs))
         for y = chs.start:ec-1
