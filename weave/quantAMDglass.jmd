@@ -1,0 +1,175 @@
+# Filter fitting example: ADM-6005a glass
+This example uses the low-level filter fitting functions to
+    * load spectra from EMSA files,
+    * builds a detector description and a top-hat filter,
+    * determines the regions-of-interest to fit,
+    * filter the reference spectra and unknowns
+    * plots various different perspectives on the fit process
+```julia
+using Revise
+using NeXLCore
+using NeXLSpectrum
+using NeXLUncertainties
+using CSV
+using Gadfly
+using TimerOutputs
+using DataAPI
+using Statistics
+```
+
+Load 15 unknowns and the reference spectra.
+
+```julia
+dir = "C:/Users/nicho/.julia/dev/NeXLSpectrum/test"
+path = "$(dir)/ADM6005a spectra/"
+unks = readEMSA.("$(path)ADM-6005a_$(i).msa" for i = 1:15)
+al = readEMSA("$(path)Al std.msa")
+caf2 = readEMSA("$(path)CaF2 std.msa")
+ge = readEMSA("$(path)Ge std.msa")
+si = readEMSA("$(path)Si std.msa")
+sio2 = readEMSA("$(path)SiO2 std.msa")
+ti = readEMSA("$(path)Ti trimmed.msa")
+zn = readEMSA("$(path)Zn std.msa");
+```
+
+Build a detector model and then the fitting filter based on the detector model.  The detector has 4096 channels of width 5.01716 eV/ch and a zero offset of -484.21 eV.  The FWHM at Mn Ka is 126.0 and there is a low-level discriminator cutoff of 120 channels to eliminate the zero-strobe peak.
+
+The filter is constructed using the variable width top-hat filter and stored in sparse matrix based on the specified detector.  The top of the hat is one FWHM and the base is one FWHM.
+```julia
+to0 = TimerOutput()
+det = simpleEDS(4096, 5.01716, -484.20818, 126.0, 120) # basicEDSwICC(4096, 5.01716, -484.20818, 126.0, 120)
+@timeit to0 "VariableWidthFilter" vwf = buildfilter(NeXLSpectrum.VariableWidthFilter, det, 1.0, 1.0);
+@timeit to0 "ConstantWidthFilter" cwf = buildfilter(NeXLSpectrum.ConstantWidthFilter, det, 1.0, 1.0);
+show(to0, allocations = true, compact = false)
+```
+Applying the filter seems to be a slow operation.  So I've tried various different ways to optimize it.
+    * VariableFilter is a standard Matrix implemention of a filter that varies in width with the FWHM of the detector
+    * VariableSparseFilter moves the VariableFilter data to a sparse matrix
+    * ConstantWidthFilter is a sparse implementation of a standard Mn Ka FWHM filter
+    * FastFilter is a handcoded row-focused implementation of a sparse variable filter
+```julia
+to1 = TimerOutput()
+for i = 1:15
+    spec = unks[i]
+    @timeit to1 "VariableWidthFilter" unk = filter(spec, vwf, 1.0 / dose(spec))
+    @timeit to1 "ConstantWidthFilter" unk = filter(spec, cwf, 1.0 / dose(spec))
+end
+show(to1, allocations = true, compact = false)
+ff=vwf;
+```
+
+The timing data suggests that the sparse matrix implementations are the fastest. The non-sparse implementations are terrible. The hand-coded version works less well than I'd suspect.  Maybe the optimizer doesn't handle it as well as the VariableSparseFilter. Still slower than I'd like but...
+
+Determine the fit region-of-interest for each element and shell of lines.  <code>characteristic(...)</code> creates a collection of characteristic X-rays.  The extended extent of these peaks as measured by the detector is determined by <code>extent(...)</code>.  The constant <code>ampl</code> determines the width.  Closer to zero produces broader fit regions.
+```julia
+ampl = 1.0e-4
+alkroi = extent(characteristic(n"Al", ktransitions), det, ampl)
+cakroi = extent(characteristic(n"Ca", ktransitions), det, ampl)
+gelroi = extent(characteristic(n"Ge", ltransitions), det, ampl)
+gekaroi = extent(characteristic(n"Ge", kalpha), det, ampl)
+gekbroi = extent(characteristic(n"Ge", kother), det, ampl)
+okroi = extent(characteristic(n"O", ktransitions), det, ampl)
+sikroi = extent(characteristic(n"Si", ktransitions), det, ampl)
+tikroi = extent(characteristic(n"Ti", ktransitions), det, ampl)
+tilroi = extent(characteristic(n"Ti", ltransitions), det, ampl)
+znkaroi = extent(characteristic(n"Zn", kalpha), det, ampl)
+znkbroi = extent(characteristic(n"Zn", kother), det, ampl)
+znlroi = extent(characteristic(n"Zn", ltransitions), det, ampl);
+alkroi, cakroi, gelroi, gekaroi, gekbroi, okroi, sikroi, tikroi, tilroi, znkaroi, znkbroi, znlroi
+```
+
+Filter the reference spectra over the regions-of-interest relevant to each.  Each reference spectrum is filtered over the specified range of channels using the top-hat filter <code>ff</code>.
+
+```julia
+alk = filter(al, alkroi, ff, 1.0 / dose(al))
+cak = filter(caf2, cakroi, ff, 1.0 / dose(caf2))
+gel = filter(ge, gelroi, ff, 1.0 / dose(ge), n"Ge L3")
+geka = filter(ge, gekaroi, ff, 1.0 / dose(ge))
+gekb = filter(ge, gekbroi, ff, 1.0 / dose(ge))
+ok = filter(sio2, okroi, ff, 1.0 / dose(sio2), n"O K")
+sik = filter(si, sikroi, ff, 1.0 / dose(si), n"Si K")
+tik = filter(ti, tikroi, ff, 1.0 / dose(ti))
+til = filter(ti, tilroi, ff, 1.0 / dose(ti), n"Ti K")
+znka = filter(zn, znkaroi, ff, 1.0 / dose(zn))
+znkb = filter(zn, znkbroi, ff, 1.0 / dose(zn))
+znl = filter(zn, znlroi, ff, 1.0 / dose(zn), n"Zn L3")
+
+fds = [alk, cak, gel, geka, gekb, ok, sik, tik, til, znka, znkb, znl];
+```
+Plot the standards, background and filtered data over the region-of-interests.  The blue curve is the spectrum data trimmed to the ROI identified by the vertical lines and extended using a linear extrapolation.  This minimizes the influence of nearby characteristic lines in the reference spectra (like for example Si K is near O K in SiO<sup>2</sup>).
+```julia
+set_default_plot_size(10inch, 7inch)
+hstack(plot(znl),plot(ok))
+```
+```julia
+set_default_plot_size(10inch, 40inch)
+vstack(collect(plot(fd) for fd in fds))
+```
+Fit the subsampled unknown spectra against the filtered standard spectra.
+```julia
+to = TimerOutput()
+res = Vector{FilterFitResult}()
+for i = 1:15
+    @timeit to "subsample" spec = subsample(unks[i],0.1)
+    @timeit to "filter" unk = filter(spec, ff, 1.0 / dose(spec))
+    @timeit to "fit" fit = filterfit(unk, fds, fitcontiguousg)
+    push!(res, fit)
+end
+show(to, allocations = true, compact = false)
+```
+
+Interestingly applying the top-hat filter takes the longest, subsampling next and the actual fit is quite quick.
+
+Plot the unknown and the residual spectrum.
+```julia
+set_default_plot_size(10inch, 4inch)
+plot(res[2])
+```
+
+Plot the unknown and residual spectra over the filter fitting intervals.
+```julia
+set_default_plot_size(10inch, 20inch)
+ffrois = ascontiguous( collect(fd.ffroi for fd in fds) )
+vstack(collect(plot(res[2], ffroi) for ffroi in ffrois))
+```
+
+Summarize the k-ratio results in a table.
+```julia
+df = asa(DataFrame, collect(r.kratios for r in res))
+CSV.write("$(path)kratios.csv",df)
+```
+```julia
+withenv("COLUMNS" => 180) do
+    display(df)
+    display(DataAPI.describe(df,:mean, :median, :std, :q25, :q75))
+end
+```
+Display the filtered unknown.  The zero-strobe peak has not been filtered because the "lld" (low level discriminator) has been specified in the detector model to cut it off.
+```julia
+set_default_plot_size(10inch, 6inch)
+spec=subsample(unks[1],0.1)
+plot(filter(spec, ff, 1.0 / dose(spec)))
+```
+peak(spec::Spectrum, chs::UnitRange{Int})::Float64 =
+    sum(counts(spec,chs,Float64))-sum(modelBackground(spec,chs))
+
+kratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) =
+    peak(unk, chs)*dose(std)/(peak(std, chs)*dose(unk))
+# %% codecell
+mean(kratio(unk, zn, znkaroi) for unk in unks), mean(df[:,Symbol("Zn[1762:1873]")])
+# %% codecell
+mean(kratio(unk, ti, tikroi) for unk in unks), mean(df[:,Symbol("Ti[956:1117]")])
+# %% codecell
+mean(kratio(unk, caf2, cakroi) for unk in unks), mean(df[:,Symbol("CaF2[796:930]")])
+# %% codecell
+mean(kratio(unk, sio2, okroi) for unk in unks), mean(df[:,Symbol("SiO2[183:221]")])
+# %% codecell
+res = Vector{FilterFitResult}()
+for i = 1:100
+    spec = subsample(unks[1],0.1)
+    unk = filter(spec, ff, 1.0 / dose(spec))
+    fit = filterfit(unk, fds, fitcontiguousg)
+    push!(res, fit)
+end
+display(DataAPI.describe(asa(DataFrame, res, true),:mean, :std, :median, :q25, :q75))
+# %% codecell
