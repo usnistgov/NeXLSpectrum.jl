@@ -409,7 +409,7 @@ Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
 Extract the filtered data representing the specified range.  <code>roi</code> must fully encompass the filtered
 data in <code>fd</code>.
 """
-function extract(fd::FilteredReference, roi::UnitRange{Int})
+function NeXLUncertainties.extract(fd::FilteredReference, roi::UnitRange{Int})
     @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
     @assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
     data = zeros(Float64, length(roi))
@@ -424,7 +424,7 @@ end
 Extract the filtered data representing the specified range.  <code>roi</code> must be fully contained within the
 filtered data in <code>fd</code>.
 """
-extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
+NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.identifier for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =

@@ -273,14 +273,17 @@ function Gadfly.plot(
 end
 
 """
-    plot(fd::FilteredData, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
+    plot(fd::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
 
-Plot the fitting filter and the spectrum from which it was derived.  Vertical red
-lines represent the principle ROC.
+Plot the fit spectrum and the fit residuals along with the fit ROIs and the associated k-ratios.
 """
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
+    function defroi(ffrr) # Compute a reasonable default display ROI
+        tmp = minimum( lbl.roi.start for lbl in keys(kratios(ffrr))):maximum( lbl.roi.stop for lbl in keys(kratios(ffr)))
+        return max(1,tmp.start-length(ffrr.roi)÷40):min(tmp.stop+length(ffrr.roi)÷10,ffrr.roi.stop)
+    end
     roilt(l1, l2) = isless(l1.roi.start, l2.roi.start)
-    roi = ismissing(roi) ? ffr.roi : roi
+    roi = ismissing(roi) ? defroi(ffr) : roi
     layers = [
         layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
