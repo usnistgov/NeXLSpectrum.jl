@@ -1,6 +1,5 @@
 using Test
 using Pkg.Artifacts
-using ZipFile
 using NeXLSpectrum
 
 # Download the necessary data using the Artifact mechanism from Google Drive
