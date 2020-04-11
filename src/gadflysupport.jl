@@ -279,7 +279,7 @@ Plot the fit spectrum and the fit residuals along with the fit ROIs and the asso
 """
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
     function defroi(ffrr) # Compute a reasonable default display ROI
-        tmp = minimum( lbl.roi.start for lbl in keys(kratios(ffrr))):maximum( lbl.roi.stop for lbl in keys(kratios(ffr)))
+        tmp = minimum( lbl.roi.start for lbl in keys(ffrr.kratios)):maximum( lbl.roi.stop for lbl in keys(ffrr.kratios))
         return max(1,tmp.start-length(ffrr.roi)÷40):min(tmp.stop+length(ffrr.roi)÷10,ffrr.roi.stop)
     end
     roilt(l1, l2) = isless(l1.roi.start, l2.roi.start)
@@ -289,7 +289,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
-    for lbl in sort(collect(keys(kratios(ffr))), lt = roilt)
+    for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
         if value(lbl, ffr) > 0.0
 # This logic keeps the labels on different lines (mostly...)
             i, prev = (lbl.roi.start > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi.stop) : (i + 1, prev)

@@ -213,14 +213,13 @@ Returns a list of the elements associated with this spectrum. <code>withcoating<
 elements are also added.
 """
 function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
+    res = Set{Element}()
     if haskey(spec, :Elements)
-        res = spec[:Elements]
+        append!(spec[:Elements])
     elseif haskey(spec, :Composition)
-        res = collect(keys(spec[:Composition]))
+        append!(keys(spec[:Composition]))
     elseif haskey(spec, :Signature)
-        res = collect(keys(spec[:Signature]))
-    else
-        res = []
+        append!(keys(spec[:Signature]))
     end
     if withcoating && haskey(spec, :Coating)
         append!(res, keys(material(spec[:Coating])))
@@ -353,8 +352,8 @@ Perform a background corrected peak integration using channel ranges. Fits a lin
 extrapolates the background from the closest background channel through the peak region.
 """
 function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::Float64
-    p1 = polyfit(back1, spec.counts[back1], 1)
-    p2 = polyfit(back2, spec.counts[back2], 1)
+    p1 = Polynomials.fit(Poly, back1, spec.counts[back1], 1)
+    p2 = Polynomials.fit(Poly, back2, spec.counts[back2], 1)
     c1, c2 = back1.stop, back2.start
     i1, i2 = p1(c1), p2(c2)
     m = (i2 - i1) / (c2 - c1)
@@ -476,7 +475,7 @@ Returns the tangent to the a quadratic fit to the counts data centered at channe
 function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Poly
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
-        fit = polyfit((minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
+        fit = Polynomials.fit(Poly, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
         return Poly([fit(0), polyder(fit)(0)]) # Linear
     else
         return Poly([mean(data[minCh:maxCh]), 0.0])

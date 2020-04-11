@@ -64,7 +64,7 @@ xrays(cl::CharXRayLabel) = cl.xrays
 
 NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 
-Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))[$(refLab.roi)])")
+Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
 Base.isless(rl1::CharXRayLabel, rl2::CharXRayLabel) =

@@ -23,11 +23,22 @@ struct FilterFitResult
 end
 
 """
-    kratios(ffr::FilterFitResult)
+    kratios(ffr::FilterFitResult)::Vector{KRatio}
 
-The k-ratios as a UncertainValues object
+The k-ratios associated with each `CharXRayLabel` as a vector 'KRatio' objects.
 """
-kratios(ffr::FilterFitResult)::UncertainValues = ffr.kratios
+function kratios(ffr::FilterFitResult)::Vector{KRatio}
+    return KRatio[
+        KRatio(
+            lbl.xrays,
+            copy(unknown(ffr).spec.properties),
+            copy(lbl.spec.properties),
+            lbl.spec[:Composition],
+            ffr.kratios[lbl],
+        ) for lbl in filter(l -> l isa CharXRayLabel, labels(ffr.kratios))
+    ]
+end
+
 unknown(ffr::FilterFitResult)::UnknownLabel = ffr.label
 """
     residual(ffr::FilterFitResult)::Spectrum
