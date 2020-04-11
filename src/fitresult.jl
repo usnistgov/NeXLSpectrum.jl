@@ -35,7 +35,7 @@ function kratios(ffr::FilterFitResult)::Vector{KRatio}
             copy(lbl.spec.properties),
             lbl.spec[:Composition],
             ffr.kratios[lbl],
-        ) for lbl in filter(l -> l isa CharXRayLabel, labels(ffr.kratios))
+        ) for lbl in filter(l -> (l isa CharXRayLabel) && haskey(l.spec[:Composition], element(l)), labels(ffr.kratios))
     ]
 end
 
