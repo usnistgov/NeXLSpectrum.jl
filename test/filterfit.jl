@@ -94,13 +94,13 @@ using Printf
         e0 = sameproperty(unks, :BeamEnergy)
 
         ampl = 0.00005
-        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, ampl, e0)
-        siroi = charXRayLabels(sio2, n"Si", [n"Si", n"O"], det, ampl, e0)
-        mgroi = charXRayLabels(mgo, n"Mg", [n"Mg", n"O"], det, ampl, e0)
-        alroi = charXRayLabels(al2o3, n"Al", [n"Al", n"O"], det, ampl, e0)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, ampl, e0)
+        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, e0, ampl=ampl)
+        siroi = charXRayLabels(sio2, n"Si", [n"Si", n"O"], det, e0, ampl=ampl)
+        mgroi = charXRayLabels(mgo, n"Mg", [n"Mg", n"O"], det, e0, ampl=ampl)
+        alroi = charXRayLabels(al2o3, n"Al", [n"Al", n"O"], det, e0, ampl=ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, e0, ampl=ampl)
         @test length(caroi) == 1
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, ampl, e0)
+        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl=ampl)
         @test length(feroi) == 3
 
         ok = filter(oroi, ff, 1.0 / dose(sio2))
@@ -157,14 +157,14 @@ using Printf
 
         ampl = 1e-4
         e0 = sameproperty(unks, :BeamEnergy)
-        alroi = charXRayLabels(al, n"Al", [n"Al"], det, ampl, e0)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca",n"F"], det, ampl, e0)
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, ampl, e0)
-        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, ampl, e0)
-        oroi = charXRayLabels(sio2, n"O", [n"Si",n"O"], det, ampl, e0)
-        siroi = charXRayLabels(si, n"Si", [n"Si"], det, ampl, e0)
-        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, ampl, e0)
-        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, ampl, e0)
+        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl=ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [n"Ca",n"F"], det, e0, ampl=ampl)
+        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl=ampl)
+        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl=ampl)
+        oroi = charXRayLabels(sio2, n"O", [n"Si",n"O"], det, e0, ampl=ampl)
+        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl=ampl)
+        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl=ampl)
+        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl=ampl)
 
         alk = filter(alroi, ff, 1.0 / dose(al))
         cak = filter(caroi, ff, 1.0 / dose(caf2))

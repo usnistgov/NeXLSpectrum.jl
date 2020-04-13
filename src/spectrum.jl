@@ -123,12 +123,9 @@ sameproperty(specs, prop::Symbol) = all(spec -> spec[prop] == specs[1][prop], sp
     error("The property $prop is not equal for all these spectra.")
 
 function Base.show(io::IO, spec::Spectrum)
-    comp = get(spec, :Composition, missing)
-    comp = ismissing(comp) ? "Unknown" : name(comp)
-    print(
-        io,
-        "Spectrum[$(get(spec, :Name, "None")), $(get(spec,:BeamEnergy,missing)/1000.0) keV,  $(comp), $(sum(spec.counts))]",
-    )
+    comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
+    e0 = haskey(spec, :BeamEnergy) ? "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3)) keV" : "Unknown keV"
+    print(io, "Spectrum[$(spec[:Name]), $e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]")
 end
 
 function textplot(io::IO, spec::Spectrum; size = (16, 80))
@@ -180,11 +177,11 @@ function apply(spec::Spectrum, det::SimpleEDS)::Spectrum
 end
 
 """
-	matching(spec::Spectrum, res::Resolution, lld::Int=1)::SimpleEDS
+	matching(spec::Spectrum, res::Resolution, lld::Int=1)::EDSDetector
 
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
-matching(spec::Spectrum, res::Resolution, lld::Int = 1)::EDSDetector = SimpleEDS(length(spec), spec.energy, res, lld)
+matching(spec::Spectrum, res::Resolution, lld::Int = 1)::EDSDetector = SimpleEDS(spec, res, lld)
 
 """
 	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS
@@ -651,7 +648,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, stds::AbstractDict{Element,Spe
 end
 
 """
-    describe(io, spec::Spectrum)
+    details(io, spec::Spectrum)
 
 Outputs a description of the data in the spectrum.
 """

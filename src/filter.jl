@@ -309,8 +309,8 @@ function charXRayLabels(#
     elm::Element, #
     allElms::AbstractVector{Element}, #
     det::Detector, #
-    ampl::Float64, #
-    maxE::Float64 = 1.0e6,
+    maxE::Float64 = 1.0e6;
+    ampl::Float64 = 1.0e-5, #
 )::Vector{CharXRayLabel}
     @assert elm in allElms "$elm must be in $allElms."
     intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
@@ -318,6 +318,7 @@ function charXRayLabels(#
     urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in filter(a -> a ≠ elm, allElms)))
     # Find elm's ROIs that don't intersect another element's ROI
     lxs = filter(lx -> !intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
+    @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
     return [CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
