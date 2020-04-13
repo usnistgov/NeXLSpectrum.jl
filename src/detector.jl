@@ -538,9 +538,6 @@ struct BasicEDS <: EDSDetector
     BasicEDS(channelcount::Int, zero::Float64, gain::Float64, fwhm::Float64, lld::Int) =
         new(channelcount, LinearEnergyScale(zero,gain), MnKaResolution(fwhm), lld,
         Dict( 'K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Ba", 'N'=>n"Pu" ))
-    BasicEDS(spec::Spectrum, fwhm::Float64, lld::Int) =
-        new(length(spec), LinearEnergyScale(energy(1,spec), channelwidth(1,spec)), MnKaResolution(fwhm), lld,
-        Dict( 'K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Ba", 'N'=>n"Pu" ))
     BasicEDS(channelcount::Int, scale::EnergyScale, resolution::Resolution, lld::Int, minByFamily::Dict{Char,Element}) =
         new(channelcount, scale, resolution, lld, minByFamily)
 end
