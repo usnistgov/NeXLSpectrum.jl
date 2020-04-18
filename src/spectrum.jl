@@ -191,7 +191,7 @@ Build an EDSDetector to match the channel count and energy scale in this spectru
 matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::SimpleEDS =
     SimpleEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
 
-matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Char,Element})::BasicEDS =
+matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Shell,Element})::BasicEDS =
     BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
 
 setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
@@ -206,7 +206,7 @@ Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties, sym)
 """
     elms(spec::Spectrum, withcoating = false, def=missing)
 
-Returns a list of the elements associated with this spectrum. <code>withcoating</code> determines whether the coating
+Returns a list of the elements associated with this spectrum. `withcoating` determines whether the coating
 elements are also added.
 """
 function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
@@ -244,7 +244,7 @@ NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
 """
     channelwidth(ch::Int, spec::Spectrum)::Float64
 
-Returns the width of the <code>ch</code> channel
+Returns the width of the `ch` channel
 """
 channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
 
@@ -412,7 +412,7 @@ simpleEDS(spec::Spectrum, fwhmatmnka::Float64) = SimpleEDS(length(spec), spec.en
     subsample(spec::Spectrum, frac::Float64)
 
 Subsample the counts data in a spectrum according to a statistically valid algorithm.  Returns
-<code>spec</code> if frac>=1.0.
+`spec` if frac>=1.0.
 """
 function subsample(spec::Spectrum, frac::Float64)::Spectrum
     @assert frac > 0.0 "frac must be larger than zero."

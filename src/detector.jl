@@ -411,7 +411,7 @@ channel(sf::SpectrumFeature, det::EDSDetector) =
 """
     visible(sf::SpectrumFeature, det::Detector)
 
-Is <code>sf</code> visible on the specified Detector?
+Is `sf` visible on the specified Detector?
 """
 visible(sf::SpectrumFeature, det::SimpleEDS) =
     (energy(sf)>energy(lld(det), det)) && (energy(sf)<energy(det.channelcount+1, det))
@@ -532,26 +532,26 @@ struct BasicEDS <: EDSDetector
     scale::EnergyScale
     resolution::Resolution
     lld::Int # low level discriminator
-    minByFamily::Dict{Char,Element} # Dict( 'K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Ba", 'N'=>n"Pu" )
-    BasicEDS(channelcount::Int, zero::Float64, gain::Float64, fwhm::Float64, lld::Int, minByFamily::Dict{Char,Element}) =
-        new(channelcount, LinearEnergyScale(zero,gain), MnKaResolution(fwhm), lld, minByFamily)
+    minByShell::Dict{Shell,Element} # Dict( Shell(1)=>n"Be", Shell(2)=>n"Sc", Shell(3)=>n"Ba", Shell(4)=>n"Pu" )
+    BasicEDS(channelcount::Int, zero::Float64, gain::Float64, fwhm::Float64, lld::Int, minByShell::Dict{Shell,Element}) =
+        new(channelcount, LinearEnergyScale(zero,gain), MnKaResolution(fwhm), lld, minByShell)
     BasicEDS(channelcount::Int, zero::Float64, gain::Float64, fwhm::Float64, lld::Int) =
         new(channelcount, LinearEnergyScale(zero,gain), MnKaResolution(fwhm), lld,
-        Dict( 'K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Ba", 'N'=>n"Pu" ))
-    BasicEDS(channelcount::Int, scale::EnergyScale, resolution::Resolution, lld::Int, minByFamily::Dict{Char,Element}) =
-        new(channelcount, scale, resolution, lld, minByFamily)
+        Dict( Shell(1)=>n"Be", Shell(2)=>n"Sc", Shell(3)=>n"Ba", Shell(4)=>n"Pu" ))
+    BasicEDS(channelcount::Int, scale::EnergyScale, resolution::Resolution, lld::Int, minByShell::Dict{Shell,Element}) =
+        new(channelcount, scale, resolution, lld, minByShell)
 end
 
 """
     visible(sf::SpectrumFeature, det::Detector)
 
-Is <code>sf</code> visible on the specified Detector?
+Is `sf` visible on the specified Detector?
 """
 visible(sf::SpectrumFeature, det::BasicEDS) =
     (energy(sf)>energy(lld(det), det)) && #
     (energy(sf)<energy(det.channelcount+1, det))
 
 visible(cxr::CharXRay, det::BasicEDS) =
-    (element(cxr)>=det.minByFamily[shell(cxr)]) && #
+    (element(cxr)>=det.minByShell[shell(cxr)]) && #
     (energy(cxr)>energy(lld(det), det)) && #
     (energy(cxr)<energy(det.channelcount+1, det))

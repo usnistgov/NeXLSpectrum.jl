@@ -60,8 +60,8 @@ end
 """
     covariance(fd::FilteredUnknownG, roi::UnitRange{Int})::AbstractMatrix{Float64}
 
-Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  <code>roi</code> must
-be fully contained within the filtered edata in <code>fd</code>.
+Like extract(fd,roi) except extracts the covariance matrix over the specified range of channels.  `roi` must
+be fully contained within the filtered edata in `fd`.
 """
 NeXLUncertainties.covariance(fd::FilteredUnknownG, roi::UnitRange{Int})::AbstractMatrix{Float64} =
      fd.covariance[roi,roi]

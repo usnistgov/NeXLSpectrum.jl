@@ -56,7 +56,7 @@ using NeXLCore
         @test channel(NeXLSpectrum.energy(2000,eds),eds)==2000
     end
     @testset "BasicEDS" begin
-        det3 = BasicEDS(4095, 0.0, 10.0, 126.0, 10, Dict('K'=>n"Be", 'L'=>n"Sc", 'M'=>n"Cs", 'N'=>n"Pu"))
+        det3 = BasicEDS(4095, 0.0, 10.0, 126.0, 10, Dict(Shell(1)=>n"Be", Shell(2)=>n"Sc", Shell(3)=>n"Cs", Shell(4)=>n"Pu"))
         @test all(ch->channel(energy(ch,det3),det3)==ch,1:4096)
         @test resolution(energy(n"Mn K-L3"),det3)==126.0
         @test isapprox(resolution(energy(n"C K-L2"),det3),45.867,atol=0.001)

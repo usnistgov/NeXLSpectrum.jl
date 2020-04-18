@@ -30,7 +30,7 @@ end
     covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
 
 Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
-<code>roi</code> must be fully contained within the data in <code>fd</code>.
+`roi` must be fully contained within the data in `fd`.
 """
 NeXLUncertainties.covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::AbstractVector{Float64} =
     fd.covariance[roi]

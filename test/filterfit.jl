@@ -89,7 +89,7 @@ using Printf
         mgo = readEMSA(path * "MgO std.msa")
         sio2 = readEMSA(path * "SiO2 std.msa")
 
-        det = BasicEDS(4096, 0.0, 10.0, 132.0, 10, Dict('K' => n"Be", 'L' => n"Sc", 'M' => n"Cs", 'N' => n"Pu"))
+        det = BasicEDS(4096, 0.0, 10.0, 132.0, 10, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
         ff = buildfilter(det)
         e0 = sameproperty(unks, :BeamEnergy)
 
@@ -152,7 +152,7 @@ using Printf
         ti = readEMSA("$(path)Ti trimmed.msa")
         zn = readEMSA("$(path)Zn std.msa")
 
-        det = matching(unks[1], 128.0, 110, Dict('K' => n"Be", 'L' => n"Sc", 'M' => n"Cs", 'N' => n"Pu"))
+        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
         ff = buildfilter(det)
 
         ampl = 1e-4

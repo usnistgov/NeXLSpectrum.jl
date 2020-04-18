@@ -158,10 +158,10 @@ end
     buildfilter(::Type{GaussianFilter}, det::Detector, a::Float64=1.0, b::Float64=5.0)::TopHatFilter
 
 Build a top-hat filter with Gaussian shape whose width varies with the detector's resolution as a function of X-ray
-energy for the specified detector with the specified top and base parameters. The <code>a</code> parameter corresponds
-to the filter width relative to the detector resolution expressed as Gaussian width.  So <code>a=1</code> is a filter
-whose width equals the detector resolution at each energy.  The <code>b</code> parameter is the extent of the
-filter in Gaussian widths.  The default <code>a=1, b=5</code> corresponds to a  filter that has the same resolution
+energy for the specified detector with the specified top and base parameters. The `a` parameter corresponds
+to the filter width relative to the detector resolution expressed as Gaussian width.  So `a=1` is a filter
+whose width equals the detector resolution at each energy.  The `b` parameter is the extent of the
+filter in Gaussian widths.  The default `a=1, b=5` corresponds to a  filter that has the same resolution
 as the detector and an extent of 2.5 Gaussian widths above and below the center channel.
 """
 function buildfilter(
@@ -407,8 +407,8 @@ Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
 """
     extract(fd::FilteredReference, roi::UnitRange{Int})
 
-Extract the filtered data representing the specified range.  <code>roi</code> must fully encompass the filtered
-data in <code>fd</code>.
+Extract the filtered data representing the specified range.  `roi` must fully encompass the filtered
+data in `fd`.
 """
 function NeXLUncertainties.extract(fd::FilteredReference, roi::UnitRange{Int})
     @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
@@ -422,8 +422,8 @@ end
 """
     extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64}
 
-Extract the filtered data representing the specified range.  <code>roi</code> must be fully contained within the
-filtered data in <code>fd</code>.
+Extract the filtered data representing the specified range.  `roi` must be fully contained within the
+filtered data in `fd`.
 """
 NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
 

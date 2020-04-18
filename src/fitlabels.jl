@@ -3,7 +3,7 @@
     FilteredLabel
 
 An abstract type associated with labels of filtered spectrum data objects.  structs that extend FilteredLabel should
-have <code>.spec</code> members.
+have `.spec` members.
 """
 abstract type FilteredLabel <: Label end
 
@@ -18,8 +18,8 @@ spectrum(fl::FilteredLabel) = fl.spec
     ReferenceLabel
 
 A label associated with reference spectra.  The label encapsulates the original spectrum and the range of channels
-represented by this reference object.  structs that extend ReferenceLabel should have <code>.roi</code> and
-<code>.spec</code> members.
+represented by this reference object.  structs that extend ReferenceLabel should have `.roi` and
+`.spec` members.
 """
 abstract type ReferenceLabel <: FilteredLabel end
 
