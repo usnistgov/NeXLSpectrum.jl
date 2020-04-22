@@ -224,7 +224,7 @@ function Gadfly.plot(
         mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : convert(Float64,xmax)
         mE0 = get(spec, :BeamEnergy, missing)
         chs = max(1, channel(convert(Float64,xmin), spec)):channel(mE, spec)
-        mchs = max(chs.start, lld(spec)):chs.stop  # Ignore zero strobe...
+        mchs = max(channel(200.0,spec), chs.start, lld(spec)):min(length(specdata[i]),chs.stop)  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
         maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
