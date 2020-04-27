@@ -349,12 +349,12 @@ Perform a background corrected peak integration using channel ranges. Fits a lin
 extrapolates the background from the closest background channel through the peak region.
 """
 function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::Float64
-    p1 = Polynomials.fit(Poly, back1, spec.counts[back1], 1)
-    p2 = Polynomials.fit(Poly, back2, spec.counts[back2], 1)
+    p1 = Polynomials.fit(Polynomial, back1, spec.counts[back1], 1)
+    p2 = Polynomials.fit(Polynomial, back2, spec.counts[back2], 1)
     c1, c2 = back1.stop, back2.start
     i1, i2 = p1(c1), p2(c2)
     m = (i2 - i1) / (c2 - c1)
-    back = Poly([i1 - m * c1, m])
+    back = Polynomial([i1 - m * c1, m])
     sum(spec.counts[peak] - map(back, peak))
 end
 
@@ -469,13 +469,13 @@ end
 
 Returns the tangent to the a quadratic fit to the counts data centered at channel with width
 """
-function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Poly
+function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Polynomial
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
-        fit = Polynomials.fit(Poly, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
-        return Poly([fit(0), polyder(fit)(0)]) # Linear
+        fit = Polynomials.fit(Polynomial, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
+        return Polynomial([fit(0), derivative(fit)(0)]) # Linear
     else
-        return Poly([mean(data[minCh:maxCh]), 0.0])
+        return Polynomial([mean(data[minCh:maxCh]), 0.0])
     end
 end
 
@@ -508,7 +508,7 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShel
         end
     else
         s = (bh(0) - bl(0)) / length(chs)
-        back = Poly([bl(0), s])
+        back = Polynomial([bl(0), s])
         res = back.(collect(0:length(chs)-1))
     end
     return res
@@ -529,7 +529,7 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int})
     bl = estimatebackground(counts(spec), chs.start, 5)
     bh = estimatebackground(counts(spec), chs.stop, 5)
     s = (bh(0) - bl(0)) / length(chs)
-    back = Poly([bl(0), s])
+    back = Polynomial([bl(0), s])
     return back.(collect(0:length(chs)-1))
 end
 
@@ -548,14 +548,14 @@ end
 
 Estimates the peak intensity for the characteristic X-ray in the specified range of channels.
 """
-peak(spec::Spectrum, chs::UnitRange{Int})::Float64 = return sum(counts(spec, chs, Float64)) - back(spec, chs)
+peak(spec::Spectrum, chs::UnitRange{Int})::Float64 = return sum(counts(spec, chs, Float64)) - background(spec, chs)
 
 """
-    back(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
+    background(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
 
 Estimates the background intensity for the characteristic X-ray in the specified range of channels.
 """
-back(spec::Spectrum, chs::UnitRange{Int})::Float64 = sum(modelBackground(spec, chs))
+background(spec::Spectrum, chs::UnitRange{Int})::Float64 = sum(modelBackground(spec, chs))
 
 
 """
@@ -687,7 +687,7 @@ function details(io::IO, spec::Spectrum)
                     if length(intersects) > 0
                         println(io, " intersects $(join(intersects,", "))")
                     else
-                        p, b = peak(spec, ext1), back(spec, ext1)
+                        p, b = peak(spec, ext1), background(spec, ext1)
                         σ = p / sqrt(b)
                         println(io, " = $(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))")
                     end

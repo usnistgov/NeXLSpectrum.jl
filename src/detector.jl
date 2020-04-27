@@ -72,8 +72,8 @@ NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 =
 An energy scale based on a polynomial function of the channel index.
 """
 struct PolyEnergyScale <: EnergyScale
-    poly::Poly
-    PolyEnergyScale(vec::Vector) = new(Poly(vec,:ch))
+    poly::Polynomial
+    PolyEnergyScale(vec::AbstractVector{<:AbstractFloat}) = new(Polynomial(vec,:ch))
 end
 
 function Base.show(io::IO, pes::PolyEnergyScale)
@@ -90,7 +90,7 @@ eV).
 function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
     cp=Vector(coeffs(sc.poly))
     cp[1]-=eV
-    rts = roots(Poly(cp))
+    rts = roots(Polynomial(cp))
     best = 100000
     for rt in rts
         if !(rt isa Complex)

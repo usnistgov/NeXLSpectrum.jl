@@ -50,7 +50,7 @@ export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
 export details # Outputs useful details about a spectrum
 export peak # Estimates the peak intensity
-export back # Estimates the background intensity
+export background # Estimates the background intensity
 export estkratio # Estimate the k-ratio from two spectra for a ROI
 export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 export commonproperties
