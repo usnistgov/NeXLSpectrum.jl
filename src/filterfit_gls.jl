@@ -15,25 +15,25 @@ struct FilteredUnknownG <: FilteredUnknown
 end
 
 """
-    filter(spec::Spectrum, filter::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
+    tophatfilter(spec::Spectrum, thf::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredDatum
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
-function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filter::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownG
-    range(i) = filter.offsets[i] : filter.offsets[i] + length(filter.filters[i]) - 1
-    apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [ dot(filter.filters[i], view(data, range(i))) for i in eachindex(data) ]
-    function covariance(roi, data, filter) # Calculated the full covariance matrix
+function tophatfilter(::Type{FilteredUnknownG}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownG
+    range(i) = thf.offsets[i] : thf.offsets[i] + length(thf.filters[i]) - 1
+    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
+        [ dot(thf.filters[i], view(data, range(i))) for i in eachindex(data) ]
+    function covariance(roi, data, thf) # Calculated the full covariance matrix
         off(r, o) = r.start-o+1:r.stop-o+1
         rs, cs, vs = Int[], Int[], Float64[]
         res = zeros( ( length(roi), length(roi) ) )
         bdata = map(d -> max(d, 1.0), data)
         for r in roi
-            rr, rf, ro = range(r), filter.filters[r], filter.offsets[r]
+            rr, rf, ro = range(r), thf.filters[r], thf.offsets[r]
             for c in roi
                 ii = intersect(rr, range(c))
                 if length(ii) > 0
-                    cf, co = filter.filters[c], filter.offsets[c]
+                    cf, co = thf.filters[c], thf.offsets[c]
                     # The next line is the core time sink...
                     v = dot( view(rf, off(ii, ro)) .* view(bdata, ii) , view(cf, off(ii, co)))
                     if v ≠ 0.0
@@ -47,12 +47,12 @@ function Base.filter(::Type{FilteredUnknownG}, spec::Spectrum, filter::TopHatFil
     end
     data = counts(spec, Float64, true)
     # Compute the filtered data
-    filtered = apply(filter, data)
+    filtered = apply(thf, data)
     roi = 1:findlast(f -> f ≠ 0.0, filtered)
     # max(d,1.0) is necessary to ensure the variances are positive
     # diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
-    covar = covariance(roi, data, filter)
-    @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in filter(...)::FilterUnknown."
+    covar = covariance(roi, data, thf)
+    @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in tophatfilter(...)::FilterUnknown."
     checkcovariance!(covar)
     return FilteredUnknownG(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
 end
@@ -127,10 +127,10 @@ end
 
 function fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
+    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
 end
 
 function fit(ty::Type{FilteredUnknownG}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
+    return map(unk->filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
 end

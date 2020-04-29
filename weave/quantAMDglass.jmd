@@ -51,8 +51,8 @@ Applying the filter seems to be a slow operation.  So I've tried various differe
 to1 = TimerOutput()
 for i = 1:15
     spec = unks[i]
-    @timeit to1 "VariableWidthFilter" unk = filter(spec, vwf, 1.0 / dose(spec))
-    @timeit to1 "ConstantWidthFilter" unk = filter(spec, cwf, 1.0 / dose(spec))
+    @timeit to1 "VariableWidthFilter" unk = tophatfilter(spec, vwf, 1.0 / dose(spec))
+    @timeit to1 "ConstantWidthFilter" unk = tophatfilter(spec, cwf, 1.0 / dose(spec))
 end
 show(to1, allocations = true, compact = false)
 ff=vwf;
@@ -81,18 +81,18 @@ alkroi, cakroi, gelroi, gekaroi, gekbroi, okroi, sikroi, tikroi, tilroi, znkaroi
 Filter the reference spectra over the regions-of-interest relevant to each.  Each reference spectrum is filtered over the specified range of channels using the top-hat filter <code>ff</code>.
 
 ```julia
-alk = filter(al, alkroi, ff, 1.0 / dose(al))
-cak = filter(caf2, cakroi, ff, 1.0 / dose(caf2))
-gel = filter(ge, gelroi, ff, 1.0 / dose(ge), n"Ge L3")
-geka = filter(ge, gekaroi, ff, 1.0 / dose(ge))
-gekb = filter(ge, gekbroi, ff, 1.0 / dose(ge))
-ok = filter(sio2, okroi, ff, 1.0 / dose(sio2), n"O K")
-sik = filter(si, sikroi, ff, 1.0 / dose(si), n"Si K")
-tik = filter(ti, tikroi, ff, 1.0 / dose(ti))
-til = filter(ti, tilroi, ff, 1.0 / dose(ti), n"Ti K")
-znka = filter(zn, znkaroi, ff, 1.0 / dose(zn))
-znkb = filter(zn, znkbroi, ff, 1.0 / dose(zn))
-znl = filter(zn, znlroi, ff, 1.0 / dose(zn), n"Zn L3")
+alk = tophatfilter(al, alkroi, ff, 1.0 / dose(al))
+cak = tophatfilter(caf2, cakroi, ff, 1.0 / dose(caf2))
+gel = tophatfilter(ge, gelroi, ff, 1.0 / dose(ge), n"Ge L3")
+geka = tophatfilter(ge, gekaroi, ff, 1.0 / dose(ge))
+gekb = tophatfilter(ge, gekbroi, ff, 1.0 / dose(ge))
+ok = tophatfilter(sio2, okroi, ff, 1.0 / dose(sio2), n"O K")
+sik = tophatfilter(si, sikroi, ff, 1.0 / dose(si), n"Si K")
+tik = tophatfilter(ti, tikroi, ff, 1.0 / dose(ti))
+til = tophatfilter(ti, tilroi, ff, 1.0 / dose(ti), n"Ti K")
+znka = tophatfilter(zn, znkaroi, ff, 1.0 / dose(zn))
+znkb = tophatfilter(zn, znkbroi, ff, 1.0 / dose(zn))
+znl = tophatfilter(zn, znlroi, ff, 1.0 / dose(zn), n"Zn L3")
 
 fds = [alk, cak, gel, geka, gekb, ok, sik, tik, til, znka, znkb, znl];
 ```
@@ -111,7 +111,7 @@ to = TimerOutput()
 res = Vector{FilterFitResult}()
 for i = 1:15
     @timeit to "subsample" spec = subsample(unks[i],0.1)
-    @timeit to "filter" unk = filter(spec, ff, 1.0 / dose(spec))
+    @timeit to "filter" unk = tophatfilter(spec, ff, 1.0 / dose(spec))
     @timeit to "fit" fit = filterfit(unk, fds, fitcontiguousg)
     push!(res, fit)
 end
@@ -148,7 +148,7 @@ Display the filtered unknown.  The zero-strobe peak has not been filtered becaus
 ```julia
 set_default_plot_size(10inch, 6inch)
 spec=subsample(unks[1],0.1)
-plot(filter(spec, ff, 1.0 / dose(spec)))
+plot(tophatfilter(spec, ff, 1.0 / dose(spec)))
 ```
 peak(spec::Spectrum, chs::UnitRange{Int})::Float64 =
     sum(counts(spec,chs,Float64))-sum(modelBackground(spec,chs))
@@ -167,7 +167,7 @@ mean(kratio(unk, sio2, okroi) for unk in unks), mean(df[:,Symbol("SiO2[183:221]"
 res = Vector{FilterFitResult}()
 for i = 1:100
     spec = subsample(unks[1],0.1)
-    unk = filter(spec, ff, 1.0 / dose(spec))
+    unk = tophatfilter(spec, ff, 1.0 / dose(spec))
     fit = filterfit(unk, fds, fitcontiguousg)
     push!(res, fit)
 end

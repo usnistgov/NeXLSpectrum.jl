@@ -23,6 +23,12 @@ represented by this reference object.  structs that extend ReferenceLabel should
 """
 abstract type ReferenceLabel <: FilteredLabel end
 
+Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
+    return isequal(rl1.roi, rl2.roi) ? isless(rl1.spec[:Name], rl2.spec[:Name]) :
+           (isequal(rl1.roi.start, rl2.roi.start) ? isless(rl1.roi.stop, rl2.roi.stop) :
+            isless(rl1.roi.start, rl2.roi.start))
+
+
 """
    channels(rl::ReferenceLabel)::UnitRange{Int}
 
@@ -67,10 +73,6 @@ NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 Base.show(io::IO, refLab::CharXRayLabel) = print(io::IO, "$(name(refLab.xrays))")
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) && isequal(rl1.xrays, rl2.xrays) && isequal(rl1.spec, rl2.spec)
-Base.isless(rl1::CharXRayLabel, rl2::CharXRayLabel) =
-    return isequal(rl1.roi, rl2.roi) ? isless(rl1.spec[:Name], rl2.spec[:Name]) :
-           (isequal(rl1.roi.start, rl2.roi.start) ? isless(rl1.roi.stop, rl2.roi.stop) :
-            isless(rl1.roi.start, rl2.roi.start))
 
 """
     EscapeLabel
@@ -91,10 +93,7 @@ end
 Base.show(io::IO, escl::EscapeLabel) = print(io, name(escl))
 Base.isequal(el1::EscapeLabel, el2::EscapeLabel) =
     isequal(el1.roi, el2.roi) && isequal(el1.xrays, el2.xrays) && isequal(el1.spec, el2.spec)
-Base.isless(rl1::EscapeLabel, rl2::EscapeLabel) =
-    return isequal(rl1.roi, rl2.roi) ? isless(rl1.spec[:Name], rl2.spec[:Name]) :
-           (isequal(rl1.roi.start, rl2.roi.start) ? isless(rl1.roi.stop, rl2.roi.stop) :
-            isless(rl1.roi.start, rl2.roi.start))
+
 
 NeXLCore.name(escl::EscapeLabel) = "Ecs[$(name([esc.xray for esc in escl.xrays]))]"
 NeXLCore.element(escl::EscapeLabel) = element(escl.xrays[1])

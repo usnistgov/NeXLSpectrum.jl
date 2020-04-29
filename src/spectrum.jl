@@ -35,7 +35,7 @@ Metadata is identified by a symbol. Predefined symbols include
     :Composition   # A Material (known composition, not measured)
     :Elements      # A collection of elements in the material
     :ReferenceROIS # A collection of reference ROIs (as Vector{ReferenceROI})
-    :Detector      # A Detector like a SimpleEDS
+    :Detector      # A Detector like a BasicEDS or another EDSDetector
     :Filename      # Source filename
     :Coating       # A Film (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (DateTime struct)
@@ -89,32 +89,12 @@ Base.setindex!(spec::Spectrum, val::Real, idx::Int) = spec.counts[idx] = convert
 Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = vals
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
+Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
 
 rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
-"""
-	minrequired(::Type{XXX})
-
-Returns the minimum required properties.  Other classes implement this to check whether a Spectrum has all the
-necessary properties for the specified algorithm or data structure.
-"""
-minproperties(::Type{Spectrum}) = (:Name)
-
-
-"""
-    hasminrequired(ty::Type, spec::Spectrum)
-
-Does this spectrum have the minimal set of required properties?
-"""
-hasminrequired(ty::Type, spec::Spectrum) = all(haskey(spec.properties, a) for a in minproperties(ty))
-
-"""
-    requiredbutmissing(ty::Type, spec::Spectrum)
-
-List any required but missing properties.
-"""
-requiredbutmissing(ty::Type, spec::Spectrum) = filter(a -> !haskey(spec.property, a), minproperties(ty))
-
+hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
+requiredbutmissing(ty::Type, spec::Spectrum) = requiredbutmissing(ty, spec.properties)
 
 maxproperty(specs, prop::Symbol) = maximum(spec -> spec[prop], specs)
 minproperty(specs, prop::Symbol) = minimum(spec -> spec[prop], specs)
@@ -160,13 +140,13 @@ NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum; properties::Bool = fals
     DataFrame(E = energyscale(spec), I = counts(spec))
 
 """
-    apply(spec::Spectrum, det::SimpleEDS)::Spectrum
+    apply(spec::Spectrum, det::EDSDetector)::Spectrum
 
 Applys the specified detector to this spectrum by ensuring that the energy scales match and spec[:Detector] = det.
 Creates a copy of the original spectrum unless the detector is already det.
 """
 
-function apply(spec::Spectrum, det::SimpleEDS)::Spectrum
+function apply(spec::Spectrum, det::EDSDetector)::Spectrum
     if (haskey(spec, :Detector)) && (spec[:Detector] == det)
         return spec
     else
@@ -177,19 +157,12 @@ function apply(spec::Spectrum, det::SimpleEDS)::Spectrum
 end
 
 """
-	matching(spec::Spectrum, res::Resolution, lld::Int=1)::EDSDetector
+	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::BasicEDS
 
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
-matching(spec::Spectrum, res::Resolution, lld::Int = 1)::EDSDetector = SimpleEDS(spec, res, lld)
-
-"""
-	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::SimpleEDS
-
-Build an EDSDetector to match the channel count and energy scale in this spectrum.
-"""
-matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::SimpleEDS =
-    SimpleEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
+matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::BasicEDS =
+    BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld)
 
 matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Shell,Element})::BasicEDS =
     BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
@@ -403,9 +376,9 @@ energyscale(spec::Spectrum) = energyscale(spec.energy, 1:length(spec))
 """
     simpleEDS(spec::Spectrum, fwhmatmnka::Float64)
 
-Build a SimpleEDS object for this spectrum with the specified FWHM at Mn Kα.
+Build a `EDSDetector` object for this spectrum with the specified FWHM at Mn Kα.
 """
-simpleEDS(spec::Spectrum, fwhmatmnka::Float64) = SimpleEDS(length(spec), spec.energy, MnKaResolution(fwhmatmnka))
+simpleEDS(spec::Spectrum, fwhmatmnka::Float64) = BasicEDS(length(spec), spec.energy, MnKaResolution(fwhmatmnka))
 
 
 """

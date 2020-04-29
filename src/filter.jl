@@ -2,27 +2,27 @@ using Polynomials
 using LinearAlgebra
 
 """
-    FittingFilterType
+    TopHatFilterType
 
 Represents different fitting filter models.  A fitting filter is a linear operator that is 1) symmetric about the
 center, and 2) the sum of the elements must be zero.  The standard filter is a top-hat shape, although Gaussian,
 triangular, Savitsky-Golay and other shapes are also possible.
 """
-abstract type FittingFilterType end
+abstract type TopHatFilterType end
 
 """
     VariableWidthFilter
 
 A top-hat filter that varies in width with the FWHM of the detector.
 """
-struct VariableWidthFilter <: FittingFilterType end # Variable width filter
+struct VariableWidthFilter <: TopHatFilterType end # Variable width filter
 
 """
     ConstantWidthFilter
 
 A top-hat filter that has constant width determined by FWHM at Mn Kα for all channels.
 """
-struct ConstantWidthFilter <: FittingFilterType end # Constant width filter
+struct ConstantWidthFilter <: TopHatFilterType end # Constant width filter
 
 """
     GaussianFilter
@@ -30,7 +30,7 @@ struct ConstantWidthFilter <: FittingFilterType end # Constant width filter
 A Gaussian-shaped filter that varies in width with the FWHM of the detector.  The Gaussian is offset to ensure the
 sum of the filter elements is zero.
 """
-struct GaussianFilter <: FittingFilterType end # A variable width Gaussian filter
+struct GaussianFilter <: TopHatFilterType end # A variable width Gaussian filter
 
 """
 The TopHatFilter struct represents a zero-sum symmetric second-derivative-like filter that when applied to
@@ -58,14 +58,14 @@ implemented as element-by-element multiplies and dot products.  Thus storing the
 efficient in both memory and CPU.
 """
 struct TopHatFilter
-    filttype::Type{<:FittingFilterType}
+    filttype::Type{<:TopHatFilterType}
     detector::Detector
     offsets::Vector{Int}  # offset to start of filter in row
     filters::Vector{Vector{Float64}} # Filter data
     weights::AbstractVector{Float64} # Correlation compensation weights
 
     function TopHatFilter(
-        ty::Type{<:FittingFilterType},
+        ty::Type{<:TopHatFilterType},
         det::Detector,
         filt::AbstractMatrix{Float64},
         wgts::AbstractVector{Float64},
@@ -106,13 +106,13 @@ buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 2.0)::TopHatFilter =
     buildfilter(VariableWidthFilter, det, a, b)
 
 """
-    buildfilter(::Type{<:FittingFilterType}, det::Detector, a::Float64=1.0, b::Float64=1.0)::TopHatFilter
+    buildfilter(::Type{<:TopHatFilterType}, det::Detector, a::Float64=1.0, b::Float64=1.0)::TopHatFilter
 
 Build a top-hat-style filter for the specified detector with the specified top and base parameters. The
 VariableWidthFilter and ConstantWidthFilter types are currently supported.
 """
 function buildfilter(
-    ty::Type{<:FittingFilterType},
+    ty::Type{<:TopHatFilterType},
     det::Detector,
     a::Float64 = 1.0, # Top
     b::Float64 = 2.0,  # Base
@@ -219,26 +219,26 @@ Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)
     _filter(
       spec::Spectrum,
       roi::UnitRange{Int},
-      filter::TopHatFilter,
+      thf::TopHatFilter,
       tol::Float64
     )::FilteredReference
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
-function _filter(spec::Spectrum, roi::UnitRange{Int}, filter::TopHatFilter, tol::Float64)
-    range(i) = filter.offsets[i]:filter.offsets[i]+length(filter.filters[i])-1
-    apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
+function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter, tol::Float64)
+    range(i) = thf.offsets[i]:thf.offsets[i]+length(thf.filters[i])-1
+    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
+        [dot(thf.filters[i], view(data, range(i))) for i in eachindex(data)]
     # Extract the spectrum data as Float64 to match the filter
     data = counts(spec, Float64, true)
-    fill!(view(data, 1:lld(filter.detector)), 0.0)
+    fill!(view(data, 1:lld(thf.detector)), 0.0)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
     data[1:roi.start-1] = map(tangents[1], 1-roi.start:-1)
     data[roi.stop+1:end] = map(tangents[2], 1:length(data)-roi.stop)
     # Compute the filtered data
-    filtered = apply(filter, data)
+    filtered = apply(thf, data)
     maxval = maximum(filtered)
     ff = findfirst(f -> abs(f) > tol * maxval, filtered)
     if isnothing(ff)
@@ -248,32 +248,16 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, filter::TopHatFilter, tol:
     return (roiff, data[roiff], filtered[roiff])
 end
 
-Base.convert(::AbstractVector{SpectrumFeature}, x::AbstractVector{CharXRay})::AbstractVector{SpectrumFeature} = x
-
-charFeature(elm::Element, tr::Tuple{Vararg{Transition}}; minweight = 1.0e-3, maxE = 1.0e6) =
-    convert(AbstractVector{SpectrumFeature}, characteristic(elm, tr, minweight, maxE))
-
-escapeFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight = 0.1, maxE = 1.0e6, escape = n"Si K-L3") =
-    convert(
-        AbstractVector{SpectrumFeature},
-        map(tr -> EscapeArtifact(tr, escape), characteristic(elm, trs, minweight, maxE)),
-    )
-
-comptonFeature(elm::Element, trs::Tuple{Vararg{Transition}}; minweight = 1.0e-3) = convert(
-    AbstractVector{SpectrumFeature},
-    map(tr -> ComptonArtifact(tr, escape), characteristic(elm, trs, minweight, maxE)),
-)
-
-function Base.filter(
+function tophatfilter(
     escLabel::EscapeLabel,
-    filter::TopHatFilter,
-    scale::Float64 = 1.0;
-    ampl::Float64 = 1.0e-4,
+    thf::TopHatFilter,
+    scale::Float64,
+    tol::Float64 = 1.0e-6,
 )::FilteredReference
-    spec, roi = esc.spec, esc.roi
+    spec, roi = escLabel.spec, escLabel.roi
     charonly = spec[roi] - modelBackground(spec, roi)
-    f = _filter(spec, roi, filter, tol)
-    return FilteredReference(escLabel, scale, roi, f..., charonly, filter.weights[(roi.start+roi.stop)÷2])
+    f = _filter(spec, roi, thf, tol)
+    return FilteredReference(escLabel, scale, roi, f..., charonly, thf.weights[(roi.start+roi.stop)÷2])
 end
 
 """
@@ -298,7 +282,7 @@ labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6
       allElms::AbstractVector{Element}, #
       det::Detector, #
       ampl::Float64, #
-      maxE::Float64=1.0e6)::Vector{CharXRayLabel}
+      maxE::Float64=1.0e6)::Vector{SpectrumFeature}
 
 Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
@@ -311,7 +295,7 @@ function charXRayLabels(#
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
-)::Vector{CharXRayLabel}
+)::Vector{ReferenceLabel}
     @assert elm in allElms "$elm must be in $allElms."
     intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
     # Find all the ROIs associated with other elements
@@ -319,13 +303,48 @@ function charXRayLabels(#
     # Find elm's ROIs that don't intersect another element's ROI
     lxs = filter(lx -> !intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
 #   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
-    return [CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
+    return ReferenceLabel[CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
+end
+
+escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) =
+    escapeextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl, maxE)
+
+
+"""
+    escapeLabels(#
+      spec::Spectrum, #
+      elm::Element, #
+      allElms::AbstractVector{Element}, #
+      det::Detector, #
+      ampl::Float64, #
+      maxE::Float64=1.0e6)::Vector{CharXRayLabel}
+
+Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
+'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
+interfere with 'elm' will not be included.
+"""
+function escapeLabels(#
+    spec::Spectrum, #
+    elm::Element, #
+    allElms::AbstractVector{Element}, #
+    det::Detector, #
+    maxE::Float64 = 1.0e6;
+    ampl::Float64 = 1.0e-5, #
+)::Vector{ReferenceLabel}
+    @assert elm in allElms "$elm must be in $allElms."
+    intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
+    # Find all the ROIs associated with the elements
+    urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in allElms))
+    # Find elm's ROIs that don't intersect an element's primary ROI
+    lxs = filter(lx -> !intersects(urs, lx[2]), escapeextents(elm, det, ampl, maxE))
+#   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
+    return ReferenceLabel[EscapeLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
 """
-    Base.filter(
+    tophatfilter(
         charLabel::CharXRayLabel,
-        filter::TopHatFilter,
+        thf::TopHatFilter,
         scale::Float64 = 1.0,
         tol::Float64 = 1.0e-6,
     )::FilteredReference
@@ -333,9 +352,9 @@ end
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.  Use a simple
 edge-based background model.
 """
-function Base.filter(
+function tophatfilter(
     charLabel::CharXRayLabel,
-    filter::TopHatFilter,
+    filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
@@ -345,19 +364,19 @@ function Base.filter(
         charLabel,
         scale,
         roi,
-        _filter(spec, roi, filter, tol)...,
+        _filter(spec, roi, filt, tol)...,
         spec[roi] - modelBackground(spec, roi, ashell),
-        filter.weights[(roi.start+roi.stop)÷2],
+        filt.weights[(roi.start+roi.stop)÷2],
     )
 end
 
-Base.filter(
-    labels::AbstractVector{<:ReferenceLabel},
+tophatfilter(
+    labels::AbstractVector{ReferenceLabel},
     filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::Vector{FilteredReference} = map(
-    lbl -> filter(lbl, filt, scale, tol), #
+    lbl -> tophatfilter(lbl, filt, scale, tol), #
     filter(
         lbl -> (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) && (weight(brightest(lbl.xrays)) > 1.0e-3),
         labels,
@@ -365,10 +384,10 @@ Base.filter(
 )
 
 """
-    filter(
-      spec::Spectrum,
+    tophatfilter(
+      reflabel::ReferenceLabel,
       roi::UnitRange{Int},
-      filter::TopHatFilter,
+      thf::TopHatFilter,
       scale = 1.0,
       tol = 1.0e-6
     )::FilteredReference
@@ -376,9 +395,9 @@ Base.filter(
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter. Use a naive
 linear background model.
 """
-function Base.filter(
+function tophatfilter(
     reflabel::ReferenceLabel,
-    filter::TopHatFilter,
+    thf::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
@@ -387,9 +406,9 @@ function Base.filter(
         reflabel,
         scale,
         roi,
-        _filter(spec, roi, filter, tol)...,
+        _filter(spec, roi, thf, tol)...,
         spec[roi] - modelBackground(spec, roi),
-        filter.weights[(roi.start+roi.stop)÷2],
+        thf.weights[(roi.start+roi.stop)÷2],
     )
 end
 
@@ -487,4 +506,37 @@ function selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{F
         append!(best, map(v -> v[1], values(rois)))
     end
     return best
+end
+
+function filterreference(
+    filt::TopHatFilter,
+    spec::Spectrum,
+    elm::Element,
+    elms::AbstractArray{Element};
+    props::Dict{Symbol,Any}=Dict{Symbol,Any}(),
+    withEsc::Bool = false
+)::Vector{FilteredReference}
+    @assert elm in elms
+    cprops=merge(spec.properties, props)
+    # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
+    lbls = charXRayLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy])
+    if withEsc
+        append!(lbls,escapeLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy]))
+    end
+    # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
+    return tophatfilter(lbls, filt, 1.0 / (cprops[:ProbeCurrent]*cprops[:LiveTime]))
+end
+
+function filterreference(
+    filt::TopHatFilter,
+    spec::Spectrum,
+    elm::Element,
+    comp::Material;
+    props::Dict{Symbol,Any}=Dict{Symbol,Any}(),
+    withEsc::Bool = false
+)::Vector{FilteredReference}
+    if !haskey(spec,:Composition)
+        spec[:Composition] = comp
+    end
+    filterreference(filt, spec, elm, collect(keys(comp)), props=props, withEsc=withEsc)
 end

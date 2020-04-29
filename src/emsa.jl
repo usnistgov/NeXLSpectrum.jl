@@ -35,18 +35,18 @@ function split_emsa_header_item(line::AbstractString)
     end
 end
 
-function parsecoating(value::AbstractString)::Union{Film,Missing}
+function parsecoating(value::AbstractString)::Film
     i=findfirst(" nm of ",value)
 	if !isnothing(i)
 		try
 			thk = parse(Float64, value[1:i.start-1])*1.0e-7 # cm
 			mat = parsedtsa2comp(value[i.stop+1:end])
-			return Film(mat,thk)
+			return Film(mat, thk)
 		catch err
-			@warn "Error parsing $(value) as a coating $(value)"
+			@warn "Error parsing $(value) as a coating."
 		end
 	end
-    return missing
+    return Film()
 end
 
 """

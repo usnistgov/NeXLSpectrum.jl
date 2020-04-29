@@ -277,7 +277,7 @@ end
 
 Plot the fit spectrum and the fit residuals along with the fit ROIs and the associated k-ratios.
 """
-function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle,)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp = minimum( lbl.roi.start for lbl in keys(ffrr.kratios)):maximum( lbl.roi.stop for lbl in keys(ffrr.kratios))
         return max(1,tmp.start-length(ffrr.roi)÷40):min(tmp.stop+length(ffrr.roi)÷10,ffrr.roi.stop)
@@ -320,13 +320,15 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
             )
         end
     end
-    plot(
-        layers...,
-        Coord.cartesian(xmin = roi.start, xmax = roi.stop, ymin = min(1.1 * miny, 0.0), ymax = maxy),
-        Guide.XLabel("Channels"),
-        Guide.YLabel("Counts"),
-        Guide.title("$(ffr.label)"),
-    )
+    Gadfly.with_theme(style) do
+        plot(
+            layers...,
+            Coord.cartesian(xmin = roi.start, xmax = roi.stop, ymin = min(1.1 * miny, 0.0), ymax = maxy),
+            Guide.XLabel("Channels"),
+            Guide.YLabel("Counts"),
+            Guide.title("$(ffr.label)"),
+        )
+    end
 end
 
 @info "Loading Gadfly support into NeXLSpectrum."

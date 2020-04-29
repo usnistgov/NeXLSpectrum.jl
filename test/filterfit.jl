@@ -38,18 +38,18 @@ using Printf
         det = simpleEDS(4096, 10.0, 0.0, 132.0)
         ff = buildfilter(det)
 
-        ok = filter(CharXRayLabel(sio2, 34:66, characteristic(n"O", ktransitions)), ff, 1.0 / dose(sio2))
-        mgk = filter(CharXRayLabel(mgo, 110:142, characteristic(n"Mg", ktransitions)), ff, 1.0 / dose(mgo))
-        alk = filter(CharXRayLabel(al2o3, 135:170, characteristic(n"Al", ktransitions)), ff, 1.0 / dose(al2o3))
-        sik = filter(CharXRayLabel(sio2, 159:196, characteristic(n"Si", ktransitions)), ff, 1.0 / dose(sio2))
-        cak = filter(CharXRayLabel(caf2, 345:422, characteristic(n"Ca", ktransitions)), ff, 1.0 / dose(caf2))
-        fel = filter(CharXRayLabel(fe, 51:87, characteristic(n"Fe", ltransitions)), ff, 1.0 / dose(fe))
-        feka = filter(CharXRayLabel(fe, 615:666, characteristic(n"Fe", kalpha)), ff, 1.0 / dose(fe))
-        fekb = filter(CharXRayLabel(fe, 677:735, characteristic(n"Fe", kbeta)), ff, 1.0 / dose(fe))
+        ok = tophatfilter(CharXRayLabel(sio2, 34:66, characteristic(n"O", ktransitions)), ff, 1.0 / dose(sio2))
+        mgk = tophatfilter(CharXRayLabel(mgo, 110:142, characteristic(n"Mg", ktransitions)), ff, 1.0 / dose(mgo))
+        alk = tophatfilter(CharXRayLabel(al2o3, 135:170, characteristic(n"Al", ktransitions)), ff, 1.0 / dose(al2o3))
+        sik = tophatfilter(CharXRayLabel(sio2, 159:196, characteristic(n"Si", ktransitions)), ff, 1.0 / dose(sio2))
+        cak = tophatfilter(CharXRayLabel(caf2, 345:422, characteristic(n"Ca", ktransitions)), ff, 1.0 / dose(caf2))
+        fel = tophatfilter(CharXRayLabel(fe, 51:87, characteristic(n"Fe", ltransitions)), ff, 1.0 / dose(fe))
+        feka = tophatfilter(CharXRayLabel(fe, 615:666, characteristic(n"Fe", kalpha)), ff, 1.0 / dose(fe))
+        fekb = tophatfilter(CharXRayLabel(fe, 677:735, characteristic(n"Fe", kbeta)), ff, 1.0 / dose(fe))
 
         fds = [ok, mgk, alk, sik, cak, fel, feka, fekb]
 
-        unk = filter(unks[1], ff, 1.0 / dose(unks[1]))
+        unk = tophatfilter(unks[1], ff, 1.0 / dose(unks[1]))
 
         #println("Performing the weighted fit takes:")
         ff = filterfit(unk, fds)
@@ -103,16 +103,16 @@ using Printf
         feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl=ampl)
         @test length(feroi) == 3
 
-        ok = filter(oroi, ff, 1.0 / dose(sio2))
-        mgk = filter(mgroi, ff, 1.0 / dose(mgo))
-        alk = filter(alroi, ff, 1.0 / dose(al2o3))
-        sik = filter(siroi, ff, 1.0 / dose(sio2))
-        cak = filter(caroi, ff, 1.0 / dose(caf2))
-        fekl = filter(feroi, ff, 1.0 / dose(fe))
+        ok = tophatfilter(oroi, ff, 1.0 / dose(sio2))
+        mgk = tophatfilter(mgroi, ff, 1.0 / dose(mgo))
+        alk = tophatfilter(alroi, ff, 1.0 / dose(al2o3))
+        sik = tophatfilter(siroi, ff, 1.0 / dose(sio2))
+        cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
+        fekl = tophatfilter(feroi, ff, 1.0 / dose(fe))
 
         fds = collect(Iterators.flatten((ok, mgk, alk, sik, cak, fekl)))
 
-        unk = filter(unks[1], ff, 1.0 / dose(unks[1]))
+        unk = tophatfilter(unks[1], ff, 1.0 / dose(unks[1]))
 
         ff = filterfit(unk, fds)
         #println("Performing the full generalized fit takes:")
@@ -166,20 +166,20 @@ using Printf
         tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl=ampl)
         znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl=ampl)
 
-        alk = filter(alroi, ff, 1.0 / dose(al))
-        cak = filter(caroi, ff, 1.0 / dose(caf2))
-        felk = filter(feroi, ff, 1.0 / dose(fe))
-        gelk = filter(geroi, ff, 1.0 / dose(ge))
-        ok = filter(oroi, ff, 1.0 / dose(sio2))
-        sik = filter(siroi, ff, 1.0 / dose(si))
-        tilk = filter(tiroi, ff, 1.0 / dose(ti))
-        znlk = filter(znroi, ff, 1.0 / dose(zn))
+        alk = tophatfilter(alroi, ff, 1.0 / dose(al))
+        cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
+        felk = tophatfilter(feroi, ff, 1.0 / dose(fe))
+        gelk = tophatfilter(geroi, ff, 1.0 / dose(ge))
+        ok = tophatfilter(oroi, ff, 1.0 / dose(sio2))
+        sik = tophatfilter(siroi, ff, 1.0 / dose(si))
+        tilk = tophatfilter(tiroi, ff, 1.0 / dose(ti))
+        znlk = tophatfilter(znroi, ff, 1.0 / dose(zn))
 
         fds = collect(Iterators.flatten( ( alk, cak, felk, gelk, ok, sik, tilk, znlk ) ))
 
         res = FilterFitResult[]
         for i = 1:15
-            unk = filter(unks[i], ff, 1.0 / dose(unks[i]))
+            unk = tophatfilter(unks[i], ff, 1.0 / dose(unks[i]))
             push!(res, filterfit(unk, fds))
         end
 

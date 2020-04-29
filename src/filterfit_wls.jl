@@ -60,32 +60,32 @@ function ascontiguous(rois::AbstractArray{UnitRange{Int}})
 end
 
 """
-    filter(spec::Spectrum, filter::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknown
+    tophatfilter(spec::Spectrum, thf::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknown
 
 For filtering the unknown spectrum. Defaults to the weighted fitting model.
 """
-Base.filter(spec::Spectrum, filt::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknown =
-    filter(FilteredUnknownW, spec, filt, scale)
+tophatfilter(spec::Spectrum, filt::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknown =
+    tophatfilter(FilteredUnknownW, spec, filt, scale)
 
 """
-    filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknownW
+    tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknownW
 
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter for use with the weighted
 least squares model.
 """
-function Base.filter(::Type{FilteredUnknownW}, spec::Spectrum, filter::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
-    range(i) = filter.offsets[i]:filter.offsets[i]+length(filter.filters[i])-1
-    apply(filter::TopHatFilter, data::AbstractVector{Float64}) =
-        [dot(filter.filters[i], view(data, range(i))) for i in eachindex(data)]
-    covariance(filter, data) = # The diagnonal elements of the full covariance matrix
-        [dot(filter.filters[r] .* view(data, range(r)), filter.filters[r]) for r in eachindex(data)]
+function tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
+    range(i) = thf.offsets[i]:thf.offsets[i]+length(thf.filters[i])-1
+    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
+        [dot(thf.filters[i], view(data, range(i))) for i in eachindex(data)]
+    covariance(thf, data) = # The diagnonal elements of the full covariance matrix
+        [dot(thf.filters[r] .* view(data, range(r)), thf.filters[r]) for r in eachindex(data)]
     data = counts(spec, Float64, true)
     # Compute the filtered data
-    fill!(view(data, 1:lld(filter.detector)),0.0)
-    filtered = apply(filter, data)
+    fill!(view(data, 1:lld(thf.detector)),0.0)
+    filtered = apply(thf, data)
     roi = eachindex(filtered)
     # max(d,1.0) is necessary to ensure the variances are positive
-    covar = covariance(filter, map(d -> max(d, 1.0), data))
+    covar = covariance(thf, map(d -> max(d, 1.0), data))
     return FilteredUnknownW(UnknownLabel(spec), scale, roi, roi, data, filtered, covar)
 end
 
@@ -127,12 +127,12 @@ end
 
 function fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
+    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
 end
 
 function fit(ty::Type{FilteredUnknownW}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
     bestRefs = selectBestReferences(refs)
-    return map(unk->filterfit(filter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
+    return map(unk->filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
 end
 
 fit(unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true) =

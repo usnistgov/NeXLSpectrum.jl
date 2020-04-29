@@ -76,11 +76,13 @@ end
 
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
-    ffrs::AbstractVector{FilterFitResult},
+    ffrs::AbstractVector{FilterFitResult};
+    charOnly = true,
     withUnc = false,
     pivot = false,
 )::DataFrame
     lbls = sort(collect(Set(Iterators.flatten(labels(r) for r in ffrs))))
+    lbls = charOnly ? filter(lbl->lbl isa CharXRayLabel, lbls) : lbls
     if pivot
         res = DataFrame(ROI = lbls)
         for ffr in ffrs
@@ -111,21 +113,23 @@ end
 
 Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
 """
-function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
+function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true)::DataFrame
     lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
         UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
     for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
-        push!(lbl, ffr.label)
-        push!(std, spectrum(kl)[:Name])
-        push!(klbl, kl)
-        push!(roi1, kl.roi.start)
-        push!(roi2, kl.roi.stop)
-        push!(kr, value(kl, ffr.kratios))
-        push!(dkr, σ(kl, ffr.kratios))
-        pb = ffr.peakback[kl]
-        push!(peak, pb[1])
-        push!(back, pb[2])
-        push!(ptob, peaktobackground(ffr, kl))
+        if (!charOnly) || kl isa CharXRayLabel
+            push!(lbl, ffr.label)
+            push!(std, spectrum(kl)[:Name])
+            push!(klbl, kl)
+            push!(roi1, kl.roi.start)
+            push!(roi2, kl.roi.stop)
+            push!(kr, value(kl, ffr.kratios))
+            push!(dkr, σ(kl, ffr.kratios))
+            pb = ffr.peakback[kl]
+            push!(peak, pb[1])
+            push!(back, pb[2])
+            push!(ptob, peaktobackground(ffr, kl))
+        end
     end
     return DataFrame(
         Spectrum = lbl,
