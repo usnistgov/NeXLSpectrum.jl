@@ -61,8 +61,8 @@ display(plot(al2o3, caf2, fe, mgo, sio2, klms=collect( ref[2] for ref in refs), 
 # Build a top-hat filter
 filt = buildfilter(NeXLSpectrum.GaussianFilter,det)
 # Filter all the reference spectra
-frs = collect(Iterators.flatten( filterreference(filt, ref..., withEsc=true) for ref in refs ))
-# Now frs contains the filtered references necessary to fit the unknowns
+frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.
 ```
 
 #### Fit the Pre-Filtered References to the Unknowns

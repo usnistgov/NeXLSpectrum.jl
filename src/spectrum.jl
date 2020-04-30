@@ -37,7 +37,7 @@ Metadata is identified by a symbol. Predefined symbols include
     :ReferenceROIS # A collection of reference ROIs (as Vector{ReferenceROI})
     :Detector      # A Detector like a BasicEDS or another EDSDetector
     :Filename      # Source filename
-    :Coating       # A Film (eg. 10 nm of C|Au etc.)
+    :Coating       # A Film or Film[] (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (DateTime struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
 

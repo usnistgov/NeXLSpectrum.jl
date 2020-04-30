@@ -513,11 +513,14 @@ function filterreference(
     spec::Spectrum,
     elm::Element,
     elms::AbstractArray{Element};
-    props::Dict{Symbol,Any}=Dict{Symbol,Any}(),
+    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
     withEsc::Bool = false
 )::Vector{FilteredReference}
     @assert elm in elms
     cprops=merge(spec.properties, props)
+    if !haskey(cprops, :Detector)
+        cprops[:Detector]=filt.detector
+    end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
     lbls = charXRayLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy])
     if withEsc
@@ -532,7 +535,7 @@ function filterreference(
     spec::Spectrum,
     elm::Element,
     comp::Material;
-    props::Dict{Symbol,Any}=Dict{Symbol,Any}(),
+    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
     withEsc::Bool = false
 )::Vector{FilteredReference}
     if !haskey(spec,:Composition)
