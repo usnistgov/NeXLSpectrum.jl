@@ -236,7 +236,7 @@ function Gadfly.plot(
             layer(x = energyscale(spec)[chs], y = ytransform.(specdata[i][chs]), Geom.step, Theme(default_color = clr)),
         )
     end
-    append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), append!, specs) : [])
+    append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), union!, specs) : [])
     if length(klms) > 0
         tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE0)
         tr(cxr::CharXRay) = [cxr]
@@ -277,7 +277,7 @@ end
 
 Plot the fit spectrum and the fit residuals along with the fit ROIs and the associated k-ratios.
 """
-function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle,)
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp = minimum( lbl.roi.start for lbl in keys(ffrr.kratios)):maximum( lbl.roi.stop for lbl in keys(ffrr.kratios))
         return max(1,tmp.start-length(ffrr.roi)÷40):min(tmp.stop+length(ffrr.roi)÷10,ffrr.roi.stop)
@@ -323,7 +323,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     Gadfly.with_theme(style) do
         plot(
             layers...,
-            Coord.cartesian(xmin = roi.start, xmax = roi.stop, ymin = min(1.1 * miny, 0.0), ymax = maxy),
+            Coord.cartesian(xmin = roi.start, xmax = ismissing(xmax) ? roi.stop : xmax, ymin = min(1.1 * miny, 0.0), ymax = maxy),
             Guide.XLabel("Channels"),
             Guide.YLabel("Counts"),
             Guide.title("$(ffr.label)"),

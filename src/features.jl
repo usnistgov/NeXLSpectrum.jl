@@ -11,11 +11,11 @@ struct EscapeArtifact
     end
 end
 
-exists(::Type{EscapeArtifact}, cxr::CharXRay, esc::CharXRay=n"Si K-L3") =
+NeXLCore.exists(::Type{EscapeArtifact}, cxr::CharXRay, esc::CharXRay=n"Si K-L3") =
     energy(cxr) - energy(esc) > 100.0
 
 NeXLCore.element(esc::EscapeArtifact) = element(esc.xray)
-NeXLCore.brightest(escs::AbstractVector{EscapeArtifact}) = brightest(map(ea->ea.xray, escs)) 
+NeXLCore.brightest(escs::AbstractVector{EscapeArtifact}) = brightest(map(ea->ea.xray, escs))
 
 Base.show(io::IO, esc::EscapeArtifact) = print(io, name(esc))
 Base.show(io::IO, escs::AbstractVector{EscapeArtifact}) = print(io, name(escs))

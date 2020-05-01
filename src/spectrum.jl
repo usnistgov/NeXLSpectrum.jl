@@ -93,8 +93,8 @@ Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, p
 
 rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
-hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
-requiredbutmissing(ty::Type, spec::Spectrum) = requiredbutmissing(ty, spec.properties)
+NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
+NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum) = requiredbutmissing(ty, spec.properties)
 
 maxproperty(specs, prop::Symbol) = maximum(spec -> spec[prop], specs)
 minproperty(specs, prop::Symbol) = minimum(spec -> spec[prop], specs)
@@ -185,14 +185,14 @@ elements are also added.
 function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
     res = Set{Element}()
     if haskey(spec, :Elements)
-        append!(spec[:Elements])
+        append!(res, spec[:Elements])
     elseif haskey(spec, :Composition)
-        append!(keys(spec[:Composition]))
+        union!(res, keys(spec[:Composition]))
     elseif haskey(spec, :Signature)
-        append!(keys(spec[:Signature]))
+        union!(res, keys(spec[:Signature]))
     end
     if withcoating && haskey(spec, :Coating)
-        append!(res, keys(material(spec[:Coating])))
+        union!(res, keys(material(spec[:Coating])))
     end
     return length(res) == 0 ? def : res
 end
