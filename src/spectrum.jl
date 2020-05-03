@@ -321,18 +321,33 @@ integrate(spec::Spectrum, energyRange::StepRangeLen{Float64}) =
 Perform a background corrected peak integration using channel ranges. Fits a line to each background region and
 extrapolates the background from the closest background channel through the peak region.
 """
-function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::Float64
-    p1 = Polynomials.fit(Polynomial, back1, spec.counts[back1], 1)
-    p2 = Polynomials.fit(Polynomial, back2, spec.counts[back2], 1)
-    c1, c2 = back1.stop, back2.start
-    i1, i2 = p1(c1), p2(c2)
-    m = (i2 - i1) / (c2 - c1)
-    back = Polynomial([i1 - m * c1, m])
-    sum(spec.counts[peak] - map(back, peak))
+function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+    bL, bH = mean(spec.counts[back1]), mean(spec.counts[back2])
+    cL, cH, cP = mean(back1), mean(back2), mean(peak)
+    iP, w, t = sum(spec.counts[peak]), length(peak), ((cP-cL)/(cH-cL))
+    return uv(iP - w*(bL*(1.0-t)+bH*t), sqrt(iP + (sqrt(bL)*w*(1.0-t))^2 + (sqrt(bH)*w*t)^2))
 end
 
 """
-    integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::Float64
+    kratio(unk::Spectrum, std::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+    kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
+
+The k-ratio of unk relative to std corrected for dose.  Requires that `unk` and `std` have the properties
+`:LiveTime` and `:ProbeCurrent` defined.
+"""
+function kratio(unk::Spectrum, std::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})
+    iunk, istd = integrate(unk, back1, peak, back2)/dose(unk), integrate(std, back1, peak, back2)/dose(std)
+    f=value(iunk)/value(istd)
+    return uv(f, abs(f)*sqrt((σ(iunk)/value(iunk))^2+(σ(istd)/value(istd))^2))
+end
+kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64}) =
+    kratio(unk, std, #
+        channel(back1[1], unk):channel(back1[end], unk), #
+        channel(peak[1], unk):channel(peak[end], unk), #
+        channel(back2[1], unk):channel(back2[end], unk))
+
+"""
+    integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
 Perform a background corrected peak integration using energy (eV) ranges. Converts the energy ranges to channels
 ranges before performing the integral.
 """
@@ -341,10 +356,10 @@ function integrate(
     back1::StepRangeLen{Float64},
     peak::StepRangeLen{Float64},
     back2::StepRangeLen{Float64},
-)::Float64
-    b1i = channel(back1[back1.offset], spec):channel(back1[end], spec)
-    b2i = channel(back2[back2.offset], spec):channel(back2[end], spec)
-    pi = channel(peak[peak.offset], spec):channel(peak[end], spec)
+)::UncertainValue
+    b1i = channel(back1[1], spec):channel(back1[end], spec)
+    b2i = channel(back2[1], spec):channel(back2[end], spec)
+    pi = channel(peak[1], spec):channel(peak[end], spec)
     integrate(spec, b1i, pi, b2i)
 end
 

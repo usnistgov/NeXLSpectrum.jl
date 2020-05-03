@@ -88,7 +88,7 @@ end
 
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """
-function wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, wgts::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, wgts::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     function rescaleCovariances(uvs::UncertainValues, wgts::AbstractVector{N})::UncertainValues
         cov = copy(uvs.covariance)
         rwgts = map(sqrt,wgts)

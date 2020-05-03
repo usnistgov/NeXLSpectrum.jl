@@ -92,6 +92,13 @@ function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
     return res
 end
 
+function filterdata(filt::TopHatFilter, region::UnitRange{Int})::Matrix{Float64}
+    res = zeros(Float64, length(region), length(region))
+    foreach(r -> res[r-region.start+1,:] = filterdata(filt, r)[region], region)
+    return res
+end
+
+
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
 Base.length(filt::TopHatFilter) = length(filt.filters)
 

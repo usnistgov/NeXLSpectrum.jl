@@ -69,14 +69,14 @@ using Printf
         @test isapprox(value(fel.identifier, ff), 0.0418, atol = 0.0002)
         @test isapprox(value(feka.identifier, ff), 0.0669, atol = 0.0001)
 
-        @test isapprox(uncertainty(ok.identifier, ff), 0.00061, atol = 0.0001)
-        @test isapprox(uncertainty(mgk.identifier, ff), 0.00013, atol = 0.00005)
-        @test isapprox(uncertainty(alk.identifier, ff), 0.00012, atol = 0.00005)
-        @test isapprox(uncertainty(sik.identifier, ff), 0.00024, atol = 0.00005)
-        @test isapprox(uncertainty(cak.identifier, ff), 0.00022, atol = 0.00005)
-        @test isapprox(uncertainty(fel.identifier, ff), 0.00031, atol = 0.00006)
-        @test isapprox(uncertainty(feka.identifier, ff), 0.00019, atol = 0.00005)
-        @test isapprox(uncertainty(fekb.identifier, ff), 0.00078, atol = 0.0002)
+        @test isapprox(σ(ok.identifier, ff), 0.00061, atol = 0.0001)
+        @test isapprox(σ(mgk.identifier, ff), 0.00013, atol = 0.00005)
+        @test isapprox(σ(alk.identifier, ff), 0.00012, atol = 0.00005)
+        @test isapprox(σ(sik.identifier, ff), 0.00024, atol = 0.00005)
+        @test isapprox(σ(cak.identifier, ff), 0.00022, atol = 0.00005)
+        @test isapprox(σ(fel.identifier, ff), 0.00031, atol = 0.00006)
+        @test isapprox(σ(feka.identifier, ff), 0.00019, atol = 0.00005)
+        @test isapprox(σ(fekb.identifier, ff), 0.00078, atol = 0.0002)
     end;
 
     @testset "LLSQ_K412_2" begin
@@ -129,14 +129,19 @@ using Printf
         @test isapprox(value(feroi[2], ff), 0.06693, atol = 0.0001)
         @test isapprox(value(feroi[3], ff), 0.06652, atol = 0.0007)
 
-        @test isapprox(uncertainty(oroi[1], ff), 0.00061, atol = 0.0001)
-        @test isapprox(uncertainty(mgroi[1], ff), 0.00013, atol = 0.00004)
-        @test isapprox(uncertainty(alroi[1], ff), 0.00012, atol = 0.00003)
-        @test isapprox(uncertainty(siroi[1], ff), 0.00024, atol = 0.00003)
-        @test isapprox(uncertainty(caroi[1], ff), 0.00022, atol = 0.00001)
-        @test isapprox(uncertainty(feroi[1], ff), 0.00031, atol = 0.0001)
-        @test isapprox(uncertainty(feroi[2], ff), 0.00019, atol = 0.00005)
-        @test isapprox(uncertainty(feroi[3], ff), 0.00078, atol = 0.0002)
+        @test isapprox(σ(oroi[1], ff), 0.00061, atol = 0.0001)
+        @test isapprox(σ(mgroi[1], ff), 0.00013, atol = 0.00004)
+        @test isapprox(σ(alroi[1], ff), 0.00012, atol = 0.00003)
+        @test isapprox(σ(siroi[1], ff), 0.00024, atol = 0.00003)
+        @test isapprox(σ(caroi[1], ff), 0.00022, atol = 0.00001)
+        @test isapprox(σ(feroi[1], ff), 0.00031, atol = 0.0001)
+        @test isapprox(σ(feroi[2], ff), 0.00019, atol = 0.00005)
+        @test isapprox(σ(feroi[3], ff), 0.00078, atol = 0.0002)
+
+        # Compare to naive peak integration
+        fekkr = kratio(unks[1], std, 5870.:6040., 6200.:7232, 6660.:6810.)
+        @test isapprox(value(feroi[2], ff), value(fekkr), atol = 0.0008)
+        @test_broken isapprox(σ(feroi[2], ff), σ(fekkr), atol = 0.0001)
     end
 
     @testset "ADM6005a" begin

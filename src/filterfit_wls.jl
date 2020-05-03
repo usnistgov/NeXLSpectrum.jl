@@ -108,6 +108,7 @@ function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}
     while refit
         refit = false
         fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
+        # `alg(..) performs the fit
         retained = map(fr -> alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
         kr = cat(retained)
         if forcezeros

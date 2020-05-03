@@ -331,4 +331,20 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     end
 end
 
+function Gadfly.plot(fr::FilteredReference)
+    roicolors = [ RGB(0.9, 1.0, 0.9), RGB(0.95, 0.95, 1.0)]
+    layers=[
+        layer(x=fr.ffroi, y=fr.data, Theme(default_color=NeXLPalette[1]), Geom.step),
+        layer(x=fr.ffroi, y=fr.filtered, Theme(default_color=NeXLPalette[2]), Geom.step),
+        layer(x=fr.roi, y=fr.charonly, Theme(default_color=NeXLPalette[3]), Geom.step),
+        layer(xmin=[fr.ffroi.start, fr.roi.start], xmax=[fr.ffroi.stop, fr.roi.stop], Geom.vband, color = roicolors ),
+    ]
+    plot(layers..., Coord.cartesian(xmin=fr.ffroi.start-length(fr.ffroi)÷10, xmax=fr.ffroi.stop+length(fr.ffroi)÷10),
+        Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
+        Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ NeXLPalette[1:3]..., roicolors...] ))
+end
+
+Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =
+    spy(filterdata(ff, fr.ffroi), Guide.title(repr(fr.identifier)), Guide.xlabel("Channels"), Guide.ylabel("Channels"))
+
 @info "Loading Gadfly support into NeXLSpectrum."
