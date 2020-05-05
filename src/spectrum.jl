@@ -335,12 +335,13 @@ end
 The k-ratio of unk relative to std corrected for dose.  Requires that `unk` and `std` have the properties
 `:LiveTime` and `:ProbeCurrent` defined.
 """
-function kratio(unk::Spectrum, std::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})
+function kratio(unk::Spectrum, std::Spectrum, back1::UnitRange, peak::UnitRange, back2::UnitRange)
     iunk, istd = integrate(unk, back1, peak, back2)/dose(unk), integrate(std, back1, peak, back2)/dose(std)
     f=value(iunk)/value(istd)
     return uv(f, abs(f)*sqrt((σ(iunk)/value(iunk))^2+(σ(istd)/value(istd))^2))
 end
-kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64}) =
+
+kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen, peak::StepRangeLen, back2::StepRangeLen) =
     kratio(unk, std, #
         channel(back1[1], unk):channel(back1[end], unk), #
         channel(peak[1], unk):channel(peak[end], unk), #

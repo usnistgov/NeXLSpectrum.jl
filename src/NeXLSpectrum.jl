@@ -39,6 +39,7 @@ export channelwidth # width of channel ch
 export dose # Spectrum probe dose
 export counts # Spectrum channel data
 export integrate # Integrate range of channels
+export kratio # Naive peak integration estimate of the k-ratio
 export energyscale # Energy scale function
 export subsample # Sub-sample a spectrum
 export subdivide # Divide the counts among n spectra

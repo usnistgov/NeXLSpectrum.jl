@@ -69,25 +69,25 @@ using Printf
         @test isapprox(value(fel.identifier, ff), 0.0418, atol = 0.0002)
         @test isapprox(value(feka.identifier, ff), 0.0669, atol = 0.0001)
 
-        @test isapprox(σ(ok.identifier, ff), 0.00061, atol = 0.0001)
-        @test isapprox(σ(mgk.identifier, ff), 0.00013, atol = 0.00005)
+        @test isapprox(σ(ok.identifier, ff), 0.00081, atol = 0.0001)
+        @test isapprox(σ(mgk.identifier, ff), 0.00018, atol = 0.00005)
         @test isapprox(σ(alk.identifier, ff), 0.00012, atol = 0.00005)
         @test isapprox(σ(sik.identifier, ff), 0.00024, atol = 0.00005)
         @test isapprox(σ(cak.identifier, ff), 0.00022, atol = 0.00005)
-        @test isapprox(σ(fel.identifier, ff), 0.00031, atol = 0.00006)
+        @test isapprox(σ(fel.identifier, ff), 0.00043, atol = 0.00006)
         @test isapprox(σ(feka.identifier, ff), 0.00019, atol = 0.00005)
         @test isapprox(σ(fekb.identifier, ff), 0.00078, atol = 0.0002)
     end;
 
     @testset "LLSQ_K412_2" begin
         dir = @__DIR__
-        path = "$(dir)/K412 spectra/"
-        unks = readEMSA.(@sprintf("%sIII-E K412[%d][4].msa", path, i) for i = 0:4)
-        al2o3 = readEMSA(path * "Al2O3 std.msa")
-        caf2 = readEMSA(path * "CaF2 std.msa")
-        fe = readEMSA(path * "Fe std.msa")
-        mgo = readEMSA(path * "MgO std.msa")
-        sio2 = readEMSA(path * "SiO2 std.msa")
+        path = joinpath(@__DIR__,"K412 spectra")
+        unks = readEMSA.(joinpath(path, "III-E K412[$i][4].msa") for i = 0:4)
+        al2o3 = readEMSA(joinpath(path, "Al2O3 std.msa"))
+        caf2 = readEMSA(joinpath(path, "CaF2 std.msa"))
+        fe = readEMSA(joinpath(path, "Fe std.msa"))
+        mgo = readEMSA(joinpath(path, "MgO std.msa"))
+        sio2 = readEMSA(joinpath(path, "SiO2 std.msa"))
 
         det = BasicEDS(4096, 0.0, 10.0, 132.0, 10, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
         ff = buildfilter(det)
@@ -129,19 +129,23 @@ using Printf
         @test isapprox(value(feroi[2], ff), 0.06693, atol = 0.0001)
         @test isapprox(value(feroi[3], ff), 0.06652, atol = 0.0007)
 
-        @test isapprox(σ(oroi[1], ff), 0.00061, atol = 0.0001)
-        @test isapprox(σ(mgroi[1], ff), 0.00013, atol = 0.00004)
-        @test isapprox(σ(alroi[1], ff), 0.00012, atol = 0.00003)
-        @test isapprox(σ(siroi[1], ff), 0.00024, atol = 0.00003)
-        @test isapprox(σ(caroi[1], ff), 0.00022, atol = 0.00001)
-        @test isapprox(σ(feroi[1], ff), 0.00031, atol = 0.0001)
-        @test isapprox(σ(feroi[2], ff), 0.00019, atol = 0.00005)
+        @test isapprox(σ(oroi[1], ff), 0.00082, atol = 0.0001)
+        @test isapprox(σ(mgroi[1], ff), 0.00018, atol = 0.00004)
+        @test isapprox(σ(alroi[1], ff), 0.00016, atol = 0.00003)
+        @test isapprox(σ(siroi[1], ff), 0.00029, atol = 0.00003)
+        @test isapprox(σ(caroi[1], ff), 0.00023, atol = 0.00001)
+        @test isapprox(σ(feroi[1], ff), 0.00044, atol = 0.0001)
+        @test isapprox(σ(feroi[2], ff), 0.00016, atol = 0.00001)
         @test isapprox(σ(feroi[3], ff), 0.00078, atol = 0.0002)
 
         # Compare to naive peak integration
-        fekkr = kratio(unks[1], std, 5870.:6040., 6200.:7232, 6660.:6810.)
-        @test isapprox(value(feroi[2], ff), value(fekkr), atol = 0.0008)
-        @test_broken isapprox(σ(feroi[2], ff), σ(fekkr), atol = 0.0001)
+        fekkr = kratio(unks[1], fe, 593:613, 636:647, 669:690)
+        @test isapprox(value(feroi[2], ff), value(fekkr), atol = 0.0005)
+        @test isapprox(σ(feroi[2], ff), σ(fekkr), atol = 0.00004)
+
+        cakkr = kratio(unks[1], caf2, 334:347, 365:375 ,422:439)
+        @test isapprox(value(caroi[1], ff), value(cakkr), atol = 0.0008)
+        @test isapprox(σ(caroi[1], ff), σ(cakkr), atol = 0.00007)
     end
 
     @testset "ADM6005a" begin
