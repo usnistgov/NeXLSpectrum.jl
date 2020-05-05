@@ -1,4 +1,5 @@
 using Statistics
+using DataAPI
 
 """
     FilterFitResult
@@ -79,9 +80,9 @@ function NeXLUncertainties.asa(
     ffrs::AbstractVector{FilterFitResult};
     charOnly = true,
     withUnc = false,
-    pivot = false,
+    pivot = false
 )::DataFrame
-    lbls = sort(collect(Set(Iterators.flatten(labels(r) for r in ffrs))))
+    lbls = sort(collect(Set(mapreduce(labels, append!, ffrs))))
     lbls = charOnly ? filter(lbl->lbl isa CharXRayLabel, lbls) : lbls
     if pivot
         res = DataFrame(ROI = lbls)
@@ -107,6 +108,15 @@ function NeXLUncertainties.asa(
     end
     return res
 end
+
+function DataAPI.describe(ffrs::Vector{FilterFitResult})::DataFrame
+    df=asa(DataFrame, ffrs)[:,2:end]
+    desc=describe(df, :mean, :std, :min, :q25, :median, :q75, :max)
+    lbls = filter(lbl->lbl isa CharXRayLabel, sort(collect(Set(mapreduce(labels, append!, ffrs)))))
+    insertcols!(desc, 4, :hetero => [ heterogeneity(lbl, ffrs) for lbl in lbls ])
+    return desc
+end
+
 
 """
     asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame

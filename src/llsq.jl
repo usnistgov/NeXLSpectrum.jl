@@ -88,18 +88,16 @@ end
 
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """
-function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, wgts::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    function rescaleCovariances(uvs::UncertainValues, wgts::AbstractVector{N})::UncertainValues
+function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, covscales::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+    function rescaleCovariances(uvs::UncertainValues, covscales::AbstractVector{N})::UncertainValues
         cov = copy(uvs.covariance)
-        rwgts = map(sqrt,wgts)
+        # rwgts = map(sqrt,wgts)
         a = axes(cov)
-        for r in a[1]
-            for c in a[2]
-                cov[r,c]*=rwgts[r]*rwgts[c]
-            end
+        for r in a[1], c in a[2]
+            cov[r,c]*=covscales[r]*covscales[c]
         end
         return UncertainValues(uvs.labels, uvs.values, cov)
     end
     w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    return rescaleCovariances(olspinv(w*y, w*a, 1.0, xLabels, tol),0.5*wgts)
+    return rescaleCovariances(olspinv(w*y, w*a, 1.0, xLabels, tol),covscales)
 end

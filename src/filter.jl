@@ -155,7 +155,8 @@ function buildfilter(
         m, n = M(ea[2], ea[1]), N(eb[1], ea[1])
         @assert m > 0.0 "m=$(m)!!!!"
         @assert n > 0.0 "n=$(n)!!!!"
-        wgts[ch1] = 3.0 * ((2.0 * m + 1.0) * (2.0 * n)) / (2.0 * m + 1.0 + 2.0 * n) # Schamber's formula (see Statham 1977, Anal Chem 49, 14 )
+        wgts[ch1] = 2.87 + 1.758e-4*energy(ch1, det)
+        # wgts[ch1] = 2.0*n*m/(n+2.0*m)  # Schamber's formula (see Schamber 1997, note the formula in Statham 1977, Anal Chem 49, 14 doesn't seem to work.)
     end
     @assert all(r -> abs(sum(r)) < 1.0e-12, eachrow(filt)) "A filter does not sum to zero."
     return TopHatFilter(ty, det, filt, wgts)
@@ -194,8 +195,9 @@ function buildfilter(
             @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
             @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
         end
-        wgts[ch1] = 1.0
+        wgts[ch1] = 2.87 + 1.758e-4*energy(ch1, det)
     end
+    @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
     return TopHatFilter(ty, det, filt, wgts)
 end
 
@@ -455,7 +457,7 @@ NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVec
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.identifier for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
-    Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
+    Diagonal( [ unk.scale / ffs[i].scale for i in eachindex(ffs) ] )
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
 function _computeResidual(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, kr::UncertainValues)

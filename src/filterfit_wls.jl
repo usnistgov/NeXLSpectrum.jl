@@ -40,8 +40,8 @@ Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    wgts = [ff.covscale for ff in ffs]
-    return scale * wlspinv(extract(unk, chs), x, covariance(unk, chs), wgts, lbls)
+    covscales = [ff.covscale for ff in ffs]
+    return scale * wlspinv2(extract(unk, chs), x, covariance(unk, chs), covscales, lbls)
 end
 
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})

@@ -1,0 +1,101 @@
+### How good are the fit uncertainty estimates?
+
+This document looks at two different sets of measured spectra to evaluate how well, the estimated fit uncertainties
+match the observed uncertainties.  We are using two materials known to be highly homogeneous - K412 and ADM-6006a
+glasses.  To produce a set of spectra that differ only in count statistics, we will subdivide a spectrum into
+100 spectra with an effective live-time of 0.01 of the original spectrum livetime.  We expect that we should be
+able to compare the "fit-predicted" uncertainties with the "observed distribution" of measured values.
+
+To be clear:
+  - "fit-predicted" - Comes from the covariance matrix output from the linear least squares fit
+  - "observed distribution" - Calculated as the standard-deviation of the 100 fit values.
+
+We want the ratio of the (observed distribution) / (fit predicted) to be unity or close.  We will call this ratio the
+"heterogeneity" (or "hetero" in the fourth column of the `describe(....)` table.)
+
+We then repeat the process on the multiple measured unknown spectra. (4 for K412 and 15 for ADM-6005a)  We expect
+the heterogeneity to be one or larger - larger than unity when the sample is not perfectly homogeneous.
+
+```julia
+using NeXLSpectrum              # Provides spectrum reading and fitting tools
+using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
+using DataFrames                # Tables
+using BenchmarkTools
+```
+
+###### K412
+Load the spectra, define the fit model and apply it.
+```julia
+path = "K412 spectra"
+fe = readEMSA("$(path)/Fe std.msa")
+det = matching(fe, 132.0, 10)
+unks = (i->readEMSA("$(path)/III-E K412[$i][4].msa",det,true)).(0:4)
+al2o3 = readEMSA("$(path)/Al2O3 std.msa",det,true)
+caf2 = readEMSA("$(path)/CaF2 std.msa",det,true)
+fe = readEMSA("$(path)/Fe std.msa",det,true)
+mgo = readEMSA("$(path)/MgO std.msa",det,true)
+sio2 = readEMSA("$(path)/SiO2 std.msa",det,true)
+
+refs = (
+  # spectrum, element, composition
+  ( al2o3, n"Al", mat"Al2O3" ), #
+  ( mgo,   n"Mg", mat"MgO" ),   #
+  ( fe,    n"Fe", mat"Fe" ),    #
+  ( sio2,  n"Si", mat"SiO2" ),  #
+  ( sio2,  n"O",  mat"SiO2" ),  #
+  ( caf2,  n"Ca", mat"CaF2" ), )
+
+filt = buildfilter(det)
+frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.
+
+ss = subdivide(unks[1], 100)
+res= map(s->fit(s,filt,frs,false), ss)
+display(asa(DataFrame, res[1:10], withUnc=true))
+display(describe(res))
+```
+
+Repeat the fit for the 4 measured unknowns.
+```julia
+res= map(s->fit(s,filt,frs,false),unks)
+display(asa(DataFrame, res, withUnc=true))
+display(describe(res))
+@btime fit(unks[1], filt, frs, false)
+```
+
+###### AMM-6005a
+Repeat using the ADM glass.  Fe is not present in ADM-6005a but we fit it to see what a null result looks like.
+```julia
+path = "../test/ADM6005a spectra"
+unks = map(i->readEMSA("$(path)/ADM-6005a_$i.msa"),1:15)
+al, caf2, fe, ge, si, sio2, ti, zn = map(f->readEMSA("$(path)/$f.msa"), ("Al std", "CaF2 std", "Fe std", "Ge std", "Si std", "SiO2 std", "Ti trimmed","Zn std"))
+
+refs = (
+  # spectrum, element, composition
+  ( al,   n"Al", mat"Al" ), #
+  ( caf2, n"Ca", mat"CaF2" ),   #
+  ( fe,   n"Fe", mat"Fe" ),    #
+  ( ge,   n"Ge", mat"Ge" ),    #
+  ( si,   n"Si", mat"Si" ),  #
+  ( sio2, n"O",  mat"SiO2" ),  #
+  ( ti,   n"Ti", mat"Ti" ),
+  ( zn,   n"Zn", mat"Zn" ),
+)
+
+det = matching(unks[1], 132.0, 10)
+filt = buildfilter(det)
+frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.
+ss = subdivide(unks[1], 100)
+res= map(s->fit(s,filt,frs,false), ss)
+display(asa(DataFrame, res[1:10], withUnc=true))
+display(describe(res))
+```
+
+Repeat for the 15 measured spectra.
+```julia
+res= map(s->fit(s,filt,frs,false),unks)
+display(asa(DataFrame, res, withUnc=true))
+display(describe(res))
+@btime fit(unks[1], filt, frs, false)
+```

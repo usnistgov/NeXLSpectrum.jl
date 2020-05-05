@@ -10,7 +10,7 @@ Load the spectra from EMSA files.
 ```julia
 path = "XRF Stainless"
 # We use map to apply `readEMSA` to each of the files
-specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->readEMSA.("$path/$fn"), (
+specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->readEMSA("$path/$fn"), (
   "Steel_50kv_50_ma_Rh_vac_D1.msa",
   "Fe_50kv_50_ma_Rh_vac_D1.msa",
   "Ni_50kv_50_ma_Rh_vac_D1.msa",
@@ -50,18 +50,19 @@ refdata = (
   ( sn, n"Sn", mat"Sn" ),
 )
 # Some necessary properties are missing from the spectra so provide them.
-props = Dict{Symbol,Any}(:BeamEnergy=>40.0e3, :ProbeCurrent=>1.0, :Detector=>det)
+xtra = Dict{Symbol,Any}(:BeamEnergy=>40.0e3, :ProbeCurrent=>1.0, :Detector=>det)
 refs = FilteredReference[]
 for rd in refdata
-  append!(refs, filterreference(filt, rd..., props=props))
+  append!(refs, filterreference(filt, rd..., props=xtra))
 end
 # Merge the missing properties into the unknown too.
-merge!(steel, props)
+merge!(steel, xtra)
 res = fit(steel, filt, refs, false)
 # Tabulate the results
 asa(DataFrame, res)
 ```
-Plot the residual spectrum.
+Plot the residual spectrum.  Note that Mo and Rh were not fit and so there remain significant peaks between 16 and
+20 keV.
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 plot(res)
 ```

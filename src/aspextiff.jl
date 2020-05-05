@@ -10,7 +10,6 @@ using NeXLSpectrum
 using Dates
 using FileIO
 using Images
-using ImageMagick
 
 const _TIFF_TYPES = (
     ("byte", UInt8),
