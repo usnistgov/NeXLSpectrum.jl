@@ -167,7 +167,6 @@ matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::BasicEDS =
 matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Shell,Element})::BasicEDS =
     BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
 
-setproperty!(spec::Spectrum, sym::Symbol, val::Any) = setindex!(props, sym, val)
 Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties, sym, def)
 Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) = spec.properties[sym] = val

@@ -65,6 +65,9 @@ include("aspextiff.jl")
 export readAspexTIFF
 # Also implements FileIO save(...) and load(...) for "ASPEX TIFF"
 
+include("brukerpdz.jl")
+export readbrukerpdz
+
 include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real
 export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
