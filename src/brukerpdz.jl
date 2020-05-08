@@ -18,7 +18,6 @@ function readbrukerpdz(io::IO)
     mm = Mmap.mmap(io)
     nCh = reinterpret(UInt16, mm[7:8])[1]
     eVpCh = reinterpret(Float64, mm[51:58])[1]
-    counts = reinterpret(UInt32, mm[length(mm)-4*nCh+1:length(mm)])
     yr, mon, _, day, hour, min, sec = reinterpret(UInt16,mm[147:160])
     e0, pc = reinterpret(Float32,mm[163:170])
     rt, dt, _, lt = reinterpret(Float32, mm[343:358])
@@ -28,5 +27,6 @@ function readbrukerpdz(io::IO)
     props=Dict{Symbol,Any}(:RealTime=>convert(Float64,rt), :LiveTime=>convert(Float64,lt),
             :AcquisitionTime=>dt, :BeamEnergy=>convert(Float64,e0)*1000.0, :ProbeCurrent=>convert(Float64,pc)*1000.0,
             :XRFFilter => filters)
-    return Spectrum(LinearEnergyScale(0.0, eVpCh), collect(Float64, counts), props)
+    counts = reinterpret(UInt32, mm[length(mm)-4*nCh+1:length(mm)])
+    return Spectrum(LinearEnergyScale(0.0, eVpCh), collect(counts), props)
 end
