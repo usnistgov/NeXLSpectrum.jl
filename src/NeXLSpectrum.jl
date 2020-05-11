@@ -24,7 +24,8 @@ export scale # Detector EnergyScale
 export resolution # Detector Resolution
 export simpleEDS # Create a basic EDS detector
 export simpleEDSwICC # Create a basic EDS detector with a naive incomplete charge collection model
-export extent # Determine the energy extent of x-ray lines on a detector ( Emin, Emax )
+export extent # Determine the energy extent of an x-ray line on a detector ( Emin, Emax )
+export extents # Determine the energy extents of many x-ray lines on a detector
 export matching # Build a detector to match a spectrum
 export lld # Low-level discriminator in eV
 
