@@ -222,12 +222,12 @@ function Base.sum(sig::Signal, filt::Function)
 end
 
 """
-    countmaps(hss::Signal, achs::Vector{UnitRange{Int}})
+    roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function countmaps(hss::Signal, achs::Vector{UnitRange{Int}})
+function roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
     ps = map(chs->plane(hss,chs,false),achs)
     maxval = maximum(map(p->maximum(p),ps))
     return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
@@ -324,41 +324,41 @@ plane(hss::HyperSpectrum, chs, norm=false) =
     plane(hss.signal, chs, norm)
 
 """
-    countmap(hss::Signal, chs::UnitRange)
+    roiimage(hss::Signal, chs::UnitRange)
 
 Create a count map from the specified contiguous range of channels.
 """
-countmap(hss::HyperSpectrum, chs::UnitRange) =
+roiimage(hss::HyperSpectrum, chs::UnitRange) =
     Gray.(convert.(N0f8, plane(hss, chs, true)))
 
 """
-    countmap(hss::Signal, cxr::CharXRay, n=5)
+    roiimage(hss::Signal, cxr::CharXRay, n=5)
 
 Create a count map for the specified characteristic X-ray.
 """
-function countmap(hss::HyperSpectrum, cxr::CharXRay, n=5)
+function roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
     center = channel(energy(cxr), hss.signal.energy)
-    return countmap(hss, center-n:center+n)
+    return roiimage(hss, center-n:center+n)
 end
 
 """
-    countmaps(hss::HyperSpectrum, achs::Vector{UnitRange{Int}})
+    roiimages(hss::HyperSpectrum, achs::Vector{UnitRange{Int}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-countmaps(hss::HyperSpectrum, achs::Vector{UnitRange{Int}}) =
-    countmaps(hss.signal, achs)
+roiimages(hss::HyperSpectrum, achs::Vector{UnitRange{Int}}) =
+    roiimages(hss.signal, achs)
 
 """
-    countmaps(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
+    roiimages(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
 
 Create an array of Gray images representing the intensity in each of the CharXRay lines
 in `cxrs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function countmaps(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
+function roiimages(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
     achs = map( cxr->channel(energy(cxr), hss.signal.energy)-n:channel(energy(cxr), hss.signal.energy)+n, cxrs)
-    return countmaps(hss.signal, achs)
+    return roiimages(hss.signal, achs)
 end
 
 indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices) =
