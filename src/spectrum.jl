@@ -1,6 +1,6 @@
-using Polynomials
 using DataFrames
 using PeriodicTable
+import Polynomials: Polynomial, fit, derivative
 
 # Keeps track of the number of spectra in this session.
 
@@ -460,8 +460,8 @@ Returns the tangent to the a quadratic fit to the counts data centered at channe
 function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Polynomial
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
-        fit = Polynomials.fit(Polynomial, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
-        return Polynomial([fit(0), derivative(fit)(0)]) # Linear
+        fr = fit(Polynomial, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
+        return Polynomial([fr(0), derivative(fr)(0)]) # Linear
     else
         return Polynomial([mean(data[minCh:maxCh]), 0.0])
     end

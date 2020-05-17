@@ -1,6 +1,6 @@
-using Polynomials
 using NeXLCore
 using PeriodicTable
+import Polynomials: Polynomial, fit, printpoly, roots
 
 """
     EnergyScale

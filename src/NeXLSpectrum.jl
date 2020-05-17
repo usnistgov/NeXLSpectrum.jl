@@ -87,10 +87,11 @@ export readrpl # Read the RPL file into a RPLHeader
 export writerplraw # Write a Signal into a RPL/RAW
 
 include("fitlabels.jl")
-export UnknownLabel#(spec)
-export CharXRayLabel#(spec,roi,xrays)
-export EscapeLabel#(spec,roi,xrays)
-export charXRayLabels # Constructs CharXRayLabel(s)
+export ReferenceLabel
+export UnknownLabel#(spec) <: ReferenceLabel
+export CharXRayLabel#(spec,roi,xrays) <: ReferenceLabel
+export EscapeLabel#(spec,roi,xrays) <: ReferenceLabel
+export charXRayLabels # Constructs CharXRayLabel(s) <: ReferenceLabel
 
 include("filter.jl")
 export TopHatFilter # Struct representing a fitting filter
@@ -120,6 +121,9 @@ export spectrum
 export unknown
 export kratios
 export kratio
+
+include("qquant.jl")
+export VectorQuant
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.
