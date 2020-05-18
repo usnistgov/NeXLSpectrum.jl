@@ -551,3 +551,10 @@ function filterreference(
     end
     filterreference(filt, spec, elm, collect(keys(comp)), props=props, withEsc=withEsc)
 end
+
+filterreferences(
+    filt::TopHatFilter,
+    refs::Tuple{Spectrum, Element, Material}...;
+    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
+    withEsc::Bool = false
+) = mapreduce(ref->filterreference(filt, ref..., props=props, withEsc=withEsc), append!, refs)

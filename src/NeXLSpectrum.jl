@@ -108,8 +108,11 @@ export ascontiguous
 export filterfit
 export filteredresidual
 export filterreference
+export filterreferences
 
 include("fitresult.jl")
+export FitResult
+export BasicFitResult
 export FilterFitResult
 export findlabel
 export fit
@@ -124,6 +127,7 @@ export kratio
 
 include("qquant.jl")
 export VectorQuant
+export VectorQuantResult
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.

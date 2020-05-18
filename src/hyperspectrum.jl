@@ -242,9 +242,10 @@ the data as Spectrum objects.
 struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
     signal::Signal{T}
     index::CartesianIndices # Spectrum indices
+    properties::Dict{Symbol, Any}
 
     HyperSpectrum(sig::Signal) =
-        new{typeof(sig.counts[1]),ndims(sig.counts)-1}(sig, CartesianIndices(size(sig.counts)[2:end]))
+        new{typeof(sig.counts[1]),ndims(sig.counts)-1}(sig, CartesianIndices(size(sig.counts)[2:end]),sig.properties)
 end
 
 """
@@ -256,7 +257,11 @@ Special property tags:
 
     :Cartesian # The pixel index of a Spectrum extracted from a HyperSpectrum
 """
-ashyperspectrum(sig::Signal) = HyperSpectrum(sig)
+function ashyperspectrum(sig::Signal, name::AbstractString="Hyper-Spectrum")
+    res=HyperSpectrum(sig)
+    res[:Name]=name
+    return res
+end
 
 Base.show(io::IO, hss::HyperSpectrum) =
     print(io,"HyperSpectrum[$(get(hss.signal.properties,:Name,"Unnamed")),$(hss.signal.energy),$(size(hss.index))]")
@@ -271,6 +276,7 @@ Base.axes(hss::HyperSpectrum, n) = axes(hss.index, n)
 Base.eachindex(hss::HyperSpectrum) = hss.index
 Base.stride(hss::HyperSpectrum, k) = stride(hss.index, k)
 Base.strides(hss::HyperSpectrum) = strides(hss.index)
+depth(hss::HyperSpectrum) = size(sig.counts,1)
 
 function Base.getindex(hss::HyperSpectrum, idx...)::Spectrum
     so(i) = i*size(hss.signal.counts, 1)

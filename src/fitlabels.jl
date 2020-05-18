@@ -107,6 +107,23 @@ struct UnknownLabel <: FilteredLabel
     spec::Spectrum
 end
 
+
 Base.show(io::IO, unk::UnknownLabel) = print(io, unk.spec[:Name])
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)
 spectrum(unkl::UnknownLabel) = unkl.spec
+
+"""
+    HyperSpectrumLabel
+
+A Label that represents a single spectrum with a HyperSpectrum.
+"""
+struct HyperSpectrumLabel <: Label
+    hyperspec::HyperSpectrum
+    index::CartesianIndex
+    HyperSpectrumLabel(hs::HyperSpectrum, idx::Int...) =
+        new(hs, CartesianIndex(idx...))
+end
+
+Base.show(io::IO, unk::HyperSpectrumLabel) = print(io, unk.hyperspec[:Name]*"[$(unk.index.I)]")
+Base.isequal(ul1::HyperSpectrumLabel, ul2::HyperSpectrumLabel) = (ul1.hyperspec===ul2.hyperspec) && isequal(ul1.index,ul2.index)
+spectrum(unkl::HyperSpectrumLabel) = unkl[index]

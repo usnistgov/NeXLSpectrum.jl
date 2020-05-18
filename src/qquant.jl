@@ -4,6 +4,7 @@
 # extremely quick. This makes it ideal for processing in real-time or HyperSpectrum objects.
 using NeXLSpectrum
 using LinearAlgebra
+using Images
 
 defaspure(c::Material,cxr::CharXRay,e0::Float64,toa::Float64) =  c[element(cxr)]
 unityaspure(c::Material,cxr::CharXRay,e0::Float64,toa::Float64) = 1.0
@@ -28,7 +29,8 @@ For example, if CaF2 is used as the reference for Ca, we'd scale the intensity t
 fact that Ca represents on 0.51333 and that there is a matrix correction factor (ZAF) of approximately 0.9695.
 This implies that we need a scale factor of 0.51333*0.9695.   A suitable function is implemented in
 NeXLMatrixCorrection.aspure(...).  The default implementation `defaspure(...)`` just scales the intensity to
-account for the mass fraction. The alternative `unityaspure(...)` doesn't scale at all.
+account for the mass fraction. The alternative `unityaspure(...)` doesn't scale at all and is suitable for
+quantifying spectra for later matrix correction.
 """
     VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter, aspure=defaspure) =
         new(_buildVectorQuant(frefs, filt, aspure)...)
@@ -72,11 +74,34 @@ function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum)::FilterFitResult
     return FilterFitResult(UnknownLabel(spec), kratios, 1:length(raw), raw, residual, peakback)
 end
 
-function NeXLSpectrum.fit(vq::VectorQuant, hs::HyperSpectrum)
-    res = zeros(Float64, ( size(hs)..., length(vq.references)))
+"""
+    VectorQuantResult
+
+Represents the result from a `fit(...)` of a HyperSpectrum object.
+"""
+struct VectorQuantResult
+    hyperspec::HyperSpectrum
+    labels::Vector{ReferenceLabel}
+    results::Array
+end
+
+depth(vqr::VectorQuantResult) = length(vqr.labels)
+asimage(vqr::VectorQuantResult, idx::Int, plane::Int=1) = Gray.(vqr.results[idx, CartesianIndices(size(vqr.results)[plane+1:plane+2])])
+NeXLUncertainties.label(vqr::VectorQuantResult, idx::Int) = vqr.labels[idx]
+NeXLUncertainties.labels(vqr::VectorQuantResult) = copy(vqr.labels)
+Base.getindex(vqr::VectorQuantResult, idx...) =
+    BasicFitResult(HyperSpectrumLabel(vqr.hyperspec, idx...), uvs(vqr.labels, vqr.results[:,idx...], fill(0.01, size(vqr.results,1))))
+Base.show(io::IO, vqr::VectorQuantResult) =
+    print(io,"$(vqr.hyperspec[:Name])["*join(map(l->repr(l),vqr.labels),",")*"]")
+
+
+function fit(vq::VectorQuant, hs::HyperSpectrum)::VectorQuantResult
+    posdef(x) = max(0.0, x)
+    norm(v) = v ./ sum(v)
+    res = zeros(Float64, ( length(vq.references), size(hs)...))
+    vecs = view(vq.vectors, :, 1:size(hs.signal,1))
     for idx in eachindex(hs)
-        rawks=vq.vectors*counts(hs[idx], Float64)
-        res[idx] = rawks ./ sum(rawks)
+        res[:, idx] = norm(posdef.(vecs*counts(hs[idx], Float64)))
     end
-    return ( map(r->r[1], vq.references), res )
+    return VectorQuantResult(hs, collect(map(r->r[1], vq.references)), res )
 end
