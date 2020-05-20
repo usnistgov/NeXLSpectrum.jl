@@ -1,57 +1,38 @@
 # Schamber's Vector quant algorithm - It foregoes the a weighted least squares fit for a simple
-# homosketastic fit.  In doing this it can precompute a fitting matrix which requires nothing
+# homoskedastic fit.  In doing this it can precompute a fitting matrix which requires nothing
 # more than a single matrix multiplication to perform the fit.  This makes this mechanism
 # extremely quick. This makes it ideal for processing in real-time or HyperSpectrum objects.
 using NeXLSpectrum
 using LinearAlgebra
 using Images
 
-defaspure(c::Material,cxr::CharXRay,e0::Float64,toa::Float64) =  c[element(cxr)]
-unityaspure(c::Material,cxr::CharXRay,e0::Float64,toa::Float64) = 1.0
-
 struct VectorQuant
     # Vector(label[1], roi[2], charonly[3], sum(charonly)[4], scale[5])
     references::Vector{Tuple{ReferenceLabel, UnitRange, Vector{Float64}, Float64, Float64}}
     vectors::Matrix{Float64}
+
 """
-    VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter, aspure=defaspure)
-
-where
-
-    aspure(c::Material,cxr::CharXRay,e0::Float64,toa::Float64)
+    VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
 
 Constructs a structure used to perform accelerated filtered spectrum fits based on the specified
-collection of `FilteredReference`(s), a `TopHatFilter` and a composition correction function `aspure(...)`.
-The composition correction function is intended to take into account the composition of the reference
-by scaling the intensity relative to a pure element standard.
-
-For example, if CaF2 is used as the reference for Ca, we'd scale the intensity to account for the
-fact that Ca represents on 0.51333 and that there is a matrix correction factor (ZAF) of approximately 0.9695.
-This implies that we need a scale factor of 0.51333*0.9695.   A suitable function is implemented in
-NeXLMatrixCorrection.aspure(...).  The default implementation `defaspure(...)`` just scales the intensity to
-account for the mass fraction. The alternative `unityaspure(...)` doesn't scale at all and is suitable for
-quantifying spectra for later matrix correction.
+collection of `FilteredReference`(s), and a `TopHatFilter`.
 """
-    VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter, aspure=defaspure) =
-        new(_buildVectorQuant(frefs, filt, aspure)...)
+    function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter) =
+        refs = [ ( fref.identifier, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
+        x = zeros(Float64, (length(filt.filters), length(frefs)))
+        for (c, fref) in enumerate(frefs)
+            x[fref.ffroi, c] = fref.filtered
+        end
+        # ((ch × ne)T * (ch × ne))^(-1) * (ch × ne) * (ch × ch) => (ne × ch)
+        xTxIxf = pinv(transpose(x)*x)*transpose(x)*NeXLSpectrum.filterdata(filt, 1:length(filt.filters))
+        return new( refs, xTxIxf)
+    end
 end
+
+minproperties(::VectorQuant) = ( :BeamEnergy, :TakeOffAngle, :)
 
 Base.show(io::IO, vq::VectorQuant) =
     print(io, "VectorQuant[\n"*join(map(r->"\t"*repr(r[1]),vq.references),",\n")*"\n]")
-
-function _buildVectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter, aspure::Function)
-    scale(cxrlbl::CharXRayLabel) = #
-        aspure(cxrlbl.spec[:Composition], brightest(cxrlbl.xrays), cxrlbl.spec[:BeamEnergy], cxrlbl.spec[:TakeOffAngle])
-    scale(reflbl::ReferenceLabel) = 1.0
-    refs = [ ( fref.identifier, fref.roi, fref.charonly, sum(fref.charonly), fref.scale/scale(fref.identifier)) for fref in frefs]
-    x = zeros(Float64, (length(filt.filters), length(frefs)))
-    for (c, fref) in enumerate(frefs)
-        x[fref.ffroi, c] = fref.filtered
-    end
-    # ((ch × ne)T * (ch × ne))^(-1) * (ch × ne) * (ch × ch) => (ne × ch)
-    xTxIxf = pinv(transpose(x)*x)*transpose(x)*NeXLSpectrum.filterdata(filt, 1:length(filt.filters))
-    return ( refs, xTxIxf)
-end
 
 function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum)::FilterFitResult
     raw = counts(spec, Float64)
@@ -75,33 +56,51 @@ function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum)::FilterFitResult
 end
 
 """
-    VectorQuantResult
+    HyperspectrumQuant
 
 Represents the result from a `fit(...)` of a HyperSpectrum object.
 """
-struct VectorQuantResult
+struct HyperspectrumQuant
     hyperspec::HyperSpectrum
     labels::Vector{ReferenceLabel}
     results::Array
 end
 
-depth(vqr::VectorQuantResult) = length(vqr.labels)
-asimage(vqr::VectorQuantResult, idx::Int, plane::Int=1) = Gray.(vqr.results[idx, CartesianIndices(size(vqr.results)[plane+1:plane+2])])
-NeXLUncertainties.label(vqr::VectorQuantResult, idx::Int) = vqr.labels[idx]
-NeXLUncertainties.labels(vqr::VectorQuantResult) = copy(vqr.labels)
-Base.getindex(vqr::VectorQuantResult, idx...) =
+depth(vqr::HyperspectrumQuant) = length(vqr.labels)
+
+"""
+    asimage(vqr::HyperspectrumQuant, idx::Int; transform=identity)
+
+Create an image that represents the data associated with the `idx` label.
+`transform` is a function nominally from `x -> [0,1]` which is applied to the raw quantified results.
+
+Examples:
+
+    transform=x->0.8x                  # linear scaling
+    transform=x->log10(1.0+99.0x)/2.0  # log scaling
+    transform=x->1.0-x                 # invert
+"""
+function asimage(vqr::HyperspectrumQuant, idx::Int; scale::Float64=1.0, transform=identity)
+    bound(x) = max(0.0, min(1.0, x))
+    return (Gray∘bound∘transform).(scale*vqr.results[idx, CartesianIndices( size(vqr.results)[2:3])])
+end
+
+NeXLUncertainties.label(vqr::HyperspectrumQuant, idx::Int) = vqr.labels[idx]
+
+NeXLUncertainties.labels(vqr::HyperspectrumQuant) = copy(vqr.labels)
+
+Base.getindex(vqr::HyperspectrumQuant, idx...) =
     BasicFitResult(HyperSpectrumLabel(vqr.hyperspec, idx...), uvs(vqr.labels, vqr.results[:,idx...], fill(0.01, size(vqr.results,1))))
-Base.show(io::IO, vqr::VectorQuantResult) =
+
+Base.show(io::IO, vqr::HyperspectrumQuant) =
     print(io,"$(vqr.hyperspec[:Name])["*join(map(l->repr(l),vqr.labels),",")*"]")
 
 
-function fit(vq::VectorQuant, hs::HyperSpectrum)::VectorQuantResult
+function fit(vq::VectorQuant, hs::HyperSpectrum)::HyperspectrumQuant
     posdef(x) = max(0.0, x)
-    norm(v) = v ./ sum(v)
     res = zeros(Float64, ( length(vq.references), size(hs)...))
     vecs = view(vq.vectors, :, 1:size(hs.signal,1))
-    for idx in eachindex(hs)
-        res[:, idx] = norm(posdef.(vecs*counts(hs[idx], Float64)))
-    end
-    return VectorQuantResult(hs, collect(map(r->r[1], vq.references)), res )
+    scales = map( ref -> 1.0 / (dose(hs) * ref[5]), vq.references)
+    foreach(idx->res[:, idx] = scales .* posdef.(vecs*counts(hs[idx], Float64)), eachindex(hs))
+    return HyperspectrumQuant(hs, collect(map(r->r[1], vq.references)), res )
 end

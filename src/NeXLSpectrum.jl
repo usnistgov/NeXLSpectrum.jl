@@ -79,6 +79,7 @@ export roiimages # Convert a vector of ranges-of-channels into Gray-scale images
 export compressed # Compresses Integer type data down to the smallest integer type that that will hold the max value.
 export maxpixel # Bright's max-pixel derived spectrum
 export indexofmaxpixel # Index producing the max pixel
+export depth # Number of spectral or result planes
 
 include("rplraw.jl")
 export RPLHeader
@@ -127,7 +128,8 @@ export kratio
 
 include("qquant.jl")
 export VectorQuant
-export VectorQuantResult
+export HyperspectrumQuant
+export asimage # Display
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.

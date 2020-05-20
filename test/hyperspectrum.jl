@@ -36,9 +36,10 @@ rrpath = artifact"rplraw"
     @test all(sum(raw, (sig, i) -> sig[640, i] > 3) .<= sum(raw))
 end
 
-@testset "QuickQuant of a Hyperspectrum" begin
+@testset "QQHyperspec" begin
     les = LinearEnergyScale(0.0, 10.0)
-    raw = readrplraw(joinpath(rrpath, "map[15]"), les, Dict{Symbol,Any}(:LiveTime => 0.004, :BeamEnergy => 20.0e3))
+    raw = readrplraw(joinpath(rrpath, "map[15]"), les, #
+        Dict{Symbol,Any}(:LiveTime => 0.01, :BeamEnergy => 20.0e3, :ProbeCurrent=>1.0))
     hs = ashyperspectrum(raw, "Map[15]")
     mp = maxpixel(hs)
     cstd, festd, fes2std, mgostd, sistd = map(n->readEMSA(joinpath(rrpath, "standards", "$n std.msa")), ("C", "Fe", "FeS2", "MgO", "Si"))
@@ -54,9 +55,9 @@ end
     frs = filterreferences(filt, refs...)
     qq = VectorQuant(frs, filt, NeXLSpectrum.defaspure)
     res=fit(qq, hs)
-    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,12,23], (0.93698, 0.00752, 0.0, 0.0, 0.0, 0.05550, 0.0))))
-    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,60,23], ( 0.40556, 0.20940, 0.13007, 0.07377, 0.02164, 0.15953, 0.0))))
-    NeXLSpectrum.asimage(res,3)
+    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,12,23], ( 1.10457, 0.00690, 0.0, 0.0, 0.0, 0.02532, 0.0))))
+    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,60,29], ( 1.07000, 0.01006, 0.36027, 0.20048, 0.01360,  0.44118, 0.00213 ))))
+    NeXLSpectrum.asimage(res,3,transform=x->log10(1.0+99.0x)/2.0)
     @test res[64,64] isa BasicFitResult
     df=asa(DataFrame, [res[i,64] for i in 32:95])
     @test df[2,2] ≈ res.results[1,33,64]

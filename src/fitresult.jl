@@ -91,6 +91,12 @@ function NeXLUncertainties.asa(
     return res
 end
 
+function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc=false)
+    withUnc ?
+        DataFrame(ROI=labels(fr), k=map(l->value(l, fr.kratios),labels(fr)), δk=map(l->σ(l, fr.kratios), labels(fr))) : #
+        DataFrame(ROI=labels(fr), k=map(l->value(l, fr.kratios),labels(fr)))
+end
+
 function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
     df=asa(DataFrame, ffrs)[:,2:end]
     desc=describe(df, :mean, :std, :min, :q25, :median, :q75, :max)
