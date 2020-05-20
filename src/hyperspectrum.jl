@@ -60,8 +60,6 @@ depth(sig::Signal) = size(sig.counts,1)
 NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
 channel(sig::Signal, energy) = channel(energy, sig.energy)
 
-dose(hs::HyperSpectrum) = hs[:ProbeCurrent]*hs[:LiveTime]
-
 """
     compressed(sig::Signal)
 
@@ -279,6 +277,8 @@ Base.eachindex(hss::HyperSpectrum) = hss.index
 Base.stride(hss::HyperSpectrum, k) = stride(hss.index, k)
 Base.strides(hss::HyperSpectrum) = strides(hss.index)
 depth(hss::HyperSpectrum) = depth(hss.signal)
+dose(hs::HyperSpectrum) = hs[:ProbeCurrent]*hs[:LiveTime]
+
 
 function Base.getindex(hss::HyperSpectrum, idx...)::Spectrum
     so(i) = i*size(hss.signal.counts, 1)

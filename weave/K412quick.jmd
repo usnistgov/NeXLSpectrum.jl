@@ -63,7 +63,7 @@ filt = buildfilter(det)
 # Filter all the reference spectra
 frs = mapreduce(ref->filterreference(filt, ref..., withEsc=false), append!, refs)
 # Build the VectorQuant structure from the fitered references and the filter
-vq = VectorQuant(frs, filt, NeXLSpectrum.unityaspure)
+vq = VectorQuant(frs, filt)
 plot(vq,1:800)
 ```
 
@@ -91,4 +91,132 @@ Compare the timings (full then fast)
 using BenchmarkTools
 @btime map(unk->fit(unk,filt,frs,false), unks)
 @btime map(unk->fit(vq, unk),unks)
+```
+
+However, things totally fall apart if we include too many elements in the
+VectorQuant object.  Creating vectors that can differentiate a large number
+of elements leads to overfitting and poor quality fits.
+
+```julia; fig_height=3; fig_width=10; fig_ext=".svg";
+inps = (
+  # spectrum, element, composition
+  ( "Al", n"Al", mat"Al" ), #
+  ( "Ag",   n"Ag", mat"Ag" ),   #
+  ( "As",   n"As", mat"As" ),   #
+  ( "B",   n"B", mat"B" ),   #
+  ( "BaF2",   n"Ba", mat"BaF2" ),   #
+  ( "Bi",   n"Bi", mat"Bi" ),
+  ( "BN",   n"N", mat"BN" ),
+  ( "C",   n"C", mat"C" ),
+  ( "CaF2",   n"Ca", mat"CaF2" ),
+  ( "Cd",   n"Cd", mat"Cd" ),
+  ( "Ce",   n"Ce", mat"Ce" ),
+  ( "Co",   n"Co", mat"Co" ),
+  ( "Cr",   n"Cr", mat"Cr" ),
+  ( "Cu",   n"Cu", mat"Cu" ),
+  ( "Dy",   n"Dy", mat"Dy" ),
+  ( "Fe",   n"Fe", mat"Fe" ),
+  ( "FeS2",   n"S", mat"FeS2" ),
+  ( "GaP",   n"P", mat"GaP" ),
+  ( "GaP",   n"Ga", mat"GaP" ),
+  ( "Ge",   n"Ge", mat"Ge" ),
+  ( "Hf",   n"Hf", mat"Hf" ),
+  ( "Ho",   n"Ho", mat"Ho" ),
+  ( "In",   n"In", mat"In" ),
+  ( "Ir",   n"Ir", mat"Ir" ),
+  ( "KBr",   n"Br", mat"KBr" ),
+  ( "KBr",   n"K", mat"KBr" ),
+  ( "La",   n"La", mat"La" ),
+  ( "Lu",   n"Lu", mat"Lu" ),
+  ( "Mg",   n"Mg", mat"Mg" ),
+  ( "MgO",   n"O", mat"MgO" ),
+  ( "Mn",   n"Mn", mat"Mn" ),
+  ( "NaF",   n"Na", mat"NaF" ),
+  ( "NaCl",   n"Cl", mat"NaCl" ),
+  ( "Nb",   n"Nb", mat"Nb" ),
+  ( "Nd",   n"Nd", mat"Nd" ),
+  ( "Ni",   n"Ni", mat"Ni" ),
+  ( "Pb",   n"Pb", mat"Pb" ),
+  ( "Pd",   n"Pd", mat"Pd" ),
+  ( "Pr",   n"Pr", mat"Pr" ),
+  ( "Pt",   n"Pt", mat"Pt" ),
+  ( "RbI",   n"Rb", mat"RbI" ),
+  ( "RbI",   n"I", mat"RbI" ),
+  ( "Re",   n"Re", mat"Re" ),
+  ( "Rh",   n"Rh", mat"Rh" ),
+  ( "Sb",   n"Sb", mat"Sb" ),
+  ( "Sc",   n"Sc", mat"Sc" ),
+  ( "Se",   n"Se", mat"Se" ),
+  ( "Si",   n"Si", mat"Si" ),
+  ( "Sm",   n"Sm", mat"Sm" ),
+  ( "Sn",   n"Sn", mat"Sn" ),
+  ( "SrF2",   n"Sr", mat"SrF2" ),
+  ( "Ta",   n"Ta", mat"Ta" ),
+  ( "Tb",   n"Tb", mat"Tb" ),
+  ( "Te",   n"Te", mat"Te" ),
+  ( "Th",   n"Th", mat"Th" ),
+  ( "Ti",   n"Ti", mat"Ti" ),
+  ( "Tm",   n"Tm", mat"Tm" ),
+  ( "U",   n"U", mat"U" ),
+  ( "V",   n"V", mat"V" ),
+  ( "W",   n"W", mat"W" ),
+  ( "Y",   n"Y", mat"Y" ),
+  ( "Zn",   n"Zn", mat"Zn" ),
+  ( "Zr",   n"Zr", mat"Zr" ), )
+refs = map(inp->( readEMSA("C:\\Users\\nritchie\\Desktop\\Amy's GSR\\25 keV\\$(inp[1]) std.msa"), inp[2], inp[3]), inps)
+
+frs = mapreduce(ref->filterreference(filt, ref..., withEsc=false), append!, refs)
+# Build the VectorQuant structure from the fitered references and the filter
+vq = VectorQuant(frs, filt)
+display(plot(vq,1:800))
+display(plot(vq,1:200))
+```
+Wow!!! Complex!
+
+VectorQuant falls apart when too many elements are in the fit.  It is impossible
+to remove elements without rebuilding the entire fit model.
+```julia; fig_height=3; fig_width=10; fig_ext=".svg";
+res2 = map(unk->fit(vq, unk),unks)
+display(plot(res2[1]))
+```
+The fit is better (not great) if we retain negative fit parameters (but this is unphysical.)
+```julia; fig_height=3; fig_width=10; fig_ext=".svg";
+res2 = map(unk->fit(vq, unk,x->x),unks)
+display(plot(res2[1]))
+```
+
+```julia;
+asa(DataFrame, res2[1])
+```
+
+Even three elements which interfere with each other like Pb, Mo and S can
+make for complex fitting vectors. Compare this with the Mo only fitting vector.
+Because the three element vectors must differentiate between the elements,
+they have much more structure to represent the difference in peak shapes in a
+manner that deconvolves unknown spectra.  (It can be a little mind bending...)
+```julia; fig_height=3; fig_width=10; fig_ext=".svg";
+inps3 = (
+  # spectrum, element, composition
+  ( "FeS2", n"S", mat"FeS2" ),
+  ( "Mo", n"Mo", mat"Mo" ),
+  ( "Pb", n"Pb", mat"Pb" ),
+)
+refs3 = map(inp->( readEMSA("C:\\Users\\nritchie\\Desktop\\Amy's GSR\\25 keV\\$(inp[1]) std.msa"), inp[2], inp[3]), inps3)
+
+frs3 = mapreduce(ref->filterreference(filt, ref..., withEsc=false), append!, refs3)
+# Build the VectorQuant structure from the fitered references and the filter
+vq3 = VectorQuant(frs3, filt)
+
+inps1 = (
+  # spectrum, element, composition
+  ( "Mo", n"Mo", mat"Mo" ),
+)
+refs1 = map(inp->( readEMSA("C:\\Users\\nritchie\\Desktop\\Amy's GSR\\25 keV\\$(inp[1]) std.msa"), inp[2], inp[3]), inps1)
+
+frs1 = mapreduce(ref->filterreference(filt, ref..., withEsc=false), append!, refs1)
+# Build the VectorQuant structure from the fitered references and the filter
+vq1 = VectorQuant(frs1, filt)
+
+display(plot(vq3,130:320))
+display(plot(vq1,130:320))
 ```

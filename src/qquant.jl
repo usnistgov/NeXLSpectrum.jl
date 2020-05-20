@@ -17,7 +17,7 @@ struct VectorQuant
 Constructs a structure used to perform accelerated filtered spectrum fits based on the specified
 collection of `FilteredReference`(s), and a `TopHatFilter`.
 """
-    function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter) =
+    function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
         refs = [ ( fref.identifier, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
         x = zeros(Float64, (length(filt.filters), length(frefs)))
         for (c, fref) in enumerate(frefs)
@@ -34,9 +34,9 @@ minproperties(::VectorQuant) = ( :BeamEnergy, :TakeOffAngle, :)
 Base.show(io::IO, vq::VectorQuant) =
     print(io, "VectorQuant[\n"*join(map(r->"\t"*repr(r[1]),vq.references),",\n")*"\n]")
 
-function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum)::FilterFitResult
+function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum, zero=x->max(0.0, x))::FilterFitResult
     raw = counts(spec, Float64)
-    krs=vq.vectors*raw
+    krs=zero.(vq.vectors*raw)
     spsc = dose(spec)
     residual = copy(raw)
     for (i, (_, roi, co, _, _)) in enumerate(vq.references)
@@ -47,7 +47,7 @@ function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum)::FilterFitResult
     for (i, (lbl, roi, _, ico, _)) in enumerate(vq.references)
         ii, bb = krs[i]*ico, sum(residual[roi])
         peakback[lbl]= ( ii, bb)
-        dkrs[i]=sqrt(ii+bb)/ico
+        dkrs[i]=sqrt(max(0.0, ii+bb))/ico
     end
     kratios = uvs(map(ref->ref[1], vq.references), #
         map(i->krs[i]/(vq.references[i][5]*spsc), eachindex(krs)), #
@@ -96,11 +96,10 @@ Base.show(io::IO, vqr::HyperspectrumQuant) =
     print(io,"$(vqr.hyperspec[:Name])["*join(map(l->repr(l),vqr.labels),",")*"]")
 
 
-function fit(vq::VectorQuant, hs::HyperSpectrum)::HyperspectrumQuant
-    posdef(x) = max(0.0, x)
+function fit(vq::VectorQuant, hs::HyperSpectrum, zero=x->max(0.0,x))::HyperspectrumQuant
     res = zeros(Float64, ( length(vq.references), size(hs)...))
     vecs = view(vq.vectors, :, 1:size(hs.signal,1))
     scales = map( ref -> 1.0 / (dose(hs) * ref[5]), vq.references)
-    foreach(idx->res[:, idx] = scales .* posdef.(vecs*counts(hs[idx], Float64)), eachindex(hs))
+    foreach(idx->res[:, idx] = scales .* zero.(vecs*counts(hs[idx], Float64)), eachindex(hs))
     return HyperspectrumQuant(hs, collect(map(r->r[1], vq.references)), res )
 end

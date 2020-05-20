@@ -348,10 +348,15 @@ Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =
     spy(filterdata(ff, fr.ffroi), Guide.title(repr(fr.identifier)), Guide.xlabel("Channels"), Guide.ylabel("Channels"))
 
 function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
-    lyrs = [ layer(x=chs, y=vq.vectors[i,chs], Theme(default_color=NeXLPalette[i]), Geom.line) for i in eachindex(vq.references)]
+    colors = distinguishable_colors(
+        size(vq.vectors,1)+2,
+        Color[RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), RGB(0 / 255, 168 / 255, 45 / 255)],
+        transform = deuteranopic,
+    )[3:end]
+    lyrs = [ layer(x=chs, y=vq.vectors[i,chs], Theme(default_color=colors[i]), Geom.line) for i in eachindex(vq.references)]
     plot(lyrs...,
         Guide.xlabel("Channel"), Guide.ylabel("Filtered"),
-        Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], NeXLPalette[1:length(vq.references)]))
+        Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], colors))
 end
 
 @info "Loading Gadfly support into NeXLSpectrum."
