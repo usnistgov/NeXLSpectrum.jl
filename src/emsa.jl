@@ -1,20 +1,29 @@
 using FileIO
 
 function isemsa(filename::AbstractString)
-    open(filename,"r") do f
-        for (lx, line) in enumerate(eachline(f))
-        	res = split_emsa_header_item(line)
-			if (res==nothing) || ((lx==1) && (res[1]!="FORMAT" || uppercase(res[2])!="EMSA/MAS SPECTRAL DATA FILE"))
-                return false
-			end
-            if (res==nothing) || ((lx==2) && (res[1]!="VERSION" || res[2]!="1.0"))
-                return false
-            end
-			if (lx>=2)
-				return true
+	res = false
+	try # .txt is Oxford's preference ?!?
+		if occursin(r".[[e|E]*[m|M][s|S][a|A]|[t|T][x|X][t|T]]$", filename) # .emsa, .msa, .txt
+		    open(filename,"r") do f
+		        for (lx, line) in enumerate(eachline(f))
+		        	tmp = split_emsa_header_item(line)
+					if (tmp==nothing) || #
+					   (lx==1 && !(tmp[1]=="FORMAT" && uppercase(tmp[2])=="EMSA/MAS SPECTRAL DATA FILE")) || #
+		               (lx==2 && !(tmp[1]=="VERSION" && tmp[2]=="1.0"))
+		                res = false
+						return
+		            end
+					if lx>=2
+						res = true
+						return
+					end
+				end
 			end
 		end
+	catch
+		# ignores
 	end
+	return res
 end
 
 function split_emsa_header_item(line::AbstractString)
@@ -326,4 +335,4 @@ function save(f::File{ISO_EMSA}, data)
 	end
 end
 
-FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa"])
+FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa", ".txt"])
