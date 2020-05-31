@@ -251,5 +251,3 @@ end
 function save(f::File{ASPEX_TIFF}, data)
     @error "Saving to ASPEX TIFF files is not implemented. Probably never will be."
 end
-
-FileIO.add_format(ASPEX_TIFF, detectAspexTIFF, [".tif", ".tiff"])

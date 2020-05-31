@@ -69,6 +69,10 @@ export readAspexTIFF
 include("brukerpdz.jl")
 export readbrukerpdz
 
+include("brukerspx.jl")
+export readbrukerspx
+# Also implements FileIO save(...) and load(...) for "Bruker SPX"
+
 include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real
 export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
@@ -138,6 +142,11 @@ export FilteredUnknownW # A filtered datum representing an unknown spectrum (for
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
+
+# Need to add these to FileIO.registry.jl ...
+# FileIO.add_format(BRUKERSPX, detectbrukerspx, ".spx")
+# FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa"])
+# FileIO.add_format(ASPEX_TIFF, detectAspexTIFF, [".tif", ".tiff"])
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
