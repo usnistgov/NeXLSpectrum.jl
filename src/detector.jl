@@ -40,6 +40,8 @@ end
 Base.show(io::IO, es::LinearEnergyScale) =
     print(io, "E[ch] = ",es.offset," + ",es.width,"⋅ch")
 
+Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width,h))
+
 """
     channel(eV::AbstractFloat, sc::LinearEnergyScale)
 

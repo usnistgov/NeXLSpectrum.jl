@@ -29,19 +29,19 @@ struct Signal{T<:Real, N} <: AbstractArray{T, N}
     hash::UInt
 
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, sz::Tuple{Int, Vararg{Int}}, ty::Type{<:Real}) =
-         new{ty, Int}(energy, properties, zeros(ty, sz), reduce(hash, hash.(energy, properties, UInt(0x12347863))))
+         new{ty, length(sz)}(energy, properties, zeros(ty, sz), reduce(hash, hash.( (energy, properties, UInt(0x12347863)))))
     Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, data::AbstractArray) =
         new{typeof(data[1]), ndims(data)}(energy, properties, data, mapreduce(hash,hash,(energy, properties, data)))
 end
 
 Base.show(io::IO, sig::Signal) =
-    print(io,"Signal[$(get(sig.properties,:Name,"Unnamed")),$(sig.energy),$(size(sig.counts))]")
+    print(io,"Signal[$(get(sig.properties,:Name,"Unnamed")),$(sig.energy),$(size(sig)),$(size(sig.counts))]")
 
 Base.getindex(sig::Signal, ci...) =
     getindex(sig.counts,ci...)
 Base.getindex(sig::Signal, si::Symbol) =
     getindex(sig.properties, si)
-Base.setindex!(sig::Signal, v::Real, ci...) =
+Base.setindex!(sig::Signal, v::Real, ci::Int...) =
     setindex!(sig.counts, v, ci...)
 Base.setindex!(sig::Signal, val::Any, si::Symbol) =
     setindex!(sig.properties, val, si)
