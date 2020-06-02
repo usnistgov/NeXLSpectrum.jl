@@ -34,6 +34,8 @@ rrpath = artifact"rplraw"
     @test sum(raw)[:] == sum(hs)[:]
     @test all(sum(hs, (sig, i) -> sig[640, i] > 3) .<= sum(hs))
     @test all(sum(raw, (sig, i) -> sig[640, i] > 3) .<= sum(raw))
+    raw=nothing
+    GC.gc()
 end
 
 @testset "QQHyperspec" begin
@@ -53,13 +55,15 @@ end
     )
     filt = buildfilter(det)
     frs = filterreferences(filt, refs...)
-    qq = VectorQuant(frs, filt, NeXLSpectrum.defaspure)
+    qq = VectorQuant(frs, filt)
     res=fit(qq, hs)
-    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,12,23], ( 1.10457, 0.00690, 0.0, 0.0, 0.0, 0.02532, 0.0))))
-    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,60,29], ( 1.07000, 0.01006, 0.36027, 0.20048, 0.01360,  0.44118, 0.00213 ))))
+    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,12,23], ( 1.10457, 0.006895, 0.0, 0.0, 0.0, 0.063778, 0.0 ))))
+    @test all(map(a->isapprox(a..., atol=0.00001), zip(res.results[:,60,29], ( 1.070000, 0.01006, 0.36027, 0.20048, 0.025442, 1.11138, 0.002127 ))))
     NeXLSpectrum.asimage(res,3,transform=x->log10(1.0+99.0x)/2.0)
     @test res[64,64] isa BasicFitResult
     df=asa(DataFrame, [res[i,64] for i in 32:95])
     @test df[2,2] ≈ res.results[1,33,64]
     @test df[12,6] ≈ res.results[5,43,64]
+    raw = nothing
+    GC.gc()
 end

@@ -1,4 +1,5 @@
 using FileIO
+using Dates
 
 function isemsa(filename::AbstractString)
 	res = false
@@ -100,6 +101,7 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
     props[:Filename]=filename
     inData, xpcscale = 0, 1.0
     stgpos = Dict{Symbol,Float64}()
+	date, time = missing, missing
     for (lx, line) in enumerate(eachline(f))
         if (lx ≤ 2)
             res = split_emsa_header_item(line)
@@ -122,68 +124,83 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
                 end
             end
         elseif startswith(line,"#")
-            res = split_emsa_header_item(line)
-            if res ≠ nothing
-                key, value, mod = res
-                if key == "SPECTRUM"
-                    inData = 1
-                elseif key == "BEAMKV"
-                    props[:BeamEnergy]=1000.0*parse(Float64,value) # in eV
-                elseif key == "XPERCHAN"
-					xperch=parse(Float64,value)
-					xpcscale = isnothing(mod) ? (xperch < 0.1 ? 1000.0 : 1.0) :  # Guess likely eV or keV
-									(isequal(mod,"KEV") ? 1000.0 : 1.0)
-                    energy = LinearEnergyScale(xpcscale*energy.offset, xpcscale*xperch)
-                elseif key == "LIVETIME"
-                    props[:LiveTime]=parse(Float64,value)
-                elseif key == "REALTIME"
-                    props[:RealTime]=parse(Float64,value)
-                elseif key == "PROBECUR"
-                    props[:ProbeCurrent]=parse(Float64,value)
-                elseif key == "OFFSET"
-                    energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
-                elseif key == "TITLE"
-                    props[:Name]=value
-                elseif key == "OWNER"
-                    props[:Owner]=value
-                elseif key == "ELEVANGLE"
-                    props[:TakeOffAngle] = (props[:Elevation] = deg2rad(parse(Float64, value)))
-                elseif key == "XPOSITION"
-                    stgpos[:X] = parse(Float64, value)
-                elseif key == "YPOSITION"
-                    stgpos[:Y] = parse(Float64, value)
-                elseif key == "ZPOSITION"
-                    stgpos[:Z] = parse(Float64, value)
-                elseif key == "COMMENT"
-                    prev = getindex(props,:Comment,missing)
-                    props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
-                elseif key == "#D2STDCMP"
-                    props[:Composition] = parsedtsa2comp(value)
-                elseif key == "#CONDCOATING"
-                    props[:Coating] = parsecoating(value)
-                elseif key =="#RTDET" # Bruker
-					props[:DetectorModel] = value
-				elseif key == "#TDEADLYR" # Bruker
-					@assert isnothing(mod) || (!isequal(mod,"CM")) "Unexpected scale -$mod"
-					props[:DeadLayer] = parse(Float64, value)
-				elseif key == "#FANO" # Bruker
-					props[:Fano] = parse(Float64, value)
-				elseif key == "#WORKING"
-					props[:WorkingDistance] = 0.1*parse(Float64, split(value)[1])
-				elseif key == "#MNFWHM" # Bruker
-					sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
-					props[:FWHMMnKa] = sc*parse(Float64, value)
-				elseif key == "#IDENT" # Bruker
-					elm = nothing
-					try
-						props[:XRFAnode] = parse(Element, value)
-					catch
-						# Just ignore it
+			try
+	            res = split_emsa_header_item(line)
+	            if res ≠ nothing
+	                key, value, mod = res
+	                if key == "SPECTRUM"
+	                    inData = 1
+	                elseif key == "BEAMKV"
+	                    props[:BeamEnergy]=1000.0*parse(Float64,value) # in eV
+	                elseif key == "XPERCHAN"
+						xperch=parse(Float64,value)
+						xpcscale = isnothing(mod) ? (xperch < 0.1 ? 1000.0 : 1.0) :  # Guess likely eV or keV
+										(isequal(mod,"KEV") ? 1000.0 : 1.0)
+	                    energy = LinearEnergyScale(xpcscale*energy.offset, xpcscale*xperch)
+	                elseif key == "LIVETIME"
+	                    props[:LiveTime]=parse(Float64,value)
+	                elseif key == "REALTIME"
+	                    props[:RealTime]=parse(Float64,value)
+	                elseif key == "PROBECUR"
+	                    props[:ProbeCurrent]=parse(Float64,value)
+	                elseif key == "OFFSET"
+	                    energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
+					elseif key == "DATE"
+						try
+							date = Date(DateTime(value, "d-u-y"))
+						catch
+							date = Date(DateTime(value, "d-m-y"))
+						end
+					elseif key == "TIME"
+						time = Time(DateTime(value, count(c->c==':',value) == 2 ? "H:M:S" : "H:M"))
+	                elseif key == "TITLE"
+	                    props[:Name]=value
+	                elseif key == "OWNER"
+	                    props[:Owner]=value
+	                elseif key == "ELEVANGLE"
+	                    props[:TakeOffAngle] = (props[:Elevation] = deg2rad(parse(Float64, value)))
+	                elseif key == "XPOSITION"
+	                    stgpos[:X] = parse(Float64, value)
+	                elseif key == "YPOSITION"
+	                    stgpos[:Y] = parse(Float64, value)
+	                elseif key == "ZPOSITION"
+	                    stgpos[:Z] = parse(Float64, value)
+	                elseif key == "COMMENT"
+	                    prev = getindex(props,:Comment,missing)
+	                    props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
+	                elseif key == "#D2STDCMP"
+	                    props[:Composition] = parsedtsa2comp(value)
+	                elseif key == "#CONDCOATING"
+	                    props[:Coating] = parsecoating(value)
+	                elseif key =="#RTDET" # Bruker
+						props[:DetectorModel] = value
+					elseif key == "#TDEADLYR" # Bruker
+						@assert isnothing(mod) || (!isequal(mod,"CM")) "Unexpected scale -$mod"
+						props[:DeadLayer] = parse(Float64, value)
+					elseif key == "#FANO" # Bruker
+						props[:Fano] = parse(Float64, value)
+					elseif key == "#WORKING"
+						props[:WorkingDistance] = 0.1*parse(Float64, split(value)[1])
+					elseif key == "#MNFWHM" # Bruker
+						sc = (isnothing(mod) ? 1000.0 : (isequal(mod,"KEV") ? 1000.0 : 1.0))
+						props[:FWHMMnKa] = sc*parse(Float64, value)
+					elseif key == "#IDENT" # Bruker
+						elm = nothing
+						try
+							props[:XRFAnode] = parse(Element, value)
+						catch
+							# Just ignore it
+						end
 					end
-				end
-            end
+	            end
+			catch
+				println(stderr,"Error parsing: $line")
+			end
         end
     end
+	if !(ismissing(date) || ismissing(time))
+		props[:AcquisitionTime] = DateTime(date, time)
+	end
     if startswith( props[:Name], "Bruker") && haskey(props, :Composition)
         props[:Name]=name(props[:Composition])
     end
@@ -334,5 +351,3 @@ function save(f::File{ISO_EMSA}, data)
 		writeEMSA(ios)
 	end
 end
-
-FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa", ".txt"])
