@@ -57,21 +57,22 @@ export maxspectrum # Dave Bright's max spectra derived spectrum
 
 export maxproperty, minproperty # Min value of a property over a vector of spectra
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
+export textplot # A quick way to visualize a spectrum
 
 include("emsa.jl")
-export readEMSA # Read an EMSA file
-export writeEMSA # Write an EMSA file
-# Also implements FileIO save(...) and load(...) for "ISO EMSA"
 include("aspextiff.jl")
-export readAspexTIFF
-# Also implements FileIO save(...) and load(...) for "ASPEX TIFF"
-
 include("brukerpdz.jl")
-export readbrukerpdz
-
 include("brukerspx.jl")
-export readbrukerspx
-# Also implements FileIO save(...) and load(...) for "Bruker SPX"
+include("fileiosupport.jl")
+export loadspectrum # Load a spectrum from IO or filename
+export savespectrum # Save a spectrum to IO or filename to a format
+export sniffspectrum # Determine spectrum file type
+
+# SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
+export BrukerSPX # Read only SEM/EDS & XRF format
+export BrukerPDZ # Read only  XRF format
+export ISOEMSA   # Read / write ISO/EMSA spectrum file format
+export ASPEXTIFF # Read only Vendor SEM/EDS format
 
 include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real
@@ -142,11 +143,6 @@ export FilteredUnknownW # A filtered datum representing an unknown spectrum (for
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
-
-# Need to add these to FileIO.registry.jl ...
-# FileIO.add_format(BRUKERSPX, detectbrukerspx, ".spx")
-# FileIO.add_format(ISO_EMSA, isemsa, [".msa", ".emsa"])
-# FileIO.add_format(ASPEX_TIFF, detectAspexTIFF, [".tif", ".tiff"])
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

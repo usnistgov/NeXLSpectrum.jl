@@ -1,30 +1,17 @@
-using FileIO
 using Dates
 
-function isemsa(filename::AbstractString)
-	res = false
-	try # .txt is Oxford's preference ?!?
-		if occursin(r".[[e|E]*[m|M][s|S][a|A]|[t|T][x|X][t|T]]$", filename) # .emsa, .msa, .txt
-		    open(filename,"r") do f
-		        for (lx, line) in enumerate(eachline(f))
-		        	tmp = split_emsa_header_item(line)
-					if (tmp==nothing) || #
-					   (lx==1 && !(tmp[1]=="FORMAT" && uppercase(tmp[2])=="EMSA/MAS SPECTRAL DATA FILE")) || #
-		               (lx==2 && !(tmp[1]=="VERSION" && tmp[2]=="1.0"))
-		                res = false
-						return
-		            end
-					if lx>=2
-						res = true
-						return
-					end
-				end
-			end
+function isemsa(io::IO)
+	for (lx, line) in enumerate(eachline(io))
+		tmp = split_emsa_header_item(line)
+		if (tmp==nothing) || #
+		   (lx==1 && !(tmp[1]=="FORMAT" && uppercase(tmp[2])=="EMSA/MAS SPECTRAL DATA FILE")) || #
+		   (lx==2 && !(tmp[1]=="VERSION" && tmp[2]=="1.0"))
+			return false
 		end
-	catch
-		# ignores
+		if lx>=2
+			return true
+		end
 	end
-	return res
 end
 
 function split_emsa_header_item(line::AbstractString)
@@ -244,8 +231,8 @@ function writeEMSA(io::IOStream, spec::Spectrum)
 	writeline(io, "TITLE",spec[:Name])
 	if haskey(spec,:AcquisitionTime)
 		dt = spec[:AcquisitionTime]
-		writeline(io, "DATE",uppercase(Dates.format(dt, "d-m-yyyy"))) # 25-FEB-2022
-		writeline(io, "TIME",Times.format(dt, "HH:MM")) # 15:32
+		writeline(io, "DATE",uppercase(Dates.format(dt, "d-u-yyyy"))) # 25-FEB-2022
+		writeline(io, "TIME",Dates.format(dt, "HH:MM:SS")) # 15:32
 	end
 	if haskey(spec,:Owner)
 		writeline(io, "OWNER","")
@@ -328,26 +315,4 @@ function writeEMSA(io::IOStream, spec::Spectrum)
 		end
 	end
 	writeline(io, "#ENDOFDATA","")
-end
-
-const ISO_EMSA = format"ISO/EMSA"
-
-function load(file::File{ISO_EMSA})
-    open(filename) do ios
-        return load(Stream(ISO_EMSA,ios))
-    end
-end
-
-function load(ios::Stream{ISO_EMSA})
-	return readEMSA(ios.io,Float64)
-end
-
-function save(f::Stream{ISO_EMSA}, spec::Spectrum)
-    writeEMSA(f.io, spec)
-end
-
-function save(f::File{ISO_EMSA}, data)
-	open(f) do ios
-		writeEMSA(ios)
-	end
 end

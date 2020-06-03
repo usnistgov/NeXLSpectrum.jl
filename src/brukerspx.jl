@@ -1,5 +1,4 @@
 using EzXML
-using FileIO
 
 """
     readbrukerspx(fn::AbstractString)::Spectrum
@@ -45,12 +44,12 @@ function readbrukerspx(io::IO)::Spectrum
     if !isnothing(item)
         props[:RealTime]=0.001*parse(Int, findfirst("RealTime",item).content) # <RealTime>310610</RealTime>
         props[:LiveTime]=0.001*parse(Int, findfirst("LifeTime",item).content) # <LifeTime>300294</LifeTime>
-        props[:BrukerShapingTime] = parse(Int, findfirst("ShapingTime", item).content) # <ShapingTime>130000</ShapingTime>
+        props[:BrukerThroughtput] = parse(Int, findfirst("ShapingTime", item).content) # <ShapingTime>130000</ShapingTime>
     end
     item = findfirst("//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTDetectorHeader']",xml)
     if !isnothing(item)
         props[:DetectorSerialNumber] = findfirst("Serial",item).content
-        props[:DetectorModel] = findfirst("Type",item).content
+        props[:DetectorModel] = "Bruker "*findfirst("Type",item).content
         thickness = 0.1 * parse(Float64, findfirst("DetectorThickness",item).content) # <DetectorThickness>0.45</DetectorThickness>
         props[:DetectorThickness] = thickness
         sideadlayer = parse(Float64, findfirst("SiDeadLayerThickness", item).content) # <SiDeadLayerThickness>0.029</SiDeadLayerThickness>
@@ -105,32 +104,12 @@ function readbrukerspx(io::IO)::Spectrum
     return Spectrum(nrgy, counts, props)
 end
 
-const BRUKERSPX = format"Bruker SPX"
 
-function load(file::File{BRUKERSPX})
-    return open(file.filename, read=true) do io
-        readbrukerspx(io)
-    end
-end
-
-load(ios::Stream{BRUKERSPX}) = readbrukerspx(ios)
-
-function detectbrukerspx(fn::AbstractString)
+function detectbrukerspx(io::IO)
     try
-        return open(fn) do io
-            startswith(strip(readline(io)),"<?xml version=\"1.0\" encoding=") &&
-                strip(readline(io))=="<TRTSpectrum>";
-        end
+        startswith(strip(readline(io)),"<?xml version=\"1.0\" encoding=") &&
+            strip(readline(io))=="<TRTSpectrum>";
     catch
         return false
     end
-end
-
-
-function save(f::File{BRUKERSPX}, data)
-    @error "Saving to Bruker SPX streams is not implemented. Probably never will be."
-end
-
-function save(ios::Stream{BRUKERSPX}, data)
-    @error "Saving to Bruker SPX streams is not implemented. Probably never will be."
 end

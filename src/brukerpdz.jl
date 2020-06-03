@@ -31,27 +31,10 @@ function readbrukerpdz(io::IO)
     return Spectrum(LinearEnergyScale(0.0, eVpCh), collect(counts), props)
 end
 
-
-const BrukerPDZ = format"Bruker PDZ"
-
-function detectBrukerPDZ(fn::AbstractString)
-    res=false
+function detectBrukerPDZ(ios::IO)
     try
-        if occursin(r".[p|P][d|D][z|Z]$", fn)
-            open(fn, "r") do io
-                res = read(io, UInt32) == 0x00170101
-            end
-        end
+        return read(io, UInt32) == 0x00170101
     catch
-        # ignore
+        return false
     end
-    return res
 end
-
-load(ios::Stream{BrukerPDZ}) = readbrukerpdz(ios)
-
-function save(f::Stream{BrukerPDZ}, data)
-    @error "Saving to Bruker PDZ is not implemented. Probably never will be."
-end
-
-FileIO.add_format(BrukerPDZ, detectBrukerPDZ, [ ".pdz" ])

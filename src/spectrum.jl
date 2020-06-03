@@ -16,6 +16,7 @@ different mechanisms.  If spec is a Spectrum then
     spec[123] # will return the number of counts in channel 123
 	spec[123:223] # will return a Vector of counts from channel 123:223
     spec[134.] # will return the number of counts in the channel at energy 134.0 eV
+    spec[134.0:270.0] # will return a Vector of counts for channels with energies between 134.0 eV and 270.0 eV
     spec[:Comment] # will return the property named :Comment
 
 Metadata is identified by a symbol. Predefined symbols include
@@ -41,13 +42,40 @@ Metadata is identified by a symbol. Predefined symbols include
 	:AcquisitionTime # Date and time of acquisition (DateTime struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
 
-Less common items
+Less common items:
 
 	:ImageMag	   # Magnification (assuming a 3.5" image) of the first image
 	:ImageZoom     # Additional zoom for second image in a two image TIFF
 	:Operator      # Analyst in ASPEX TIFF files
+    :Image1, :Image2 ... # Images associated with the spectrum
+    :BrukerThroughtput # Nominal throughtput setting on a Bruker detector
+    :DetectorSerialNumber # EDS detector serial number
+    :DetectorModel # Vendor model name
+    :DetectorThickness # Thickness of detector active area
+    :DeadLayerThickness # Thickness of Si dead layer on the entrance surface of the detector
+    :Window        # Window construction details
+    :DetectorSolidAngle # Collection solid angle of the X-ray detector
+    :ChamberPressure # Vacuum presure in the sample chamber
+    :ChamberAtmosphere # Nominally the composition of the residual gas in the chamber
 
-Not all spectra will define all properties.
+
+XRF related items:
+
+    :XRFSourceEnergy  # Accelarating voltage within X-ray tube (eV)
+    :XRFTubeAnode]    # Element from which the X-ray tube is constructed
+    :XRFTubeCurrent]  # Electron current in the X-ray tube
+    :XRFTubeIncidentAngle # Incident angle of electron beam in tube
+    :XRFTubeTakeOffAngle # Take-off angle from tube
+    :XRFExcitationAngle # Angle of incidence of the X-ray beam on the sample
+    :XRFDetectionAngle # Angle of the detector relative to the sample
+    :XRFExcitationPathLength # Distance from X-ray source to sample
+    :XRFDetectionPathLength # Distance from the sample to the X-ray detector
+    :XRFSampleTilt    #  Additional tilt of the sample
+    :XRFTubeWindow]   # Construction of the tube window
+
+Not all spectra will define all properties.  Algorithms can define the `minproperties(ty::Type)` method to specify
+which properties are required by an algorithm of `ty::Type`.  Then `hasminrequired` and `requiredbutmissing` methods
+will determine whether a `Spectrum` or `Dict{Symbol,Any}` is suitable for an algorithm.
 """
 struct Spectrum{T<:Real} <: AbstractVector{T}
     energy::EnergyScale
@@ -71,26 +99,35 @@ Base.isequal(spec1::Spectrum, spec2::Spectrum) =
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
 # Make it act like an AbstractVector
-Base.eltype(spec::Spectrum) = Spectrum
+Base.eltype(spec::Spectrum) = eltype(spec.counts)
 Base.length(spec::Spectrum) = length(spec.counts)
 Base.ndims(spec::Spectrum) = ndims(spec.counts)
 Base.size(spec::Spectrum) = size(spec.counts)
 Base.size(spec::Spectrum, n) = size(spec.counts, n)
-Base.axes(spec::Spectrum) = axes(spec.counts)
-Base.axes(spec::Spectrum, n) = axes(spec.counts, n)
+Base.axes(spec::Spectrum) = Base.axes(spec.counts)
+Base.axes(spec::Spectrum, n) = Base.axes(spec.counts, n)
 Base.eachindex(spec::Spectrum) = eachindex(spec.counts)
 Base.stride(spec::Spectrum, k) = stride(spec.counts, k)
 Base.strides(spec::Spectrum) = strides(spec.counts)
+# Integer indices
 Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
 Base.getindex(spec::Spectrum, sr::StepRange{Int64,Int64}) = spec.counts[sr]
 Base.getindex(spec::Spectrum, ur::UnitRange{Int64}) = spec.counts[ur]
-Base.get(spec::Spectrum, idx::Int, def = convert(typeof(spec.counts[1]), 0)) = get(spec.counts, idx, def)
-Base.setindex!(spec::Spectrum, val::Real, idx::Int) = spec.counts[idx] = convert(typeof(spec.counts[1]), val)
+# AbstractFloat indices
+Base.getindex(spec::Spectrum, energy::AbstractFloat) = spec.counts[channel(energy, spec)]
+Base.getindex(spec::Spectrum, sr::StepRangeLen{<:AbstractFloat}) = spec.counts[channel(sr[1], spec):channel(sr[end], spec)]
+
+Base.get(spec::Spectrum, idx::Int, def = convert(eltype(spec.counts), 0)) = get(spec.counts, idx, def)
+Base.setindex!(spec::Spectrum, val::Real, idx::Int) = spec.counts[idx] = convert(eltype(spec.counts), val)
 Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = vals
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
+"""
+    rangeofenergies(spec::Spectrum, ch)
 
+Returns the low and high energy extremes for the channels `ch`.
+"""
 rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
 NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
@@ -116,20 +153,18 @@ function textplot(io::IO, spec::Spectrum; size = (16, 80))
     step, max = maxCh ÷ cols, maximum(spec.counts)
     maxes = [rows * (maximum(spec.counts[(i-1)*step+1:i*step]) / max) for i = 1:cols]
     for r = 1:rows
-        ss = ""
-        for i = 1:cols
-            ss = ss * (r ≥ rows - maxes[i] ? "*" : " ")
-        end
+        print(io, join(map(i -> r ≥ rows - maxes[i] ? '*' : ' ', 1:cols)))
         if r == 1
-            println(io, "$ss $max")
+            println(io, " $(round(max,digits=0))")
         elseif r == rows
-            println(io, "$ss $(0.001*e0_eV) keV]")
+            println(io, " $(round(0.001*e0_eV,digits=2)) keV")
         else
-            println(io, ss)
+            println(io)
         end
     end
 end
 
+textplot(spec::Spectrum; size = (16, 80)) =  textplot(stdout, spec, size=size)
 """
     asa(::Type{DataFrame}, spec::Spectrum)
 

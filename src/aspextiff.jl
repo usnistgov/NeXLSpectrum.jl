@@ -8,8 +8,10 @@ object loaded from the specified file.
 
 using NeXLSpectrum
 using Dates
-using FileIO
 using Images
+using AxisArrays
+using Unitful: mm
+using FileIO
 
 const _TIFF_TYPES = (
     ("byte", UInt8),
@@ -115,6 +117,7 @@ function _parseDesc(desc::AbstractString)
         try
             if k == "MAG"
                 res[:ImageMag] = number(v)
+                res[:FieldOfView] = (3.5*25.4*1.0e3) / number(v) # Assumed 3.5" image width in microns
             elseif k == "ZOOM"
                 res[:ImageZoom] = number(v)
             elseif k == "ANALYSIS_DATE"
@@ -225,29 +228,20 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            res[:Image] = FileIO.load(Stream(format"TIFF", ios))
+            imgs = FileIO.load(Stream(format"TIFF", ios))
+            if haskey(res, :FieldOfView) && haskey(res, :ImageZoom) && res[:ImageZoom]==1.0
+                pix = 0.001 * res[:FieldOfView] / size(imgs,2)
+                off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
+                ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
+                ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
+                foreach( i -> res[Symbol("Image$i")] = AxisArray(imgs[:,:,i], ay, ax), 1:size(imgs,3))
+            else
+                foreach( i -> res[Symbol("Image$i")] = imgs[:,:,i], 1:size(imgs,3))
+            end
         catch err
+            @info err
             @info "Unable to read images from $(ios)."
         end
     end
     return res
-end
-
-const ASPEX_TIFF = format"ASPEX TIFF"
-
-load(ios::Stream{ASPEX_TIFF}; withImgs = false) = readAspexTIFF(ios, withImgs)
-
-function load(file::File{ASPEX_TIFF}; withImgs = false)
-    open(filename) do ios
-        return readAspexTIFF(ios)
-    end
-end
-
-
-function save(f::Stream{ASPEX_TIFF}, data)
-    @error "Saving to ASPEX TIFF streams is not implemented. Probably never will be."
-end
-
-function save(f::File{ASPEX_TIFF}, data)
-    @error "Saving to ASPEX TIFF files is not implemented. Probably never will be."
 end
