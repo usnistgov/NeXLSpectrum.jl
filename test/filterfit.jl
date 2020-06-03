@@ -28,12 +28,12 @@ using Printf
     @testset "LLSQ_K412_1" begin
         dir = @__DIR__
         path = "$(dir)/K412 spectra/"
-        unks = readEMSA.(@sprintf("%sIII-E K412[%d][4].msa", path, i) for i = 0:4)
-        al2o3 = readEMSA(path * "Al2O3 std.msa")
-        caf2 = readEMSA(path * "CaF2 std.msa")
-        fe = readEMSA(path * "Fe std.msa")
-        mgo = readEMSA(path * "MgO std.msa")
-        sio2 = readEMSA(path * "SiO2 std.msa")
+        unks = loadspectrum.(@sprintf("%sIII-E K412[%d][4].msa", path, i) for i = 0:4)
+        al2o3 = loadspectrum(path * "Al2O3 std.msa")
+        caf2 = loadspectrum(path * "CaF2 std.msa")
+        fe = loadspectrum(path * "Fe std.msa")
+        mgo = loadspectrum(path * "MgO std.msa")
+        sio2 = loadspectrum(path * "SiO2 std.msa")
 
         det = simpleEDS(4096, 10.0, 0.0, 132.0)
         ff = buildfilter(det)
@@ -82,12 +82,12 @@ using Printf
     @testset "LLSQ_K412_2" begin
         dir = @__DIR__
         path = joinpath(@__DIR__,"K412 spectra")
-        unks = readEMSA.(joinpath(path, "III-E K412[$i][4].msa") for i = 0:4)
-        al2o3 = readEMSA(joinpath(path, "Al2O3 std.msa"))
-        caf2 = readEMSA(joinpath(path, "CaF2 std.msa"))
-        fe = readEMSA(joinpath(path, "Fe std.msa"))
-        mgo = readEMSA(joinpath(path, "MgO std.msa"))
-        sio2 = readEMSA(joinpath(path, "SiO2 std.msa"))
+        unks = loadspectrum.(joinpath(path, "III-E K412[$i][4].msa") for i = 0:4)
+        al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"))
+        caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"))
+        fe = loadspectrum(joinpath(path, "Fe std.msa"))
+        mgo = loadspectrum(joinpath(path, "MgO std.msa"))
+        sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"))
 
         det = BasicEDS(4096, 0.0, 10.0, 132.0, 10, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
         ff = buildfilter(det)
@@ -151,15 +151,15 @@ using Printf
     @testset "ADM6005a" begin
         dir = @__DIR__
         path = "$(dir)/ADM6005a spectra/"
-        unks = readEMSA.("$(path)ADM-6005a_$(i).msa" for i = 1:15)
-        al = readEMSA("$(path)Al std.msa")
-        caf2 = readEMSA("$(path)CaF2 std.msa")
-        fe = readEMSA("$(path)Fe std.msa")
-        ge = readEMSA("$(path)Ge std.msa")
-        si = readEMSA("$(path)Si std.msa")
-        sio2 = readEMSA("$(path)SiO2 std.msa")
-        ti = readEMSA("$(path)Ti trimmed.msa")
-        zn = readEMSA("$(path)Zn std.msa")
+        unks = loadspectrum.("$(path)ADM-6005a_$(i).msa" for i = 1:15)
+        al = loadspectrum("$(path)Al std.msa")
+        caf2 = loadspectrum("$(path)CaF2 std.msa")
+        fe = loadspectrum("$(path)Fe std.msa")
+        ge = loadspectrum("$(path)Ge std.msa")
+        si = loadspectrum("$(path)Si std.msa")
+        sio2 = loadspectrum("$(path)SiO2 std.msa")
+        ti = loadspectrum("$(path)Ti trimmed.msa")
+        zn = loadspectrum("$(path)Zn std.msa")
 
         det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
         ff = buildfilter(det)

@@ -44,7 +44,7 @@ end
         Dict{Symbol,Any}(:LiveTime => 0.01, :BeamEnergy => 20.0e3, :ProbeCurrent=>1.0))
     hs = ashyperspectrum(raw, "Map[15]")
     mp = maxpixel(hs)
-    cstd, festd, fes2std, mgostd, sistd = map(n->readEMSA(joinpath(rrpath, "standards", "$n std.msa")), ("C", "Fe", "FeS2", "MgO", "Si"))
+    cstd, festd, fes2std, mgostd, sistd = map(n->loadspectrum(joinpath(rrpath, "standards", "$n std.msa")), ("C", "Fe", "FeS2", "MgO", "Si"))
     det = matching(festd, 132.0, 10)
     refs = (
         ( cstd, n"C", mat"C" ),

@@ -92,7 +92,7 @@ function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVecto
     function rescaleCovariances(uvs::UncertainValues, covscales::AbstractVector{N})::UncertainValues
         cov = copy(uvs.covariance)
         # rwgts = map(sqrt,wgts)
-        a = axes(cov)
+        a = Base.axes(cov)
         for r in a[1], c in a[2]
             cov[r,c]*=covscales[r]*covscales[c]
         end

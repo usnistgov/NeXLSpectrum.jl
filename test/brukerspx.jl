@@ -3,12 +3,12 @@ using Test
 
 @testset "XRF Spectrum" begin
     fn1 = joinpath("Other","20170510_D1_Mo_50kv_100mA_acryl 0.spx")
-    sp1a = readbrukerspx(fn1)
+    sp1a = loadspectrum(fn1)
     #sp1b = FileIO.load(fn1)
     @test sp1a[:RealTime] == 310.610
     @test sp1a[:LiveTime] == 300.294
-    @test sp1a[:BrukerShapingTime] == 130000
-    @test sp1a[:DetectorModel] == "XFlash 430"
+    @test sp1a[:BrukerThroughput] == 130000
+    @test sp1a[:DetectorModel] == "Bruker XFlash 430"
     @test sp1a[:DetectorSerialNumber] == "11881_0239"
     @test sp1a[:DetectorThickness] == 0.1*0.45 # cm
     @test sp1a[:DeadLayerThickness] == 0.1*0.029 # ???
@@ -32,12 +32,12 @@ end
 
 @testset "SEM/EDS" begin
     fn2 = joinpath("Other","Albite_ChMxd_20kV0p5nA130kHzTC_5p9kHzOCR_4ks.spx")
-    sp2a = readbrukerspx(fn2)
+    sp2a = loadspectrum(fn2)
     #sp2b = FileIO.load(fn2)
     @test sp2a[:RealTime] == 4028.702
     @test sp2a[:LiveTime] == 4000.005
-    @test sp2a[:BrukerShapingTime] == 130000
-    @test sp2a[:DetectorModel] == "XFlash 6|30"
+    @test sp2a[:BrukerThroughput] == 130000
+    @test sp2a[:DetectorModel] == "Bruker XFlash 6|30"
     @test sp2a[:DetectorSerialNumber] == "13773"
     @test sp2a[:DetectorThickness] == 0.1*0.45
     @test sp2a[:DeadLayerThickness] == 0.1*0.029

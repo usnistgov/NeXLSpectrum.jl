@@ -44,7 +44,7 @@ function readbrukerspx(io::IO)::Spectrum
     if !isnothing(item)
         props[:RealTime]=0.001*parse(Int, findfirst("RealTime",item).content) # <RealTime>310610</RealTime>
         props[:LiveTime]=0.001*parse(Int, findfirst("LifeTime",item).content) # <LifeTime>300294</LifeTime>
-        props[:BrukerThroughtput] = parse(Int, findfirst("ShapingTime", item).content) # <ShapingTime>130000</ShapingTime>
+        props[:BrukerThroughput] = parse(Int, findfirst("ShapingTime", item).content) # <ShapingTime>130000</ShapingTime>
     end
     item = findfirst("//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTDetectorHeader']",xml)
     if !isnothing(item)

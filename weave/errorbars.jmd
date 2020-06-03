@@ -27,14 +27,14 @@ using BenchmarkTools
 Load the spectra, define the fit model and apply it.
 ```julia
 path = "K412 spectra"
-fe = readEMSA("$(path)/Fe std.msa")
+fe = loadspectrum("$(path)/Fe std.msa")
 det = matching(fe, 132.0, 10)
-unks = (i->readEMSA("$(path)/III-E K412[$i][4].msa",det,true)).(0:4)
-al2o3 = readEMSA("$(path)/Al2O3 std.msa",det,true)
-caf2 = readEMSA("$(path)/CaF2 std.msa",det,true)
-fe = readEMSA("$(path)/Fe std.msa",det,true)
-mgo = readEMSA("$(path)/MgO std.msa",det,true)
-sio2 = readEMSA("$(path)/SiO2 std.msa",det,true)
+unks = (i->loadspectrum("$(path)/III-E K412[$i][4].msa",det,true)).(0:4)
+al2o3 = loadspectrum("$(path)/Al2O3 std.msa",det,true)
+caf2 = loadspectrum("$(path)/CaF2 std.msa",det,true)
+fe = loadspectrum("$(path)/Fe std.msa",det,true)
+mgo = loadspectrum("$(path)/MgO std.msa",det,true)
+sio2 = loadspectrum("$(path)/SiO2 std.msa",det,true)
 
 refs = (
   # spectrum, element, composition
@@ -67,8 +67,8 @@ display(describe(res))
 Repeat using the ADM glass.  Fe is not present in ADM-6005a but we fit it to see what a null result looks like.
 ```julia
 path = "../test/ADM6005a spectra"
-unks = map(i->readEMSA("$(path)/ADM-6005a_$i.msa"),1:15)
-al, caf2, fe, ge, si, sio2, ti, zn = map(f->readEMSA("$(path)/$f.msa"), ("Al std", "CaF2 std", "Fe std", "Ge std", "Si std", "SiO2 std", "Ti trimmed","Zn std"))
+unks = map(i->loadspectrum("$(path)/ADM-6005a_$i.msa"),1:15)
+al, caf2, fe, ge, si, sio2, ti, zn = map(f->loadspectrum("$(path)/$f.msa"), ("Al std", "CaF2 std", "Fe std", "Ge std", "Si std", "SiO2 std", "Ti trimmed","Zn std"))
 
 refs = (
   # spectrum, element, composition

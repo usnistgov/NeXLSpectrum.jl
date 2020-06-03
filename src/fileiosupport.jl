@@ -48,7 +48,7 @@ sniff(::Type{ISOEMSA}, ios::IO) = isemsa(ios)
 
 struct ASPEXTIFF <: SpectrumFileType end
 
-loadspectrum(::Type{ASPEXTIFF}, ios::IO) = readAspexTIFF(ios, withImgs=true)
+loadspectrum(::Type{ASPEXTIFF}, ios::IO; withImgs=true, astype::Type{<:Real} = Float64) = readAspexTIFF(ios, withImgs=withImgs, astype=astype)
 extensions(::Type{ASPEXTIFF}) = ( ".tif", )
 
 sniff(::Type{ASPEXTIFF}, ios::IO) = detectAspexTIFF(ios)

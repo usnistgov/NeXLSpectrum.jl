@@ -5,7 +5,7 @@ using NeXLSpectrum
 @testset "Al2O3" begin
     dir = @__DIR__
     path = "$(dir)/K412 spectra/"
-    al2o3 = readEMSA(path * "Al2O3 std.msa")
+    al2o3 = loadspectrum(path * "Al2O3 std.msa")
     @test isapprox(al2o3[:LiveTime],1172.19288,atol=0.00001)
     @test isapprox(al2o3[:BeamEnergy],20.0e3,atol=1.0)
     @test isapprox(al2o3[:ProbeCurrent],1.10989,atol=0.00001)

@@ -50,8 +50,8 @@ Base.length(sig::Signal) = length(sig.counts)
 Base.ndims(sig::Signal) = ndims(sig.counts)
 Base.size(sig::Signal) = size(sig.counts)
 Base.size(sig::Signal, n) = size(sig.counts, n)
-Base.axes(sig::Signal) = axes(sig.counts)
-Base.axes(sig::Signal, n) = axes(sig.counts, n)
+Base.axes(sig::Signal) = Base.axes(sig.counts)
+Base.axes(sig::Signal, n) = Base.axes(sig.counts, n)
 Base.eachindex(sig::Signal) = eachindex(sig.counts)
 Base.stride(sig::Signal, k) = stride(sig.counts, k)
 Base.strides(sig::Signal) = strides(sig.counts)
@@ -132,7 +132,7 @@ function maxpixel(sig::Signal)
         end
         return tmp
     end
-    return map(i->maxi(i), axes(sig.counts,1))
+    return map(i->maxi(i), Base.axes(sig.counts,1))
 end
 
 """
@@ -166,7 +166,7 @@ indexofmaxpixel(sig::Signal) =
     indexofmaxpixel(sig, CartesianIndices(size(sig.counts)[2:end]))
 
 indexofmaxpixel(sig::Signal, cis::CartesianIndices) =
-    map(i->indexofmaxpixel(sig,i,cis),axes(sig,1))
+    map(i->indexofmaxpixel(sig,i,cis),Base.axes(sig,1))
 
 """
     sum(sig::Signal)
@@ -190,7 +190,7 @@ function Base.sum(sig::Signal)
             return tmpf
         end
     end
-    return map(i->sumi(i), axes(sig.counts,1))
+    return map(i->sumi(i), Base.axes(sig.counts,1))
 end
 
 """
@@ -218,7 +218,7 @@ function Base.sum(sig::Signal, filt::Function)
     end
     cis = CartesianIndices(( size(sig.counts)[2:end] ))
     include = filter(i->filt(sig, i), cis)
-    return map(i->sumi(i, include), axes(sig.counts,1))
+    return map(i->sumi(i, include), Base.axes(sig.counts,1))
 end
 
 """
@@ -271,8 +271,8 @@ Base.length(hss::HyperSpectrum) = length(hss.index)
 Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
 Base.size(hss::HyperSpectrum) = size(hss.index)
 Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
-Base.axes(hss::HyperSpectrum) = axes(hss.index)
-Base.axes(hss::HyperSpectrum, n) = axes(hss.index, n)
+Base.axes(hss::HyperSpectrum) = Base.axes(hss.index)
+Base.axes(hss::HyperSpectrum, n) = Base.axes(hss.index, n)
 Base.eachindex(hss::HyperSpectrum) = hss.index
 Base.stride(hss::HyperSpectrum, k) = stride(hss.index, k)
 Base.strides(hss::HyperSpectrum) = strides(hss.index)
