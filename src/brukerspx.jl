@@ -74,13 +74,13 @@ function readbrukerspx(io::IO)::Spectrum
     end
     item = findfirst("//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTXrfHeader']",xml)
     if !isnothing(item)
-        props[:XRFSourceEnergy] = 1000.0 * parse(Float64,findfirst("Voltage",item).content) # <Voltage>50</Voltage>
+        props[:BeamEnergy] = 1000.0 * parse(Float64,findfirst("Voltage",item).content) # <Voltage>50</Voltage>
         props[:XRFTubeAnode] = PeriodicTable.elements[parse(Int,findfirst("Anode",item).content)]  # <Anode>42</Anode>
-        props[:XRFTubeCurrent] = 0.001*parse(Float64, findfirst("Current", item).content) # <Current>99</Current> ???milliamps???
+        props[:ProbeCurrent] = 1.0e3*parse(Float64, findfirst("Current", item).content) # <Current>99</Current> ???microamps???
         props[:XRFTubeIncidentAngle] = deg2rad(parse(Float64, findfirst("TubeIncidentAngle", item).content)) # <TubeIncidentAngle>8.4E1</TubeIncidentAngle>
         props[:XRFTubeTakeOffAngle] = deg2rad(parse(Float64, findfirst("TubeTakeOffAngle", item).content)) # <TubeTakeOffAngle>6</TubeTakeOffAngle>
         props[:XRFExcitationAngle] = deg2rad(parse(Float64, findfirst("ExcitationAngle", item).content)) # <ExcitationAngle>5E1</ExcitationAngle>
-        props[:XRFDetectionAngle] = deg2rad(parse(Float64, findfirst("DetectionAngle", item).content)) # <DetectionAngle>5E1</DetectionAngle>
+        props[:Elevation] = deg2rad(parse(Float64, findfirst("DetectionAngle", item).content)) # <DetectionAngle>5E1</DetectionAngle>
         props[:XRFExcitationPathLength] = 0.1 * parse(Float64, findfirst("ExcitationPathLength", item).content) # <ExcitationPathLength>1E1</ExcitationPathLength>
         props[:XRFDetectionPathLength] = 0.1 * parse(Float64, findfirst("DetectionPathLength", item).content) # <DetectionPathLength>2E1</DetectionPathLength>
         props[:DetectorSolidAngle] = parse(Float64, findfirst("SolidAngleDetection", item).content)
@@ -89,6 +89,7 @@ function readbrukerspx(io::IO)::Spectrum
         props[:ChamberPressure] = parse(Float64, findfirst("ChamberPressure", item).content) # <ChamberPressure>2E1</ChamberPressure>
         props[:ChamberAtmosphere] = findfirst("Atmosphere", item).content # <Atmosphere>Air</Atmosphere>
         props[:XRFSampleTilt] = deg2rad(parse(Float64, findfirst("TiltAngle", item).content)) # <TiltAngle>0</TiltAngle>
+        props[:TakeOffAngle] = props[:Elevation] + props[:XRFSampleTilt]
         welm = PeriodicTable.elements[parse(Int,findfirst("TubeWindow/AtomicNumber",item).content)]
         wthk = 1.0e-4 * parse(Float64,findfirst("TubeWindow/Thickness",item).content)
         props[:XRFTubeWindow] = Film(pure(welm),wthk)

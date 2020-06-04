@@ -12,13 +12,14 @@ using Test
     @test sp1a[:DetectorSerialNumber] == "11881_0239"
     @test sp1a[:DetectorThickness] == 0.1*0.45 # cm
     @test sp1a[:DeadLayerThickness] == 0.1*0.029 # ???
-    @test sp1a[:XRFSourceEnergy] == 1000.0 * 50.0
+    @test sp1a[:BeamEnergy] == 1000.0 * 50.0
     @test sp1a[:XRFTubeAnode] == n"Mo"
-    @test sp1a[:XRFTubeCurrent] == 0.001*99
+    @test sp1a[:ProbeCurrent] == 1000.0*99
     @test sp1a[:XRFTubeIncidentAngle] == deg2rad(84.0)
     @test sp1a[:XRFTubeTakeOffAngle] == deg2rad(6.0)
     @test sp1a[:XRFExcitationAngle] == deg2rad(50.0)
-    @test sp1a[:XRFDetectionAngle] == deg2rad(50.0)
+    @test sp1a[:Elevation] == deg2rad(50.0)
+    @test sp1a[:TakeOffAngle] == deg2rad(50.0)
     @test sp1a[:XRFExcitationPathLength] == 0.1*10.0
     @test sp1a[:XRFDetectionPathLength] == 0.1*20.0
     @test sp1a[:DetectorSolidAngle] == 0.0065
@@ -41,6 +42,7 @@ end
     @test sp2a[:DetectorSerialNumber] == "13773"
     @test sp2a[:DetectorThickness] == 0.1*0.45
     @test sp2a[:DeadLayerThickness] == 0.1*0.029
+    @test sp2a[:Elevation]==deg2rad(35.0)
     win = sp2a[:Window]
     @test length(win)==5
     @test isapprox(win[1], Film(pure(n"B"),1.3E1 * 1.0e-7))

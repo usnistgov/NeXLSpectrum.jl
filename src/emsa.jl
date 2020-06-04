@@ -134,9 +134,9 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
 	                    energy = LinearEnergyScale(xpcscale*parse(Float64,value), energy.width)
 					elseif key == "DATE"
 						try
-							date = Date(DateTime(value, "d-u-y"))
+							date = Date(parse(DateTime, value, DateFormat("d-u-y","english")))
 						catch
-							date = Date(DateTime(value, "d-m-y"))
+							date = Date(parse(DateTime, value, DateFormat("d-m-y","english")))
 						end
 					elseif key == "TIME"
 						time = Time(DateTime(value, count(c->c==':',value) == 2 ? "H:M:S" : "H:M"))
@@ -231,11 +231,11 @@ function writeEMSA(io::IOStream, spec::Spectrum)
 	writeline(io, "TITLE",spec[:Name])
 	if haskey(spec,:AcquisitionTime)
 		dt = spec[:AcquisitionTime]
-		writeline(io, "DATE",uppercase(Dates.format(dt, "d-u-yyyy"))) # 25-FEB-2022
-		writeline(io, "TIME",Dates.format(dt, "HH:MM:SS")) # 15:32
+		writeline(io, "DATE",uppercase(Dates.format(dt,"d-u-yyyy",locale="english"))) # 25-FEB-2022
+		writeline(io, "TIME",Dates.format(dt,"HH:MM:SS")) # 15:32:23
 	end
 	if haskey(spec,:Owner)
-		writeline(io, "OWNER","")
+		writeline(io, "OWNER",spec[:Owner])
 	end
 	writeline(io, "NPOINTS","$(length(spec))")
 	writeline(io, "NCOLUMNS","1")

@@ -61,9 +61,9 @@ Less common items:
 
 XRF related items:
 
-    :XRFSourceEnergy  # Accelarating voltage within X-ray tube (eV)
+    :BeamEnergy  # Accelarating voltage within X-ray tube (eV)
     :XRFTubeAnode]    # Element from which the X-ray tube is constructed
-    :XRFTubeCurrent]  # Electron current in the X-ray tube
+    :ProbeCurrent]  # Electron current in the X-ray tube
     :XRFTubeIncidentAngle # Incident angle of electron beam in tube
     :XRFTubeTakeOffAngle # Take-off angle from tube
     :XRFExcitationAngle # Angle of incidence of the X-ray beam on the sample

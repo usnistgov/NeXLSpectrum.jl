@@ -6,9 +6,19 @@ function savespectrum(ty::Type{<:SpectrumFileType}, fio, data)
     @error "Saving to is not implemented for $ty. Probably never will be."
 end
 
-loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString) =
+function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString)
+    badname(sp) = (!haskey(sp,:Name)) || startswith(sp[:Name],"Bruker") || startswith(sp[:Name],"Spectrum[")
     return open(filename, read=true) do ios
-        loadspectrum(ty, ios)
+        spec = loadspectrum(ty, ios)
+        spec[:Filename] = filename
+        spec[:Name] = badname(spec) ? splitext(splitpath(filename)[end])[1] : spec[:Name]
+        return spec
+    end
+end
+savespectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, spec::Spectrum) =
+    open(filename,write=true) do ios
+        savespectrum(ty, ios, spec)
+        spec[:Filename] = filename
     end
 
 # ---------------------------------------------------------------------------------------------------#
@@ -36,10 +46,7 @@ struct ISOEMSA <: SpectrumFileType end
 
 loadspectrum(::Type{ISOEMSA}, ios::IO) = readEMSA(ios, Float64)
 savespectrum(::Type{ISOEMSA}, ios::IO, spec::Spectrum) = writeEMSA(ios, spec)
-savespectrum(::Type{ISOEMSA}, fn::AbstractString, spec::Spectrum) =
-    open(fn,write=true) do ios
-        writeEMSA(ios, spec)
-    end
+
 extensions(::Type{ISOEMSA}) = ( ".msa", ".emsa", ".ems", ".txt", )
 
 sniff(::Type{ISOEMSA}, ios::IO) = isemsa(ios)
