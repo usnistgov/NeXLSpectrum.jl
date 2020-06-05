@@ -229,12 +229,26 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
         try
             seekstart(ios)
             imgs = FileIO.load(Stream(format"TIFF", ios))
-            if haskey(res, :FieldOfView) && haskey(res, :ImageZoom) && res[:ImageZoom]==1.0
-                pix = 0.001 * res[:FieldOfView] / size(imgs,2)
-                off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
-                ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
-                ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
-                foreach( i -> res[Symbol("Image$i")] = AxisArray(imgs[:,:,i], ay, ax), 1:size(imgs,3))
+            if haskey(res, :FieldOfView) && haskey(res, :ImageZoom)
+                if res[:ImageZoom]==1.0
+                    pix = 0.001 * res[:FieldOfView] / size(imgs,2)
+                    off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
+                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
+                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
+                    foreach( i -> res[Symbol("Image$i")] = AxisArray(imgs[:,:,i], ay, ax), 1:size(imgs,3))
+                elseif size(imgs,3)==2
+                    pix = 0.001 * res[:FieldOfView] * res[:ImageZoom] / size(imgs,2)
+                    ay = Axis{:y}(0.0:-pix*mm:-pix*(size(imgs,1)-1)*mm)
+                    ax = Axis{:x}(0.0:pix*mm:pix*(size(imgs,2)-1)*mm)
+                    res[Symbol("Image1")] = AxisArray(imgs[:,:,1], ay, ax)
+                    pix = 0.001 * res[:FieldOfView] / size(imgs,2)
+                    off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
+                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
+                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
+                    res[Symbol("Image2")] = AxisArray(imgs[:,:,2], ay, ax)
+                else
+                    foreach( i -> res[Symbol("Image$i")] = imgs[:,:,i], 1:size(imgs,3))
+                end
             else
                 foreach( i -> res[Symbol("Image$i")] = imgs[:,:,i], 1:size(imgs,3))
             end
