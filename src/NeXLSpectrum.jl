@@ -29,6 +29,20 @@ export extents # Determine the energy extents of many x-ray lines on a detector
 export matching # Build a detector to match a spectrum
 export lld # Low-level discriminator in eV
 
+# X-ray window models
+include("window.jl")
+# primary function transmission(wnd, energy, angle)
+export AbstractWindow, LayerWindow, TabulatedWindow
+export AP33Model, AP33Tabulation, AP5Tabulation # Moxtek windows
+export Beryllium # Classic windows
+export AmptekC1, AmptekC2 # Amptek windows
+export NoWindow # 100% transmission
+
+include("detefficiency.jl")
+export DetectorEfficiency
+export efficiency
+export SDDEfficiency, SiLiEfficiency # Helpers to build DetectorEfficiency
+
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")
 export Spectrum

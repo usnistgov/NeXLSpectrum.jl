@@ -1,4 +1,4 @@
-using MultivariateStats
+using MultivariateStats: cov_whitening
 using NeXLUncertainties
 
 """
