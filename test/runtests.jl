@@ -1,6 +1,8 @@
 using Test
 using NeXLSpectrum
 
+include("window.jl")
+include("detefficiency.jl")
 include("spectrum.jl")
 include("emsa.jl")
 include("brukerspx.jl")

@@ -33,7 +33,7 @@ export lld # Low-level discriminator in eV
 include("window.jl")
 # primary function transmission(wnd, energy, angle)
 export AbstractWindow, LayerWindow, TabulatedWindow
-export AP33Model, AP33Tabulation, AP5Tabulation # Moxtek windows
+export AP33Model, AP5Model, AP33Tabulation, AP5Tabulation # Moxtek windows
 export Beryllium # Classic windows
 export AmptekC1, AmptekC2 # Amptek windows
 export NoWindow # 100% transmission
