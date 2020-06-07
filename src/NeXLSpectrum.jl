@@ -158,6 +158,12 @@ export FilteredUnknownW # A filtered datum representing an unknown spectrum (for
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 
+
+include("continuum.jl")
+export ContinuumModel # Build a model to compute the continuum intensity
+export emitted # Compute the emitted continuum emission
+export generated # Compute the generated continuum emission
+
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
 end

@@ -29,7 +29,7 @@ collection of `FilteredReference`(s), and a `TopHatFilter`.
     end
 end
 
-minproperties(::VectorQuant) = ( :BeamEnergy, :TakeOffAngle, :)
+NeXLCore.minproperties(::VectorQuant) = ( :BeamEnergy, :TakeOffAngle, :)
 
 Base.show(io::IO, vq::VectorQuant) =
     print(io, "VectorQuant[\n"*join(map(r->"\t"*repr(r[1]),vq.references),",\n")*"\n]")

@@ -1,0 +1,25 @@
+## Modeling the Continuum
+Nicholas W. M. Ritchie 7-Jun-2020
+
+Modeling the continuum (Bremsstrahlung) is a necessary component of being able to perform an straight (unfiltered)
+spectrum fit.  These models can either be used to handle the continuum for linear or non-linear spectrum fits.
+
+```julia
+using NeXLSpectrum
+using NeXLMatrixCorrection
+using Gadfly
+```
+The `ContinuumModel` handles the generation of Bremsstrahlung within the sample, the absorption of the generated
+X-rays as they exit the sample and the efficiency of the detector collecting the X-rays.
+```julia; fig_height=4; fig_width=10; fig_ext=".svg";
+e0 = 15.0e3
+det = SDDEfficiency(AP33Tabulation(); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
+cm = ContinuumModel(mat"0.8*Fe+0.15*Cr+0.05*Ni", e0, det, deg2rad(40.0))
+plot([ea->emitted(cm, ea),ea->generated(cm, ea)],100.0,e0)
+```
+
+```julia; fig_height=4; fig_width=10; fig_ext=".svg";
+e0 = 5.0e3
+cm = ContinuumModel(mat"SiO2", e0, det, deg2rad(40.0))
+plot([ea->emitted(cm, ea),ea->generated(cm, ea)],100.0,e0)
+```

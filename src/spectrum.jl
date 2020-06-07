@@ -73,7 +73,7 @@ XRF related items:
     :XRFSampleTilt    #  Additional tilt of the sample
     :XRFTubeWindow]   # Construction of the tube window
 
-Not all spectra will define all properties.  Algorithms can define the `minproperties(ty::Type)` method to specify
+Not all spectra will define all properties.  Algorithms can define the `NeXLCore.minproperties(ty::Type)` method to specify
 which properties are required by an algorithm of `ty::Type`.  Then `hasminrequired` and `requiredbutmissing` methods
 will determine whether a `Spectrum` or `Dict{Symbol,Any}` is suitable for an algorithm.
 """
