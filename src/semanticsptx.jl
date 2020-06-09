@@ -1,5 +1,5 @@
 using ZipFile
-using EzXML
+using EzXML: readxml
 using OnlineStats: Mean, value, fit!
 
 """
@@ -110,6 +110,7 @@ function readptx(
          end
       end
    end
+   sig[:Dwell] = dwell
    sig[:Elapse] = 1.0e-8 * real # second
    sig[:RealTime] = 1.0e-8 * real / ((rh - ry) * (rw - rx))
    sig[:LiveTime] = 1.0e-8 * (real - dead) / ((rh - ry) * (rw - rx)) # seconds

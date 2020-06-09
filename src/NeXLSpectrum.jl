@@ -22,6 +22,7 @@ export linewidth # energy to linewidth
 export channelcount # Detector channel count
 export scale # Detector EnergyScale
 export resolution # Detector Resolution
+export profile # Computes the resolution function
 export simpleEDS # Create a basic EDS detector
 export simpleEDSwICC # Create a basic EDS detector with a naive incomplete charge collection model
 export extent # Determine the energy extent of an x-ray line on a detector ( Emin, Emax )
@@ -42,6 +43,7 @@ include("detefficiency.jl")
 export DetectorEfficiency
 export efficiency
 export SDDEfficiency, SiLiEfficiency # Helpers to build DetectorEfficiency
+export buildresponse # Builds a detector response matrix
 
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")

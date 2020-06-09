@@ -13,6 +13,7 @@ let start_dir = pwd()
     # weave("quantAMDglass.jmd", out_path=joinpath(outpath,"quantAMDglass.html"))
     weave("XRFspectra.jmd", out_path=joinpath(outpath,"XRFSpectra.html"))
     weave("K412quick.jmd", out_path=joinpath(outpath,"K412quick.html"))
+    weave("continuummodel.jmd", out_path=joinpath(outpath,"continuummodel.html"))
 
     cd(start_dir)
 end

@@ -119,12 +119,12 @@ NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
 
 
 """
-    energyscale(es::EnergyScale, channels::UnitRange{Int})
+    energyscale(es::EnergyScale, channels)
 
 Computes the energy associated with a range of channel indexes and returns
 it as an Array.
 """
-energyscale(es::EnergyScale, channels::UnitRange{Int}) =
+energyscale(es::EnergyScale, channels) =
     collect(energy(ch, es) for ch in channels)
 
 """
@@ -167,10 +167,12 @@ gaussianwidth(fwhm::Float64) =
 """"
     profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
 Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
-with the specified resolution.
+with the specified resolution.  Maintains normalization to a sum of unity.
 """
-profile(energy::Float64, xrayE::Float64, res::MnKaResolution) =
-    exp(-0.5*((energy-xrayE)/gaussianwidth(resolution(xrayE, res)))^2)
+function profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
+    σ = gaussianwidth(resolution(xrayE, res))
+    return exp(-0.5*((energy-xrayE)/σ)^2)/(σ*sqrt(2.0π))
+end
 
 """
     extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
@@ -204,10 +206,10 @@ resolution(eV::Float64, res::MnKaPlusICC) =
 Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
 with the specified resolution.
 """
-profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC) =
-    exp(-0.5*((energy-xrayE)/gaussianwidth(resolution(xrayE, res)))^2)
-
-
+function profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC)
+    σ = gaussianwidth(resolution(xrayE, res))
+    return exp(-0.5*((energy-xrayE)/σ)^2)/(σ*sqrt(2.0π))
+end
 """
     extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
 
@@ -291,6 +293,8 @@ Number of detector channels.
 channelcount(det::EDSDetector) =
     det.channelcount
 
+Base.eachindex(det::EDSDetector) = Base.OneTo(det.channelcount)
+
 """
     scale(det::EDSDetector)
 
@@ -298,6 +302,10 @@ EnergyScale associated with this detector.
 """
 scale(det::EDSDetector)::EnergyScale =
     det.scale
+
+energyscale(det::EDSDetector) =
+    energyscale(det.scale, eachindex(det))
+
 """
     lld(det::EDSDetector)
 
@@ -308,7 +316,7 @@ lld(det::EDSDetector) = det.lld
 """
     resolution(eV::Float64, det::EDSDetector)
 
-Resolution of the detector in eV at the specified energy.
+Resolution (FWHM) of the detector in eV at the specified energy.
 """
 resolution(eV::Float64, det::EDSDetector) =
     resolution(eV, det.resolution)
@@ -334,13 +342,18 @@ channel(sf::SpectrumFeature, det::EDSDetector) =
 
 
 """"
-    profile(energy::Float64, xrayE::Float64, det::Detector)
+    profile(ch::Int, xrayE::Float64, det::EDSDetector)
 
 Calculates the profile for an X-ray of xrayE (eV) for a detector
-with the specified resolution.
+with the specified resolution.  Performs a crude integration to account for
+the channel width.
 """
-profile(energy::Float64, xrayE::Float64, det::EDSDetector) =
-    profile(energy, xrayE, det.resolution)
+function profile(ch::Int, xrayE::Float64, det::EDSDetector)
+    eh, el = energy(ch+1, det), energy(ch,det)
+    return 0.5 * (profile(eh, xrayE, det.resolution) + profile(el, xrayE, det.resolution)) * (eh-el)
+end
+profile(nrg::Float64, xrayE::Float64, det::EDSDetector) =
+    profile(channel(nrg, det), xrayE, det.resolution)
 
 
 """

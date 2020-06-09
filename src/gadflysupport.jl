@@ -359,4 +359,9 @@ function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
         Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], colors))
 end
 
+function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)
+    eff(ee) = efficiency(deteff, ee, π/2)
+    plot(eff, 100.0, emax)
+end
+
 @info "Loading Gadfly support into NeXLSpectrum."
