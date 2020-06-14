@@ -166,6 +166,18 @@ export ContinuumModel # Build a model to compute the continuum intensity
 export emitted # Compute the emitted continuum emission
 export generated # Compute the generated continuum emission
 
+# These primarily exist to scale spectra for presentation (plotting)
+include("specscaling.jl")
+export SpectrumScaling # Abstract base
+export NoScaling # <: SpectrumScaling
+export ScaleDoseWidth # <: SpectrumScaling
+export ScaleDose # <: SpectrumScaling
+export ScaleSum # <: SpectrumScaling
+export ScaleROISum # <: SpectrumScaling
+export ScalePeak # <: SpectrumScaling
+export ScaleWidth # <: SpectrumScaling
+export scaledcounts # Return spectrum channel data scaled according the SpectrumScaling model
+
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
 end

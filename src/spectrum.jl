@@ -241,6 +241,14 @@ function dose(spec::Spectrum, def = missing)::Union{Float64,Missing}
     return isequal(res, missing) ? def : res
 end
 
+function dose(spec::Spectrum)
+    if haskey(spec.properties, :LiveTime) && haskey(spec.properties, :ProbeCurrent)
+        return get(spec.properties, :LiveTime, missing) * get(spec, :ProbeCurrent, missing)
+    else
+        @error "One or more properties, :LiveTime or :ProbeCurrent, is missing to calculate the dose."
+    end
+end
+
 """
     NeXLCore.energy(ch::Int, spec::Spectrum)
 
@@ -302,21 +310,6 @@ end
 Gets the low-level discriminator associated with this spectrum if there is one.
 """
 lld(spec::Spectrum) = haskey(spec.properties, :Detector) ? lld(spec.properties[:Detector]) : 1
-
-
-"""
-    normalizeDoseWidth(spec::Spectrum)::Vector{Float64}
-
-Normalize the channel intensities to counts/(nA⋅s⋅eV).  Good for comparing spectra collected at different detector
-channel widths.
-"""
-function normalizedosewidth(spec::Spectrum, defDose = missing)::Vector{Float64}
-    ds = dose(spec, defDose)
-    if ismissing(ds)
-        error("The required spectrum dose in not available in normalizeDoseWidth(spec).")
-    end
-    return map(ch -> convert(Float64, spec.counts[ch]) / (ds * channelwidth(ch, spec)), eachindex(spec.counts))
-end
 
 """
 	findmax(spec::Spectrum, chs::UnitRange{Int})

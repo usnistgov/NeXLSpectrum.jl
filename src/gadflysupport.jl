@@ -82,11 +82,12 @@ Named:
 	autoklms = false # Add KLMs based on elements in spectra
 	xmin = 0.0 # Min energy (eV)
 	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
-	norm = :None|:Sum|:Dose|:Peak|:DoseWidth
-	yscale = 1.05 # Fraction of max intensity for ymax
-	ytransform = identity | log10 | sqrt | ???
+	norm = NoScaling() | ScaleDoseWidth() | ScaleDose() | ScaleSum() | ScaleROISum() | ScalePeak() | (<: SpectrumScaling)()
+	yscale = 1.05 # Fraction of max intensity for ymax over [max(lld,xmin):xmax]
+	ytransform = identity | log10 | sqrt | ??? # How to transform the counts data before plotting
 	style=NeXLSpectrumStyle (or another Gadfly.style)
-	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Color[ ... ] # Colors for spectra...
+	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Colorant[ ... ] # Colors for spectra...
+    customlayers = Gadfly.Layer[] # Allows additional plot layers to be added
 """
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
@@ -97,19 +98,13 @@ function Gadfly.plot(
     autoklms = false,
     xmin = 0.0,
     xmax = missing,
-    norm = :None,
+    norm = NoScaling(),
     yscale = 1.05,
     ytransform = identity,
     style = NeXLSpectrumStyle,
     palette = NeXLCore.NeXLPalette,
+    customlayers = Gadfly.Layer[]
 )::Plot
-# The normalize functions return a Vector{Vector{Float64}}
-    normalizeDoseWidth(specs, def = 1.0) = normalizedosewidth.(specs)
-    normalizeDose(specs, def = 1.0) = collect((def / dose(sp)) * counts(sp, Float64, true) for sp in specs)
-    normalizeSum(specs, total = 1.0e6) = collect((total / integrate(sp)) * counts(sp, Float64, true) for sp in specs)
-    normalizePeak(specs, height = 100.0) =
-        collect((height / findmax(sp)[1]) * counts(sp, Float64, true) for sp in specs)
-    normalizeNone(specs) = collect(counts(sp, Float64, true) for sp in specs)
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
         d = Dict{Any,Vector{CharXRay}}()
         for cxr in cxrs
@@ -134,7 +129,7 @@ function Gadfly.plot(
             Geom.hair,
             Geom.point,
             Geom.label(position = :above),
-            Theme(default_color = "gray"),
+            Theme(default_color = colorant"gray"),
         )
     end
     function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
@@ -157,7 +152,7 @@ function Gadfly.plot(
             label = label,
             Geom.hair,
             Geom.label(position = :right),
-            Theme(default_color = "lightgray"),
+            Theme(default_color = colorant"lightgray"),
         )
     end
     function siEscapeLayer(crxs)
@@ -177,7 +172,7 @@ function Gadfly.plot(
             label = label,
             Geom.hair,
             Geom.label(position = :above),
-            Theme(default_color = "black"),
+            Theme(default_color = colorant"black"),
         )
     end
     function sumPeaks(cxrs)
@@ -199,27 +194,15 @@ function Gadfly.plot(
             label = label,
             Geom.hair,
             Geom.label(position = :above),
-            Theme(default_color = "gray"),
+            Theme(default_color = colorant"gray"),
         )
     end
-    if norm == :Dose
-        specdata = normalizeDose(specs)
-        ylbl = "Counts/(nA⋅s)"
-    elseif norm == :Sum
-        specdata = normalizeSum(specs)
-        ylbl = "Normalized (Σ=10⁶)"
-    elseif norm == :Peak
-        specdata = normalizePeak(specs)
-        ylbl = "Peak (%)"
-    elseif norm == :DoseWidth
-        specdata = normalizeDoseWidth(specs)
-        ylbl = "Counts/(nA⋅s⋅eV)"
-    else
-        specdata = normalizeNone(specs)
-        ylbl = "Counts"
-    end
+    @assert length(specs)<=length(palette) "The palette must specify at least as many colors as spectra."
+    specdata = [ scaledcounts(norm,s) for s in specs]
+    ylbl = repr(norm)
     maxI, maxE, maxE0 = 16, 1.0e3, 1.0e3
-    names, layers, colors = [], [], []
+    names, layers = String[], Layer[]
+    append!(layers, customlayers)
     for (i, spec) in enumerate(specs)
         mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : convert(Float64,xmax)
         mE0 = get(spec, :BeamEnergy, missing)
@@ -228,13 +211,10 @@ function Gadfly.plot(
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
         maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
-        clr = palette[(i-1)%length(palette)+1]
         push!(names, spec[:Name])
-        push!(colors, clr)
-        push!(
-            layers,
-            layer(x = energyscale(spec)[chs], y = ytransform.(specdata[i][chs]), Geom.step, Theme(default_color = clr)),
-        )
+        ly = Gadfly.layer(x = energyscale(spec)[chs], y = ytransform.(specdata[i][chs]), #
+            Geom.step, Theme(default_color = palette[i]))
+        append!(layers, ly)
     end
     append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), union!, specs) : [])
     if length(klms) > 0
@@ -242,7 +222,7 @@ function Gadfly.plot(
         tr(cxr::CharXRay) = [cxr]
         pklms = mapreduce(klm -> tr(klm), append!, klms)
         if length(pklms) > 0
-            push!(layers, klmLayer(specdata, pklms))
+            append!(layers, klmLayer(specdata, pklms))
         end
     end
     if length(edges) > 0
@@ -250,15 +230,16 @@ function Gadfly.plot(
         shs(ash::AtomicSubShell) = [ash]
         pedges = mapreduce(ash -> shs(ash), append!, edges)
         if length(pedges) > 0
-            push!(layers, edgeLayer(0.5 * maxI, pedges))
+            append!(layers, edgeLayer(0.5 * maxI, pedges))
         end
     end
     if length(escapes) > 0
-        push!(layers, siEscapeLayer(escapes))
+        append!(layers, siEscapeLayer(escapes))
     end
     if length(coincidences) > 0
-        push!(layers, sumPeaks(coincidences))
+        append!(layers, sumPeaks(coincidences))
     end
+    colors = Colorant[palette[1:length(specs)]...]
     Gadfly.with_theme(style) do
         plot(
             layers...,
@@ -266,7 +247,7 @@ function Gadfly.plot(
             Guide.YLabel(ylbl),
             Scale.x_continuous(format = :plain),
             Scale.y_continuous(format = :plain),
-            Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, colors),
+            Guide.manual_discrete_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, color=colors),
             Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
         )
     end
@@ -332,7 +313,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
 end
 
 function Gadfly.plot(fr::FilteredReference)
-    roicolors = [ RGB(0.9, 1.0, 0.9), RGB(0.95, 0.95, 1.0)]
+    roicolors = Colorant[ RGB(0.9, 1.0, 0.9), RGB(0.95, 0.95, 1.0)]
     layers=[
         layer(x=fr.ffroi, y=fr.data, Theme(default_color=NeXLPalette[1]), Geom.step),
         layer(x=fr.ffroi, y=fr.filtered, Theme(default_color=NeXLPalette[2]), Geom.step),
@@ -350,13 +331,13 @@ Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =
 function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
     colors = distinguishable_colors(
         size(vq.vectors,1)+2,
-        Color[RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), RGB(0 / 255, 168 / 255, 45 / 255)],
+        [RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), RGB(0 / 255, 168 / 255, 45 / 255)],
         transform = deuteranopic,
     )[3:end]
-    lyrs = [ layer(x=chs, y=vq.vectors[i,chs], Theme(default_color=colors[i]), Geom.line) for i in eachindex(vq.references)]
+    lyrs = mapreduce(i->layer(x=chs, y=vq.vectors[i,chs], Theme(default_color=colors[i]), Geom.line),append!,eachindex(vq.references))
     plot(lyrs...,
         Guide.xlabel("Channel"), Guide.ylabel("Filtered"),
-        Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], colors))
+        Guide.manual_discrete_key("Vector", [ repr(r[1]) for r in vq.references ], color=Colorant[colors...]))
 end
 
 function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)

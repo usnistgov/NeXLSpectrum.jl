@@ -15,6 +15,12 @@ function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString)
         return spec
     end
 end
+
+function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, det::EDSDetector)
+    res=loadspectrum(ty, filename)
+    return apply(res, det)
+end
+
 savespectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, spec::Spectrum) =
     open(filename,write=true) do ios
         savespectrum(ty, ios, spec)
@@ -100,4 +106,5 @@ function sniffspectrum( filename::AbstractString )
 end
 
 loadspectrum(ios::IO) = loadspectrum(sniffspectrum(ios), ios)
-loadspectrum(filename::AbstractString) = loadspectrum(sniffspectrum(filename),filename)
+loadspectrum(filename::AbstractString) = loadspectrum(sniffspectrum(filename), filename)
+loadspectrum(filename::AbstractString, det::EDSDetector) = loadspectrum(sniffspectrum(filename), filename, det)

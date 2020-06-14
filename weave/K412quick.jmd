@@ -23,12 +23,12 @@ fe = loadspectrum("$(path)/Fe std.msa")
 # Create a detector model to match it
 det = matching(fe, 132.0, 10)
 # Now load all the spectra using this detector
-unks = (i->loadspectrum("$(path)/III-E K412[$i][4].msa",det,true)).(0:4)
-al2o3 = loadspectrum("$(path)/Al2O3 std.msa",det,true)
-caf2 = loadspectrum("$(path)/CaF2 std.msa",det,true)
-fe = loadspectrum("$(path)/Fe std.msa",det,true)
-mgo = loadspectrum("$(path)/MgO std.msa",det,true)
-sio2 = loadspectrum("$(path)/SiO2 std.msa",det,true)
+unks = (i->loadspectrum("$(path)/III-E K412[$i][4].msa",det)).(0:4)
+al2o3 = loadspectrum("$(path)/Al2O3 std.msa",det)
+caf2 = loadspectrum("$(path)/CaF2 std.msa",det)
+fe = loadspectrum("$(path)/Fe std.msa",det)
+mgo = loadspectrum("$(path)/MgO std.msa",det)
+sio2 = loadspectrum("$(path)/SiO2 std.msa",det)
 asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2])
 ```
 Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`:ProbeCurrent`); 3) take-off angle

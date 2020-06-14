@@ -8,6 +8,7 @@ spectrum fit.  These models can either be used to handle the continuum for linea
 using NeXLSpectrum
 using NeXLMatrixCorrection
 using Gadfly
+using Colors
 ```
 The `ContinuumModel` handles the generation of Bremsstrahlung within the sample, the absorption of the generated
 X-rays as they exit the sample and the efficiency of the detector collecting the X-rays.
@@ -36,36 +37,47 @@ lyrs = [ layer(x=energyscale(det), y=emt, Geom.line, Theme(default_color="red"))
 plot(lyrs..., Coord.cartesian(xmin=0, xmax=e0))
 ```
 ```julia
-function fitcontinuum(spec, mat, det, eff, roi, model=Trincavelli1997)
-    cmod = ContinuumModel(mat, spec[:BeamEnergy], eff, spec[:TakeOffAngle], bremsstrahlung=model)
-    emt = map(ch->ch>=lld(det) ? emitted(cmod,energy(ch,det)) : 0.0,1:channelcount(det))
+function fitcontinuum(spec, mat, det, eff, roi, model, mc)
+    cmod = ContinuumModel(mat, spec[:BeamEnergy], eff, spec[:TakeOffAngle], matrixcorrection=mc, bremsstrahlung=model)
+    emt = map(ch->ch>=lld(det) ? emitted(cmod,energy(ch,det)) : 0.0, 1:channelcount(det))
     resp = NeXLSpectrum.detectorresponse(det, eff)
     meas = resp*emt
     k=sum(meas[roi])/sum(counts(spec, roi, Float64))
-    props=Dict{Symbol,Any}( :TakeOffAngle => spec[:TakeOffAngle], :BeamEnergy => spec[:BeamEnergy], :K => k)
+    props=Dict{Symbol,Any}( :TakeOffAngle => spec[:TakeOffAngle], :BeamEnergy => spec[:BeamEnergy], :K => k, :Name => "Brem[$(spec[:Name])]")
     return Spectrum(spec.energy, meas/k, props)
 end
 
 ```
 
-## Trincavelli1997, AP3.3
+## Models!!!
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-model = Trincavelli1997
+model, mc = Castellano2004a, Riveros1993
+eff = SDDEfficiency(AP33Tabulation(); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
+
 spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
 det=matching(spec, 132.0, 10)
 roi = channel(4.5e3,det):channel(6.0e3,det)
+
+spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
+cmod = ContinuumModel(spec[:Composition], spec[:BeamEnergy], eff, spec[:TakeOffAngle], bremsstrahlung=model)
+emt = map(ch->ch>=lld(det) ? emitted(cmod,energy(ch,det)) : 0.0,1:channelcount(det))
+resp = NeXLSpectrum.detectorresponse(det, eff)
+meas = resp*emt
+
+plot(layer(x=eachindex(emt),y=emt, Geom.line),layer(x=eachindex(meas),y=meas, Geom.point))
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec, spec[:Composition], det, eff, roi, model, mc)
 println("k = $(brem[:K]/dose(spec))")
+
 plot(spec, brem, yscale=0.05, xmax=12.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 spec = loadspectrum(joinpath("K412 spectra","Al2O3 std.msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model, mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
@@ -73,28 +85,28 @@ plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 
 spec = loadspectrum(joinpath("K412 spectra","SiO2 std.msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model, mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 spec = loadspectrum(joinpath("K412 spectra","MgO std.msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model, mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 spec = loadspectrum(joinpath("K412 spectra","CaF2 std.msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model, mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.05, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 spec = loadspectrum(joinpath("K412 spectra","Fe std.msa"))
-brem = fitcontinuum(spec,spec[:Composition],det,eff,roi,model)
+brem = fitcontinuum(spec,spec[:Composition],det,eff,channel(2.0e3,det):channel(4.0e3,det),model, mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.05, xmax=8.0e3)
 ```

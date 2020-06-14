@@ -14,7 +14,7 @@ struct ContinuumModel
 Create a continuum model for the specified material, beam energy, detector and take-off angle.  Computes
 the *detected* quantity of continuum generated in the sample.
 """
-  ContinuumModel(mat::Material, e0::Float64, det::DetectorEfficiency, takeoff::Float64; matrixcorrection::Type{<:MatrixCorrection}=CitZAF, bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b) =
+  ContinuumModel(mat::Material, e0::Float64, det::DetectorEfficiency, takeoff::Float64; matrixcorrection::Type{<:MatrixCorrection}=Riveros1993, bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b) =
       new(mat, e0, takeoff, det, matrixcorrection, bremsstrahlung)
 end
 
@@ -26,7 +26,7 @@ model object at the specified measured energy `ea`.
 """
 function emitted(cm::ContinuumModel, ea::Float64) #
   g = generated(cm, ea)
-  return g > 0.0 ? g * correctcontinuum(continuumcorrection(cm.mc, cm.mat, ea, cm.e0), ea, cm.takeoff) : 0.0
+  return g > 0.0 ? g * correctcontinuum(continuumcorrection(cm.mc, cm.mat, ea, cm.e0), cm.takeoff) : 0.0
 end
 
 """
