@@ -236,7 +236,7 @@ end
 
 The probe dose in nano-amp seconds
 """
-function dose(spec::Spectrum, def = missing)::Union{Float64,Missing}
+function dose(spec::Spectrum, def::Union{Float64,Missing})::Union{Float64,Missing}
     res = get(spec.properties, :LiveTime, missing) * get(spec, :ProbeCurrent, missing)
     return isequal(res, missing) ? def : res
 end
