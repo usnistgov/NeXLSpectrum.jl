@@ -6,20 +6,18 @@ function savespectrum(ty::Type{<:SpectrumFileType}, fio, data)
     @error "Saving to is not implemented for $ty. Probably never will be."
 end
 
-function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString)
+function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString; kwargs...)
     badname(sp) = (!haskey(sp,:Name)) || startswith(sp[:Name],"Bruker") || startswith(sp[:Name],"Spectrum[")
     return open(filename, read=true) do ios
-        spec = loadspectrum(ty, ios)
+        spec = loadspectrum(ty, ios; kwargs...)
         spec[:Filename] = filename
         spec[:Name] = badname(spec) ? splitext(splitpath(filename)[end])[1] : spec[:Name]
         return spec
     end
 end
 
-function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, det::EDSDetector)
-    res=loadspectrum(ty, filename)
-    return apply(res, det)
-end
+loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, det::EDSDetector; kwargs...) =
+    apply(loadspectrum(ty, filename; kwargs...), det)
 
 savespectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString, spec::Spectrum) =
     open(filename,write=true) do ios
@@ -61,7 +59,7 @@ sniff(::Type{ISOEMSA}, ios::IO) = isemsa(ios)
 
 struct ASPEXTIFF <: SpectrumFileType end
 
-loadspectrum(::Type{ASPEXTIFF}, ios::IO; withImgs=true, astype::Type{<:Real} = Float64) = readAspexTIFF(ios, withImgs=withImgs, astype=astype)
+loadspectrum(::Type{ASPEXTIFF}, ios::IO; withImgs = false, astype::Type{<:Real} = Float64) = readAspexTIFF(ios, withImgs=withImgs, astype=astype)
 extensions(::Type{ASPEXTIFF}) = ( ".tif", )
 
 sniff(::Type{ASPEXTIFF}, ios::IO) = detectAspexTIFF(ios)
