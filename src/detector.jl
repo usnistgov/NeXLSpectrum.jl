@@ -146,7 +146,7 @@ struct MnKaResolution <: Resolution
     fwhmatmnka::Float64
 end
 
-Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn Kα")
+Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn K-L3")
 
 """"
     resolution(eV::Float64, res::MnKaResolution)
@@ -155,7 +155,7 @@ The FWHM at eV for the MnKaResolution model.  Uses Chuck Fiori's simple function
 another energy.
 """
 resolution(eV::Float64, res::MnKaResolution) =
-    sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka))
+    sqrt(2.45 * (eV - enx"Mn K-L3") + res.fwhmatmnka^2)
 """
     gaussianwidth(fwhm::Float64)
 
