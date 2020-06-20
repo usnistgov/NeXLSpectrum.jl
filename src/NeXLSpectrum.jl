@@ -29,6 +29,7 @@ export extent # Determine the energy extent of an x-ray line on a detector ( Emi
 export extents # Determine the energy extents of many x-ray lines on a detector
 export matching # Build a detector to match a spectrum
 export lld # Low-level discriminator in eV
+export detectorresponse # Build a matrix that describes the detectors response to X-rays
 
 # X-ray window models
 include("window.jl")
@@ -165,6 +166,10 @@ include("continuum.jl")
 export ContinuumModel # Build a model to compute the continuum intensity
 export emitted # Compute the emitted continuum emission
 export generated # Compute the generated continuum emission
+export fitcontinuum # Fit a continuum model to a spectrum with :BeamEnergy, :TakeOffAngle, :Composition properties
+export subtractcontinuum # Automatically remove the continuum contribution from a Spectrum
+export fittedcontinuum
+export continuumrois # The range of channels associated with the continuum
 
 # These primarily exist to scale spectra for presentation (plotting)
 include("specscaling.jl")

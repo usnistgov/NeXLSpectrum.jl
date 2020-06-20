@@ -2,7 +2,7 @@ using .Gadfly
 using Colors
 using Printf
 
-NeXLSpectrumStyle = style(
+const NeXLSpectrumStyle = style(
     background_color = nothing,
     panel_fill = RGB(253 / 255, 253 / 255, 241 / 255),
     grid_color = RGB(255 / 255, 223 / 255, 223 / 255),
@@ -239,7 +239,7 @@ function Gadfly.plot(
     if length(coincidences) > 0
         append!(layers, sumPeaks(coincidences))
     end
-    colors = Colorant[palette[1:length(specs)]...]
+    @assert eltype(palette[1:length(specs)])==Colorant
     Gadfly.with_theme(style) do
         plot(
             layers...,
@@ -247,7 +247,7 @@ function Gadfly.plot(
             Guide.YLabel(ylbl),
             Scale.x_continuous(format = :plain),
             Scale.y_continuous(format = :plain),
-            Guide.manual_discrete_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, color=Colorant[colors...]),
+            Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
             Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
         )
     end
