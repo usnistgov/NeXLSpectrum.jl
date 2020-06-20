@@ -1,27 +1,26 @@
 language: julia
 
 os:
-  - osx
-  - linux
+  - windows
 
 julia:
   #- 1.0
   #- 1.1
-  - 1.2
+  - 1.4
   - nightly
 
 # # Uncomment the following lines to allow failures on nightly julia
 # # (tests will run but not make your overall status red)
 # matrix:
-#   allow_failures:
-#   - julia: nightly
+allow_failures:
+   - julia: nightly
 
 notifications:
   email: false
 
-#script: # the default script is equivalent to the following
-#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-#  - julia --project -e 'using Pkg; Pkg.build(); Pkg.test(; coverage=true)';
+script: # the default script is equivalent to the following
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --project -e 'using Pkg; Pkg.add("https://github.com/usnistgov/FFAST.jl.git"); Pkg.add("https://github.com/usnistgov/BoteSalvatICX.jl.git"); Pkg.add("https://github.com/usnistgov/NeXLUncertainties.jl.git"); Pkg.add("https://github.com/usnistgov/NeXLCore.jl.git"); Pkg.add("https://github.com/usnistgov/NeXLMatrixCorrection.jl.git"); Pkg.build(); Pkg.test(; coverage=true)';
 
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())';
