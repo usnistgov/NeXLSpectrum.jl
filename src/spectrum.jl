@@ -139,10 +139,11 @@ sameproperty(specs, prop::Symbol) = all(spec -> spec[prop] == specs[1][prop], sp
     specs[1][prop] : #
     error("The property $prop is not equal for all these spectra.")
 
-function Base.show(io::IO, spec::Spectrum)
+function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{<:Real})
     comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
     e0 = haskey(spec, :BeamEnergy) ? "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3)) keV" : "Unknown keV"
-    print(io, "Spectrum[$(spec[:Name]), $e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]")
+    textplot(io, spec, size = (12, 80))
+    print(io, "\n$(spec[:Name])[$e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]")
 end
 
 function textplot(io::IO, spec::Spectrum; size = (16, 80))
@@ -157,7 +158,7 @@ function textplot(io::IO, spec::Spectrum; size = (16, 80))
         if r == 1
             println(io, " $(round(max,digits=0))")
         elseif r == rows
-            println(io, " $(round(0.001*e0_eV,digits=2)) keV")
+            print(io, " $(round(0.001*e0_eV,digits=2)) keV")
         else
             println(io)
         end
