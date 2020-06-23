@@ -1,19 +1,19 @@
 using Weave
 
+function weaveit(name)
+    @info "Building $name"
+    weave(name, out_path=joinpath("..","docs","src","$(splitext(name)[1]).md"), doctype="github")
+end
+
 let start_dir = pwd()
     cd(@__DIR__)
-    outpath = normpath(joinpath(@__DIR__, "..", "docs", "build"))
+    outpath = normpath(joinpath(@__DIR__, "..", "docs", "src"))
     @show outpath
     if !isdirpath(outpath)
         mkpath(outpath)
     end
 
-    weave("errorbars.jmd", out_path=joinpath(outpath,"errorbars.html"))
-    weave("K412fit.jmd", out_path=joinpath(outpath,"K412fit.html"))
-    # weave("quantAMDglass.jmd", out_path=joinpath(outpath,"quantAMDglass.html"))
-    weave("XRFspectra.jmd", out_path=joinpath(outpath,"XRFSpectra.html"))
-    weave("K412quick.jmd", out_path=joinpath(outpath,"K412quick.html"))
-    weave("continuummodel.jmd", out_path=joinpath(outpath,"continuummodel.html"))
+    weaveit.(("errorbars.jmd",  "K412fit.jmd",  "XRFspectra.jmd",  "K412quick.jmd",  "continuummodel.jmd" ))
 
     cd(start_dir)
 end
