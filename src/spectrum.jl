@@ -323,13 +323,6 @@ function Base.findmax(spec::Spectrum, chs::UnitRange{Int})
 end
 
 """
-	findmax(spec::Spectrum)
-
-Returns the (maximum intensity, channel index) over all channels
-"""
-Base.findmax(spec::Spectrum) = findmax(spec.counts)
-
-"""
    integrate(spec, channels)
 
 Sums all the counts in the specified channels.  No background correction.
@@ -402,10 +395,13 @@ function integrate(spec::Spectrum)
     return integrate(spec, lld(spec):last)
 end
 
+
 """
-    findmax(spec::Spectrum)
+	findmax(spec::Spectrum)
+
+Returns the (maximum intensity, channel index) over all channels
 """
-function findmax(spec::Spectrum)
+function Base.findmax(spec::Spectrum)
     last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
     return findmax(spec.counts, lld(spec):last)
 end

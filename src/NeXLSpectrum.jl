@@ -20,6 +20,7 @@ export channel # energy to channel
 export visible # Is a SpectrumFeature visible in the spectrum??
 export linewidth # energy to linewidth
 export channelcount # Detector channel count
+export apply # Create a copy of a spectrum with the specified detector
 export scale # Detector EnergyScale
 export resolution # Detector Resolution
 export profile # Computes the resolution function
