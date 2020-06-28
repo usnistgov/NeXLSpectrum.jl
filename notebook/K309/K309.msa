@@ -15,20 +15,20 @@
 #CHOFFSET    : 95
 #BEAMKV   -kV: 15.0
 #PROBECUR -nA: 3.93
-#ELEVANGLE   : 35.0
+#ELEVANGLE   : 40.0
 #AZIMANGLE   : 0.0
 #XTILTSTGE   : 0.0
 #YTILTSTGE   : 0.0
 #LIVETIME  -s: 59.339
 #REALTIME  -s: 64.307
 ##RTDET      : XFlash 4040
-#EDSDET      : 
+#EDSDET      :
 #TDEADLYR -cm: 0.000008
 #TACTLYR  -cm: 0.045
 ##FANO       : 0.1030000
 ##MNFWHM -keV: 0.1221482
-##IDENT      : 
-#SPECTRUM    : 
+##IDENT      :
+#SPECTRUM    :
          0.0,         0.0,         0.0,         0.0,
          0.0,         0.0,         0.0,         0.0,
          0.0,         0.0,         0.0,         0.0,
@@ -1053,4 +1053,4 @@
          0.0,         0.0,         0.0,         0.0,
          0.0,         0.0,         0.0,         0.0,
          0.0,         0.0,         0.0,         0.0,
-#ENDOFDATA   : 
+#ENDOFDATA   :
