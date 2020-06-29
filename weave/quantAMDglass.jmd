@@ -6,7 +6,6 @@ This example uses the low-level filter fitting functions to
     * filter the reference spectra and unknowns
     * plots various different perspectives on the fit process
 ```julia
-using Revise
 using NeXLCore
 using NeXLSpectrum
 using NeXLUncertainties
@@ -21,15 +20,15 @@ Load 15 unknowns and the reference spectra.
 
 ```julia
 dir = "C:/Users/nicho/.julia/dev/NeXLSpectrum/test"
-path = "$(dir)/ADM6005a spectra/"
-unks = loadspectrum.("$(path)ADM-6005a_$(i).msa" for i = 1:15)
-al = loadspectrum("$(path)Al std.msa")
-caf2 = loadspectrum("$(path)CaF2 std.msa")
-ge = loadspectrum("$(path)Ge std.msa")
-si = loadspectrum("$(path)Si std.msa")
-sio2 = loadspectrum("$(path)SiO2 std.msa")
-ti = loadspectrum("$(path)Ti trimmed.msa")
-zn = loadspectrum("$(path)Zn std.msa");
+path = joinpath("..","test","ADM6005a spectra")
+unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i = 1:15)
+al = loadspectrum(joinpath(path, "Al std.msa"))
+caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"))
+ge = loadspectrum(joinpath(path, "Ge std.msa"))
+si = loadspectrum(joinpath(path, "Si std.msa"))
+sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"))
+ti = loadspectrum(joinpath(path, "Ti trimmed.msa"))
+zn = loadspectrum(joinpath(path, "Zn std.msa"));
 ```
 
 Build a detector model and then the fitting filter based on the detector model.  The detector has 4096 channels of width 5.01716 eV/ch and a zero offset of -484.21 eV.  The FWHM at Mn Ka is 126.0 and there is a low-level discriminator cutoff of 120 channels to eliminate the zero-strobe peak.
@@ -136,7 +135,7 @@ vstack(collect(plot(res[2], ffroi) for ffroi in ffrois))
 Summarize the k-ratio results in a table.
 ```julia
 df = asa(DataFrame, collect(r.kratios for r in res))
-CSV.write("$(path)kratios.csv",df)
+CSV.write(joinpath(path, "kratios.csv"),df)
 ```
 ```julia
 withenv("COLUMNS" => 180) do

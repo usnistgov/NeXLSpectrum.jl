@@ -10,7 +10,7 @@ Load the spectra from EMSA files.
 ```julia
 path = "XRF Stainless"
 # We use map to apply `readEMSA` to each of the files
-specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->loadspectrum("$path/$fn"), (
+specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->loadspectrum(joinpath(path, fn)), (
   "Steel_50kv_50_ma_Rh_vac_D1.msa",
   "Fe_50kv_50_ma_Rh_vac_D1.msa",
   "Ni_50kv_50_ma_Rh_vac_D1.msa",

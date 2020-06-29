@@ -207,7 +207,7 @@ function Gadfly.plot(
         mE = ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) : convert(Float64,xmax)
         mE0 = get(spec, :BeamEnergy, missing)
         chs = max(1, channel(convert(Float64,xmin), spec)):min(length(spec),channel(mE, spec))
-        mchs = max(channel(200.0,spec), chs.start, lld(spec)):min(length(specdata[i]),chs.stop)  # Ignore zero strobe...
+        mchs = max(channel(200.0,spec), chs[1], lld(spec)):min(length(specdata[i]),chs[end])  # Ignore zero strobe...
         maxI = max(maxI, maximum(specdata[i][mchs]))
         maxE = max(maxE, mE)
         maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
@@ -260,10 +260,10 @@ Plot the fit spectrum and the fit residuals along with the fit ROIs and the asso
 """
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
     function defroi(ffrr) # Compute a reasonable default display ROI
-        tmp = minimum( lbl.roi.start for lbl in keys(ffrr.kratios)):maximum( lbl.roi.stop for lbl in keys(ffrr.kratios))
-        return max(1,tmp.start-length(ffrr.roi)÷40):min(tmp.stop+length(ffrr.roi)÷10,ffrr.roi.stop)
+        tmp = minimum( lbl.roi[1] for lbl in keys(ffrr.kratios)):maximum( lbl.roi[end] for lbl in keys(ffrr.kratios))
+        return max(lld(ffr.label.spec),tmp[1]-length(ffrr.roi)÷40):min(tmp[end]+length(ffrr.roi)÷10,ffrr.roi[end])
     end
-    roilt(l1, l2) = isless(l1.roi.start, l2.roi.start)
+    roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
     roi = ismissing(roi) ? defroi(ffr) : roi
     layers = [
         layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
@@ -272,14 +272,14 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
         if value(lbl, ffr) > 0.0
-# This logic keeps the labels on different lines (mostly...)
-            i, prev = (lbl.roi.start > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi.stop) : (i + 1, prev)
+            # This logic keeps the labels on different lines (mostly...)
+            i, prev = (lbl.roi[1] > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi[end]) : (i + 1, prev)
             labels = ["", name(lbl.xrays)]
-# Plot the ROI
+            # Plot the ROI
             push!(
                 layers,
                 layer(
-                    x = [lbl.roi.start, lbl.roi.stop],
+                    x = [lbl.roi[1], lbl.roi[end]],
                     y = maxy * [0.4 + 0.1 * i, 0.4 + 0.1 * i],
                     label = labels,
                     Geom.line,
@@ -288,11 +288,11 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
                     Theme(default_color = "gray"),
                 ),
             )
-# Plot the k-ratio as a label above ROI
+            # Plot the k-ratio as a label above ROI
             push!(
                 layers,
                 layer(
-                    x = [0.5 * (lbl.roi.start + lbl.roi.stop)],
+                    x = [0.5 * (lbl.roi[1] + lbl.roi[end])],
                     y = maxy * [0.4 + 0.1 * i],
                     label = [@sprintf("%1.4f", value(lbl, ffr))],
                     Geom.label(position = :above),
@@ -304,7 +304,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     Gadfly.with_theme(style) do
         plot(
             layers...,
-            Coord.cartesian(xmin = roi.start, xmax = ismissing(xmax) ? roi.stop : xmax, ymin = min(1.1 * miny, 0.0), ymax = maxy),
+            Coord.cartesian(xmin = roi[1], xmax = ismissing(xmax) ? roi[end] : xmax, ymin = min(1.1 * miny, 0.0), ymax = maxy),
             Guide.XLabel("Channels"),
             Guide.YLabel("Counts"),
             Guide.title("$(ffr.label)"),
@@ -318,9 +318,9 @@ function Gadfly.plot(fr::FilteredReference)
         layer(x=fr.ffroi, y=fr.data, Theme(default_color=NeXLPalette[1]), Geom.step),
         layer(x=fr.ffroi, y=fr.filtered, Theme(default_color=NeXLPalette[2]), Geom.step),
         layer(x=fr.roi, y=fr.charonly, Theme(default_color=NeXLPalette[3]), Geom.step),
-        layer(xmin=[fr.ffroi.start, fr.roi.start], xmax=[fr.ffroi.stop, fr.roi.stop], Geom.vband, color = roicolors ),
+        layer(xmin=[fr.ffroi[1], fr.roi[1]], xmax=[fr.ffroi[end], fr.roi[end]], Geom.vband, color = roicolors ),
     ]
-    plot(layers..., Coord.cartesian(xmin=fr.ffroi.start-length(fr.ffroi)÷10, xmax=fr.ffroi.stop+length(fr.ffroi)÷10),
+    plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
         Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
         Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ NeXLPalette[1:3]..., roicolors...] ))
 end

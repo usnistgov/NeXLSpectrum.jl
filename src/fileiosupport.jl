@@ -8,6 +8,7 @@ end
 
 function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString; kwargs...)
     badname(sp) = (!haskey(sp,:Name)) || startswith(sp[:Name],"Bruker") || startswith(sp[:Name],"Spectrum[")
+    @assert isfile(filename) "$filename is not a file in loadspectrum(...)."
     return open(filename, read=true) do ios
         spec = loadspectrum(ty, ios; kwargs...)
         spec[:Filename] = filename
@@ -85,6 +86,7 @@ function sniffspectrum( ios::IO )
 end
 
 function sniffspectrum( filename::AbstractString )
+    @assert isfile(filename) "$filename is not a file in sniffspectrum(...)."
     ext = lowercase(splitext(filename)[2])
     for st in spectrumfiletypes
         if ext in extensions(st)
