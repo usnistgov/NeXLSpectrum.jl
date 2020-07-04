@@ -50,11 +50,15 @@ data are independent (thus the matrix is diagnonal) and the magnitude equals the
 spectrum data is nominally Poissonian and in the large number limit, the variance of a Poissonian random variable is
 the number itself (σ=sqrt(N) => Var = N)
 
-The filter matrix however is sparse and we can use the SparseMatrix type to implement it with better memory and CPU
-performance.  But we can do better. The filter matrix mostly zeros except for a small band near the diagonal.  This
-band is continuous and can readily be implemented as an array.  Furthermore, the product F⋅d and F⋅D⋅Fᵀ are readily
-implemented as element-by-element multiplies and dot products.  Thus storing the filter as offsets and row filters is
-efficient in both memory and CPU.
+Notes on memory and code optimization:
+The filter matrix is banded diagonal.  Approximately, 2.5% of the elements are non-zero.  This suggest use of the
+BandedMatrix type.  The most expensive operation is calculating F⋅D⋅Fᵀ, the covariance matrix of the filtered data.
+D is a diagonal matrix and so computing each element in F⋅D⋅Fᵀ reduces to a sum over a single variable.
+Furthermore, the weighted least squares fit doesn't require the full F⋅D⋅Fᵀ, just diag(F⋅D⋅Fᵀ).  However, it turns out
+that we can do better implementing our own banded matrix type largely because D is fully diagonal and the matrix
+product F⋅D⋅Fᵀ reduces down to a sum over a single variable.  The product F⋅d and F⋅D⋅Fᵀ are readily
+implemented as element-by-element multiplies and sums.  Thus storing the filter as offsets and row filters is
+efficient in both memory and CPU use.
 """
 struct TopHatFilter
     filttype::Type{<:TopHatFilterType}
@@ -96,6 +100,33 @@ function filterdata(filt::TopHatFilter, region::UnitRange{Int})::Matrix{Float64}
     foreach(r -> res[r-region.start+1,:] = filterdata(filt, r)[region], region)
     return res
 end
+
+"""
+    filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, row::Int, col::Int)::Float64
+
+Compute the covariance matrix entry for the specified row and column.  The resulting covariance matrix is equal
+to F⋅Ω⋅Fᵀ where F is the filter and Ω is the covariance matrix of the spectrum data.  Since each channel in the spectrum
+is 1) independent; 2) Poisson distributed, Ωᵢⱼ = specdata[i] if i==j, 0 otherwise. Because Ω is diagonal, the matrix
+multiplication reduces to sum over a single index.  Often this sum is zero because the non-zero portions of the
+`row` and `col` filters don't intersect.
+
+Note:  `specdata` should be preprocessed so that no element is less than or equal to zero.
+"""
+function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64
+    fi, fl, oi, ol = filt.filters[i], filt.filters[l], filt.offsets[i], filt.offsets[l]
+    roi = max(oi,ol):min(oi+length(fi)-1, ol+length(fl)-1) # The ROI over which both filters are non-zero.
+    return roi.start < roi.stop ? #
+        sum(view(fi, roi.start-oi+1:roi.stop-oi+1) .* view(specdata, roi) .* view(fl, roi.start-ol+1:roi.stop-ol+1)) :
+        0.0
+end
+
+"""
+    filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, ch::Int)::Float64 =
+
+Compute a single channel in the filtered spectrum.
+"""
+filtereddatum(filt::TopHatFilter, d::Vector{Float64}, i::Int)::Float64 =
+    sum(filt.filters[i] .* view(d,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
@@ -234,19 +265,15 @@ Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
 function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter, tol::Float64)
-    range(i) = thf.offsets[i]:thf.offsets[i]+length(thf.filters[i])-1
-    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
-        [dot(thf.filters[i], view(data, range(i))) for i in eachindex(data)]
     # Extract the spectrum data as Float64 to match the filter
     data = counts(spec, Float64, true)
-    fill!(view(data, 1:lld(thf.detector)), 0.0)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
     data[1:roi.start-1] = map(tangents[1], 1-roi.start:-1)
     data[roi.stop+1:end] = map(tangents[2], 1:length(data)-roi.stop)
     # Compute the filtered data
-    filtered = apply(thf, data)
+    filtered = [ filtereddatum(thf, data, i) for i in eachindex(data) ]
     maxval = maximum(filtered)
     ff = findfirst(f -> abs(f) > tol * maxval, filtered)
     if isnothing(ff)

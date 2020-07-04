@@ -10,7 +10,6 @@ struct FilteredUnknownW <: FilteredUnknown
     identifier::UnknownLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data (always 1:...)
-    ffroi::UnitRange{Int} # ROI for the filtered data
     data::Vector{Float64} # Spectrum data over ffroi
     filtered::Vector{Float64} # Filtered spectrum data over ffroi
     covariance::Vector{Float64} # Channel covariance
@@ -73,19 +72,11 @@ For filtering the unknown spectrum. Process the full Spectrum with the specified
 least squares model.
 """
 function tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
-    range(i) = thf.offsets[i]:thf.offsets[i]+length(thf.filters[i])-1
-    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
-        [dot(thf.filters[i], view(data, range(i))) for i in eachindex(data)]
-    covariance(thf, data) = # The diagnonal elements of the full covariance matrix
-        [dot(thf.filters[r] .* view(data, range(r)), thf.filters[r]) for r in eachindex(data)]
     data = counts(spec, Float64, true)
-    # Compute the filtered data
-    fill!(view(data, 1:lld(thf.detector)),0.0)
-    filtered = apply(thf, data)
-    roi = eachindex(filtered)
-    # max(d,1.0) is necessary to ensure the variances are positive
-    covar = covariance(thf, map(d -> max(d, 1.0), data))
-    return FilteredUnknownW(UnknownLabel(spec), scale, roi, roi, data, filtered, covar)
+    filtered = [ filtereddatum(thf,data,i) for i in eachindex(data) ]
+    dp = map(x->max(x, 1.0),data) # To ensure covariance isn't zero or infinite precision
+    covar = [ filteredcovar(thf, dp, i, i) for i in eachindex(data) ]
+    return FilteredUnknownW(UnknownLabel(spec), scale, eachindex(data), data, filtered, covar)
 end
 
 """

@@ -1,7 +1,6 @@
 using Test
 using NeXLSpectrum
 using Statistics
-using Printf
 
 @testset "Filter Fitting" begin
     @testset "Filter" begin
@@ -26,9 +25,8 @@ using Printf
     end
 
     @testset "LLSQ_K412_1" begin
-        dir = @__DIR__
-        path = "$(dir)/K412 spectra/"
-        unks = loadspectrum.(@sprintf("%sIII-E K412[%d][4].msa", path, i) for i = 0:4)
+        path = joinpath(@__DIR__,"K412 spectra")
+        unks = loadspectrum.(joinpath((path, "III-E K412[$i][4].msa") for i = 0:4)
         al2o3 = loadspectrum(path * "Al2O3 std.msa")
         caf2 = loadspectrum(path * "CaF2 std.msa")
         fe = loadspectrum(path * "Fe std.msa")
@@ -80,7 +78,6 @@ using Printf
     end;
 
     @testset "LLSQ_K412_2" begin
-        dir = @__DIR__
         path = joinpath(@__DIR__,"K412 spectra")
         unks = loadspectrum.(joinpath(path, "III-E K412[$i][4].msa") for i = 0:4)
         al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"))
@@ -149,9 +146,8 @@ using Printf
     end
 
     @testset "ADM6005a" begin
-        dir = @__DIR__
-        path = "$(dir)/ADM6005a spectra/"
-        unks = loadspectrum.("$(path)ADM-6005a_$(i).msa" for i = 1:15)
+        path = joinpath(@__DIR__,"ADM6005a spectra")
+        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i = 1:15)
         al = loadspectrum("$(path)Al std.msa")
         caf2 = loadspectrum("$(path)CaF2 std.msa")
         fe = loadspectrum("$(path)Fe std.msa")
@@ -210,4 +206,129 @@ using Printf
         @test isapprox(mean(values(geroi[2], res)), 0.2628, atol=0.001)
         @test isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
     end
+    @testset "ADM6005a - GenW" begin
+        # same as above but using the FilteredUnknownG code with the weighed algorithm
+        path = joinpath(@__DIR__,"ADM6005a spectra")
+        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i = 1:15)
+        al = loadspectrum(joinpath(path, "Al std.msa"))
+        caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"))
+        fe = loadspectrum(joinpath(path, "Fe std.msa"))
+        ge = loadspectrum(joinpath(path, "Ge std.msa"))
+        si = loadspectrum(joinpath(path, "Si std.msa"))
+        sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"))
+        ti = loadspectrum(joinpath(path, "Ti trimmed.msa"))
+        zn = loadspectrum(joinpath(path, "Zn std.msa"))
+
+        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
+        ff = buildfilter(det)
+
+        ampl = 1e-4
+        e0 = sameproperty(unks, :BeamEnergy)
+        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl=ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [n"Ca",n"F"], det, e0, ampl=ampl)
+        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl=ampl)
+        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl=ampl)
+        oroi = charXRayLabels(sio2, n"O", [n"Si",n"O"], det, e0, ampl=ampl)
+        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl=ampl)
+        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl=ampl)
+        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl=ampl)
+
+        alk = tophatfilter(alroi, ff, 1.0 / dose(al))
+        cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
+        felk = tophatfilter(feroi, ff, 1.0 / dose(fe))
+        gelk = tophatfilter(geroi, ff, 1.0 / dose(ge))
+        ok = tophatfilter(oroi, ff, 1.0 / dose(sio2))
+        sik = tophatfilter(siroi, ff, 1.0 / dose(si))
+        tilk = tophatfilter(tiroi, ff, 1.0 / dose(ti))
+        znlk = tophatfilter(znroi, ff, 1.0 / dose(zn))
+
+        fds = collect(Iterators.flatten( ( alk, cak, felk, gelk, ok, sik, tilk, znlk ) ))
+
+        res = FilterFitResult[]
+        for i = 1:15
+            unk = tophatfilter(FilteredUnknownG, unks[i], ff, 1.0 / dose(unks[i]))
+            push!(res, filterfit(unk, fds, NeXLSpectrum.fitcontiguousw))
+        end
+
+        # Compare against DTSA-II values
+        @test isapprox(mean(values(oroi[1], res)), 0.4923, rtol=0.003)
+        @test isapprox(mean(values(siroi[1], res)), 0.0214, atol=0.013)
+        @test isapprox(mean(values(alroi[1], res)), 0.0281, rtol=0.004)
+        @test isapprox(mean(values(caroi[1], res)), 0.1211, rtol=0.0025)
+        @test isapprox(mean(values(znroi[1], res)), 0.0700, rtol=0.05)
+        @test isapprox(mean(values(znroi[2], res)), 0.1115, atol=0.0005)
+        @test isapprox(mean(values(znroi[3], res)), 0.1231, rtol=0.01)
+        @test isapprox(mean(values(tiroi[1], res)), 0.0541, rtol=0.26)
+        @test isapprox(mean(values(tiroi[2], res)), 0.064, rtol=0.0002)
+        @test isapprox(mean(values(tiroi[3], res)), 0.064, rtol=0.06)
+        @test isapprox(mean(values(feroi[1], res)), 0.0, atol=0.001)
+        @test isapprox(mean(values(feroi[2], res)), 0.0, atol=0.0004)
+        @test isapprox(mean(values(feroi[3], res)), 0.0, atol=0.001)
+        @test isapprox(mean(values(geroi[1], res)), 0.1789, rtol=0.01)
+        @test isapprox(mean(values(geroi[2], res)), 0.2628, atol=0.001)
+        @test isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
+    end
+    @testset "ADM6005a - Gen" begin
+        # same as above but using the FilteredUnknownG code with the generalized algorithm
+        path = joinpath(@__DIR__,"ADM6005a spectra")
+        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i = 1:15)
+        al = loadspectrum(joinpath(path, "Al std.msa"))
+        caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"))
+        fe = loadspectrum(joinpath(path, "Fe std.msa"))
+        ge = loadspectrum(joinpath(path, "Ge std.msa"))
+        si = loadspectrum(joinpath(path, "Si std.msa"))
+        sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"))
+        ti = loadspectrum(joinpath(path, "Ti trimmed.msa"))
+        zn = loadspectrum(joinpath(path, "Zn std.msa"))
+
+        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
+        ff = buildfilter(det)
+
+        ampl = 1e-4
+        e0 = sameproperty(unks, :BeamEnergy)
+        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl=ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [n"Ca",n"F"], det, e0, ampl=ampl)
+        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl=ampl)
+        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl=ampl)
+        oroi = charXRayLabels(sio2, n"O", [n"Si",n"O"], det, e0, ampl=ampl)
+        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl=ampl)
+        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl=ampl)
+        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl=ampl)
+
+        alk = tophatfilter(alroi, ff, 1.0 / dose(al))
+        cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
+        felk = tophatfilter(feroi, ff, 1.0 / dose(fe))
+        gelk = tophatfilter(geroi, ff, 1.0 / dose(ge))
+        ok = tophatfilter(oroi, ff, 1.0 / dose(sio2))
+        sik = tophatfilter(siroi, ff, 1.0 / dose(si))
+        tilk = tophatfilter(tiroi, ff, 1.0 / dose(ti))
+        znlk = tophatfilter(znroi, ff, 1.0 / dose(zn))
+
+        fds = collect(Iterators.flatten( ( alk, cak, felk, gelk, ok, sik, tilk, znlk ) ))
+
+        res = FilterFitResult[]
+        for i = 1:15
+            unk = tophatfilter(FilteredUnknownG, unks[i], ff, 1.0 / dose(unks[i]))
+            push!(res, filterfit(unk, fds))
+        end
+
+        # Compare against DTSA-II values
+        @test isapprox(mean(values(oroi[1], res)), 0.4923, rtol=0.003)
+        @test isapprox(mean(values(siroi[1], res)), 0.0214, atol=0.013)
+        @test isapprox(mean(values(alroi[1], res)), 0.0281, rtol=0.004)
+        @test isapprox(mean(values(caroi[1], res)), 0.1211, rtol=0.0025)
+        @test isapprox(mean(values(znroi[1], res)), 0.0700, rtol=0.05)
+        @test isapprox(mean(values(znroi[2], res)), 0.1115, atol=0.0005)
+        @test isapprox(mean(values(znroi[3], res)), 0.1231, rtol=0.01)
+        @test isapprox(mean(values(tiroi[1], res)), 0.0541, rtol=0.26)
+        @test isapprox(mean(values(tiroi[2], res)), 0.064, rtol=0.0002)
+        @test isapprox(mean(values(tiroi[3], res)), 0.064, rtol=0.06)
+        @test isapprox(mean(values(feroi[1], res)), 0.0, atol=0.001)
+        @test isapprox(mean(values(feroi[2], res)), 0.0, atol=0.0004)
+        @test isapprox(mean(values(feroi[3], res)), 0.0, atol=0.001)
+        @test isapprox(mean(values(geroi[1], res)), 0.1789, rtol=0.01)
+        @test isapprox(mean(values(geroi[2], res)), 0.2628, atol=0.001)
+        @test isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
+    end
+
 end

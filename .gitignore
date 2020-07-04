@@ -6,4 +6,5 @@
 /docs/Manifest.toml
 Manifest.toml
 weave/*.html
-weave/jl_*/
+weave/jl_
+staging.jl

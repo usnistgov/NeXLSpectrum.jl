@@ -20,39 +20,11 @@ end
 For filtering the unknown spectrum. Process the full Spectrum with the specified filter.
 """
 function tophatfilter(::Type{FilteredUnknownG}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownG
-    range(i) = thf.offsets[i] : thf.offsets[i] + length(thf.filters[i]) - 1
-    apply(thf::TopHatFilter, data::AbstractVector{Float64}) =
-        [ dot(thf.filters[i], view(data, range(i))) for i in eachindex(data) ]
-    function covariance(roi, data, thf) # Calculated the full covariance matrix
-        off(r, o) = r.start-o+1:r.stop-o+1
-        rs, cs, vs = Int[], Int[], Float64[]
-        res = zeros( ( length(roi), length(roi) ) )
-        bdata = map(d -> max(d, 1.0), data)
-        for r in roi
-            rr, rf, ro = range(r), thf.filters[r], thf.offsets[r]
-            for c in roi
-                ii = intersect(rr, range(c))
-                if length(ii) > 0
-                    cf, co = thf.filters[c], thf.offsets[c]
-                    # The next line is the core time sink...
-                    v = dot( view(rf, off(ii, ro)) .* view(bdata, ii) , view(cf, off(ii, co)))
-                    if v ≠ 0.0
-                        push!(rs, r), push!(cs, c), push!(vs, v)
-                    end
-                end
-            end
-        end
-        push!(rs, roi.stop), push!(cs, roi.stop), push!(vs, 0.0) # force the size
-        return sparse(rs, cs, vs)
-    end
     data = counts(spec, Float64, true)
-    # Compute the filtered data
-    filtered = apply(thf, data)
+    filtered = [ filtereddatum(thf,data,i) for i in eachindex(data) ]
     roi = 1:findlast(f -> f ≠ 0.0, filtered)
-    # max(d,1.0) is necessary to ensure the variances are positive
-    # diag = sparse(roi,roi,map(d -> max(d, 1.0), data[roi]))
-    covar = covariance(roi, data, thf)
-    @assert covar isa AbstractSparseMatrix "The covariance matrix should be a sparse matrix in tophatfilter(...)::FilterUnknown."
+    dp = map(x->max(x, 1.0),data) # To ensure covariance isn't zero or infinite precision
+    covar = [ filteredcovar(thf, dp, r, c) for r in roi, c in roi ]
     checkcovariance!(covar)
     return FilteredUnknownG(UnknownLabel(spec), scale, roi, roi, data[roi], filtered[roi], covar)
 end
@@ -73,8 +45,8 @@ Filter fit the unknown against ffs, an array of FilteredReference and return the
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
 function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
- trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
- while refit
+    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
+    while refit
      fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
      # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
      retained = map(fr->alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
@@ -87,10 +59,10 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
              refit=true
          end
      end
- end # while
- kr = cat(append!(retained, removed))
- resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
- return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
+    end # while
+    kr = cat(append!(retained, removed))
+    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
+    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
 end
 
 """
