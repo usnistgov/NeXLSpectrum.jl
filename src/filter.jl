@@ -73,9 +73,9 @@ struct TopHatFilter
         filt::AbstractMatrix{Float64},
         wgts::AbstractVector{Float64},
     )
-        # Extract the contiguous non-zero elements out
+        # Extract the contiguous non-zero elements
         dim = size(filt)[1]
-        offsets = zeros(dim)
+        offsets = zeros(Int, dim)
         filts = fill(Vector{Float64}(), dim)
         for (r, row) in enumerate(eachrow(filt))
             start = findfirst(i -> i ≠ 0.0, row)
@@ -115,10 +115,16 @@ Note:  `specdata` should be preprocessed so that no element is less than or equa
 function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64
     fi, fl, oi, ol = filt.filters[i], filt.filters[l], filt.offsets[i], filt.offsets[l]
     roi = max(oi,ol):min(oi+length(fi)-1, ol+length(fl)-1) # The ROI over which both filters are non-zero.
-    return roi.start < roi.stop ? #
-        sum(view(fi, roi.start-oi+1:roi.stop-oi+1) .* view(specdata, roi) .* view(fl, roi.start-ol+1:roi.stop-ol+1)) :
+    return length(roi) > 0 ? #
+        # sum(view(fi, roi.start-oi+1:roi.stop-oi+1) .* view(specdata, roi) .* view(fl, roi.start-ol+1:roi.stop-ol+1)) :
+        sum(fi[roi.start-oi+1:roi.stop-oi+1] .* specdata[roi] .* fl[roi.start-ol+1:roi.stop-ol+1]) :
         0.0
 end
+
+
+filteredcovar2(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64 =
+     sum(filterdata(filt,i) .* specdata .* filterdata(filt,l))
+
 
 """
     filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, ch::Int)::Float64 =

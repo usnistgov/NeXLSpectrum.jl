@@ -31,6 +31,10 @@ end
     glspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, v::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
 
 Solve the generalized least squares problem y = x β + ϵ for β where ϵ ~ v σ using the pseudo-inverse.
+
+β = (xᵀv⁻¹x)⁻¹xᵀv⁻¹y where a⁻¹ => pinv(a)
+
+cov[β] = (xᵀv⁻¹x)⁻¹
 """
 function glspinv(y::AbstractVector{N}, x::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     txiv=transpose(x)*pinv(v)
