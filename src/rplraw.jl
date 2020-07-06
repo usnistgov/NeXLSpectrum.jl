@@ -76,7 +76,7 @@ readrplraw(filenamebase::AbstractString, scale::EnergyScale, props::Dict{Symbol,
 function readrpl(io::IO)
     w, h, d, o = -1, -1, -1, -1
     dl, dtv, bo, rb = -1, "", :unknown, :unknown
-    for row in CSV.File(io)
+    for row in CSV.Rows(read(io))
         key, val = uppercase(strip(row[1])), strip(row[2])
         if key=="WIDTH"
             w=parse(Int,val)

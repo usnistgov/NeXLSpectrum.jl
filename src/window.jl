@@ -97,7 +97,7 @@ end
 Construct tabulated window models for the Moxtek AP3.3 and AP5 windows.
 """
 function AP33Tabulation()
-    data = CSV.read(joinpath(dirname(pathof(@__MODULE__)), "AP3_3_mod.csv"), skipto=3)
+    data = DataFrame!(CSV.File(joinpath(dirname(pathof(@__MODULE__)), "AP3_3_mod.csv"), skipto=3))
     inter = LinearInterpolation(data[:,1], data[:,2])
     extra = AP33Model()
     return TabulatedWindow("Moxtek AP3.3", inter, extra, 1.01582935271)
@@ -105,7 +105,7 @@ end
 
 
 function AP5Tabulation()
-    data = CSV.read(joinpath(dirname(pathof(@__MODULE__)), "AP5.csv"))
+    data = DataFrame!(CSV.File(joinpath(dirname(pathof(@__MODULE__)), "AP5.csv")))
     inter = LinearInterpolation(data[:,1], data[:,2])
     extra = AP5Model()
     return TabulatedWindow("Moxtek AP5",inter, extra, 1.0)
