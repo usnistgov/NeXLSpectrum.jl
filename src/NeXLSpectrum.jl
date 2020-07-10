@@ -1,4 +1,0 @@
-module NeXLSpectrum
-
-
-end

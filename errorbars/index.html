@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lovely Error Bars · NeXLSpectrum.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+<script src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js" type="text/javascript" defer="defer"></script>
+<script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+</head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">NeXLSpectrum.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../K412fit/">Fitting K412</a></li><li><a class="tocitem" href="../K412quick/">Fitting K412 (quick fit)</a></li><li><a class="tocitem" href="../XRFspectra/">Fitting XRF Spectra</a></li><li class="is-active"><a class="tocitem" href>Lovely Error Bars</a></li><li><a class="tocitem" href="../continuummodel/">Modeling the Continuum</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Lovely Error Bars</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lovely Error Bars</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/usnistgov/NeXLSpectrum.jl/blob/master/docs/src/errorbars.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h3 id="How-good-are-the-fit-uncertainty-estimates?"><a class="docs-heading-anchor" href="#How-good-are-the-fit-uncertainty-estimates?">How good are the fit uncertainty estimates?</a><a id="How-good-are-the-fit-uncertainty-estimates?-1"></a><a class="docs-heading-anchor-permalink" href="#How-good-are-the-fit-uncertainty-estimates?" title="Permalink"></a></h3><p>This document looks at two different sets of measured spectra to evaluate how well, the estimated fit uncertainties match the observed uncertainties.  We are using two materials known to be highly homogeneous - K412 and ADM-6006a glasses.  To produce a set of spectra that differ only in count statistics, we will subdivide a spectrum into 100 spectra with an effective live-time of 0.01 of the original spectrum livetime.  We expect that we should be able to compare the &quot;fit-predicted&quot; uncertainties with the &quot;observed distribution&quot; of measured values.</p><p>To be clear:</p><ul><li>&quot;fit-predicted&quot; - Comes from the covariance matrix output from the linear least squares fit</li><li>&quot;observed distribution&quot; - Calculated as the standard-deviation of the 100 fit values.</li></ul><p>We want the ratio of the (observed distribution) / (fit predicted) to be unity or close.  We will call this ratio the &quot;heterogeneity&quot; (or &quot;hetero&quot; in the fourth column of the <code>describe(....)</code> table.)</p><p>We then repeat the process on the multiple measured unknown spectra. (4 for K412 and 15 for ADM-6005a)  We expect the heterogeneity to be one or larger - larger than unity when the sample is not perfectly homogeneous.</p><pre><code class="language-julia">using NeXLSpectrum              # Provides spectrum reading and fitting tools
+using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
+using DataFrames                # Tables
+using BenchmarkTools</code></pre><h6 id="K412"><a class="docs-heading-anchor" href="#K412">K412</a><a id="K412-1"></a><a class="docs-heading-anchor-permalink" href="#K412" title="Permalink"></a></h6><p>Load the spectra, define the fit model and apply it.</p><pre><code class="language-julia">path = &quot;K412 spectra&quot;
+fe = loadspectrum(joinpath(path, &quot;Fe std.msa&quot;))
+det = matching(fe, 132.0, 10)
+unks = (i-&gt;loadspectrum(joinpath(path, &quot;III-E K412[$i][4].msa&quot;),det)).(0:4)
+al2o3 = loadspectrum(joinpath(path, &quot;Al2O3 std.msa&quot;),det)
+caf2 = loadspectrum(joinpath(path, &quot;CaF2 std.msa&quot;),det)
+fe = loadspectrum(joinpath(path, &quot;Fe std.msa&quot;),det)
+mgo = loadspectrum(joinpath(path, &quot;MgO std.msa&quot;),det)
+sio2 = loadspectrum(joinpath(path, &quot;SiO2 std.msa&quot;),det)
+
+refs = (
+  # spectrum, element, composition
+  ( al2o3, n&quot;Al&quot;, mat&quot;Al2O3&quot; ), #
+  ( mgo,   n&quot;Mg&quot;, mat&quot;MgO&quot; ),   #
+  ( fe,    n&quot;Fe&quot;, mat&quot;Fe&quot; ),    #
+  ( sio2,  n&quot;Si&quot;, mat&quot;SiO2&quot; ),  #
+  ( sio2,  n&quot;O&quot;,  mat&quot;SiO2&quot; ),  #
+  ( caf2,  n&quot;Ca&quot;, mat&quot;CaF2&quot; ), )
+
+filt = buildfilter(det)
+frs = mapreduce(ref-&gt;filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.
+
+ss = subdivide(unks[1], 100)
+res= map(s-&gt;fit(s,filt,frs,false), ss)
+display(asa(DataFrame, res[1:10], withUnc=true))</code></pre><pre><code class="language-none">10×17 DataFrame. Omitted printing of 15 columns
+│ Row │ Spectra                           │ O K-L3 + 1 other │
+│     │ String                            │ Float64          │
+├─────┼───────────────────────────────────┼──────────────────┤
+│ 1   │ Sub[III-E K412[0][all],1 of 100]  │ 0.651685         │
+│ 2   │ Sub[III-E K412[0][all],2 of 100]  │ 0.637457         │
+│ 3   │ Sub[III-E K412[0][all],3 of 100]  │ 0.662229         │
+│ 4   │ Sub[III-E K412[0][all],4 of 100]  │ 0.652349         │
+│ 5   │ Sub[III-E K412[0][all],5 of 100]  │ 0.657323         │
+│ 6   │ Sub[III-E K412[0][all],6 of 100]  │ 0.666922         │
+│ 7   │ Sub[III-E K412[0][all],7 of 100]  │ 0.652375         │
+│ 8   │ Sub[III-E K412[0][all],8 of 100]  │ 0.653504         │
+│ 9   │ Sub[III-E K412[0][all],9 of 100]  │ 0.659833         │
+│ 10  │ Sub[III-E K412[0][all],10 of 100] │ 0.650065         │</code></pre><pre><code class="language-julia">display(describe(res))</code></pre><pre><code class="language-none">8×9 DataFrame. Omitted printing of 4 columns
+│ Row │ variable             │ mean      │ std        │ hetero   │ min     
+  │
+│     │ Symbol               │ Float64   │ Float64    │ Float64  │ Float64 
+  │
+├─────┼──────────────────────┼───────────┼────────────┼──────────┼─────────
+──┤
+│ 1   │ O K-L3 + 1 other     │ 0.655611  │ 0.00849501 │ 1.04449  │ 0.634151
+  │
+│ 2   │ Fe L3-M5 + 11 others │ 0.0419351 │ 0.00326518 │ 0.745405 │ 0.034163
+4 │
+│ 3   │ Mg K-L3 + 1 other    │ 0.147582  │ 0.00180057 │ 0.981789 │ 0.143343
+  │
+│ 4   │ Al K-L3 + 1 other    │ 0.0670228 │ 0.00141903 │ 0.892641 │ 0.062834
+  │
+│ 5   │ Si K-L3 + 2 others   │ 0.351032  │ 0.00302546 │ 1.0463   │ 0.343734
+  │
+│ 6   │ Ca K-L3 + 3 others   │ 0.192186  │ 0.00256265 │ 1.10189  │ 0.185293
+  │
+│ 7   │ Fe K-L3 + 1 other    │ 0.0668352 │ 0.00179242 │ 1.12552  │ 0.062555
+1 │
+│ 8   │ Fe K-M3 + 3 others   │ 0.0668979 │ 0.00624409 │ 0.929343 │ 0.049915
+6 │</code></pre><p>Repeat the fit for the 4 measured unknowns.</p><pre><code class="language-julia">res= map(s-&gt;fit(s,filt,frs,false),unks)
+display(asa(DataFrame, res, withUnc=true))</code></pre><pre><code class="language-none">5×17 DataFrame. Omitted printing of 14 columns
+│ Row │ Spectra            │ O K-L3 + 1 other │ ΔO K-L3 + 1 other │
+│     │ String             │ Float64          │ Float64           │
+├─────┼────────────────────┼──────────────────┼───────────────────┤
+│ 1   │ III-E K412[0][all] │ 0.655621         │ 0.000813387       │
+│ 2   │ III-E K412[1][all] │ 0.657418         │ 0.000814094       │
+│ 3   │ III-E K412[2][all] │ 0.65798          │ 0.000815687       │
+│ 4   │ III-E K412[3][all] │ 0.662417         │ 0.000818765       │
+│ 5   │ III-E K412[4][all] │ 0.660782         │ 0.000818176       │</code></pre><pre><code class="language-julia">display(describe(res))</code></pre><pre><code class="language-none">8×9 DataFrame. Omitted printing of 4 columns
+│ Row │ variable             │ mean      │ std         │ hetero   │ min    
+   │
+│     │ Symbol               │ Float64   │ Float64     │ Float64  │ Float64
+   │
+├─────┼──────────────────────┼───────────┼─────────────┼──────────┼────────
+───┤
+│ 1   │ O K-L3 + 1 other     │ 0.658843  │ 0.00272421  │ 3.33841  │ 0.65562
+1  │
+│ 2   │ Fe L3-M5 + 11 others │ 0.0415344 │ 0.000449559 │ 1.02657  │ 0.04081
+74 │
+│ 3   │ Mg K-L3 + 1 other    │ 0.147843  │ 0.000302691 │ 1.647    │ 0.14748
+5  │
+│ 4   │ Al K-L3 + 1 other    │ 0.0670897 │ 0.000201863 │ 1.26691  │ 0.06678
+42 │
+│ 5   │ Si K-L3 + 2 others   │ 0.35141   │ 0.000835142 │ 2.88271  │ 0.35019
+8  │
+│ 6   │ Ca K-L3 + 3 others   │ 0.192142  │ 0.000317952 │ 1.36515  │ 0.19163
+   │
+│ 7   │ Fe K-L3 + 1 other    │ 0.0669106 │ 0.000106305 │ 0.666072 │ 0.06682
+3  │
+│ 8   │ Fe K-M3 + 3 others   │ 0.0671086 │ 0.000507064 │ 0.753089 │ 0.06648
+15 │</code></pre><pre><code class="language-julia">@btime fit(unks[1], filt, frs, false)</code></pre><pre><code class="language-none">2.200 ms (30372 allocations: 13.07 MiB)
+III-E K412[0][all]</code></pre><h6 id="AMM-6005a"><a class="docs-heading-anchor" href="#AMM-6005a">AMM-6005a</a><a id="AMM-6005a-1"></a><a class="docs-heading-anchor-permalink" href="#AMM-6005a" title="Permalink"></a></h6><p>Repeat using the ADM glass.  Fe is not present in ADM-6005a but we fit it to see what a null result looks like.</p><pre><code class="language-julia">path = normpath(joinpath(&quot;..&quot;,&quot;test&quot;,&quot;ADM6005a spectra&quot;))
+unks = map(i-&gt;loadspectrum(joinpath(path,&quot;ADM-6005a_$i.msa&quot;)),1:15)
+al, caf2, fe, ge, si, sio2, ti, zn = map(f-&gt;loadspectrum(joinpath(path,&quot;$f.msa&quot;)), (&quot;Al std&quot;, &quot;CaF2 std&quot;, &quot;Fe std&quot;, &quot;Ge std&quot;, &quot;Si std&quot;, &quot;SiO2 std&quot;, &quot;Ti trimmed&quot;,&quot;Zn std&quot;))
+
+refs = (
+  # spectrum, element, composition
+  ( al,   n&quot;Al&quot;, mat&quot;Al&quot; ), #
+  ( caf2, n&quot;Ca&quot;, mat&quot;CaF2&quot; ),   #
+  ( fe,   n&quot;Fe&quot;, mat&quot;Fe&quot; ),    #
+  ( ge,   n&quot;Ge&quot;, mat&quot;Ge&quot; ),    #
+  ( si,   n&quot;Si&quot;, mat&quot;Si&quot; ),  #
+  ( sio2, n&quot;O&quot;,  mat&quot;SiO2&quot; ),  #
+  ( ti,   n&quot;Ti&quot;, mat&quot;Ti&quot; ),
+  ( zn,   n&quot;Zn&quot;, mat&quot;Zn&quot; ),
+)
+
+det = matching(unks[1], 132.0, 10)
+filt = buildfilter(det)
+frs = mapreduce(ref-&gt;filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.
+ss = subdivide(unks[1], 100)
+res= map(s-&gt;fit(s,filt,frs,false), ss)
+display(asa(DataFrame, res[1:10], withUnc=true))</code></pre><pre><code class="language-none">10×31 DataFrame. Omitted printing of 29 columns
+│ Row │ Spectra                    │ Ti L3-M1 + 6 others │
+│     │ String                     │ Float64             │
+├─────┼────────────────────────────┼─────────────────────┤
+│ 1   │ Sub[ADM-6005a_1,1 of 100]  │ 0.0182253           │
+│ 2   │ Sub[ADM-6005a_1,2 of 100]  │ 0.0281973           │
+│ 3   │ Sub[ADM-6005a_1,3 of 100]  │ 0.0294104           │
+│ 4   │ Sub[ADM-6005a_1,4 of 100]  │ 0.0441845           │
+│ 5   │ Sub[ADM-6005a_1,5 of 100]  │ 0.0157988           │
+│ 6   │ Sub[ADM-6005a_1,6 of 100]  │ 0.0361226           │
+│ 7   │ Sub[ADM-6005a_1,7 of 100]  │ 0.0120712           │
+│ 8   │ Sub[ADM-6005a_1,8 of 100]  │ 0.0184761           │
+│ 9   │ Sub[ADM-6005a_1,9 of 100]  │ 0.00438704          │
+│ 10  │ Sub[ADM-6005a_1,10 of 100] │ 0.0317397           │</code></pre><pre><code class="language-julia">display(describe(res))</code></pre><pre><code class="language-none">15×9 DataFrame. Omitted printing of 5 columns
+│ Row │ variable             │ mean        │ std         │ hetero  │
+│     │ Symbol               │ Float64     │ Float64     │ Float64 │
+├─────┼──────────────────────┼─────────────┼─────────────┼─────────┤
+│ 1   │ Ti L3-M1 + 6 others  │ 0.0198879   │ 0.0198207   │ 1.09848 │
+│ 2   │ O K-L3 + 1 other     │ 0.487604    │ 0.0108249   │ 1.60845 │
+│ 3   │ Fe L3-M5 + 11 others │ 0.000108498 │ 0.00332882  │ 1.18967 │
+│ 4   │ Zn L3-M5 + 11 others │ 0.0681498   │ 0.00163788  │ 1.11024 │
+│ 5   │ Ge L3-M5 + 11 others │ 0.179276    │ 0.00215881  │ 1.22199 │
+│ 6   │ Al K-L3 + 1 other    │ 0.028042    │ 0.000662935 │ 1.32494 │
+│ 7   │ Si K-L3 + 2 others   │ 0.021385    │ 0.000779885 │ 1.52041 │
+│ 8   │ Ca K-L3 + 3 others   │ 0.121388    │ 0.00245005  │ 1.45269 │
+│ 9   │ Ti K-L3 + 3 others   │ 0.0643558   │ 0.00145958  │ 1.31191 │
+│ 10  │ Fe K-L3 + 1 other    │ 0.000211471 │ 0.000985644 │ 1.38669 │
+│ 11  │ Fe K-M3 + 3 others   │ 0.00135368  │ 0.00704875  │ 1.38524 │
+│ 12  │ Zn K-L3 + 1 other    │ 0.111538    │ 0.0043262   │ 1.53091 │
+│ 13  │ Zn K-M3 + 3 others   │ 0.12435     │ 0.0159864   │ 1.0181  │
+│ 14  │ Ge K-L3 + 1 other    │ 0.263421    │ 0.00674357  │ 1.28345 │
+│ 15  │ Ge K-M3 + 3 others   │ 0.271331    │ 0.024383    │ 1.27734 │</code></pre><p>Repeat for the 15 measured spectra.</p><pre><code class="language-julia">res= map(s-&gt;fit(s,filt,frs,false),unks)
+display(asa(DataFrame, res, withUnc=true))</code></pre><pre><code class="language-none">15×31 DataFrame. Omitted printing of 28 columns
+│ Row │ Spectra      │ Ti L3-M1 + 6 others │ ΔTi L3-M1 + 6 others │
+│     │ String       │ Float64             │ Float64              │
+├─────┼──────────────┼─────────────────────┼──────────────────────┤
+│ 1   │ ADM-6005a_1  │ 0.0196054           │ 0.00180556           │
+│ 2   │ ADM-6005a_2  │ 0.0205038           │ 0.00180706           │
+│ 3   │ ADM-6005a_3  │ 0.0210448           │ 0.00180574           │
+│ 4   │ ADM-6005a_4  │ 0.0192692           │ 0.00180754           │
+│ 5   │ ADM-6005a_5  │ 0.0198068           │ 0.00180735           │
+│ 6   │ ADM-6005a_6  │ 0.02261             │ 0.00180528           │
+│ 7   │ ADM-6005a_7  │ 0.0216214           │ 0.00181203           │
+│ 8   │ ADM-6005a_8  │ 0.0196484           │ 0.00180842           │
+│ 9   │ ADM-6005a_9  │ 0.0207842           │ 0.00181029           │
+│ 10  │ ADM-6005a_10 │ 0.0246116           │ 0.00180559           │
+│ 11  │ ADM-6005a_11 │ 0.0200949           │ 0.00180473           │
+│ 12  │ ADM-6005a_12 │ 0.0203895           │ 0.00181218           │
+│ 13  │ ADM-6005a_13 │ 0.0166997           │ 0.00181286           │
+│ 14  │ ADM-6005a_14 │ 0.0185332           │ 0.00180978           │
+│ 15  │ ADM-6005a_15 │ 0.0190233           │ 0.0018089            │</code></pre><pre><code class="language-julia">display(describe(res))</code></pre><pre><code class="language-none">15×9 DataFrame. Omitted printing of 5 columns
+│ Row │ variable             │ mean        │ std         │ hetero   │
+│     │ Symbol               │ Float64     │ Float64     │ Float64  │
+├─────┼──────────────────────┼─────────────┼─────────────┼──────────┤
+│ 1   │ Ti L3-M1 + 6 others  │ 0.0202831   │ 0.001822    │ 1.00762  │
+│ 2   │ O K-L3 + 1 other     │ 0.488676    │ 0.00107014  │ 1.58799  │
+│ 3   │ Fe L3-M5 + 11 others │ -3.47302e-5 │ 0.000195397 │ 0.70211  │
+│ 4   │ Zn L3-M5 + 11 others │ 0.0680583   │ 0.000195188 │ 1.3214   │
+│ 5   │ Ge L3-M5 + 11 others │ 0.17952     │ 0.000233079 │ 1.31832  │
+│ 6   │ Al K-L3 + 1 other    │ 0.028089    │ 7.81106e-5  │ 1.5598   │
+│ 7   │ Si K-L3 + 2 others   │ 0.021408    │ 6.05531e-5  │ 1.18048  │
+│ 8   │ Ca K-L3 + 3 others   │ 0.121378    │ 0.000211966 │ 1.25601  │
+│ 9   │ Ti K-L3 + 3 others   │ 0.0640056   │ 0.000138698 │ 1.24712  │
+│ 10  │ Fe K-L3 + 1 other    │ 0.000304368 │ 7.49407e-5  │ 1.05494  │
+│ 11  │ Fe K-M3 + 3 others   │ 0.000862063 │ 0.000872152 │ 1.7128   │
+│ 12  │ Zn K-L3 + 1 other    │ 0.111292    │ 0.000275447 │ 0.974508 │
+│ 13  │ Zn K-M3 + 3 others   │ 0.12257     │ 0.00254018  │ 1.61918  │
+│ 14  │ Ge K-L3 + 1 other    │ 0.262915    │ 0.000743333 │ 1.41475  │
+│ 15  │ Ge K-M3 + 3 others   │ 0.27565     │ 0.00295048  │ 1.54978  │</code></pre><pre><code class="language-julia">@btime fit(unks[1], filt, frs, false)</code></pre><pre><code class="language-none">4.730 ms (34714 allocations: 19.08 MiB)
+ADM-6005a_1</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../XRFspectra/">« Fitting XRF Spectra</a><a class="docs-footer-nextpage" href="../continuummodel/">Modeling the Continuum »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 July 2020 13:59">Friday 10 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

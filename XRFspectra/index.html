@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Fitting XRF Spectra · NeXLSpectrum.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+<script src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js" type="text/javascript" defer="defer"></script>
+<script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+</head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">NeXLSpectrum.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../K412fit/">Fitting K412</a></li><li><a class="tocitem" href="../K412quick/">Fitting K412 (quick fit)</a></li><li class="is-active"><a class="tocitem" href>Fitting XRF Spectra</a></li><li><a class="tocitem" href="../errorbars/">Lovely Error Bars</a></li><li><a class="tocitem" href="../continuummodel/">Modeling the Continuum</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Fitting XRF Spectra</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Fitting XRF Spectra</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/usnistgov/NeXLSpectrum.jl/blob/master/docs/src/XRFspectra.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Fitting-a-Stainless-Steel-XRF-Spectrum"><a class="docs-heading-anchor" href="#Fitting-a-Stainless-Steel-XRF-Spectrum">Fitting a Stainless Steel XRF Spectrum</a><a id="Fitting-a-Stainless-Steel-XRF-Spectrum-1"></a><a class="docs-heading-anchor-permalink" href="#Fitting-a-Stainless-Steel-XRF-Spectrum" title="Permalink"></a></h1><p>Load the necessary libraries.</p><pre><code class="language-julia">using NeXLSpectrum
+using Gadfly           # For plotting. I&#39;ve added spectrum support.
+using DataFrames       # For tables.</code></pre><p>Load the spectra from EMSA files.</p><pre><code class="language-julia">path = &quot;XRF Stainless&quot;
+# We use map to apply `readEMSA` to each of the files
+specs = steel, fe, ni, cr, ti, si, s, sn = map(fn-&gt;loadspectrum(joinpath(path, fn)), (
+  &quot;Steel_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Fe_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Ni_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Cr_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Ti_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Si_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;S_50kv_50_ma_Rh_vac_D1.msa&quot;,
+  &quot;Sn_50kv_50_ma_Rh_vac_D1.msa&quot;,));
+
+asa(DataFrame, Spectrum[ specs... ])</code></pre><pre><code class="language-none">8×8 DataFrame. Omitted printing of 4 columns
+│ Row │ Name                       │ BeamEnergy │ ProbeCurrent │ LiveTime │
+│     │ String                     │ Float64?   │ Float64?     │ Float64? │
+├─────┼────────────────────────────┼────────────┼──────────────┼──────────┤
+│ 1   │ Steel_50kv_50_ma_Rh_vac_D1 │ missing    │ missing      │ 119.973  │
+│ 2   │ Fe_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 120.005  │
+│ 3   │ Ni_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 120.027  │
+│ 4   │ Cr_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 119.994  │
+│ 5   │ Ti_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 120.012  │
+│ 6   │ Si_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 119.986  │
+│ 7   │ S_50kv_50_ma_Rh_vac_D1     │ missing    │ missing      │ 120.013  │
+│ 8   │ Sn_50kv_50_ma_Rh_vac_D1    │ missing    │ missing      │ 119.974  │</code></pre><pre><code class="language-julia">plot(specs..., xmax=25.0e3,klms=[n&quot;Fe&quot;,n&quot;Cr&quot;,n&quot;Ni&quot;,n&quot;Ti&quot;, n&quot;Si&quot;,n&quot;S&quot;, n&quot;Mo&quot;, n&quot;Rh&quot;])</code></pre><p><img src="../figures/XRFspectra_3_1.svg" alt/></p><pre><code class="language-julia">display(plot(steel,xmax=25.0e3, yscale=1.1,klms=[n&quot;Fe&quot;,n&quot;Cr&quot;,n&quot;Ni&quot;,n&quot;Ti&quot;, n&quot;Si&quot;,n&quot;S&quot;, n&quot;Mo&quot;, n&quot;Rh&quot;]))</code></pre><p><img src="../figures/XRFspectra_4_1.svg" alt/></p><pre><code class="language-julia">display(plot(steel,xmax=25.0e3, yscale=0.01,klms=[n&quot;Fe&quot;,n&quot;Cr&quot;,n&quot;Ni&quot;,n&quot;Ti&quot;, n&quot;Si&quot;,n&quot;S&quot;, n&quot;Mo&quot;, n&quot;Rh&quot;]))</code></pre><p><img src="../figures/XRFspectra_4_2.svg" alt/></p><p>Build the filtered references which will be fit to the steel unknown.</p><pre><code class="language-julia"># This Dict defines which is the lowest z element which can be measured for the K, L, M, N shells
+firstelm = Dict(KShell=&gt;n&quot;Na&quot;, LShell=&gt;n&quot;Zn&quot;, MShell=&gt;n&quot;Sm&quot;, NShell=&gt;n&quot;Og&quot;)
+# Build a detector to match the steel spectrum
+det = matching(steel, steel[:FWHMMnKa], 120, firstelm)
+# Build a &#39;VariableWidthFilter&#39; top-hat filter to suit the detector
+filt = buildfilter(VariableWidthFilter,det)
+refdata = (
+  # ( spectrum, element, material ), # The ordering of `refdata` allows us to splat it into `filterreference(...)`
+  ( fe, n&quot;Fe&quot;, mat&quot;Fe&quot; ),
+  ( cr, n&quot;Cr&quot;, mat&quot;Cr&quot; ),
+  ( ni, n&quot;Ni&quot;, mat&quot;Ni&quot; ),
+  ( ti, n&quot;Ti&quot;, mat&quot;Ti&quot; ),
+  ( si, n&quot;Si&quot;, mat&quot;Si&quot; ),
+  ( s, n&quot;S&quot;, mat&quot;S&quot; ),
+  ( sn, n&quot;Sn&quot;, mat&quot;Sn&quot; ),
+)
+# Some necessary properties are missing from the spectra so provide them.
+xtra = Dict{Symbol,Any}(:BeamEnergy=&gt;40.0e3, :ProbeCurrent=&gt;1.0, :Detector=&gt;det)
+refs = FilteredReference[]
+for rd in refdata
+  append!(refs, filterreference(filt, rd..., props=xtra))
+end
+# Merge the missing properties into the unknown too.
+merge!(steel, xtra)
+res = fit(steel, filt, refs, false)
+# Tabulate the results
+asa(DataFrame, res)</code></pre><pre><code class="language-none">11×10 DataFrame. Omitted printing of 8 columns
+│ Row │ Spectrum                   │ Feature              │
+│     │ UnknownLabel               │ ReferenceLabel       │
+├─────┼────────────────────────────┼──────────────────────┤
+│ 1   │ Steel_50kv_50_ma_Rh_vac_D1 │ Cr K-L3 + 5 others   │
+│ 2   │ Steel_50kv_50_ma_Rh_vac_D1 │ Fe K-L3 + 1 other    │
+│ 3   │ Steel_50kv_50_ma_Rh_vac_D1 │ Fe K-M3 + 3 others   │
+│ 4   │ Steel_50kv_50_ma_Rh_vac_D1 │ Ni K-L3 + 1 other    │
+│ 5   │ Steel_50kv_50_ma_Rh_vac_D1 │ Ni K-M3 + 3 others   │
+│ 6   │ Steel_50kv_50_ma_Rh_vac_D1 │ S K-L3 + 3 others    │
+│ 7   │ Steel_50kv_50_ma_Rh_vac_D1 │ Si K-L3 + 2 others   │
+│ 8   │ Steel_50kv_50_ma_Rh_vac_D1 │ Sn K-L3 + 1 other    │
+│ 9   │ Steel_50kv_50_ma_Rh_vac_D1 │ Sn K-M3 + 7 others   │
+│ 10  │ Steel_50kv_50_ma_Rh_vac_D1 │ Sn L3-M5 + 23 others │
+│ 11  │ Steel_50kv_50_ma_Rh_vac_D1 │ Ti K-L3 + 3 others   │</code></pre><p>Plot the residual spectrum.  Note that Mo and Rh were not fit and so there remain significant peaks between 16 and 20 keV.</p><pre><code class="language-julia">plot(res)</code></pre><p><img src="../figures/XRFspectra_6_1.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../K412quick/">« Fitting K412 (quick fit)</a><a class="docs-footer-nextpage" href="../errorbars/">Lovely Error Bars »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 July 2020 13:59">Friday 10 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Fitting K412 · NeXLSpectrum.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link rel="stylesheet" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css">
+<script src="https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js" type="text/javascript" defer="defer"></script>
+<script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js" type="text/javascript" defer="defer"></script>
+</head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">NeXLSpectrum.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Fitting K412</a><ul class="internal"><li><a class="tocitem" href="#Quantifying-K412-using-NeXLSpectrum-and-NeXLMatrixCorrection"><span>Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection</span></a></li></ul></li><li><a class="tocitem" href="../K412quick/">Fitting K412 (quick fit)</a></li><li><a class="tocitem" href="../XRFspectra/">Fitting XRF Spectra</a></li><li><a class="tocitem" href="../errorbars/">Lovely Error Bars</a></li><li><a class="tocitem" href="../continuummodel/">Modeling the Continuum</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Fitting K412</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Fitting K412</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/usnistgov/NeXLSpectrum.jl/blob/master/docs/src/K412fit.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="Quantifying-K412-using-NeXLSpectrum-and-NeXLMatrixCorrection"><a class="docs-heading-anchor" href="#Quantifying-K412-using-NeXLSpectrum-and-NeXLMatrixCorrection">Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection</a><a id="Quantifying-K412-using-NeXLSpectrum-and-NeXLMatrixCorrection-1"></a><a class="docs-heading-anchor-permalink" href="#Quantifying-K412-using-NeXLSpectrum-and-NeXLMatrixCorrection" title="Permalink"></a></h2><p>Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.</p><p>Loading <code>NeXLSpectrum</code> also automatically makes <code>NeXLCore</code> and <code>NeXLUncertainties</code> available.</p><p>Loading the <code>Gadfly</code> library adds plotting support to <code>NeXLSpectrum</code>.</p><pre><code class="language-julia">using NeXLSpectrum              # Provides spectrum reading and fitting tools
+using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
+using Gadfly                    # Plotting
+using DataFrames                # Tables</code></pre><h4 id="Read-in-the-Spectra"><a class="docs-heading-anchor" href="#Read-in-the-Spectra">Read in the Spectra</a><a id="Read-in-the-Spectra-1"></a><a class="docs-heading-anchor-permalink" href="#Read-in-the-Spectra" title="Permalink"></a></h4><pre><code class="language-julia">path = &quot;K412 spectra&quot;
+# Load a single spectrum
+fe = loadspectrum(joinpath(path, &quot;Fe std.msa&quot;))
+# Create a detector model to match it
+det = matching(fe, 132.0, 10)
+# Now load all the spectra using this detector
+unks = (i-&gt;loadspectrum(joinpath(path, &quot;III-E K412[$i][4].msa&quot;),det)).(0:4)
+al2o3 = loadspectrum(joinpath(path, &quot;Al2O3 std.msa&quot;),det)
+caf2 = loadspectrum(joinpath(path, &quot;CaF2 std.msa&quot;),det)
+fe = loadspectrum(joinpath(path, &quot;Fe std.msa&quot;),det)
+mgo = loadspectrum(joinpath(path, &quot;MgO std.msa&quot;),det)
+sio2 = loadspectrum(joinpath(path, &quot;SiO2 std.msa&quot;),det)
+# Add carbon coating
+map(s-&gt;s[:Coating]=Film(pure(n&quot;C&quot;), 30.0e-7), unks)
+map(s-&gt;s[:Coating]=Film(pure(n&quot;C&quot;), 10.0e-7), (al2o3, caf2, mgo, sio2))
+asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2])</code></pre><pre><code class="language-none">10×8 DataFrame. Omitted printing of 3 columns
+│ Row │ Name               │ BeamEnergy │ ProbeCurrent │ LiveTime │ RealTim
+e │
+│     │ String             │ Float64?   │ Float64?     │ Float64? │ Float64
+? │
+├─────┼────────────────────┼────────────┼──────────────┼──────────┼────────
+──┤
+│ 1   │ III-E K412[0][all] │ 20000.0    │ 1.11355      │ 235.484  │ 286.279
+  │
+│ 2   │ III-E K412[1][all] │ 20000.0    │ 1.11355      │ 235.433  │ 286.218
+  │
+│ 3   │ III-E K412[2][all] │ 20000.0    │ 1.11172      │ 235.45   │ 286.278
+  │
+│ 4   │ III-E K412[3][all] │ 20000.0    │ 1.10989      │ 235.441  │ 286.281
+  │
+│ 5   │ III-E K412[4][all] │ 20000.0    │ 1.10989      │ 235.399  │ 286.214
+  │
+│ 6   │ Al2O3 std          │ 20000.0    │ 1.10989      │ 1172.19  │ 1491.48
+  │
+│ 7   │ CaF2 std           │ 20000.0    │ 1.10989      │ 1176.1   │ 1456.12
+  │
+│ 8   │ Fe std             │ 20000.0    │ 1.10989      │ 1171.48  │ 1528.75
+  │
+│ 9   │ MgO std            │ 20000.0    │ 1.10637      │ 1175.78  │ 1496.02
+  │
+│ 10  │ SiO2 std           │ 20000.0    │ 1.10989      │ 1173.16  │ 1470.35
+  │</code></pre><p>Notice that the spectra all have 1) live-time (<code>:LiveTime</code>); 2) probe-current (<code>:ProbeCurrent</code>); 3) take-off angle (<code>:TakeOffAngle</code>); 4) beam energy (<code>:BeamEnergy</code>); and detector (<code>:Detector</code>) properties defined.  These properties are necessary for extracting the k-ratios and estimating the composition.</p><pre><code class="language-julia">sio2[:LiveTime], sio2[:ProbeCurrent], sio2[:TakeOffAngle], sio2[:BeamEnergy], sio2[:Detector]</code></pre><pre><code class="language-none">(1173.1648, 1.10989, 0.6108652381980153, 20000.0, BasicEDS(4096, E[ch] = 1.
+63032 + 9.99856⋅ch, 132.0 eV @ Mn K-L3, 10, Dict{Shell,Element}(Shell[M] =&gt;
+ Element(Barium),Shell[N] =&gt; Element(Plutonium),Shell[K] =&gt; Element(Berylli
+um),Shell[L] =&gt; Element(Scandium))))</code></pre><h4 id="The-Unknowns"><a class="docs-heading-anchor" href="#The-Unknowns">The Unknowns</a><a id="The-Unknowns-1"></a><a class="docs-heading-anchor-permalink" href="#The-Unknowns" title="Permalink"></a></h4><pre><code class="language-julia">display(plot(unks..., klms=[n&quot;O&quot;,n&quot;Mg&quot;,n&quot;Al&quot;,n&quot;Si&quot;,n&quot;Ca&quot;,n&quot;Fe&quot;], xmax=8.0e3))</code></pre><p><img src="../figures/K412fit_4_1.svg" alt/></p><h4 id="The-Reference-Spectra"><a class="docs-heading-anchor" href="#The-Reference-Spectra">The Reference Spectra</a><a id="The-Reference-Spectra-1"></a><a class="docs-heading-anchor-permalink" href="#The-Reference-Spectra" title="Permalink"></a></h4><p>Build a convenient structure so it is easy to appreciate the necessary information and to splat it into <code>filteredReference</code>.</p><pre><code class="language-julia">refs = (
+  # spectrum, element, composition
+  ( al2o3, n&quot;Al&quot;, mat&quot;Al2O3&quot; ), #
+  ( mgo,   n&quot;Mg&quot;, mat&quot;MgO&quot; ),   #
+  ( fe,    n&quot;Fe&quot;, mat&quot;Fe&quot; ),    #
+  ( sio2,  n&quot;Si&quot;, mat&quot;SiO2&quot; ),  #
+  ( sio2,  n&quot;O&quot;,  mat&quot;SiO2&quot; ),  #
+  ( caf2,  n&quot;Ca&quot;, mat&quot;CaF2&quot; ), )
+display(plot(al2o3, caf2, fe, mgo, sio2, klms=collect( ref[2] for ref in refs), xmax=8.0e3))</code></pre><p><img src="../figures/K412fit_5_1.svg" alt/></p><h4 id="Pre-filter-the-Reference-Spectra"><a class="docs-heading-anchor" href="#Pre-filter-the-Reference-Spectra">Pre-filter the Reference Spectra</a><a id="Pre-filter-the-Reference-Spectra-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-filter-the-Reference-Spectra" title="Permalink"></a></h4><pre><code class="language-julia"># Build a top-hat filter
+filt = buildfilter(NeXLSpectrum.GaussianFilter,det)
+# Filter all the reference spectra
+frs = mapreduce(ref-&gt;filterreference(filt, ref..., withEsc=true), append!, refs)
+# frs is now a FilteredReference[] used to fit the unknowns.</code></pre><h4 id="Fit-the-Pre-Filtered-References-to-the-Unknowns"><a class="docs-heading-anchor" href="#Fit-the-Pre-Filtered-References-to-the-Unknowns">Fit the Pre-Filtered References to the Unknowns</a><a id="Fit-the-Pre-Filtered-References-to-the-Unknowns-1"></a><a class="docs-heading-anchor-permalink" href="#Fit-the-Pre-Filtered-References-to-the-Unknowns" title="Permalink"></a></h4><pre><code class="language-julia">res= [ fit(unk,filt,frs,false) for unk in unks ]
+asa(DataFrame, res)</code></pre><pre><code class="language-none">5×9 DataFrame. Omitted printing of 6 columns
+│ Row │ Spectra            │ O K-L3 + 1 other │ Fe L3-M5 + 11 others │
+│     │ String             │ Float64          │ Float64              │
+├─────┼────────────────────┼──────────────────┼──────────────────────┤
+│ 1   │ III-E K412[0][all] │ 0.652023         │ 0.0424457            │
+│ 2   │ III-E K412[1][all] │ 0.653953         │ 0.0420769            │
+│ 3   │ III-E K412[2][all] │ 0.654476         │ 0.0424492            │
+│ 4   │ III-E K412[3][all] │ 0.658893         │ 0.0419923            │
+│ 5   │ III-E K412[4][all] │ 0.657297         │ 0.04136              │</code></pre><p>Let&#39;s take a look at a residual spectrum by plotting one of the <code>FilterFitResult</code> objects.</p><pre><code class="language-julia">plot(res[1])</code></pre><p><img src="../figures/K412fit_8_1.svg" alt/></p><h4 id="Quantify-the-k-ratios-by-Matrix-Correction"><a class="docs-heading-anchor" href="#Quantify-the-k-ratios-by-Matrix-Correction">Quantify the k-ratios by Matrix Correction</a><a id="Quantify-the-k-ratios-by-Matrix-Correction-1"></a><a class="docs-heading-anchor-permalink" href="#Quantify-the-k-ratios-by-Matrix-Correction" title="Permalink"></a></h4><pre><code class="language-julia">quant = quantify.(res)
+asa(DataFrame, quant)</code></pre><pre><code class="language-none">5×8 DataFrame. Omitted printing of 3 columns
+│ Row │ Material           │ O        │ Mg       │ Al        │ Si       │
+│     │ String             │ Abstrac… │ Abstrac… │ Abstract… │ Abstrac… │
+├─────┼────────────────────┼──────────┼──────────┼───────────┼──────────┤
+│ 1   │ III-E K412[0][all] │ 0.429722 │ 0.114789 │ 0.048185  │ 0.207347 │
+│ 2   │ III-E K412[1][all] │ 0.430204 │ 0.114803 │ 0.0480109 │ 0.20688  │
+│ 3   │ III-E K412[2][all] │ 0.430941 │ 0.115058 │ 0.0482529 │ 0.207572 │
+│ 4   │ III-E K412[3][all] │ 0.433338 │ 0.115228 │ 0.0483    │ 0.207982 │
+│ 5   │ III-E K412[4][all] │ 0.432318 │ 0.115281 │ 0.0483845 │ 0.208002 │</code></pre><p>Finally plot the results as mass fractions.</p><pre><code class="language-julia">plot(quant, known=unks[1][:Composition])</code></pre><p><img src="../figures/K412fit_10_1.svg" alt/></p><p>Plot the difference from the SRM value.</p><pre><code class="language-julia">plot(quant, known=unks[1][:Composition], delta=true)</code></pre><p><img src="../figures/K412fit_11_1.svg" alt/></p><p>Plot the difference from the mean value for each element.</p><pre><code class="language-julia">plot(quant, delta=true)</code></pre><p><img src="../figures/K412fit_12_1.svg" alt/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../K412quick/">Fitting K412 (quick fit) »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 10 July 2020 13:59">Friday 10 July 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
