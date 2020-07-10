@@ -67,7 +67,7 @@ sniff(::Type{ASPEXTIFF}, ios::IO) = detectAspexTIFF(ios)
 
 # ---------------------------------------------------------------------------------------------------#
 
-const spectrumfiletypes = ( BrukerSPX, BrukerPDZ, ISOEMSA, ASPEXTIFF )
+const spectrumfiletypes = ( ISOEMSA, BrukerSPX, ASPEXTIFF, BrukerPDZ )
 
 
 function sniffspectrum( ios::IO )

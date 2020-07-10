@@ -8,20 +8,47 @@ let curr=pwd()
     end
 end
 
+pages = [
+    "Home" => "index.md",
+    "Fitting K412" => "K412fit.md",
+    "Fitting K412 (quick fit)" => "K412quick.md",
+    #"Quantifying AMD-6005a glass" => "quantAMDglass.md",
+    "Fitting XRF Spectra" => "XRFspectra.md",
+    "Lovely Error Bars" => "errorbars.md",
+    "Modeling the Continuum" => "continuummodel.md"
+ ]
+
 makedocs(
     modules = [NeXLSpectrum],
     sitename = "NeXLSpectrum.jl",
-    pages = [
-        "Home" => "index.md",
-        "Fitting K412" => "K412fit.md",
-        "Fitting K412 (quick fit)" => "K412quick.md",
-        #"Quantifying AMD-6005a glass" => "quantAMDglass.md",
-        "Fitting XRF Spectra" => "XRFSpectra.md",
-        "Lovely Error Bars" => "errorbars.md",
-        "Modeling the Continuum" => "continuummodel.md"
-     ]
+    pages = pages
 )
 
-map(name->rm(joinpath("src","$(splitext(name)[1]).md")), names)
+map(name->rm(joinpath("src","$(splitext(name)[1]).md")), map(p->p.second, pages[2:end]))
+
+
+function addNISTHeaders(htmlfile::String)
+    # read HTML
+    html = transcode(String,read(htmlfile))
+    # Find </head>
+    i = findfirst(r"</[Hh][Ee][Aa][Dd]>", html)
+    # Already added???
+    j = findfirst("nist-header-footer", html)
+    if isnothing(j) && (!isnothing(i))
+        # Insert nist-pages links right before </head>
+        res = html[1:i.start-1]*
+            "<link rel=\"stylesheet\" href=\"https://pages.nist.gov/nist-header-footer/css/nist-combined.css\">\n"*
+            "<script src=\"https://pages.nist.gov/nist-header-footer/js/jquery-1.9.0.min.js\" type=\"text/javascript\" defer=\"defer\"></script>\n"*
+            "<script src=\"https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js\" type=\"text/javascript\" defer=\"defer\"></script>\n"*
+            html[i.start:end]
+        write(htmlfile, res)
+        println("Inserting NIST header/footer into $htmlfile")
+    end
+    return htmlfile
+end
+
+addNISTHeaders(joinpath(@__DIR__, "build","index.html"))
+addNISTHeaders.(map(name->joinpath(@__DIR__, "build", splitext(name)[1], "index.html"), map(p->p.second, pages[2:end])))
+
 
 # deploydocs(repo = "github.com/NeXLSpectrum.jl.git")
