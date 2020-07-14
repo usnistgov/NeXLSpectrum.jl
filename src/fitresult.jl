@@ -2,7 +2,9 @@ using Statistics
 using DataAPI
 
 abstract type FitResult end
-
+"""
+The result of a spectrum fit.
+"""
 struct BasicFitResult <: FitResult
     label::Label
     kratios::UncertainValues
@@ -57,6 +59,11 @@ appears heterogeneous.
 """
 heterogeneity(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = std(values(lbl,ffrs))/mean(σs(lbl,ffrs))
 
+"""
+    NeXLUncertainties.asa(::Type{DataFrame}, ffrs::AbstractVector{<:FitResult}; charOnly = true, withUnc = false, pivot = false)
+
+Return generic `FitResult` as a DataFrame.
+"""
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
     ffrs::AbstractVector{<:FitResult};
@@ -163,7 +170,7 @@ end
 
 
 """
-    asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
+    NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
 
 Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
 """

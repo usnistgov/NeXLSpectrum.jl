@@ -1,5 +1,11 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+NeXLSpectrum = "6c578565-ca7f-4012-afc4-b8412d85af92"
+NeXLCore = "93a0284f-3680-435e-8d39-dd6e52a1dbc8"
+NeXLMatrixCorrection = "3ab34fdf-2fe8-473b-9b20-30f5809db337"
+NeXLUncertainties = "7127f3d6-1721-46bc-bb38-8fc703dd438e"
+PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
 
 [compat]
-Documenter = "0.23"
+Documenter = "0.25"
+julia = "1"

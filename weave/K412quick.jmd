@@ -13,7 +13,7 @@ Loading the `Gadfly` library adds plotting support to `NeXLSpectrum`.
 using NeXLSpectrum              # Provides spectrum reading and fitting tools
 using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
 using Gadfly                    # Plotting
-using DataFrames                # Tables
+using DataFrames, Latexify      # Tables
 ```
 #### Read in the Spectra
 ```julia
@@ -29,7 +29,9 @@ caf2 = loadspectrum(joinpath("$(path)", "CaF2 std.msa"),det)
 fe = loadspectrum(joinpath("$(path)", "Fe std.msa"),det)
 mgo = loadspectrum(joinpath("$(path)", "MgO std.msa"),det)
 sio2 = loadspectrum(joinpath("$(path)", "SiO2 std.msa"),det)
-asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2])
+```
+```julia; echo=false
+latexify(asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2]), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`:ProbeCurrent`); 3) take-off angle
 (`:TakeOffAngle`); 4) beam energy (`:BeamEnergy`); and detector (`:Detector`) properties defined.  These properties
@@ -81,9 +83,11 @@ plot(resfull[1])
 ```
 
 Now the full data set...
-```julia
-display(asa(DataFrame, res, withUnc=true))
-display(asa(DataFrame, resfull, withUnc=true))
+```julia; echo=false
+display(latexify(asa(DataFrame, res, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
+```
+```julia; echo=false
+display(latexify(asa(DataFrame, resfull, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 
 Compare the timings (full then fast)

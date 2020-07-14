@@ -4,6 +4,13 @@
 /docs/build/
 /docs/src/figures/*
 /docs/Manifest.toml
+/docs/src/errorbars.md
+/docs/src/K412fit.md
+/docs/src/K412quick.md
+/docs/src/XRFspectra.md
+/docs/src/continuummodel.md
+/docs/Manifest.toml
+/docs/Manifest.toml
 Manifest.toml
 weave/*.html
 weave/jl_

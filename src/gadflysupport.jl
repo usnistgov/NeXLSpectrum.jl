@@ -16,10 +16,57 @@ const NeXLSpectrumStyle = style(
     key_position = :right, # :bottom
 )
 
-"""
-    Gadfly.plot(spec::AbstractVector{Spectrum{<:Real}}; klms=[], xmin=0.0, xmax=nothing)::Plot
 
-Plot a Vector of Spectrum using Gadfly.  klms is a Vector of CharXRays or Elements.
+"""
+    plot(
+	    specs::Union{Spectrum...,AbstractVector{Spectrum{<:Real}}};
+	    klms=[],
+	    edges=[],
+		escapes=[],
+		coincidences=[],
+	    autoklms = false,
+	    xmin=0.0,
+	    xmax=missing,
+	    norm=:None,
+	    yscale=1.05,
+	    ytransform = identity,
+		style=NeXLSpectrumStyle,
+		palette=NeXLCore.NeXLPalette
+    )::Plot
+
+Required:
+
+	specs::AbstractVector{Spectrum};
+
+Named:
+
+    klms = [ Element &| CharXRay ]
+	edges = [ Element &| AtomicSubShell ]
+	escapes = [ CharXRay ],
+	coincidences = [ CharXRay ]
+	autoklms = false # Add KLMs based on elements in spectra
+	xmin = 0.0 # Min energy (eV)
+	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
+	norm = NoScaling() | ScaleDoseWidth() | ScaleDose() | ScaleSum() | ScaleROISum() | ScalePeak() | (<: SpectrumScaling)()
+	yscale = 1.05 # Fraction of max intensity for ymax over [max(lld,xmin):xmax]
+	ytransform = identity | log10 | sqrt | ??? # How to transform the counts data before plotting
+	style=NeXLSpectrumStyle (or another Gadfly.style)
+	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Colorant[ ... ] # Colors for spectra...
+    customlayers = Gadfly.Layer[] # Allows additional plot layers to be added
+
+Plot a multiple spectra on a single plot using Gadfly.
+
+    Gadfly.plot(
+      ffr::FilterFitResult,
+      roi::Union{Missing,UnitRange{Int}} = missing;
+      palette = NeXLCore.NeXLPalette,
+      style = NeXLSpectrumStyle, xmax=missing)
+
+Plot the spectrum, residual and k-ratios using Gadfly.
+
+    Gadfly.plot(fr::FilteredReference)
+
+Plot a filtered reference spectrum.
 """
 Gadfly.plot( #
     specs::AbstractVector{Spectrum{<:Real}};
@@ -51,44 +98,6 @@ Gadfly.plot( #
     palette = palette,
 )
 
-"""
-    plot(
-	    specs::Spectrum...;
-	    klms=[],
-	    edges=[],
-		escapes=[],
-		coincidences=[],
-	    autoklms = false,
-	    xmin=0.0,
-	    xmax=missing,
-	    norm=:None,
-	    yscale=1.05,
-	    ytransform = identity,
-		style=NeXLSpectrumStyle,
-		palette=NeXLCore.NeXLPalette
-    )::Plot
-
-Plot a multiple spectra on a single plot using Gadfly.
-Required:
-
-	specs::AbstractVector{Spectrum};
-
-Named:
-
-    klms = [ Element &| CharXRay ]
-	edges = [ Element &| AtomicSubShell ]
-	escapes = [ CharXRay ],
-	coincidences = [ CharXRay ]
-	autoklms = false # Add KLMs based on elements in spectra
-	xmin = 0.0 # Min energy (eV)
-	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
-	norm = NoScaling() | ScaleDoseWidth() | ScaleDose() | ScaleSum() | ScaleROISum() | ScalePeak() | (<: SpectrumScaling)()
-	yscale = 1.05 # Fraction of max intensity for ymax over [max(lld,xmin):xmax]
-	ytransform = identity | log10 | sqrt | ??? # How to transform the counts data before plotting
-	style=NeXLSpectrumStyle (or another Gadfly.style)
-	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Colorant[ ... ] # Colors for spectra...
-    customlayers = Gadfly.Layer[] # Allows additional plot layers to be added
-"""
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
     klms = [],
@@ -253,11 +262,6 @@ function Gadfly.plot(
     end
 end
 
-"""
-    plot(fd::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette)
-
-Plot the fit spectrum and the fit residuals along with the fit ROIs and the associated k-ratios.
-"""
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp = minimum( lbl.roi[1] for lbl in keys(ffrr.kratios)):maximum( lbl.roi[end] for lbl in keys(ffrr.kratios))

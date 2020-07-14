@@ -1,31 +1,38 @@
-using Documenter, NeXLSpectrum
+using Documenter, NeXLSpectrum, Gadfly
 
-let curr=pwd()
-    try
-        include(joinpath("..","weave","buildweave.jl"))
-    finally
-        cd(curr)
+weavedocs = ( "continuummodel", "errorbars", "K412fit", "K412quick", "XRFSpectra" )
+
+rebuildweave = !all(map(wd->isfile(joinpath("src", "$wd.md")), weavedocs))
+
+if rebuildweave
+    map(name->rm(joinpath("src","$(splitext(name)[1]).md")), weavedocs)
+    let curr=pwd()
+        try
+            include(joinpath("..","weave","buildweave.jl"))
+        finally
+            cd(curr)
+        end
     end
 end
 
 pages = [
     "Home" => "index.md",
+    "Spectrum Methods" => "spectrum.md",
     "Fitting K412" => "K412fit.md",
     "Fitting K412 (quick fit)" => "K412quick.md",
-    #"Quantifying AMD-6005a glass" => "quantAMDglass.md",
+    # "Quantifying AMD-6005a glass" => "quantAMDglass.md",
     "Fitting XRF Spectra" => "XRFspectra.md",
     "Lovely Error Bars" => "errorbars.md",
-    "Modeling the Continuum" => "continuummodel.md"
+    "Modeling the Continuum" => "continuummodel.md",
+    "Methods" => "methods.md"
  ]
 
 makedocs(
     modules = [NeXLSpectrum],
     sitename = "NeXLSpectrum.jl",
-    pages = pages
+    pages = pages,
+    checkdocs=:exports
 )
-
-map(name->rm(joinpath("src","$(splitext(name)[1]).md")), map(p->p.second, pages[2:end]))
-
 
 function addNISTHeaders(htmlfile::String)
     # read HTML
@@ -50,5 +57,6 @@ end
 addNISTHeaders(joinpath(@__DIR__, "build","index.html"))
 addNISTHeaders.(map(name->joinpath(@__DIR__, "build", splitext(name)[1], "index.html"), map(p->p.second, pages[2:end])))
 
+#map(name->rm(joinpath("src","$(splitext(name)[1]).md")), weavedocs)
 
 # deploydocs(repo = "github.com/NeXLSpectrum.jl.git")

@@ -4,7 +4,8 @@ Load the necessary libraries.
 ```julia
 using NeXLSpectrum
 using Gadfly           # For plotting. I've added spectrum support.
-using DataFrames       # For tables.
+using DataFrames, Latexify       # For tables.
+
 ```
 Load the spectra from EMSA files.
 ```julia
@@ -19,8 +20,9 @@ specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->loadspectrum(joinpath(path, f
   "Si_50kv_50_ma_Rh_vac_D1.msa",
   "S_50kv_50_ma_Rh_vac_D1.msa",
   "Sn_50kv_50_ma_Rh_vac_D1.msa",));
-
-asa(DataFrame, Spectrum[ specs... ])
+```
+```julia; echo=false
+latexify(asa(DataFrame, Spectrum[ specs... ]), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
@@ -59,7 +61,9 @@ end
 merge!(steel, xtra)
 res = fit(steel, filt, refs, false)
 # Tabulate the results
-asa(DataFrame, res)
+```
+```julia; echo=false
+latexify(asa(DataFrame, res), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 Plot the residual spectrum.  Note that Mo and Rh were not fit and so there remain significant peaks between 16 and
 20 keV.

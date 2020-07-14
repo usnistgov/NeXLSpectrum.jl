@@ -1,21 +1,16 @@
 using Images
 
 """
-    Signal
-
-The multidimensional equivalent of Spectrum.  A megapixel spectrum image
-might be constructed as Signal(energy, props, (4096, 1024, 2048)) where
-there are 4096 channels, 1024 rows and 2048 columns.  HyperSpectra may be 1, 2,
-.. N dimensional but since they reside in memory, there are practical limits.
+The multidimensional dataset with an `EnergyScale` and `Symbol` indexed properties.  A `Signal`
+contains N spatial/temporal axes and 1 data axis. An object might be constructed as
+`Signal(energy, props, (4096, 1024, 2048))` where there are 4096 channels, 1024 rows and 2048 columns.
+`Signal` may be 1, 2,.. N dimensional but since they reside in memory, there are practical limits.
 
 A type for data sets containing multiple closely related spectra.  A Signal is
 slighly more restricted than an Array{Spectrum,N} because all the Spectra in a Signal are
 assumed to have certain properties in common -  the EnergyScale and a set of common Spectrum
 properties.  You can also specify an efficient packing of the data by using
 UInt8, UInt16, ... etc as required to hold the data.
-
-Signal maintains the data as an abstract array but provides functions to
-extract individual points or sets of points as Spectrum.
 
 Special property tags:
 
@@ -234,7 +229,7 @@ function roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
 end
 
 """
-    HyperSpectrum
+   HyperSpectrum(sig::Signal)
 
 HyperSpectrum is a wrapper around Signal to facilitate access to the
 the data as Spectrum objects.
@@ -249,7 +244,7 @@ struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
 end
 
 """
-    HyperSpectrum
+    ashyperspectrum(sig::Signal, name::AbstractString="Hyper-Spectrum")
 
 Convert the Array{<:Real, N} perspective into a Array{Spectrum{<:Real}, N} perspective.
 

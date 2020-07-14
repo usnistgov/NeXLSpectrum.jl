@@ -9,17 +9,42 @@ let spectrumIndex = 1
 end
 
 """
-    Spectrum
-A structure to hold spectrum data (energy scale, counts and metadata). Spectrum implements indexing using various
-different mechanisms.  If spec is a Spectrum then
+    Spectrum{T<:Real} <: AbstractVector{T}
+
+    Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
+
+Construct a structure to hold spectrum data (energy scale, counts and metadata).
+
+See [`NeXLSpectrum.EnergyScale`](@ref) or [`NeXLSpectrum.LinearEnergyScale`](@ref)
+
+Example:
+
+    julia> spec = Spectrum(LinearEnergyScale(0.0,10.0),
+                     collect(1:1024),
+                     Dict{Symbol,Any}(:BeamEnergy=>10.0e3, :LiveTime=>30.0))
+                                                                                  ** 1024.0
+                                                                           *********
+                                                                   *****************
+                                                            ************************
+                                                     *******************************
+                                              **************************************
+                                       *********************************************
+                                ****************************************************
+                         ***********************************************************
+                  ******************************************************************
+           *************************************************************************
+    ******************************************************************************** 10.0 keV
+    Spectrum[3062][10.0 keV, Unknown, 525000.0 counts]
+
+`Spectrum` implements indexing using various different mechanisms.  If `spec` is a `Spectrum` then
 
     spec[123] # will return the number of counts in channel 123
-	spec[123:223] # will return a Vector of counts from channel 123:223
+	spec[123:222] # will return a Vector of counts from channel 123:222
     spec[134.] # will return the number of counts in the channel at energy 134.0 eV
     spec[134.0:270.0] # will return a Vector of counts for channels with energies between 134.0 eV and 270.0 eV
     spec[:Comment] # will return the property named :Comment
 
-Metadata is identified by a symbol. Predefined symbols include
+Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
 
     :BeamEnergy    # In eV
 	:Elevation     # In radians
@@ -44,7 +69,7 @@ Metadata is identified by a symbol. Predefined symbols include
 
 Less common items:
 
-	:ImageMag	   # Magnification (assuming a 3.5" image) of the first image
+	:ImageMag	   # Magnification (assuming a 3.5\" image) of the first image
 	:ImageZoom     # Additional zoom for second image in a two image TIFF
 	:Operator      # Analyst in ASPEX TIFF files
     :Image1, :Image2 ... # Images associated with the spectrum
@@ -58,12 +83,11 @@ Less common items:
     :ChamberPressure # Vacuum presure in the sample chamber
     :ChamberAtmosphere # Nominally the composition of the residual gas in the chamber
 
-
 XRF related items:
 
     :BeamEnergy  # Accelarating voltage within X-ray tube (eV)
-    :XRFTubeAnode]    # Element from which the X-ray tube is constructed
-    :ProbeCurrent]  # Electron current in the X-ray tube
+    :XRFTubeAnode    # Element from which the X-ray tube is constructed
+    :ProbeCurrent  # Electron current in the X-ray tube
     :XRFTubeIncidentAngle # Incident angle of electron beam in tube
     :XRFTubeTakeOffAngle # Take-off angle from tube
     :XRFExcitationAngle # Angle of incidence of the X-ray beam on the sample
@@ -71,7 +95,7 @@ XRF related items:
     :XRFExcitationPathLength # Distance from X-ray source to sample
     :XRFDetectionPathLength # Distance from the sample to the X-ray detector
     :XRFSampleTilt    #  Additional tilt of the sample
-    :XRFTubeWindow]   # Construction of the tube window
+    :XRFTubeWindow   # Construction of the tube window
 
 Not all spectra will define all properties.  Algorithms can define the `NeXLCore.minproperties(ty::Type)` method to specify
 which properties are required by an algorithm of `ty::Type`.  Then `hasminrequired` and `requiredbutmissing` methods
@@ -82,12 +106,12 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     counts::Vector{T}
     properties::Dict{Symbol,Any}
     hash::UInt  # random number (stays fixed as underlying data changes)
-
     function Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
         props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
         return new{typeof(data[1])}(energy, data, props, _hashsp(energy, data, props))
     end
 end
+
 
 _hashsp(e, d, p) = xor(hash(e), xor(hash(d), hash(p)))
 
@@ -123,6 +147,7 @@ Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = val
 Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
+
 """
     rangeofenergies(spec::Spectrum, ch)
 
@@ -150,7 +175,7 @@ function textplot(io::IO, spec::Spectrum; size = (16, 80))
     (rows, cols) = size
     # how much to plot
     e0_eV = haskey(spec, :BeamEnergy) ? spec[:BeamEnergy] : energy(length(spec), spec)
-    maxCh = min(channel(e0_eV, spec), length(spec))
+    maxCh = min(channel(convert(Float64, e0_eV), spec), length(spec))
     step, max = maxCh ÷ cols, maximum(spec.counts)
     maxes = [rows * (maximum(spec.counts[(i-1)*step+1:i*step]) / max) for i = 1:cols]
     for r = 1:rows
@@ -166,8 +191,9 @@ function textplot(io::IO, spec::Spectrum; size = (16, 80))
 end
 
 textplot(spec::Spectrum; size = (16, 80)) =  textplot(stdout, spec, size=size)
+
 """
-    asa(::Type{DataFrame}, spec::Spectrum)
+    NeXLUncertainties.asa(::Type{DataFrame}, spec::Spectrum; properties::Bool = false)
 
 Converts the spectrum energy and counts data into a DataFrame.
 """
@@ -207,8 +233,18 @@ Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties,
 Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) = spec.properties[sym] = val
 
+"""
+    Base.keys(spec::Spectrum)
+
+Return the defined properties as a set of `Symbol`s.
+"""
 Base.keys(spec::Spectrum) = keys(spec.properties)
 
+"""
+    Base.haskey(spec::Spectrum, sym::Symbol)
+
+Is the specified key defined?
+"""
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties, sym)
 
 """
@@ -234,6 +270,7 @@ end
 
 """
     dose(spec::Spectrum, def=missing)
+    dose(spec::Spectrum)
 
 The probe dose in nano-amp seconds
 """
@@ -246,39 +283,33 @@ function dose(spec::Spectrum)
     if haskey(spec.properties, :LiveTime) && haskey(spec.properties, :ProbeCurrent)
         return get(spec.properties, :LiveTime, missing) * get(spec, :ProbeCurrent, missing)
     else
-        @error "One or more properties, :LiveTime or :ProbeCurrent, is missing to calculate the dose."
+        @error "One or more properties necessary to calculate the dose is missing.\n  You must provide both :ProbeCurrent and :LiveTime."
     end
 end
 
-"""
-    NeXLCore.energy(ch::Int, spec::Spectrum)
-
-The energy of the start of the ch-th channel.
-"""
 NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
 
 """
     channelwidth(ch::Int, spec::Spectrum)::Float64
 
-Returns the width of the `ch` channel
+Returns the width of the `ch` channel in eV.
 """
 channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
 
-"""
-    channel(eV::Float64, spec::Spectrum)
-
-The index of the channel containing the specified energy.
-"""
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 
 """
     counts(spec::Spectrum, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
 
 Creates a copy of the spectrum counts data as the specified Number type. If the spectrum has a :Detector
 property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
 by setting all channels less-than-or-equal to det.lld to zero.
 """
 function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) where {T<:Number}
+    function applylld(spec::Spectrum, lld::Int)
+        fill!(view(spec, 1:lld), spec[lld+1])
+    end
     res = map(n -> convert(numType, n), spec.counts)
     if applyLLD && haskey(spec, :Detector)
         applylld(spec, lld(spec[:Detector]))
@@ -286,17 +317,6 @@ function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) wh
     return res
 end
 
-function applylld(spec::Spectrum, lld::Int)
-    fill!(view(spec, 1:lld), spec[lld+1])
-end
-
-"""
-    counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
-
-Creates a copy of the spectrum counts data as the specified Number type.  If the spectrum has a :Detector
-property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
-by setting all channels less-than-or-equal to det.lld to zero.
-"""
 function counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD = false) where {T<:Real}
     res = map(n -> convert(numType, n), spec.counts[channels])
     if applyLLD && haskey(spec, :Detector)
@@ -313,7 +333,8 @@ Gets the low-level discriminator associated with this spectrum if there is one.
 lld(spec::Spectrum) = haskey(spec.properties, :Detector) ? lld(spec.properties[:Detector]) : 1
 
 """
-	findmax(spec::Spectrum, chs::UnitRange{Int})
+	Base.findmax(spec::Spectrum, chs::UnitRange{Int})
+    Base.findmax(spec::Spectrum)
 
 Returns the (maximum intensity, channel index) over the specified range of channels
 """
@@ -321,32 +342,54 @@ function Base.findmax(spec::Spectrum, chs::UnitRange{Int})
     max = findmax(spec.counts[chs])
     return (max[1] + chs.start - 1, max[2])
 end
+function Base.findmax(spec::Spectrum)
+    last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
+    return findmax(spec.counts, lld(spec):last)
+end
+
 
 """
-   integrate(spec, channels)
+    integrate(spec::Spectrum, channels::UnitRange{Int})
+    integrate(spec::Spectrum, energyRange::StepRangeLen{Float64})
 
 Sums all the counts in the specified channels.  No background correction.
+
+    integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+    integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
+
+Sums all the counts in the specified channels with background correction using the background intervals.
+
+    integrate(spec::Spectrum)
+
+Total integral of all counts from the LLD to the beam energy
+
 """
 integrate(spec::Spectrum, channels::UnitRange{Int}) = sum(spec.counts[channels])
 
-"""
-   integrate(spec, channels)
-
-Sums all the counts in the specified energy range.  No background correction.
-"""
 integrate(spec::Spectrum, energyRange::StepRangeLen{Float64}) =
     sum(spec.counts[channel(energyRange[1], spec):channel(energyRange[end], spec)])
 
-"""
-    integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::Float64
-Perform a background corrected peak integration using channel ranges. Fits a line to each background region and
-extrapolates the background from the closest background channel through the peak region.
-"""
 function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
     bL, bH = mean(spec.counts[back1]), mean(spec.counts[back2])
     cL, cH, cP = mean(back1), mean(back2), mean(peak)
     iP, w, t = sum(spec.counts[peak]), length(peak), ((cP-cL)/(cH-cL))
     return uv(iP - w*(bL*(1.0-t)+bH*t), sqrt(iP + (sqrt(bL)*w*(1.0-t))^2 + (sqrt(bH)*w*t)^2))
+end
+function integrate(
+    spec::Spectrum,
+    back1::StepRangeLen{Float64},
+    peak::StepRangeLen{Float64},
+    back2::StepRangeLen{Float64},
+)::UncertainValue
+    b1i = channel(back1[1], spec):channel(back1[end], spec)
+    b2i = channel(back2[1], spec):channel(back2[end], spec)
+    pi = channel(peak[1], spec):channel(peak[end], spec)
+    integrate(spec, b1i, pi, b2i)
+end
+
+function integrate(spec::Spectrum)
+    last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
+    return integrate(spec, lld(spec):last)
 end
 
 """
@@ -368,43 +411,6 @@ kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen, peak::StepRangeLen, ba
         channel(peak[1], unk):channel(peak[end], unk), #
         channel(back2[1], unk):channel(back2[end], unk))
 
-"""
-    integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
-Perform a background corrected peak integration using energy (eV) ranges. Converts the energy ranges to channels
-ranges before performing the integral.
-"""
-function integrate(
-    spec::Spectrum,
-    back1::StepRangeLen{Float64},
-    peak::StepRangeLen{Float64},
-    back2::StepRangeLen{Float64},
-)::UncertainValue
-    b1i = channel(back1[1], spec):channel(back1[end], spec)
-    b2i = channel(back2[1], spec):channel(back2[end], spec)
-    pi = channel(peak[1], spec):channel(peak[end], spec)
-    integrate(spec, b1i, pi, b2i)
-end
-
-"""
-    integrate(spec::Spectrum)
-
-Total integral of all counts from the LLD to the beam energy
-"""
-function integrate(spec::Spectrum)
-    last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
-    return integrate(spec, lld(spec):last)
-end
-
-
-"""
-	findmax(spec::Spectrum)
-
-Returns the (maximum intensity, channel index) over all channels
-"""
-function Base.findmax(spec::Spectrum)
-    last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
-    return findmax(spec.counts, lld(spec):last)
-end
 
 """
     energyscale(spec::Spectrum)
@@ -505,6 +511,18 @@ the low energy line extended out to the edge energy is larger than the high ener
 at the same energy, then a negative going edge is fit between the two. Otherwise a line
 is fit between the low energy side and the high energy side. This model only works when
 there are no peak interference over the range chs.
+
+
+    modelBackground(spec::Spectrum, chs::UnitRange{Int})
+    modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
+
+`spec`: A spectrum containing a peak centered on chs
+`chs`:  A range of channels containing a peak
+`ash`:  The largest edge within the range of channels `chs` associated with the characteristic peak
+
+A simple model for modeling the background under a characteristic x-ray peak. The model
+fits a line between the  low and high energy background regions around chs.start and chs.end.
+This model only works when there are no peak interference over the range chs.
 """
 function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
     cnts, ec = counts(spec), channel(energy(ash), spec)
@@ -527,17 +545,6 @@ function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShel
     return res
 end
 
-
-"""
-    modelBackground(spec::Spectrum, chs::UnitRange{Int})
-
-spec: A spectrum containing a peak centered on chs
-chs:  A range of channels containing a peak
-
-A simple model for modeling the background under a characteristic x-ray peak. The model
-fits a line between the  low and high energy background regions around chs.start and chs.end.
-This model only works when there are no peak interference over the range chs.
-"""
 function modelBackground(spec::Spectrum, chs::UnitRange{Int})
     bl = estimatebackground(counts(spec), chs.start, 5)
     bh = estimatebackground(counts(spec), chs.stop, 5)
@@ -662,6 +669,7 @@ end
 
 """
     details(io, spec::Spectrum)
+    details(spec::Spectrum)
 
 Outputs a description of the data in the spectrum.
 """
@@ -711,13 +719,15 @@ function details(io::IO, spec::Spectrum)
     return nothing
 end
 
-"""
-    details(spec::Spectrum)
 
-Outputs a description of the data in the spectrum to standard output.
-"""
 details(spec::Spectrum) = details(stdout, spec)
 
+"""
+    commonproperties(specs::AbstractArray{Spectrum})
+    commonproperties(props1::Dict{Symbol,Any}, props2::Dict{Symbol,Any})
+
+Return the properties that are held in common by all the spectra.
+"""
 function commonproperties(props1::Dict{Symbol,Any}, props2::Dict{Symbol,Any})
     res = Dict{Symbol,Any}()
     for (key, sp1) in props1
@@ -731,13 +741,18 @@ end
 commonproperties(specs::AbstractArray{Spectrum}) =
     reduce((props, sp2) -> commonproperties(props, sp2.properties), specs[2:end], specs[1].properties)
 
+"""
+    maxspectrum(specs::AbstractArray{Spectrum})
+    maxspectrum(specs::Spectrum...)
+    maxspectrum(spec1::Spectrum, spec2::Spectrum)
+
+Compute the max-pixel spectrum for the specified spectra.
+"""
 function maxspectrum(spec1::Spectrum, spec2::Spectrum)
     maxi(a, b) = collect(max(a[i], b[i]) for i in eachindex(a))
     props = commonproperties(spec1.properties, spec2.properties)
     props[:Name] = "MaxSpectrum"
     return Spectrum(spec1.energy, maxi(counts(spec1), counts(spec2)), props)
 end
-
 maxspectrum(specs::AbstractArray{Spectrum}) = reduce(maxspectrum, specs)
-
-maxspectrum(specs::Vararg{Spectrum}) = reduce(maxspectrum, specs)
+maxspectrum(specs::Spectrum...) = reduce(maxspectrum, specs)

@@ -9,6 +9,7 @@ include("features.jl")
 include("detector.jl")
 export EnergyScale # Abstract: Detector energy calibration function
 export LinearEnergyScale # A linear detector energy calibration function
+export PolyEnergyScale # A polynomial energy calibration function
 export Resolution # Abstract: Detector resolution function
 export MnKaResolution # Fiori function resolution function
 export Detector # Abstract: X-ray detector

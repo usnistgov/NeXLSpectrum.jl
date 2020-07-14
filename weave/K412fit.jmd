@@ -10,7 +10,7 @@ Loading the `Gadfly` library adds plotting support to `NeXLSpectrum`.
 using NeXLSpectrum              # Provides spectrum reading and fitting tools
 using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
 using Gadfly                    # Plotting
-using DataFrames                # Tables
+using DataFrames, Latexify      # Tables
 ```
 #### Read in the Spectra
 ```julia
@@ -28,8 +28,12 @@ mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
 sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
 # Add carbon coating
 map(s->s[:Coating]=Film(pure(n"C"), 30.0e-7), unks)
-map(s->s[:Coating]=Film(pure(n"C"), 10.0e-7), (al2o3, caf2, mgo, sio2))
-asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2])
+map(s->s[:Coating]=Film(pure(n"C"), 10.0e-7), (al2o3, caf2, mgo, sio2));
+```
+
+Table: The spectra
+```julia; echo=false
+latexify(asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2]), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`:ProbeCurrent`); 3) take-off angle
 (`:TakeOffAngle`); 4) beam energy (`:BeamEnergy`); and detector (`:Detector`) properties defined.  These properties
@@ -68,7 +72,9 @@ frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
 #### Fit the Pre-Filtered References to the Unknowns
 ```julia
 res= [ fit(unk,filt,frs,false) for unk in unks ]
-asa(DataFrame, res)
+```
+```julia; echo=false
+latexify(asa(DataFrame, res), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 
 Let's take a look at a residual spectrum by plotting one of the `FilterFitResult` objects.
@@ -79,7 +85,9 @@ plot(res[1])
 #### Quantify the k-ratios by Matrix Correction
 ```julia
 quant = quantify.(res)
-asa(DataFrame, quant)
+```
+```julia; echo=false
+latexify(asa(DataFrame, quant), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 
 Finally plot the results as mass fractions.

@@ -150,6 +150,22 @@ end
 
 Fit the continuum from ROIs determined from the data within the spectrum (:Composition, :BeamEnergy & :TakeOffAngle).
 The ROIs are computed using `continuumrois(...)` and each roi is fit seperately.
+
+
+    fittedcontinuum(
+      spec::Spectrum,
+      det::EDSDetector,
+      resp::AbstractArray{<:Real,2}; #
+      mode = :Global [ | :Local ] # Fit to all ROIs simultaneously (:Global) or to each roi independently (:Local)
+      minE::Float64 = 1.5e3,
+      maxE::Float64 = 0.95 * spec[:BeamEnergy],
+      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+      mc::Type{<:MatrixCorrection} = Riveros1993,
+    )::Spectrum
+
+Fit the continuum under the characteristic peaks by fitting the closest continuum ROIs.  The low energy peaks are
+fit using the continuum immediately higher in energy and the high energy peaks are fit using the continuum on both
+sides.
 """
 function fitcontinuum(
   spec::Spectrum,
@@ -184,22 +200,6 @@ function fitcontinuum(
   return brem
 end
 
-"""
-    fittedcontinuum(
-      spec::Spectrum,
-      det::EDSDetector,
-      resp::AbstractArray{<:Real,2}; #
-      mode = :Global [ | :Local ] # Fit to all ROIs simultaneously (:Global) or to each roi independently (:Local)
-      minE::Float64 = 1.5e3,
-      maxE::Float64 = 0.95 * spec[:BeamEnergy],
-      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-      mc::Type{<:MatrixCorrection} = Riveros1993,
-    )::Spectrum
-
-Fit the continuum under the characteristic peaks by fitting the closest continuum ROIs.  The low energy peaks are
-fit using the continuum immediately higher in energy and the high energy peaks are fit using the continuum on both
-sides.
-"""
 function fittedcontinuum(
   spec::Spectrum,
   det::EDSDetector,

@@ -43,17 +43,21 @@ Base.show(io::IO, es::LinearEnergyScale) =
 Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width,h))
 
 """
-    channel(eV::AbstractFloat, sc::LinearEnergyScale)
+    channel(eV::AbstractFloat, sc::EnergyScale)
+    channel(eV::Float64, spec::Spectrum)
+    channel(eV::Float64, det::EDSDetector)
 
-    Returns the integer index of the channel for the specified energy X-ray (in
-eV).
+    Returns the integer index of the channel for the specified energy X-ray (in eV).
 """
 channel(eV::AbstractFloat, sc::LinearEnergyScale)::Int =
     1 + floor(Int, (eV - sc.offset)/sc.width)
 
 
 """
-    energy(ch::Integer, sc::LinearEnergyScale)
+    NeXLCore.energy(ch::Integer, sc::EnergyScale)
+    NeXLCore.energy(ch::Int, spec::Spectrum)
+    NeXLCore.energy(ch::Int, det::EDSDetector)
+
 
 Returns the energy (in eV) for the low energy side of the bin representing the
 ch-th channel.
@@ -63,6 +67,8 @@ Example:
     les = LinearEnergyScale(3.0, 10.1)
     energy(101,lsc) == 10.1*101 + 3.0
     energy(101,lsc) - energy(100,lsc) == 10.1
+    pes = PolyEnergyScale([ 3.0, 10.1, 0.001])
+    energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
 """
 NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 =
     (ch-1)*sc.width+sc.offset
@@ -83,12 +89,6 @@ function Base.show(io::IO, pes::PolyEnergyScale)
     printpoly(io, pes.poly)
 end
 
-"""
-    channel(eV::AbstractFloat, sc::PolyEnergyScale)
-
-    Returns the integer index of the channel for the specified energy X-ray (in
-eV).
-"""
 function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
     cp=Vector(coeffs(sc.poly))
     cp[1]-=eV
@@ -102,24 +102,13 @@ function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
     return best
 end
 
-
-"""
-    energy(ch::Integer, sc::PolyEnergyScale)
-
-Returns the energy (in eV) for the low energy side of the bin representing the
-ch-th channel.
-
-Example:
-
-    pes = PolyEnergyScale([ 3.0, 10.1, 0.001])
-    energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
-"""
 NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
     sc.poly(convert(Float64,ch-1))
 
 
 """
     energyscale(es::EnergyScale, channels)
+    energyscale(det::EDSDetector)
 
 Computes the energy associated with a range of channel indexes and returns
 it as an Array.
@@ -142,6 +131,13 @@ Implements:
 abstract type Resolution end
 # Implements linewidth(eV::Float64, res::Resolution)::Float
 
+
+"""
+    MnKaResolution
+
+Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at another energy.
+"""
+
 struct MnKaResolution <: Resolution
     fwhmatmnka::Float64
 end
@@ -149,13 +145,14 @@ end
 Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn K-L3")
 
 """"
-    resolution(eV::Float64, res::MnKaResolution)
+    resolution(eV::Float64, res::Resolution)
+    resolution(eV::Float64, det::EDSDetector)
 
-The FWHM at eV for the MnKaResolution model.  Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at
-another energy.
+The FWHM at eV for the `<:Resolution` model.
 """
 resolution(eV::Float64, res::MnKaResolution) =
     sqrt(2.45 * (eV - enx"Mn K-L3") + res.fwhmatmnka^2)
+
 """
     gaussianwidth(fwhm::Float64)
 
@@ -165,7 +162,8 @@ gaussianwidth(fwhm::Float64) =
     fwhm / 2.354820045030949382023138652918
 
 """"
-    profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
+    profile(energy::Float64, xrayE::Float64, res::Resolution)
+
 Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
 with the specified resolution.  Maintains normalization to a sum of unity.
 """
@@ -175,7 +173,8 @@ function profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
 end
 
 """
-    extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
+    extent(xrayE::Float64, res::Resolution, ampl::Float64)
+
 Calculates the extent of the peak interval for an x-ray of the specified
 energy.
 """
@@ -191,43 +190,20 @@ struct MnKaPlusICC <: Resolution
     MnKaPlusICC(fwhm::Float64, icc::Float64=70.0, iccmax::Float64=1500.0) = new(fwhm, icc, iccmax)
 end
 
-""""
-    resolution(eV::Float64, res::MnKaPlusICC)
-
-The FWHM at eV in the MnKaPlusICC model.  Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at
-another energy plus a term to account for incomplete charge collection.
-"""
 resolution(eV::Float64, res::MnKaPlusICC) =
     sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka)) + max(0.0, res.icc*(1.0-max(0.0,eV)/res.iccmax))
 
-""""
-    profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC)
-
-Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
-with the specified resolution.
-"""
 function profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC)
     σ = gaussianwidth(resolution(xrayE, res))
     return exp(-0.5*((energy-xrayE)/σ)^2)/(σ*sqrt(2.0π))
 end
-"""
-    extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
 
-Calculates the extent of the peak interval for an x-ray of the specified
-energy.  This includes extra at the low-energy side to account for ICC.
-"""
 function extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
     w=gaussianwidth(resolution(xrayE, res))*sqrt(-2.0*log(ampl))
     icc=gaussianwidth(res.icc*(1.0-max(0.0,xrayE)/res.iccmax))
     return (xrayE-(w+max(0.0,icc)), xrayE+w)
 end
 
-"""
-    extent(cxr::CharXRay, res::Resolution, ampl::Float64)::Tuple{2,Float64}
-
-Computes the energy range encompassed by the specified x-ray
-down to an intensity of ampl.  Relative line weights are taken into account.
-"""
 extent(cxr::CharXRay, res::Resolution, ampl::Float64) =
     extent(energy(cxr), res, min(0.999,ampl/weight(cxr)))
 
@@ -273,6 +249,7 @@ down to an intensity of ampl.  Relative line weights are taken into account.
 """
 extent(sf::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
     extent(sf, det.resolution, ampl)
+
 """
     EDSDetector
 
@@ -286,7 +263,7 @@ Types extending EDSDetector must have member variables
 abstract type EDSDetector <: Detector end
 
 """
-    channelcount(det::EDSDetector)
+    channelcount(det::Detector)
 
 Number of detector channels.
 """
@@ -296,7 +273,7 @@ channelcount(det::EDSDetector) =
 Base.eachindex(det::EDSDetector) = Base.OneTo(det.channelcount)
 
 """
-    scale(det::EDSDetector)
+    scale(det::Detector)
 
 EnergyScale associated with this detector.
 """
@@ -309,32 +286,17 @@ energyscale(det::EDSDetector) =
 """
     lld(det::EDSDetector)
 
-Low level detector in channels
+Low level detection limit in channels.  Channels at or below this value will be zeroed when the lld is applied.
 """
 lld(det::EDSDetector) = det.lld
 
-"""
-    resolution(eV::Float64, det::EDSDetector)
-
-Resolution (FWHM) of the detector in eV at the specified energy.
-"""
 resolution(eV::Float64, det::EDSDetector) =
     resolution(eV, det.resolution)
 
 
-"""
-    energy(ch::Int, det::EDSDetector)
-
-Energy of the low-energy side of the ch-th detector bin.
-"""
 NeXLCore.energy(ch::Int, det::EDSDetector) =
     energy(ch, det.scale)
 
-"""
-    channel(eV::Float64, det::EDSDetector)
-
-The channel index in which the specified energy X-ray belongs.
-"""
 channel(eV::Float64, det::EDSDetector) =
     channel(eV, det.scale)
 channel(sf::SpectrumFeature, det::EDSDetector) =
