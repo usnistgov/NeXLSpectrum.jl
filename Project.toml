@@ -1,7 +1,7 @@
 name = "NeXLSpectrum"
 uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
-authors = ["Nicholas W.M. Ritchie <nicholas.wm.ritchie@gmail.com>"]
-repo-url = "https://github.com/NicholasWMRitchie/NeXLSpectrum.jl"
+authors = ["Nicholas W.M. Ritchie <nicholas.ritchie@nist.gov>"]
+repo-url = "https://github.com/usnistgov/NeXLSpectrum.jl"
 version = "0.1.0"
 
 [deps]

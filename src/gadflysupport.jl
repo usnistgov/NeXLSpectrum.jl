@@ -31,7 +31,7 @@ const NeXLSpectrumStyle = style(
 	    yscale=1.05,
 	    ytransform = identity,
 		style=NeXLSpectrumStyle,
-		palette=NeXLCore.NeXLPalette
+		palette=NeXLPalette
     )::Plot
 
 Required:
@@ -51,7 +51,7 @@ Named:
 	yscale = 1.05 # Fraction of max intensity for ymax over [max(lld,xmin):xmax]
 	ytransform = identity | log10 | sqrt | ??? # How to transform the counts data before plotting
 	style=NeXLSpectrumStyle (or another Gadfly.style)
-	palette = NeXLCore.NeXLPalette | NeXLCore.NeXLColorblind | Colorant[ ... ] # Colors for spectra...
+	palette = NeXLPalette | Colorant[ ... ] # Colors for spectra...
     customlayers = Gadfly.Layer[] # Allows additional plot layers to be added
 
 Plot a multiple spectra on a single plot using Gadfly.
@@ -59,7 +59,7 @@ Plot a multiple spectra on a single plot using Gadfly.
     Gadfly.plot(
       ffr::FilterFitResult,
       roi::Union{Missing,UnitRange{Int}} = missing;
-      palette = NeXLCore.NeXLPalette,
+      palette = NeXLPalette,
       style = NeXLSpectrumStyle, xmax=missing)
 
 Plot the spectrum, residual and k-ratios using Gadfly.
@@ -81,7 +81,7 @@ Gadfly.plot( #
     yscale = 1.05,
     ytransform = identity,
     style = NeXLSpectrumStyle,
-    palette = NeXLCore.NeXLPalette,
+    palette = NeXLPalette,
 )::Plot = plot( #
     specs...,
     klms = klms,
@@ -111,7 +111,7 @@ function Gadfly.plot(
     yscale = 1.05,
     ytransform = identity,
     style = NeXLSpectrumStyle,
-    palette = NeXLCore.NeXLPalette,
+    palette = NeXLPalette,
     customlayers = Gadfly.Layer[]
 )::Plot
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
@@ -262,7 +262,7 @@ function Gadfly.plot(
     end
 end
 
-function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLCore.NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
+function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp = minimum( lbl.roi[1] for lbl in keys(ffrr.kratios)):maximum( lbl.roi[end] for lbl in keys(ffrr.kratios))
         return max(lld(ffr.label.spec),tmp[1]-length(ffrr.roi)÷40):min(tmp[end]+length(ffrr.roi)÷10,ffrr.roi[end])
@@ -316,17 +316,17 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     end
 end
 
-function Gadfly.plot(fr::FilteredReference)
+function Gadfly.plot(fr::FilteredReference; palette=NeXLPalette)
     roicolors = Colorant[ RGB(0.9, 1.0, 0.9), RGB(0.95, 0.95, 1.0)]
     layers=[
-        layer(x=fr.ffroi, y=fr.data, Theme(default_color=NeXLPalette[1]), Geom.step),
-        layer(x=fr.ffroi, y=fr.filtered, Theme(default_color=NeXLPalette[2]), Geom.step),
-        layer(x=fr.roi, y=fr.charonly, Theme(default_color=NeXLPalette[3]), Geom.step),
+        layer(x=fr.ffroi, y=fr.data, Theme(default_color=palette[1]), Geom.step),
+        layer(x=fr.ffroi, y=fr.filtered, Theme(default_color=palette[2]), Geom.step),
+        layer(x=fr.roi, y=fr.charonly, Theme(default_color=palette[3]), Geom.step),
         layer(xmin=[fr.ffroi[1], fr.roi[1]], xmax=[fr.ffroi[end], fr.roi[end]], Geom.vband, color = roicolors ),
     ]
     plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
         Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
-        Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ NeXLPalette[1:3]..., roicolors...] ))
+        Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] ))
 end
 
 Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =

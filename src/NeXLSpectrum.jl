@@ -33,6 +33,7 @@ export matching # Build a detector to match a spectrum
 export lld # Low-level discriminator in eV
 export detectorresponse # Build a matrix that describes the detectors response to X-rays
 
+
 # X-ray window models
 include("window.jl")
 # primary function transmission(wnd, energy, angle)
@@ -78,21 +79,6 @@ export maxproperty, minproperty # Min value of a property over a vector of spect
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
 export textplot # A quick way to visualize a spectrum
 
-include("emsa.jl")
-include("aspextiff.jl")
-include("brukerpdz.jl")
-include("brukerspx.jl")
-include("fileiosupport.jl")
-export loadspectrum # Load a spectrum from IO or filename
-export savespectrum # Save a spectrum to IO or filename to a format
-export sniffspectrum # Determine spectrum file type
-
-# SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
-export BrukerSPX # Read only SEM/EDS & XRF format
-export BrukerPDZ # Read only  XRF format
-export ISOEMSA   # Read / write ISO/EMSA spectrum file format
-export ASPEXTIFF # Read only Vendor SEM/EDS format
-
 include("hyperspectrum.jl")
 export Signal  # The base class that makes hyperspectral data look like an Array of Real
 export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
@@ -110,6 +96,22 @@ export RPLHeader
 export readrplraw # Read a RPL/RAW file into a Signal
 export readrpl # Read the RPL file into a RPLHeader
 export writerplraw # Write a Signal into a RPL/RAW
+
+include("emsa.jl")
+include("aspextiff.jl")
+include("brukerpdz.jl")
+include("brukerspx.jl")
+include("fileiosupport.jl")
+
+export loadspectrum # Load a spectrum from IO or filename
+export savespectrum # Save a spectrum to IO or filename to a format
+export sniffspectrum # Determine spectrum file type
+
+# SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
+export BrukerSPX # Read only, SEM/EDS & XRF format
+export BrukerPDZ # Read only,  XRF format
+export ISOEMSA   # Read / write, ISO/EMSA spectrum file format
+export ASPEXTIFF # Read only, Vendor SEM/EDS format
 
 include("fitlabels.jl")
 export ReferenceLabel
@@ -162,7 +164,6 @@ export FilteredUnknownW # A filtered datum representing an unknown spectrum (for
 # The implementation for generalized filter-fit.
 include("filterfit_gls.jl")
 export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
-
 
 include("continuum.jl")
 export ContinuumModel # Build a model to compute the continuum intensity

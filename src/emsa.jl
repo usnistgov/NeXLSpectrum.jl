@@ -14,6 +14,11 @@ function isemsa(io::IO)
 	end
 end
 
+isemsa(filename::AbstractString) =
+	open(filename,"r") do f
+		isemsa(f)
+	end
+
 function split_emsa_header_item(line::AbstractString)
     p = findfirst(":",line)
     if p ≠ nothing

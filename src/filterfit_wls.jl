@@ -72,7 +72,7 @@ For filtering the unknown spectrum. Process the full Spectrum with the specified
 least squares model.
 """
 function tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
-    data = counts(spec, Float64, true)
+    data = counts(spec, 1:length(thf), Float64, true)
     filtered = [ filtereddatum(thf,data,i) for i in eachindex(data) ]
     dp = map(x->max(x, 1.0),data) # To ensure covariance isn't zero or infinite precision
     covar = [ filteredcovar(thf, dp, i, i) for i in eachindex(data) ]

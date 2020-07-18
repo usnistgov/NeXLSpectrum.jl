@@ -108,12 +108,9 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     hash::UInt  # random number (stays fixed as underlying data changes)
     function Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
         props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
-        return new{typeof(data[1])}(energy, data, props, _hashsp(energy, data, props))
+        return new{typeof(data[1])}(energy, data, props, hash(energy, hash(data, hash(props))))
     end
 end
-
-
-_hashsp(e, d, p) = xor(hash(e), xor(hash(d), hash(p)))
 
 Base.hash(spec::Spectrum, h::UInt) = hash(spec.hash, h)
 Base.isequal(spec1::Spectrum, spec2::Spectrum) =
@@ -158,9 +155,9 @@ rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, s
 NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
 NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum) = requiredbutmissing(ty, spec.properties)
 
-maxproperty(specs, prop::Symbol) = maximum(spec -> spec[prop], specs)
-minproperty(specs, prop::Symbol) = minimum(spec -> spec[prop], specs)
-sameproperty(specs, prop::Symbol) = all(spec -> spec[prop] == specs[1][prop], specs) ? #
+maxproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) = maximum(spec -> spec[prop], specs)
+minproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) = minimum(spec -> spec[prop], specs)
+sameproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) = all(spec -> spec[prop] == specs[1][prop], specs) ? #
     specs[1][prop] : #
     error("The property $prop is not equal for all these spectra.")
 
@@ -307,19 +304,22 @@ property then the detector's lld (low-level discriminator) and applyLLD=true the
 by setting all channels less-than-or-equal to det.lld to zero.
 """
 function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) where {T<:Number}
-    function applylld(spec::Spectrum, lld::Int)
-        fill!(view(spec, 1:lld), spec[lld+1])
-    end
     res = map(n -> convert(numType, n), spec.counts)
     if applyLLD && haskey(spec, :Detector)
-        applylld(spec, lld(spec[:Detector]))
+        fill!(view(res, 1:lld(spec[:Detector])), zero(numType))
     end
     return res
 end
 
 function counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD = false) where {T<:Real}
-    res = map(n -> convert(numType, n), spec.counts[channels])
-    if applyLLD && haskey(spec, :Detector)
+    if (channels.start >= 1) && (channels.stop<=length(spec.counts))
+        res = map(n -> convert(numType, n), spec.counts[channels])
+    else
+        res = zeros(numType, length(channels))
+        r = max(channels.start,1):min(channels.stop, length(spec.counts))
+        res[r.start-channels.start+1:r.stop-channels.start+1] = spec.counts[r]
+    end
+    if applyLLD && haskey(spec, :Detector) && (lld(spec)<=channels.start)
         fill!(view(res, 1:lld(spec)-channels.start+1), zero(numType))
     end
     return res
@@ -375,6 +375,7 @@ function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, 
     iP, w, t = sum(spec.counts[peak]), length(peak), ((cP-cL)/(cH-cL))
     return uv(iP - w*(bL*(1.0-t)+bH*t), sqrt(iP + (sqrt(bL)*w*(1.0-t))^2 + (sqrt(bH)*w*t)^2))
 end
+
 function integrate(
     spec::Spectrum,
     back1::StepRangeLen{Float64},
@@ -718,7 +719,6 @@ function details(io::IO, spec::Spectrum)
     end
     return nothing
 end
-
 
 details(spec::Spectrum) = details(stdout, spec)
 

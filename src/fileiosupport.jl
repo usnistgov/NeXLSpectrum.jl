@@ -49,7 +49,7 @@ sniff(::Type{BrukerPDZ}, ios::IO) = detectbrukerpdz(ios)
 
 struct ISOEMSA <: SpectrumFileType end
 
-loadspectrum(::Type{ISOEMSA}, ios::IO) = readEMSA(ios, Float64)
+loadspectrum(::Type{ISOEMSA}, ios::IO, ty::Type{<:Real}=Float64) = readEMSA(ios, ty)
 savespectrum(::Type{ISOEMSA}, ios::IO, spec::Spectrum) = writeEMSA(ios, spec)
 
 extensions(::Type{ISOEMSA}) = ( ".msa", ".emsa", ".ems", ".txt", )

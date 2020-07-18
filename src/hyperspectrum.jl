@@ -1,4 +1,3 @@
-using Images
 
 """
 The multidimensional dataset with an `EnergyScale` and `Symbol` indexed properties.  A `Signal`
@@ -79,11 +78,6 @@ function compressed(sig::Signal)
         return Signal(sig.energy, sig.properties, res)
     end
     return sig
-end
-
-function Base.convert(ty::Type{<:AbstractFloat}, sig::Signal)
-    res = convert(Array{ty,ndims(sig.counts)},sig.counts)
-    return Signal(sig.energy, sig.properties, res)
 end
 
 """
@@ -217,18 +211,6 @@ function Base.sum(sig::Signal, filt::Function)
 end
 
 """
-    roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
-
-Create an array of Gray images representing the intensity in each range of channels in
-in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
-"""
-function roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
-    ps = map(chs->plane(hss,chs,false),achs)
-    maxval = maximum(map(p->maximum(p),ps))
-    return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
-end
-
-"""
    HyperSpectrum(sig::Signal)
 
 HyperSpectrum is a wrapper around Signal to facilitate access to the
@@ -326,6 +308,32 @@ Extract as an Array the sum of the data in `chs`.
 plane(hss::HyperSpectrum, chs, norm=false) =
     plane(hss.signal, chs, norm)
 
+indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices) =
+    indexofmaxpixel(hs.signal, ch, cis)
+
+indexofmaxpixel(hs::HyperSpectrum, ch::Int) =
+    indexofmaxpixel(hs.signal, ch)
+
+indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices) =
+    indexofmaxpixel(hs.signal, cis)
+
+indexofmaxpixel(hs::HyperSpectrum) =
+    indexofmaxpixel(hs.signal)
+
+using Images
+
+"""
+    roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
+
+Create an array of Gray images representing the intensity in each range of channels in
+in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
+"""
+function roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
+    ps = map(chs->plane(hss,chs,false),achs)
+    maxval = maximum(map(p->maximum(p),ps))
+    return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
+end
+
 """
     roiimage(hss::Signal, chs::UnitRange)
 
@@ -363,15 +371,3 @@ function roiimages(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
     achs = map( cxr->channel(energy(cxr), hss.signal.energy)-n:channel(energy(cxr), hss.signal.energy)+n, cxrs)
     return roiimages(hss.signal, achs)
 end
-
-indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices) =
-    indexofmaxpixel(hs.signal, ch, cis)
-
-indexofmaxpixel(hs::HyperSpectrum, ch::Int) =
-    indexofmaxpixel(hs.signal, ch)
-
-indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices) =
-    indexofmaxpixel(hs.signal, cis)
-
-indexofmaxpixel(hs::HyperSpectrum) =
-    indexofmaxpixel(hs.signal)

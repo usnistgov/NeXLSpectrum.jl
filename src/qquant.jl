@@ -4,7 +4,6 @@
 # extremely quick. This makes it ideal for processing in real-time or HyperSpectrum objects.
 using NeXLSpectrum
 using LinearAlgebra
-using Images
 
 struct VectorQuant
     # Vector(label[1], roi[2], charonly[3], sum(charonly)[4], scale[5])
@@ -68,22 +67,6 @@ end
 
 depth(vqr::HyperspectrumQuant) = length(vqr.labels)
 
-"""
-    asimage(vqr::HyperspectrumQuant, idx::Int; transform=identity)
-
-Create an image that represents the data associated with the `idx` label.
-`transform` is a function nominally from `x -> [0,1]` which is applied to the raw quantified results.
-
-Examples:
-
-    transform=x->0.8x                  # linear scaling
-    transform=x->log10(1.0+99.0x)/2.0  # log scaling
-    transform=x->1.0-x                 # invert
-"""
-function asimage(vqr::HyperspectrumQuant, idx::Int; scale::Float64=1.0, transform=identity)
-    bound(x) = max(0.0, min(1.0, x))
-    return (Gray∘bound∘transform).(scale*vqr.results[idx, CartesianIndices( size(vqr.results)[2:3])])
-end
 
 NeXLUncertainties.label(vqr::HyperspectrumQuant, idx::Int) = vqr.labels[idx]
 
@@ -102,4 +85,23 @@ function fit(vq::VectorQuant, hs::HyperSpectrum, zero=x->max(0.0,x))::Hyperspect
     scales = map( ref -> 1.0 / (dose(hs) * ref[5]), vq.references)
     foreach(idx->res[:, idx] = scales .* zero.(vecs*counts(hs[idx], Float64)), eachindex(hs))
     return HyperspectrumQuant(hs, collect(map(r->r[1], vq.references)), res )
+end
+
+using Images
+
+"""
+    asimage(vqr::HyperspectrumQuant, idx::Int; transform=identity)
+
+Create an image that represents the data associated with the `idx` label.
+`transform` is a function nominally from `x -> [0,1]` which is applied to the raw quantified results.
+
+Examples:
+
+    transform=x->0.8x                  # linear scaling
+    transform=x->log10(1.0+99.0x)/2.0  # log scaling
+    transform=x->1.0-x                 # invert
+"""
+function asimage(vqr::HyperspectrumQuant, idx::Int; scale::Float64=1.0, transform=identity)
+    bound(x) = max(0.0, min(1.0, x))
+    return (Gray∘bound∘transform).(scale*vqr.results[idx, CartesianIndices( size(vqr.results)[2:3])])
 end

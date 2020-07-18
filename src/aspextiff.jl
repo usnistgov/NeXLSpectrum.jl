@@ -6,33 +6,11 @@ to permit using functions like `load(File(format"ASPEX TIFF"),filename)` to retu
 object loaded from the specified file.
 """
 
-using NeXLSpectrum
-using Dates
-using Images
-using AxisArrays
-using Unitful: mm
-using FileIO
-
-const _TIFF_TYPES = (
-    ("byte", UInt8),
-    ("ASCII", UInt8),
-    ("short", UInt16),
-    ("long", UInt32),
-    ("rational", Rational{UInt32}),
-    ("signed byte", Int8),
-    ("undefined", Int8),
-    ("signed short", Int16),
-    ("signed long", Int32),
-    ("signed rational", Rational{Int32}),
-    ("float", Float32),
-    ("doble", Float64),
-)
-
-TIFFType = Union{UInt8,UInt16,UInt32,Rational{UInt32},Int8,Int16,Int32,Rational{Int32},Float32,Float64}
-
-const LITTLE_ENDIAN = 1
-const BIG_ENDIAN = 2
-const NOT_TIFF = 3
+using Dates # OK
+using Images # OK
+using AxisArrays # OK
+using Unitful: mm # OK
+using FileIO # FAILS
 
 struct _ATField
     tagId::UInt16
@@ -41,18 +19,32 @@ struct _ATField
     tagData
 
     function _ATField(ios, order)
+        _TIFF_TYPES =  (
+            UInt8, # byte
+            UInt8, # ASCII
+            UInt16, # short
+            UInt32, # long
+            Rational{UInt32}, # rational
+            Int8, # signed byte
+            Int8, # undefined
+            Int16, # signed short
+            Int32, # signed long
+            Rational{Int32}, # signed rational
+            Float32, # float
+            Float64, # double
+        )
         tagId = read(ios, UInt16)
         tagType = read(ios, UInt16)
         tagCount = read(ios, UInt32)
-        if tagCount * sizeof(_TIFF_TYPES[tagType][2]) <= 4
-            tagData = [read(ios, _TIFF_TYPES[tagType][2]) for _ = 1:tagCount]
-            extra = 4 - sizeof(_TIFF_TYPES[tagType][2]) * tagCount
+        if tagCount * sizeof(_TIFF_TYPES[tagType]) <= 4
+            tagData = [read(ios, _TIFF_TYPES[tagType]) for _ = 1:tagCount]
+            extra = 4 - sizeof(_TIFF_TYPES[tagType]) * tagCount
             seek(ios, position(ios) + extra) # make sure that we have read 4 bytes
         else
             tagOffset = read(ios, UInt32)
             ret = position(ios)
             seek(ios, tagOffset)
-            tagData = [read(ios, _TIFF_TYPES[tagType][2]) for _ = 1:tagCount]
+            tagData = [read(ios, _TIFF_TYPES[tagType]) for _ = 1:tagCount]
             seek(ios, ret)
         end
         return new(tagId, tagType, tagCount, tagData)
@@ -70,14 +62,10 @@ struct _TIFFIFD
     end
 end
 
-function Base.get(ifd::_TIFFIFD, id, def)
-    ff = findfirst(fld -> fld.tagId == convert(UInt16, id), ifd.ifdTags)
-    return isnothing(ff) ? missing : ifd.ifdTags[ff]
-end
-
 struct _TIFFInternals
     ifds::Vector{_TIFFIFD}
     function _TIFFInternals(ios)
+        LITTLE_ENDIAN, BIG_ENDIAN, NOT_TIFF = 1, 2, 3
         magic = read(ios, UInt16)
         order = magic == 0x4D4D ? BIG_ENDIAN : (magic == 0x4949 ? LITTLE_ENDIAN : NOT_TIFF)
         fortytwo = read(ios, UInt16)
@@ -98,14 +86,6 @@ struct _TIFFInternals
         return new(ifds)
     end
 end
-
-const TIFF_SPECTRAL_DATA = 0x8352
-const TIFF_SPECTRAL_XRES = 0x8353
-const TIFF_SPECTRAL_XOFF = 0x8354
-const TIFF_SPECTRAL_YRES = 0x8355
-const TIFF_SPECTRAL_YOFF = 0x8356
-const TIFF_IMAGE_DESCRIPTION = 270 # ASCII
-const TIFF_SOFTWARE = 305 # ASCII
 
 function _parseDesc(desc::AbstractString)
     number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
@@ -181,6 +161,7 @@ function isAspexTIFF(filename)
 end
 
 function detectAspexTIFF(ios)
+    TIFF_SPECTRAL_DATA = 0x8352
     try
         seekstart(ios)
         ti = _TIFFInternals(ios)
@@ -197,6 +178,14 @@ function readAspexTIFF(file::AbstractString; withImgs = false, astype::Type{<:Re
 end
 
 function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64)
+    # Special TIFF tags
+    TIFF_SPECTRAL_DATA = 0x8352
+    TIFF_SPECTRAL_XRES = 0x8353
+    TIFF_SPECTRAL_XOFF = 0x8354
+    TIFF_SPECTRAL_YRES = 0x8355
+    TIFF_SPECTRAL_YOFF = 0x8356
+    TIFF_IMAGE_DESCRIPTION = 270 # ASCII
+    TIFF_SOFTWARE = 305 # ASCII
     floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
     number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
     res = missing
@@ -228,7 +217,7 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            imgs = FileIO.load(Stream(format"TIFF", ios))
+            imgs = missing # FileIO.load(Stream(format"TIFF", ios))
             if haskey(res, :FieldOfView) && haskey(res, :ImageZoom)
                 if res[:ImageZoom]==1.0
                     pix = 0.001 * res[:FieldOfView] / size(imgs,2)
