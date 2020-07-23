@@ -311,12 +311,12 @@ function writeEMSA(io::IOStream, spec::Spectrum)
 	if spec.energy isa LinearEnergyScale
 		writeline(io, "SPECTRUM","Spectrum data follows in counts")
 		for i in eachindex(spec)
-			println(io,spec.counts[i])
+			println(io, spec.counts[i], ",")
 		end
 	else
 		writeline(io, "SPECTRUM","Spectrum data follows in energy, counts")
 		for i in eachindex(spec)
-			println(io,"$(energy(i,spec)), $(spec.counts[i])")
+			println(io, energy(i,spec), ", ", spec.counts[i], ",")
 		end
 	end
 	writeline(io, "#ENDOFDATA","")
