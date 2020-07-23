@@ -248,7 +248,6 @@ function Gadfly.plot(
     if length(coincidences) > 0
         append!(layers, sumPeaks(coincidences))
     end
-    @assert eltype(palette[1:length(specs)])==Colorant
     Gadfly.with_theme(style) do
         plot(
             layers...,
