@@ -107,11 +107,12 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
             if startswith(line, "#ENDOFDATA")
                 break
             else
-                for cc in split(line, ",")
-                    num = match(r"[-+]?[0-9]*\.?[0-9]+", cc)
-                    if num ≠ nothing
-                        append!(counts, parse(T, num.match))
-                    end
+                for cc in filter(s->length(s)>0, strip.(split(line, ",")))
+					try
+                        append!(counts, parse(T, cc))
+					catch
+						append!(counts, zero(T))
+					end
                     inData=inData+1
                 end
             end
