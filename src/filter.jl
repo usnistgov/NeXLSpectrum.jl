@@ -1,4 +1,3 @@
-using LinearAlgebra
 
 """
     TopHatFilterType
@@ -495,7 +494,7 @@ _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
 function _computeResidual(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, kr::UncertainValues)
     res = copy(unk.data)
     for ff in ffs
-        res[ff.roi] -= (value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly
+        res[ff.roi] -= (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly
     end
     return res
 end
@@ -509,7 +508,7 @@ function _computecounts( #
     res = Dict{ReferenceLabel,NTuple{2,Float64}}()
     for ff in ffs
         su = sum(unk.data[ff.roi])
-        res[ff.identifier] = (su, su - sum((value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly))
+        res[ff.identifier] = (su, su - sum((NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly))
     end
     return res
 end

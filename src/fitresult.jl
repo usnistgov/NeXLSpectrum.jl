@@ -19,7 +19,7 @@ function findlabel(ffr::FitResult, cxr::CharXRay)
 end
 
 Base.show(io::IO, ffr::FitResult) = print(io, "$(ffr.label)")
-NeXLUncertainties.value(label::ReferenceLabel, ffr::FitResult) = value(label, ffr.kratios)
+NeXLUncertainties.NeXLUncertainties.value(label::ReferenceLabel, ffr::FitResult) = NeXLUncertainties.value(label, ffr.kratios)
 NeXLUncertainties.σ(label::ReferenceLabel, ffr::FitResult) = σ(label, ffr.kratios)
 NeXLUncertainties.uncertainty(label::ReferenceLabel, ffr::FitResult) = uncertainty(label, ffr.kratios)
 NeXLUncertainties.getindex(ffr::FitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
@@ -27,10 +27,10 @@ Base.keys(ffr::FitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FitResult) = labels(ffr.kratios)
 function kratio(cxr::CharXRay, ffr::FitResult)
     lbl=findlabel(ffr, cxr)
-    return uv(value(lbl, ffr), σ(lbl, ffr))
+    return uv(NeXLUncertainties.value(lbl, ffr), σ(lbl, ffr))
 end
 unknown(ffr::FitResult)::Label = ffr.label
-Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [value(lbl, ffr.kratios, 0.0) for ffr in ffrs]
+Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [NeXLUncertainties.value(lbl, ffr.kratios, 0.0) for ffr in ffrs]
 σs(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [σ(lbl, ffr.kratios, 0.0) for ffr in ffrs]
 
 """
@@ -76,7 +76,7 @@ function NeXLUncertainties.asa(
     if pivot
         res = DataFrame(ROI = lbls)
         for ffr in ffrs
-            vals = [value(lbl, ffr.kratios, missing) for lbl in lbls]
+            vals = [NeXLUncertainties.value(lbl, ffr.kratios, missing) for lbl in lbls]
             insertcols!(res, ncol(res) + 1, Symbol(repr(ffr.label)) => vals)
             if withUnc
                 unc = [σ(lbl, ffr.kratios, missing) for lbl in lbls]
@@ -87,7 +87,7 @@ function NeXLUncertainties.asa(
         rowLbls = [repr(ffr.label) for ffr in ffrs]
         res = DataFrame(Symbol("Spectra") => rowLbls)
         for lbl in lbls
-            vals = [value(lbl, ffr.kratios, missing) for ffr in ffrs]
+            vals = [NeXLUncertainties.value(lbl, ffr.kratios, missing) for ffr in ffrs]
             insertcols!(res, ncol(res) + 1, Symbol(repr(lbl)) => vals)
             if withUnc
                 unc = [σ(lbl, ffr.kratios, missing) for ffr in ffrs]
@@ -100,8 +100,8 @@ end
 
 function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc=false)
     withUnc ?
-        DataFrame(ROI=labels(fr), k=map(l->value(l, fr.kratios),labels(fr)), δk=map(l->σ(l, fr.kratios), labels(fr))) : #
-        DataFrame(ROI=labels(fr), k=map(l->value(l, fr.kratios),labels(fr)))
+        DataFrame(ROI=labels(fr), k=map(l->NeXLUncertainties.value(l, fr.kratios),labels(fr)), δk=map(l->σ(l, fr.kratios), labels(fr))) : #
+        DataFrame(ROI=labels(fr), k=map(l->NeXLUncertainties.value(l, fr.kratios),labels(fr)))
 end
 
 function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
@@ -184,7 +184,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly
             push!(klbl, kl)
             push!(roi1, kl.roi.start)
             push!(roi2, kl.roi.stop)
-            push!(kr, value(kl, ffr.kratios))
+            push!(kr, NeXLUncertainties.value(kl, ffr.kratios))
             push!(dkr, σ(kl, ffr.kratios))
             pb = ffr.peakback[kl]
             push!(peak, pb[1])
@@ -212,6 +212,6 @@ end
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
 function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
-    scaled(ff) = (value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
+    scaled(ff) = (NeXLUncertainties.value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end

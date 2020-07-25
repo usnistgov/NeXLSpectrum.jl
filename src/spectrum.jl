@@ -1,6 +1,3 @@
-using DataFrames
-using PeriodicTable
-import Polynomials: Polynomial, fit, derivative
 
 # Keeps track of the number of spectra in this session.
 
@@ -131,19 +128,19 @@ Base.eachindex(spec::Spectrum) = eachindex(spec.counts)
 Base.stride(spec::Spectrum, k) = stride(spec.counts, k)
 Base.strides(spec::Spectrum) = strides(spec.counts)
 # Integer indices
-Base.getindex(spec::Spectrum, idx::Int) = spec.counts[idx]
-Base.getindex(spec::Spectrum, sr::StepRange{Int64,Int64}) = spec.counts[sr]
-Base.getindex(spec::Spectrum, ur::UnitRange{Int64}) = spec.counts[ur]
+Base.getindex(spec::Spectrum, idx::Integer) = spec.counts[idx]
+Base.getindex(spec::Spectrum, ur::AbstractRange{<:Integer}) = spec.counts[ur]
 # AbstractFloat indices
 Base.getindex(spec::Spectrum, energy::AbstractFloat) = spec.counts[channel(energy, spec)]
 Base.getindex(spec::Spectrum, sr::StepRangeLen{<:AbstractFloat}) = spec.counts[channel(sr[1], spec):channel(sr[end], spec)]
 
 Base.get(spec::Spectrum, idx::Int, def = convert(eltype(spec.counts), 0)) = get(spec.counts, idx, def)
 Base.setindex!(spec::Spectrum, val::Real, idx::Int) = spec.counts[idx] = convert(eltype(spec.counts), val)
-Base.setindex!(spec::Spectrum, vals, ur::UnitRange{Int}) = spec.counts[ur] = vals
-Base.setindex!(spec::Spectrum, vals, sr::StepRange{Int}) = spec.counts[sr] = vals
+Base.setindex!(spec::Spectrum, vals, ur::AbstractRange{<:Integer}) = spec.counts[ur] = vals
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
+Base.first(spec::Spectrum) = first(spec.counts)
+Base.last(spec::Spectrum) = last(spec.counts)
 
 """
     rangeofenergies(spec::Spectrum, ch)
@@ -297,7 +294,7 @@ channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 
 """
     counts(spec::Spectrum, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
-    counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, channels::AbstractUnitRange{<:Integer}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
 
 Creates a copy of the spectrum counts data as the specified Number type. If the spectrum has a :Detector
 property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
@@ -311,16 +308,16 @@ function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) wh
     return res
 end
 
-function counts(spec::Spectrum, channels::UnitRange{Int}, numType::Type{T}, applyLLD = false) where {T<:Real}
-    if (channels.start >= 1) && (channels.stop<=length(spec.counts))
+function counts(spec::Spectrum, channels::AbstractRange{<:Integer}, numType::Type{T}, applyLLD = false) where {T<:Real}
+    if (first(channels) >= 1) && (last(channels)<=length(spec))
         res = map(n -> convert(numType, n), spec.counts[channels])
     else
         res = zeros(numType, length(channels))
-        r = max(channels.start,1):min(channels.stop, length(spec.counts))
-        res[r.start-channels.start+1:r.stop-channels.start+1] = spec.counts[r]
+        r = max(first(channels),1):min(last(channels), length(spec))
+        res[first(r)-first(channels) + 1:last(r)-first(channels)+1] = spec.counts[r]
     end
-    if applyLLD && haskey(spec, :Detector) && (lld(spec)<=channels.start)
-        fill!(view(res, 1:lld(spec)-channels.start+1), zero(numType))
+    if applyLLD && haskey(spec, :Detector) && (lld(spec)<=first(channels))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
     end
     return res
 end
@@ -333,14 +330,14 @@ Gets the low-level discriminator associated with this spectrum if there is one.
 lld(spec::Spectrum) = haskey(spec.properties, :Detector) ? lld(spec.properties[:Detector]) : 1
 
 """
-	Base.findmax(spec::Spectrum, chs::UnitRange{Int})
+	Base.findmax(spec::Spectrum, chs::AbstractRange{<:Integer})
     Base.findmax(spec::Spectrum)
 
 Returns the (maximum intensity, channel index) over the specified range of channels
 """
-function Base.findmax(spec::Spectrum, chs::UnitRange{Int})
+function Base.findmax(spec::Spectrum, chs::AbstractRange{<:Integer})
     max = findmax(spec.counts[chs])
-    return (max[1] + chs.start - 1, max[2])
+    return (max[1] + first(chs) - 1, max[2])
 end
 function Base.findmax(spec::Spectrum)
     last = min(haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts), length(spec.counts))
@@ -349,12 +346,12 @@ end
 
 
 """
-    integrate(spec::Spectrum, channels::UnitRange{Int})
+    integrate(spec::Spectrum, channels::AbstractUnitRange{<:Integer})
     integrate(spec::Spectrum, energyRange::StepRangeLen{Float64})
 
 Sums all the counts in the specified channels.  No background correction.
 
-    integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+    integrate(spec::Spectrum, back1::AbstractUnitRange{<:Integer}, peak::AbstractUnitRange{<:Integer}, back2::AbstractUnitRange{<:Integer})::UncertainValue
     integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
 
 Sums all the counts in the specified channels with background correction using the background intervals.
@@ -364,12 +361,12 @@ Sums all the counts in the specified channels with background correction using t
 Total integral of all counts from the LLD to the beam energy
 
 """
-integrate(spec::Spectrum, channels::UnitRange{Int}) = sum(spec.counts[channels])
+integrate(spec::Spectrum, channels::AbstractUnitRange{<:Integer}) = sum(spec.counts[channels])
 
 integrate(spec::Spectrum, energyRange::StepRangeLen{Float64}) =
     sum(spec.counts[channel(energyRange[1], spec):channel(energyRange[end], spec)])
 
-function integrate(spec::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+function integrate(spec::Spectrum, back1::AbstractUnitRange{<:Integer}, peak::AbstractUnitRange{<:Integer}, back2::AbstractUnitRange{<:Integer})::UncertainValue
     bL, bH = mean(spec.counts[back1]), mean(spec.counts[back2])
     cL, cH, cP = mean(back1), mean(back2), mean(peak)
     iP, w, t = sum(spec.counts[peak]), length(peak), ((cP-cL)/(cH-cL))
@@ -394,16 +391,16 @@ function integrate(spec::Spectrum)
 end
 
 """
-    kratio(unk::Spectrum, std::Spectrum, back1::UnitRange{Int}, peak::UnitRange{Int}, back2::UnitRange{Int})::UncertainValue
+    kratio(unk::Spectrum, std::Spectrum, back1::AbstractUnitRange{<:Integer}, peak::AbstractUnitRange{<:Integer}, back2::AbstractUnitRange{<:Integer})::UncertainValue
     kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
 
 The k-ratio of unk relative to std corrected for dose.  Requires that `unk` and `std` have the properties
 `:LiveTime` and `:ProbeCurrent` defined.
 """
-function kratio(unk::Spectrum, std::Spectrum, back1::UnitRange, peak::UnitRange, back2::UnitRange)
+function kratio(unk::Spectrum, std::Spectrum, back1::AbstractUnitRange{<:Integer}, peak::AbstractUnitRange{<:Integer}, back2::AbstractUnitRange{<:Integer})
     iunk, istd = integrate(unk, back1, peak, back2)/dose(unk), integrate(std, back1, peak, back2)/dose(std)
-    f=value(iunk)/value(istd)
-    return uv(f, abs(f)*sqrt((σ(iunk)/value(iunk))^2+(σ(istd)/value(istd))^2))
+    f=NeXLUncertainties.value(iunk)/NeXLUncertainties.value(istd)
+    return uv(f, abs(f)*sqrt((σ(iunk)/NeXLUncertainties.value(iunk))^2+(σ(istd)/NeXLUncertainties.value(istd))^2))
 end
 
 kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen, peak::StepRangeLen, back2::StepRangeLen) =
@@ -418,7 +415,7 @@ kratio(unk::Spectrum, std::Spectrum, back1::StepRangeLen, peak::StepRangeLen, ba
 
 Returns an array with the bin-by-bin energies
 """
-energyscale(spec::Spectrum) = energyscale(spec.energy, 1:length(spec))
+energyscale(spec::Spectrum) = energyscale(spec.energy, eachindex(spec))
 
 """
     simpleEDS(spec::Spectrum, fwhmatmnka::Float64)
@@ -466,12 +463,12 @@ function subdivide(spec::Spectrum, n::Int)::Vector{Spectrum}
     for ch in eachindex(spec.counts)
         # Assign each event to one and only one detector
         si = rand(1:n, floor(Int, spec[ch]))
-        for i = 1:n
+        for i in 1:n
             res[i, ch] = count(e -> e == i, si)
         end
     end
     specs = Spectrum[]
-    for i = 1:n
+    for i in 1:n
         props = deepcopy(spec.properties)
         props[:Name] = "Sub[$(spec[:Name]),$(i) of $(n)]"
         props[:LiveTime] = spec[:LiveTime] / n # Must have
@@ -489,113 +486,110 @@ end
 
 Returns the tangent to the a quadratic fit to the counts data centered at channel with width
 """
-function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::Polynomial
+function estimatebackground(data::AbstractArray{Float64}, channel::Int, width::Int = 5, order::Int = 2)::ImmutablePolynomial
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
-        fr = fit(Polynomial, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
-        return Polynomial([fr(0), derivative(fr)(0)]) # Linear
+        fr = fit(ImmutablePolynomial, (minCh-channel):(maxCh-channel), data[minCh:maxCh], order)
+        return ImmutablePolynomial([fr(0), derivative(fr)(0)]) # Linear
     else
-        return Polynomial([mean(data[minCh:maxCh]), 0.0])
+        return ImmutablePolynomial([mean(data[minCh:maxCh]), 0.0])
     end
 end
 
 """
-    modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
+    modelBackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)
 
 spec: A spectrum containing a peak centered on chs
 chs:  A range of channels containing a peak
 ash:  The edge (as an AtomicSubShell)
 
 A simple model for modeling the background under a characteristic x-ray peak. The model
-fits a line to low and high energy background regions around chs.start and chs.end. If
+fits a line to low and high energy background regions around firsr(chs) and last(chs). If
 the low energy line extended out to the edge energy is larger than the high energy line
 at the same energy, then a negative going edge is fit between the two. Otherwise a line
 is fit between the low energy side and the high energy side. This model only works when
 there are no peak interference over the range chs.
 
 
-    modelBackground(spec::Spectrum, chs::UnitRange{Int})
-    modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
+    modelBackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer})
+    modelBackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)
 
 `spec`: A spectrum containing a peak centered on chs
 `chs`:  A range of channels containing a peak
 `ash`:  The largest edge within the range of channels `chs` associated with the characteristic peak
 
 A simple model for modeling the background under a characteristic x-ray peak. The model
-fits a line between the  low and high energy background regions around chs.start and chs.end.
+fits a line between the  low and high energy background regions around first(chs) and last(chs).
 This model only works when there are no peak interference over the range chs.
 """
-function modelBackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)
+function modelBackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)
     cnts, ec = counts(spec), channel(energy(ash), spec)
-    bl, bh = estimatebackground(cnts, chs.start, 5), estimatebackground(cnts, chs.stop, 5)
-    # bh = ch-> mean(cnts[chs.stop:min(length(cnts),chs.stop+5)])
-    if (ec < chs.stop) && (bl(ec - chs.start) > bh(ec - chs.stop)) && (energy(ash) < 2.0e3)
+    bl, bh = estimatebackground(cnts, first(chs), 5), estimatebackground(cnts, last(chs), 5)
+    # bh = ch-> mean(cnts[last(chs):min(length(cnts),last(chs)+5)])
+    if (ec < last(chs)) && (bl(ec - first(chs)) > bh(ec - last(chs))) && (energy(ash) < 2.0e3)
         res = zeros(Float64, length(chs))
-        for y = chs.start:ec-1
-            res[y-chs.start+1] = bl(y - chs.start)
-        end
-        res[ec-chs.start+1] = 0.5 * (bl(ec - chs.start) + bh(ec - chs.stop))
-        for y = ec+1:chs.stop
-            res[y-chs.start+1] = bh(y - chs.stop)
-        end
+        res[1:ec-first(chs)] .= ( bl(y-1) for y in 1:ec-first(chs) )
+        res[ec-first(chs)+1] = 0.5*(bl(ec-first(chs)+1)+bh(ec-last(chs)))
+        res[ec-first(chs)+2:last(chs)-first(chs)+1] .= ( bh(y-last(chs)) for y in ec+1:last(chs))
     else
         s = (bh(0) - bl(0)) / length(chs)
-        back = Polynomial([bl(0), s])
+        back = ImmutablePolynomial([bl(0), s])
         res = back.(collect(0:length(chs)-1))
     end
     return res
 end
 
-function modelBackground(spec::Spectrum, chs::UnitRange{Int})
-    bl = estimatebackground(counts(spec), chs.start, 5)
-    bh = estimatebackground(counts(spec), chs.stop, 5)
+function modelBackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer})
+    cxs = counts(spec)
+    bl = estimatebackground(cxs, first(chs), 5)
+    bh = estimatebackground(cxs, last(chs), 5)
     s = (bh(0) - bl(0)) / length(chs)
-    back = Polynomial([bl(0), s])
+    back = ImmutablePolynomial([bl(0), s])
     return back.(collect(0:length(chs)-1))
 end
 
 """
-    extractcharacteristic(spec::Spectrum, lowBack::UnitRange{Int}, highBack::UnitRange{Int})::Vector{Float64}
+    extractcharacteristic(spec::Spectrum, lowBack::AbstractUnitRange{<:Integer}, highBack::AbstractUnitRange{<:Integer})::Vector{Float64}
 
 Extract the characteristic intensity for the peak located within chs with an edge at ash.
 """
-function extractcharacteristic(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Vector{Float64}
+function extractcharacteristic(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)::Vector{Float64}
     return counts(spec, chs, Float64) - modelBackground(spec, chs, ash)
 end
 
 
 """
-    peak(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
+    peak(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)::Float64
 
 Estimates the peak intensity for the characteristic X-ray in the specified range of channels.
 """
-peak(spec::Spectrum, chs::UnitRange{Int})::Float64 = return sum(counts(spec, chs, Float64)) - background(spec, chs)
+peak(spec::Spectrum, chs::AbstractUnitRange{<:Integer})::Float64 = return sum(counts(spec, chs, Float64)) - background(spec, chs)
 
 """
-    background(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
+    background(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)::Float64
 
 Estimates the background intensity for the characteristic X-ray in the specified range of channels.
 """
-background(spec::Spectrum, chs::UnitRange{Int})::Float64 = sum(modelBackground(spec, chs))
+background(spec::Spectrum, chs::AbstractUnitRange{<:Integer})::Float64 = sum(modelBackground(spec, chs))
 
 
 """
-    peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
+    peaktobackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)::Float64
 
 Estimates the peak-to-background ratio for the characteristic X-ray intensity in the specified range of channels
 which encompass the specified AtomicSubShell.
 """
-function peaktobackground(spec::Spectrum, chs::UnitRange{Int}, ash::AtomicSubShell)::Float64
+function peaktobackground(spec::Spectrum, chs::AbstractUnitRange{<:Integer}, ash::AtomicSubShell)::Float64
     back = sum(modelBackground(spec, chs, ash))
     return (sum(counts(spec, chs, Float64)) - back) / back
 end
 
 """
-    estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int})
+    estkratio(unk::Spectrum, std::Spectrum, chs::AbstractUnitRange{<:Integer})
 
 Estimates the k-ratio from niave models of peak and background intensity.  Only works if the peak is not interfered.
 """
-estkratio(unk::Spectrum, std::Spectrum, chs::UnitRange{Int}) = peak(unk, chs) * dose(std) / (peak(std, chs) * dose(unk))
+estkratio(unk::Spectrum, std::Spectrum, chs::AbstractUnitRange{<:Integer}) = peak(unk, chs) * dose(std) / (peak(std, chs) * dose(unk))
 
 
 """
@@ -738,21 +732,121 @@ function commonproperties(props1::Dict{Symbol,Any}, props2::Dict{Symbol,Any})
     return res
 end
 
-commonproperties(specs::AbstractArray{Spectrum}) =
-    reduce((props, sp2) -> commonproperties(props, sp2.properties), specs[2:end], specs[1].properties)
+function commonproperties(specs::AbstractArray{<:Spectrum})
+    props = specs[1].properties
+    for sp2 in specs[2:end]
+        props = commonproperties(props, sp2.properties)
+    end
+    return props
+end
 
 """
-    maxspectrum(specs::AbstractArray{Spectrum})
-    maxspectrum(specs::Spectrum...)
-    maxspectrum(spec1::Spectrum, spec2::Spectrum)
+    maxspectrum(specs::AbstractArray{Spectrum{T}})::Spectrum{T} where T<:Real
 
 Compute the max-pixel spectrum for the specified spectra.
 """
-function maxspectrum(spec1::Spectrum, spec2::Spectrum)
-    maxi(a, b) = collect(max(a[i], b[i]) for i in eachindex(a))
-    props = commonproperties(spec1.properties, spec2.properties)
-    props[:Name] = "MaxSpectrum"
-    return Spectrum(spec1.energy, maxi(counts(spec1), counts(spec2)), props)
+function maxspectrum(specs::AbstractArray{Spectrum{T}})::Spectrum{T} where T<:Real
+    res = zeros(T, maximum(length.(specs)))
+    for spec in specs
+        for i in eachindex(spec)
+            res[i] = max(res[i], spec[i])
+        end
+    end
+    props = commonproperties(specs)
+    props[:Name] = "MaxSpectrum[$(length(specs)) spectra]"
+    return Spectrum(spec1.energy, res, props)
 end
-maxspectrum(specs::AbstractArray{Spectrum}) = reduce(maxspectrum, specs)
-maxspectrum(specs::Spectrum...) = reduce(maxspectrum, specs)
+
+"""
+    minspectrum(specs::AbstractArray{Spectrum{T}})::Spectrum{T} where T<:Real
+
+Compute the min-pixel spectrum for the specified spectra.
+"""
+function minspectrum(specs::AbstractArray{Spectrum{T}})::Spectrum{T} where T<:Real
+    res = zeros(T, maximum(length.(specs)))
+    fill!(res, typemax(T))
+    for spec in specs
+        for i in eachindex(spec)
+            res[i] = min(res[i], spec[i])
+        end
+    end
+    props = commonproperties(specs)
+    props[:Name] = "MinSpectrum[$(length(specs)) spectra]"
+    return Spectrum(spec1.energy, res, props)
+end
+
+
+"""
+    Base.sum(specs::AbstractVector{Spectrum{T}}; restype::Type{<:Real}=Tapplylld=false)::Spectrum{T}
+
+Computes the sum spectrum over an `AbstractVector{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
+in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
+scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
+:ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
+"""
+function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; applylld=false)::Spectrum where T <: Real
+    props = commonproperties(specs)
+    cxs, ds, pc, rt = zeros(restype, maximum(length.(specs))), 0.0, 0.0, 0.0
+    for spec in specs
+        cxs .+= counts(spec, eachindex(cxs), restype, applylld)
+        ds += dose(spec)
+        pc += spec[:ProbeCurrent]
+        rt += get(spec, :RealTime, NaN64)
+    end
+    pc /= length(specs)
+    props[:ProbeCurrent] = pc
+    props[:LiveTime] = ds / pc
+    if !isnan(rt)
+        props[:RealTime] = rt
+    end
+    props[:Name] = "Sum[$(length(specs)) spectra]"
+    return Spectrum(specs[1].energy, cxs, props)
+end
+
+"""
+    measure_dissimilarity(specs::AbstractVector{Spectrum)::Vector{Float64}
+
+Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
+"""
+function measure_dissimilarity(specs::AbstractVector{Spectrum{T}})::Vector{Float64} where T <: Real
+    function χ2(sp,m)
+        m1(v) = max(v, oneunit(v))
+        cxs = counts(sp, eachindex(m), Float64, true)
+        return sum( ((cxs / dose(sp) .- m) ./ (sqrt.(m1.(cxs))/dose(sp))).^2 )/(length(sp)-1)
+    end
+    χ2s = zeros(Float64,length(specs))
+    for (i, rmspec) in enumerate(specs)
+        # Remove one spectrum
+        others = filter(s->s!=rmspec, specs)
+        # Compute the mean counts/(nA⋅s)
+        mcpnas = zeros(Float64, maximum(length.(others)))
+        for spec in others
+            mcpnas .+= counts(spec, eachindex(mcpnas), Float64, true) / dose(spec) # counts/(nA⋅s)
+        end
+        mcpnas /= length(others) # mean counts/(nA⋅s)
+        # Compute how different this spectrum is from the others
+        χ2s[i] = χ2(rmspec, mcpnas)
+    end
+    return χ2s
+end
+
+"""
+    findsimilar(specs::AbstractVector{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}}
+
+Filters a collection of spectra for the ones most similar to the average by
+removing the least similar spectrum sequentially until all the remaining spectra are within
+tol times the mean(χ²).  This is useful for finding which of a set of replicate spectra are
+sufficiently similar to each other.
+"""
+function findsimilar(specs::AbstractVector{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}} where T <: Real
+    if length(specs) > minspecs
+        σs = measure_dissimilarity(specs)
+        ( fmσ, fmi ) = findmax(σs)
+        rem = filter(σ -> σ ≠ fmσ, σs)
+        # Now perform this recursively until all are within tol or we hit minspecs
+        if fmσ > tol*Statistics.mean(rem)
+            return findsimilar(filter(s -> s != specs[fmi], specs), tol=tol, minspecs=minspecs)
+        end
+    end
+    return specs
+end

@@ -1,7 +1,4 @@
 # X-ray Window
-using NeXLCore
-using CSV
-using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
 
 abstract type AbstractWindow end
 

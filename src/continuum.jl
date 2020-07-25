@@ -1,5 +1,4 @@
 # Model and fit the continuum
-using NeXLMatrixCorrection
 
 struct ContinuumModel
   mat::Material

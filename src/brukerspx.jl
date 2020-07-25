@@ -1,4 +1,4 @@
-using EzXML: readxml
+
 
 """
     readbrukerspx(fn::AbstractString)::Spectrum

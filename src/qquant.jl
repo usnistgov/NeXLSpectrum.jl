@@ -2,8 +2,6 @@
 # homoskedastic fit.  In doing this it can precompute a fitting matrix which requires nothing
 # more than a single matrix multiplication to perform the fit.  This makes this mechanism
 # extremely quick. This makes it ideal for processing in real-time or HyperSpectrum objects.
-using NeXLSpectrum
-using LinearAlgebra
 
 struct VectorQuant
     # Vector(label[1], roi[2], charonly[3], sum(charonly)[4], scale[5])

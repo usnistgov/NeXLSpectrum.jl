@@ -6,12 +6,6 @@ to permit using functions like `load(File(format"ASPEX TIFF"),filename)` to retu
 object loaded from the specified file.
 """
 
-using Dates # OK
-using Images # OK
-using AxisArrays # OK
-using Unitful: mm # OK
-using FileIO # FAILS
-
 struct _ATField
     tagId::UInt16
     tagType::UInt16

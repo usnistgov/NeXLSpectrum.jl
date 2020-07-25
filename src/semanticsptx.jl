@@ -1,5 +1,3 @@
-using ZipFile
-using EzXML: readxml
 using OnlineStats: Mean, value, fit!
 
 """
@@ -114,6 +112,6 @@ function readptx(
    sig[:Elapse] = 1.0e-8 * real # second
    sig[:RealTime] = 1.0e-8 * real / ((rh - ry) * (rw - rx))
    sig[:LiveTime] = 1.0e-8 * (real - dead) / ((rh - ry) * (rw - rx)) # seconds
-   sig[:DeadPercent] = value(deadpct)
+   sig[:DeadPercent] = OnlineStats.value(deadpct)
    return HyperSpectrum(sig)
 end

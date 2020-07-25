@@ -1,5 +1,3 @@
-using Mmap
-using Dates
 
 function readbrukerpdz(fn::AbstractString)
     open(fn,"r") do f

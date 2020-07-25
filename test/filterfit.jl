@@ -58,14 +58,14 @@ using Statistics
 
         ## The comparison is against the k-ratios from DTSA-II.
         # The results won't be identical because the filters and other assumptions are different.
-        @test isapprox(value(ok.identifier, ff), 0.6529, atol = 0.0016)
-        @test isapprox(value(fekb.identifier, ff), 0.0665, atol = 0.0002)
-        @test isapprox(value(mgk.identifier, ff), 0.1473, atol = 0.0004)
-        @test isapprox(value(alk.identifier, ff), 0.0668, atol = 0.0005)
-        @test isapprox(value(sik.identifier, ff), 0.3506, atol = 0.0008)
-        @test isapprox(value(cak.identifier, ff), 0.1921, atol = 0.0001)
-        @test isapprox(value(fel.identifier, ff), 0.0418, atol = 0.0002)
-        @test isapprox(value(feka.identifier, ff), 0.0669, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(ok.identifier, ff), 0.6529, atol = 0.0016)
+        @test isapprox(NeXLUncertainties.value(fekb.identifier, ff), 0.0665, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(mgk.identifier, ff), 0.1473, atol = 0.0004)
+        @test isapprox(NeXLUncertainties.value(alk.identifier, ff), 0.0668, atol = 0.0005)
+        @test isapprox(NeXLUncertainties.value(sik.identifier, ff), 0.3506, atol = 0.0008)
+        @test isapprox(NeXLUncertainties.value(cak.identifier, ff), 0.1921, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(fel.identifier, ff), 0.0418, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(feka.identifier, ff), 0.0669, atol = 0.0001)
 
         @test isapprox(σ(ok.identifier, ff), 0.00081, atol = 0.0001)
         @test isapprox(σ(mgk.identifier, ff), 0.00018, atol = 0.00005)
@@ -117,14 +117,14 @@ using Statistics
         #println("Performing the weighted fit takes:")
         #@btime filterfit(unk, fds, fitcontiguousw)
 
-        @test isapprox(value(oroi[1], ff), 0.6624, atol = 0.0006)
-        @test isapprox(value(mgroi[1], ff), 0.14728, atol = 0.0007)
-        @test isapprox(value(alroi[1], ff), 0.06679, atol = 0.0006)
-        @test isapprox(value(siroi[1], ff), 0.35063, atol = 0.0009)
-        @test isapprox(value(caroi[1], ff), 0.19213, atol = 0.0003)
-        @test isapprox(value(feroi[1], ff), 0.04185, atol = 0.0004)
-        @test isapprox(value(feroi[2], ff), 0.06693, atol = 0.0001)
-        @test isapprox(value(feroi[3], ff), 0.06652, atol = 0.0007)
+        @test isapprox(NeXLUncertainties.value(oroi[1], ff), 0.6624, atol = 0.0006)
+        @test isapprox(NeXLUncertainties.value(mgroi[1], ff), 0.14728, atol = 0.0007)
+        @test isapprox(NeXLUncertainties.value(alroi[1], ff), 0.06679, atol = 0.0006)
+        @test isapprox(NeXLUncertainties.value(siroi[1], ff), 0.35063, atol = 0.0009)
+        @test isapprox(NeXLUncertainties.value(caroi[1], ff), 0.19213, atol = 0.0003)
+        @test isapprox(NeXLUncertainties.value(feroi[1], ff), 0.04185, atol = 0.0004)
+        @test isapprox(NeXLUncertainties.value(feroi[2], ff), 0.06693, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(feroi[3], ff), 0.06652, atol = 0.0007)
 
         @test isapprox(σ(oroi[1], ff), 0.00082, atol = 0.0001)
         @test isapprox(σ(mgroi[1], ff), 0.00018, atol = 0.00004)
@@ -137,11 +137,11 @@ using Statistics
 
         # Compare to naive peak integration
         fekkr = kratio(unks[1], fe, 593:613, 636:647, 669:690)
-        @test isapprox(value(feroi[2], ff), value(fekkr), atol = 0.0005)
+        @test isapprox(NeXLUncertainties.value(feroi[2], ff), NeXLUncertainties.value(fekkr), atol = 0.0005)
         @test isapprox(σ(feroi[2], ff), σ(fekkr), atol = 0.00004)
 
         cakkr = kratio(unks[1], caf2, 334:347, 365:375 ,422:439)
-        @test isapprox(value(caroi[1], ff), value(cakkr), atol = 0.0008)
+        @test isapprox(NeXLUncertainties.value(caroi[1], ff), NeXLUncertainties.value(cakkr), atol = 0.0008)
         @test isapprox(σ(caroi[1], ff), σ(cakkr), atol = 0.00007)
     end
 

@@ -3,7 +3,25 @@ module NeXLSpectrum
 using Reexport
 using Requires
 
+using Dates
+using Images
+using AxisArrays
+using Unitful: mm
+using FileIO
+using Mmap
+using EzXML: readxml
+using PeriodicTable
+import Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
+using LinearAlgebra
+using Statistics
+using DataAPI
+using CSV
+using ZipFile
+using DataFrames
+using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
+
 @reexport using NeXLCore
+@reexport using NeXLMatrixCorrection
 
 include("features.jl")
 include("detector.jl")

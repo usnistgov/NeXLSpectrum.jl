@@ -1,6 +1,3 @@
-using NeXLCore
-using PeriodicTable
-import Polynomials: Polynomial, fit, printpoly, roots
 
 """
     EnergyScale
@@ -80,8 +77,8 @@ NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 =
 An energy scale based on a polynomial function of the channel index.
 """
 struct PolyEnergyScale <: EnergyScale
-    poly::Polynomial
-    PolyEnergyScale(vec::AbstractVector{<:AbstractFloat}) = new(Polynomial(vec,:ch))
+    poly::ImmutablePolynomial
+    PolyEnergyScale(vec::AbstractVector{<:AbstractFloat}) = new(ImmutablePolynomial(vec,:ch))
 end
 
 function Base.show(io::IO, pes::PolyEnergyScale)
@@ -92,7 +89,7 @@ end
 function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
     cp=Vector(coeffs(sc.poly))
     cp[1]-=eV
-    rts = roots(Polynomial(cp))
+    rts = roots(ImmutablePolynomial(cp))
     best = 100000
     for rt in rts
         if !(rt isa Complex)

@@ -1,4 +1,3 @@
-using LinearAlgebra
 
 """
     FilteredUnknownW
@@ -103,7 +102,7 @@ function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}
         kr = cat(retained)
         if forcezeros
             for lbl in keys(kr)
-                if value(lbl, kr) < 0.0
+                if NeXLUncertainties.value(lbl, kr) < 0.0
                     splice!(trimmed, findfirst(ff -> ff.identifier == lbl, trimmed))
                     push!(removed, uvs([lbl], [0.0], reshape([σ(lbl, kr)], (1, 1))))
                     refit = true

@@ -249,15 +249,27 @@ function Gadfly.plot(
         append!(layers, sumPeaks(coincidences))
     end
     Gadfly.with_theme(style) do
-        plot(
-            layers...,
-            Guide.XLabel("Energy (eV)"),
-            Guide.YLabel(ylbl),
-            Scale.x_continuous(format = :plain),
-            Scale.y_continuous(format = :plain),
-            Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
-            Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
-        )
+        try
+            plot(
+                layers...,
+                Guide.XLabel("Energy (eV)"),
+                Guide.YLabel(ylbl),
+                Scale.x_continuous(format = :plain),
+                Scale.y_continuous(format = :plain),
+                Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
+                Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
+            )
+        catch
+            plot(
+                layers...,
+                Guide.XLabel("Energy (eV)"),
+                Guide.YLabel(ylbl),
+                Scale.x_continuous(format = :plain),
+                Scale.y_continuous(format = :plain),
+                # Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
+                Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
+            )
+        end
     end
 end
 
@@ -274,7 +286,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
     ]
     miny, maxy, prev, i = minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
-        if value(lbl, ffr) > 0.0
+        if NeXLUncertainties.value(lbl, ffr) > 0.0
             # This logic keeps the labels on different lines (mostly...)
             i, prev = (lbl.roi[1] > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi[end]) : (i + 1, prev)
             labels = ["", name(lbl.xrays)]
@@ -297,7 +309,7 @@ function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = 
                 layer(
                     x = [0.5 * (lbl.roi[1] + lbl.roi[end])],
                     y = maxy * [0.4 + 0.1 * i],
-                    label = [@sprintf("%1.4f", value(lbl, ffr))],
+                    label = [@sprintf("%1.4f", NeXLUncertainties.value(lbl, ffr))],
                     Geom.label(position = :above),
                     Theme(default_color = "gray"),
                 ),
@@ -323,9 +335,16 @@ function Gadfly.plot(fr::FilteredReference; palette=NeXLPalette)
         layer(x=fr.roi, y=fr.charonly, Theme(default_color=palette[3]), Geom.step),
         layer(xmin=[fr.ffroi[1], fr.roi[1]], xmax=[fr.ffroi[end], fr.roi[end]], Geom.vband, color = roicolors ),
     ]
-    plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
-        Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
-        Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] ))
+    try
+        plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
+            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
+            Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] ))
+    catch
+        plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
+            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
+        #    Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] )
+        )
+        end
 end
 
 Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =
@@ -338,9 +357,16 @@ function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
         transform = deuteranopic,
     )[3:end]
     lyrs = mapreduce(i->layer(x=chs, y=vq.vectors[i,chs], Theme(default_color=colors[i]), Geom.line),append!,eachindex(vq.references))
-    plot(lyrs...,
-        Guide.xlabel("Channel"), Guide.ylabel("Filtered"),
-        Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], color=Colorant[colors...]))
+    try
+        plot(lyrs...,
+            Guide.xlabel("Channel"), Guide.ylabel("Filtered"),
+            Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], color=Colorant[colors...]))
+    catch
+        plot(lyrs...,
+            Guide.xlabel("Channel"), Guide.ylabel("Filtered"),
+        #    Guide.manual_color_key("Vector", [ repr(r[1]) for r in vq.references ], color=Colorant[colors...])
+        )
+    end
 end
 
 function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)

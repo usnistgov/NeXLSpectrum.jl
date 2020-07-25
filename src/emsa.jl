@@ -1,4 +1,4 @@
-using Dates
+
 
 function isemsa(io::IO)
 	for (lx, line) in enumerate(eachline(io))
@@ -111,7 +111,7 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
 					try
                         append!(counts, parse(T, cc))
 					catch
-						append!(counts, zero(T))
+						# Ignore it...
 					end
                     inData=inData+1
                 end
@@ -320,5 +320,5 @@ function writeEMSA(io::IOStream, spec::Spectrum)
 			println(io, energy(i,spec), ", ", spec.counts[i], ",")
 		end
 	end
-	writeline(io, "#ENDOFDATA","")
+	writeline(io, "ENDOFDATA","")
 end

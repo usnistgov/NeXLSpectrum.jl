@@ -81,12 +81,12 @@ function compressed(sig::Signal)
 end
 
 """
-   plane(hss::Signal, chs::UnitRange, normalize=false)
+   plane(hss::Signal, chs::AbstractUnitRange{<:Integer}, normalize=false)
 
 Sums a contiguous range of data planes into an Array. The dimension of the result is
 one less than the dimension of the Signal.
 """
-function plane(sig::Signal, chs::UnitRange, normalize=false)
+function plane(sig::Signal, chs::AbstractUnitRange{<:Integer}, normalize=false)
     res = map(ci->sum(convert.(Float64, sig.counts[chs,ci])), CartesianIndices((size(sig)[2:end])))
     if normalize
         res/=maximum(res)
@@ -301,7 +301,7 @@ maxpixel(hss::HyperSpectrum) =
     Spectrum(hss.signal.energy, maxpixel(hss.signal), copy(hss.signal.properties))
 
 """
-    plane(hss::HyperSpectrum, chs::Union{Int,UnitRange{Int}}, norm=false) =
+    plane(hss::HyperSpectrum, chs::Union{Int,AbstractUnitRange{<:Integer}}, norm=false) =
 
 Extract as an Array the sum of the data in `chs`.
 """
@@ -323,23 +323,23 @@ indexofmaxpixel(hs::HyperSpectrum) =
 using Images
 
 """
-    roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
+    roiimages(hss::Signal, achs::Vector{AbstractUnitRange{<:Integer}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function roiimages(hss::Signal, achs::Vector{UnitRange{Int}})
+function roiimages(hss::Signal, achs::Vector{AbstractUnitRange{<:Integer}})
     ps = map(chs->plane(hss,chs,false),achs)
     maxval = maximum(map(p->maximum(p),ps))
     return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
 end
 
 """
-    roiimage(hss::Signal, chs::UnitRange)
+    roiimage(hss::Signal, chs::AbstractUnitRange{<:Integer})
 
 Create a count map from the specified contiguous range of channels.
 """
-roiimage(hss::HyperSpectrum, chs::UnitRange) =
+roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
     Gray.(convert.(N0f8, plane(hss, chs, true)))
 
 """
@@ -353,12 +353,12 @@ function roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
 end
 
 """
-    roiimages(hss::HyperSpectrum, achs::Vector{UnitRange{Int}})
+    roiimages(hss::HyperSpectrum, achs::Vector{AbstractUnitRange{<:Integer}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-roiimages(hss::HyperSpectrum, achs::Vector{UnitRange{Int}}) =
+roiimages(hss::HyperSpectrum, achs::Vector{AbstractUnitRange{<:Integer}}) =
     roiimages(hss.signal, achs)
 
 """

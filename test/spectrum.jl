@@ -90,7 +90,7 @@ using NeXLCore
         @test integrate(sp,chs) == 33143490
 
         low, high = 120:133, 172:180
-        @test isapprox(value(integrate(sp,low,chs,high)), 3.22027e7,rtol=3.0e-3)
+        @test isapprox(NeXLUncertainties.value(integrate(sp,low,chs,high)), 3.22027e7,rtol=3.0e-3)
 
         ss = [ subsample(sp,0.1) for _ in 1:10 ]
 
