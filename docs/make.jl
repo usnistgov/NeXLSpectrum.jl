@@ -5,7 +5,7 @@ weavedocs = ( "continuummodel", "errorbars", "K412fit", "K412quick", "XRFSpectra
 rebuildweave = !all(map(wd->isfile(joinpath("src", "$wd.md")), weavedocs))
 
 if rebuildweave
-    map(name->rm(joinpath("src","$(splitext(name)[1]).md")), weavedocs)
+    map(name->rm(joinpath("src","$name.md")), filter(wd->isfile(joinpath("src","$name.md")),weavedocs))
     let curr=pwd()
         try
             include(joinpath("..","weave","buildweave.jl"))

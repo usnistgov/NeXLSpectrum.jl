@@ -1,4 +1,20 @@
-# ![](NeXL_sm.png)Spectrum
+# ![](NeXL_sm.png)Spectrum - Part of the NeXL X-ray Microanalysis Library
+
+## Installing NeXLSpectrum.jl
+
+NeXLSpectrum is available throught the standard Julia registry and can be
+installed using the standard package manager.
+
+```julia
+julia> ]add NeXLSpectrum
+```
+
+or
+
+```julia
+julia> using Pkg
+julia> Pkg.add("NeXLSpectrum")
+```
 ## Microanalytical X-ray Spectrum Analysis
 
 `NeXLSpectrum` is a library of tools for manipulating EDS spectrum within the
