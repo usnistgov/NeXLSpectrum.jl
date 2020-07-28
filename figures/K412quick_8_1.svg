@@ -14,15 +14,15 @@
     <path d="M0,0 L15,3.5 L0,7 z" stroke="context-stroke" fill="context-stroke"/>
   </marker>
 </defs>
-<g class="plotroot xscalable yscalable" id="img-21ee6edc-1">
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-21ee6edc-2">
+<g class="plotroot xscalable yscalable" id="img-5306244c-1">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-5306244c-2">
     <g transform="translate(136.36,69.54)">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">Channels</text>
       </g>
     </g>
   </g>
-  <g class="guide xlabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-21ee6edc-3">
+  <g class="guide xlabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-5306244c-3">
     <g transform="translate(121.02,62.87)">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">500</text>
@@ -34,464 +34,464 @@
       </g>
     </g>
   </g>
-  <g clip-path="url(#img-21ee6edc-4)">
-    <g id="img-21ee6edc-5">
-      <g pointer-events="visible" stroke-width="0.3" fill="#FDFDF1" stroke="#202020" class="guide background" id="img-21ee6edc-6">
-        <g transform="translate(136.36,33.76)" id="img-21ee6edc-7">
+  <g clip-path="url(#img-5306244c-4)">
+    <g id="img-5306244c-5">
+      <g pointer-events="visible" stroke-width="0.3" fill="#FDFDF1" stroke="#202020" class="guide background" id="img-5306244c-6">
+        <g transform="translate(136.36,33.76)" id="img-5306244c-7">
           <path d="M-116.93,-28.1 L 116.93 -28.1 116.93 28.1 -116.93 28.1 z" class="primitive"/>
         </g>
       </g>
-      <g class="guide ygridlines xfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-21ee6edc-8">
-        <g transform="translate(136.36,59.87)" id="img-21ee6edc-9">
+      <g class="guide ygridlines xfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-5306244c-8">
+        <g transform="translate(136.36,59.87)" id="img-5306244c-9">
           <path fill="none" d="M-116.93,0 L 116.93 0" class="primitive"/>
         </g>
-        <g transform="translate(136.36,39.51)" id="img-21ee6edc-10">
+        <g transform="translate(136.36,39.51)" id="img-5306244c-10">
           <path fill="none" d="M-116.93,0 L 116.93 0" class="primitive"/>
         </g>
-        <g transform="translate(136.36,19.16)" id="img-21ee6edc-11">
+        <g transform="translate(136.36,19.16)" id="img-5306244c-11">
           <path fill="none" d="M-116.93,0 L 116.93 0" class="primitive"/>
         </g>
       </g>
-      <g class="guide xgridlines yfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-21ee6edc-12">
-        <g transform="translate(121.02,33.76)" id="img-21ee6edc-13">
+      <g class="guide xgridlines yfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-5306244c-12">
+        <g transform="translate(121.02,33.76)" id="img-5306244c-13">
           <path fill="none" d="M0,-28.1 L 0 28.1" class="primitive"/>
         </g>
-        <g transform="translate(222.64,33.76)" id="img-21ee6edc-14">
+        <g transform="translate(222.64,33.76)" id="img-5306244c-14">
           <path fill="none" d="M0,-28.1 L 0 28.1" class="primitive"/>
         </g>
       </g>
-      <g class="plotpanel" id="img-21ee6edc-15">
+      <g class="plotpanel" id="img-5306244c-15">
         <metadata>
           <boundingbox value="19.427222222222248mm 5.660555555555554mm 233.86722222222224mm 56.20555555555556mm"/>
           <unitbox value="0.15953654404354367 26631.50650994462 1150.6809269119128 -27614.11820857945"/>
         </metadata>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-16">
-          <g class="marker" id="img-21ee6edc-17">
-            <g transform="translate(162.88,33.76)" id="img-21ee6edc-18">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-16">
+          <g class="marker" id="img-5306244c-17">
+            <g transform="translate(162.88,33.76)" id="img-5306244c-18">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0667</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-19">
-          <g class="marker" id="img-21ee6edc-20">
-            <g transform="translate(157.6,33.76)" id="img-21ee6edc-21">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-19">
+          <g class="marker" id="img-5306244c-20">
+            <g transform="translate(157.6,33.76)" id="img-5306244c-21">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(168.17,33.76)" id="img-21ee6edc-22">
+            <g transform="translate(168.17,33.76)" id="img-5306244c-22">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe K-M3 + 3 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-23">
-          <g stroke-width="0.3" id="img-21ee6edc-24">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-25">
-              <g class="marker" id="img-21ee6edc-26">
-                <g transform="translate(168.17,33.76)" id="img-21ee6edc-27">
+        <g class="geometry" id="img-5306244c-23">
+          <g stroke-width="0.3" id="img-5306244c-24">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-25">
+              <g class="marker" id="img-5306244c-26">
+                <g transform="translate(168.17,33.76)" id="img-5306244c-27">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-28">
-              <g class="marker" id="img-21ee6edc-29">
-                <g transform="translate(157.6,33.76)" id="img-21ee6edc-30">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-28">
+              <g class="marker" id="img-5306244c-29">
+                <g transform="translate(157.6,33.76)" id="img-5306244c-30">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-31">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-32">
-            <g transform="translate(162.88,33.76)" id="img-21ee6edc-33">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-31">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-32">
+            <g transform="translate(162.88,33.76)" id="img-5306244c-33">
               <path fill="none" d="M-5.28,0 L 5.28 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-34">
-          <g class="marker" id="img-21ee6edc-35">
-            <g transform="translate(149.67,38.98)" id="img-21ee6edc-36">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-34">
+          <g class="marker" id="img-5306244c-35">
+            <g transform="translate(149.67,38.98)" id="img-5306244c-36">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0668</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-37">
-          <g class="marker" id="img-21ee6edc-38">
-            <g transform="translate(143.98,38.98)" id="img-21ee6edc-39">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-37">
+          <g class="marker" id="img-5306244c-38">
+            <g transform="translate(143.98,38.98)" id="img-5306244c-39">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(155.36,38.98)" id="img-21ee6edc-40">
+            <g transform="translate(155.36,38.98)" id="img-5306244c-40">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-41">
-          <g stroke-width="0.3" id="img-21ee6edc-42">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-43">
-              <g class="marker" id="img-21ee6edc-44">
-                <g transform="translate(155.36,38.98)" id="img-21ee6edc-45">
+        <g class="geometry" id="img-5306244c-41">
+          <g stroke-width="0.3" id="img-5306244c-42">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-43">
+              <g class="marker" id="img-5306244c-44">
+                <g transform="translate(155.36,38.98)" id="img-5306244c-45">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-46">
-              <g class="marker" id="img-21ee6edc-47">
-                <g transform="translate(143.98,38.98)" id="img-21ee6edc-48">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-46">
+              <g class="marker" id="img-5306244c-47">
+                <g transform="translate(143.98,38.98)" id="img-5306244c-48">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-49">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-50">
-            <g transform="translate(149.67,38.98)" id="img-21ee6edc-51">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-49">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-50">
+            <g transform="translate(149.67,38.98)" id="img-5306244c-51">
               <path fill="none" d="M-5.69,0 L 5.69 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-52">
-          <g class="marker" id="img-21ee6edc-53">
-            <g transform="translate(97.54,38.98)" id="img-21ee6edc-54">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-52">
+          <g class="marker" id="img-5306244c-53">
+            <g transform="translate(97.54,38.98)" id="img-5306244c-54">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1922</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-55">
-          <g class="marker" id="img-21ee6edc-56">
-            <g transform="translate(89.92,38.98)" id="img-21ee6edc-57">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-55">
+          <g class="marker" id="img-5306244c-56">
+            <g transform="translate(89.92,38.98)" id="img-5306244c-57">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(105.16,38.98)" id="img-21ee6edc-58">
+            <g transform="translate(105.16,38.98)" id="img-5306244c-58">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Ca K-L3 + 3 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-59">
-          <g stroke-width="0.3" id="img-21ee6edc-60">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-61">
-              <g class="marker" id="img-21ee6edc-62">
-                <g transform="translate(105.16,38.98)" id="img-21ee6edc-63">
+        <g class="geometry" id="img-5306244c-59">
+          <g stroke-width="0.3" id="img-5306244c-60">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-61">
+              <g class="marker" id="img-5306244c-62">
+                <g transform="translate(105.16,38.98)" id="img-5306244c-63">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-64">
-              <g class="marker" id="img-21ee6edc-65">
-                <g transform="translate(89.92,38.98)" id="img-21ee6edc-66">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-64">
+              <g class="marker" id="img-5306244c-65">
+                <g transform="translate(89.92,38.98)" id="img-5306244c-66">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-67">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-68">
-            <g transform="translate(97.54,38.98)" id="img-21ee6edc-69">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-67">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-68">
+            <g transform="translate(97.54,38.98)" id="img-5306244c-69">
               <path fill="none" d="M-7.62,0 L 7.62 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-70">
-          <g class="marker" id="img-21ee6edc-71">
-            <g transform="translate(55.37,18.1)" id="img-21ee6edc-72">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-70">
+          <g class="marker" id="img-5306244c-71">
+            <g transform="translate(55.37,18.1)" id="img-5306244c-72">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.3509</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-73">
-          <g class="marker" id="img-21ee6edc-74">
-            <g transform="translate(51.3,18.1)" id="img-21ee6edc-75">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-73">
+          <g class="marker" id="img-5306244c-74">
+            <g transform="translate(51.3,18.1)" id="img-5306244c-75">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(59.43,18.1)" id="img-21ee6edc-76">
+            <g transform="translate(59.43,18.1)" id="img-5306244c-76">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Si K-L3 + 2 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-77">
-          <g stroke-width="0.3" id="img-21ee6edc-78">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-79">
-              <g class="marker" id="img-21ee6edc-80">
-                <g transform="translate(59.43,18.1)" id="img-21ee6edc-81">
+        <g class="geometry" id="img-5306244c-77">
+          <g stroke-width="0.3" id="img-5306244c-78">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-79">
+              <g class="marker" id="img-5306244c-80">
+                <g transform="translate(59.43,18.1)" id="img-5306244c-81">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-82">
-              <g class="marker" id="img-21ee6edc-83">
-                <g transform="translate(51.3,18.1)" id="img-21ee6edc-84">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-82">
+              <g class="marker" id="img-5306244c-83">
+                <g transform="translate(51.3,18.1)" id="img-5306244c-84">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-85">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-86">
-            <g transform="translate(55.37,18.1)" id="img-21ee6edc-87">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-85">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-86">
+            <g transform="translate(55.37,18.1)" id="img-5306244c-87">
               <path fill="none" d="M-4.06,0 L 4.06 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-88">
-          <g class="marker" id="img-21ee6edc-89">
-            <g transform="translate(49.68,23.32)" id="img-21ee6edc-90">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-88">
+          <g class="marker" id="img-5306244c-89">
+            <g transform="translate(49.68,23.32)" id="img-5306244c-90">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0670</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-91">
-          <g class="marker" id="img-21ee6edc-92">
-            <g transform="translate(46.22,23.32)" id="img-21ee6edc-93">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-91">
+          <g class="marker" id="img-5306244c-92">
+            <g transform="translate(46.22,23.32)" id="img-5306244c-93">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(53.13,23.32)" id="img-21ee6edc-94">
+            <g transform="translate(53.13,23.32)" id="img-5306244c-94">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Al K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-95">
-          <g stroke-width="0.3" id="img-21ee6edc-96">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-97">
-              <g class="marker" id="img-21ee6edc-98">
-                <g transform="translate(53.13,23.32)" id="img-21ee6edc-99">
+        <g class="geometry" id="img-5306244c-95">
+          <g stroke-width="0.3" id="img-5306244c-96">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-97">
+              <g class="marker" id="img-5306244c-98">
+                <g transform="translate(53.13,23.32)" id="img-5306244c-99">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-100">
-              <g class="marker" id="img-21ee6edc-101">
-                <g transform="translate(46.22,23.32)" id="img-21ee6edc-102">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-100">
+              <g class="marker" id="img-5306244c-101">
+                <g transform="translate(46.22,23.32)" id="img-5306244c-102">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-103">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-104">
-            <g transform="translate(49.68,23.32)" id="img-21ee6edc-105">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-103">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-104">
+            <g transform="translate(49.68,23.32)" id="img-5306244c-105">
               <path fill="none" d="M-3.46,0 L 3.46 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-106">
-          <g class="marker" id="img-21ee6edc-107">
-            <g transform="translate(45,28.54)" id="img-21ee6edc-108">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-106">
+          <g class="marker" id="img-5306244c-107">
+            <g transform="translate(45,28.54)" id="img-5306244c-108">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1473</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-109">
-          <g class="marker" id="img-21ee6edc-110">
-            <g transform="translate(41.75,28.54)" id="img-21ee6edc-111">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-109">
+          <g class="marker" id="img-5306244c-110">
+            <g transform="translate(41.75,28.54)" id="img-5306244c-111">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(48.26,28.54)" id="img-21ee6edc-112">
+            <g transform="translate(48.26,28.54)" id="img-5306244c-112">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Mg K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-113">
-          <g stroke-width="0.3" id="img-21ee6edc-114">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-115">
-              <g class="marker" id="img-21ee6edc-116">
-                <g transform="translate(48.26,28.54)" id="img-21ee6edc-117">
+        <g class="geometry" id="img-5306244c-113">
+          <g stroke-width="0.3" id="img-5306244c-114">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-115">
+              <g class="marker" id="img-5306244c-116">
+                <g transform="translate(48.26,28.54)" id="img-5306244c-117">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-118">
-              <g class="marker" id="img-21ee6edc-119">
-                <g transform="translate(41.75,28.54)" id="img-21ee6edc-120">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-118">
+              <g class="marker" id="img-5306244c-119">
+                <g transform="translate(41.75,28.54)" id="img-5306244c-120">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-121">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-122">
-            <g transform="translate(45,28.54)" id="img-21ee6edc-123">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-121">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-122">
+            <g transform="translate(45,28.54)" id="img-5306244c-123">
               <path fill="none" d="M-3.25,0 L 3.25 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-124">
-          <g class="marker" id="img-21ee6edc-125">
-            <g transform="translate(33.83,33.76)" id="img-21ee6edc-126">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-124">
+          <g class="marker" id="img-5306244c-125">
+            <g transform="translate(33.83,33.76)" id="img-5306244c-126">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0426</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-127">
-          <g class="marker" id="img-21ee6edc-128">
-            <g transform="translate(29.35,33.76)" id="img-21ee6edc-129">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-127">
+          <g class="marker" id="img-5306244c-128">
+            <g transform="translate(29.35,33.76)" id="img-5306244c-129">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(38.3,33.76)" id="img-21ee6edc-130">
+            <g transform="translate(38.3,33.76)" id="img-5306244c-130">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe L3-M5 + 11 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-131">
-          <g stroke-width="0.3" id="img-21ee6edc-132">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-133">
-              <g class="marker" id="img-21ee6edc-134">
-                <g transform="translate(38.3,33.76)" id="img-21ee6edc-135">
+        <g class="geometry" id="img-5306244c-131">
+          <g stroke-width="0.3" id="img-5306244c-132">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-133">
+              <g class="marker" id="img-5306244c-134">
+                <g transform="translate(38.3,33.76)" id="img-5306244c-135">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-136">
-              <g class="marker" id="img-21ee6edc-137">
-                <g transform="translate(29.35,33.76)" id="img-21ee6edc-138">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-136">
+              <g class="marker" id="img-5306244c-137">
+                <g transform="translate(29.35,33.76)" id="img-5306244c-138">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-139">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-140">
-            <g transform="translate(33.83,33.76)" id="img-21ee6edc-141">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-139">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-140">
+            <g transform="translate(33.83,33.76)" id="img-5306244c-141">
               <path fill="none" d="M-4.47,0 L 4.47 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-142">
-          <g class="marker" id="img-21ee6edc-143">
-            <g transform="translate(30.17,38.98)" id="img-21ee6edc-144">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-142">
+          <g class="marker" id="img-5306244c-143">
+            <g transform="translate(30.17,38.98)" id="img-5306244c-144">
               <g class="primitive">
                 <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.6467</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-21ee6edc-145">
-          <g class="marker" id="img-21ee6edc-146">
-            <g transform="translate(27.52,38.98)" id="img-21ee6edc-147">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-5306244c-145">
+          <g class="marker" id="img-5306244c-146">
+            <g transform="translate(27.52,38.98)" id="img-5306244c-147">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(32.81,38.98)" id="img-21ee6edc-148">
+            <g transform="translate(32.81,38.98)" id="img-5306244c-148">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">O K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-21ee6edc-149">
-          <g stroke-width="0.3" id="img-21ee6edc-150">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-151">
-              <g class="marker" id="img-21ee6edc-152">
-                <g transform="translate(32.81,38.98)" id="img-21ee6edc-153">
+        <g class="geometry" id="img-5306244c-149">
+          <g stroke-width="0.3" id="img-5306244c-150">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-151">
+              <g class="marker" id="img-5306244c-152">
+                <g transform="translate(32.81,38.98)" id="img-5306244c-153">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-21ee6edc-154">
-              <g class="marker" id="img-21ee6edc-155">
-                <g transform="translate(27.52,38.98)" id="img-21ee6edc-156">
+            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-5306244c-154">
+              <g class="marker" id="img-5306244c-155">
+                <g transform="translate(27.52,38.98)" id="img-5306244c-156">
                   <circle cx="0" cy="0" r="0.9" class="primitive"/>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-157">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-21ee6edc-158">
-            <g transform="translate(30.17,38.98)" id="img-21ee6edc-159">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-157">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-5306244c-158">
+            <g transform="translate(30.17,38.98)" id="img-5306244c-159">
               <path fill="none" d="M-2.64,0 L 2.64 0" class="primitive"/>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-160">
-          <g class="color_RGB{Float64}(0.06274509803921569,0.3058823529411765,0.5450980392156862)" stroke-dasharray="none" stroke="#104E8B" id="img-21ee6edc-161">
-            <g transform="translate(136.41,45.52)" id="img-21ee6edc-162">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-160">
+          <g class="color_RGB{Float64}(0.06274509803921569,0.3058823529411765,0.5450980392156862)" stroke-dasharray="none" stroke="#104E8B" id="img-5306244c-161">
+            <g transform="translate(136.41,45.52)" id="img-5306244c-162">
               <path fill="none" d="M-114.98,14.34 L -114.78 14.34 -114.78 14.34 -114.58 14.34 -114.58 14.33 -114.37 14.33 -114.37 14.33 -114.17 14.33 -114.17 14.33 -113.97 14.33 -113.97 14.33 -113.76 14.33 -113.76 14.31 -113.56 14.31 -113.56 14.29 -113.36 14.29 -113.36 14.24 -113.16 14.24 -113.16 14.17 -112.95 14.17 -112.95 14 -112.75 14 -112.75 13.73 -112.55 13.73 -112.55 13.18 -112.34 13.18 -112.34 12.12 -112.14 12.12 -112.14 10.3 -111.94 10.3 -111.94 7.48 -111.73 7.48 -111.73 4.63 -111.53 4.63 -111.53 2.09 -111.33 2.09 -111.33 1 -111.12 1 -111.12 1.97 -110.92 1.97 -110.92 4.28 -110.72 4.28 -110.72 7.02 -110.51 7.02 -110.51 8.82 -110.31 8.82 -110.31 10.27 -110.11 10.27 -110.11 10.86 -109.9 10.86 -109.9 10.96 -109.7 10.96 -109.7 11 -109.5 11 -109.5 10.89 -109.29 10.89 -109.29 10.96 -109.09 10.96 -109.09 10.51 -108.89 10.51 -108.89 10.39 -108.68 10.39 -108.68 9.9 -108.48 9.9 -108.48 9.31 -108.28 9.31 -108.28 8.11 -108.07 8.11 -108.07 6.08 -107.87 6.08 -107.87 1.44 -107.67 1.44 -107.67 -7.27 -107.46 -7.27 -107.46 -22.85 -107.26 -22.85 -107.26 -49.67 -107.06 -49.67 -107.06 -90.92 -106.85 -90.92 -106.85 -142.31 -106.65 -142.31 -106.65 -196.2 -106.45 -196.2 -106.45 -235.18 -106.24 -235.18 -106.24 -242.86 -106.04 -242.86 -106.04 -218.44 -105.84 -218.44 -105.84 -170.17 -105.64 -170.17 -105.64 -113.15 -105.43 -113.15 -105.43 -63.62 -105.23 -63.62 -105.23 -27.94 -105.03 -27.94 -105.03 -8.19 -104.82 -8.19 -104.82 1.81 -104.62 1.81 -104.62 6.4 -104.42 6.4 -104.42 7.84 -104.21 7.84 -104.21 8.42 -104.01 8.42 -104.01 8.66 -103.81 8.66 -103.81 8.04 -103.6 8.04 -103.6 7.23 -103.4 7.23 -103.4 5.78 -103.2 5.78 -103.2 3.48 -102.99 3.48 -102.99 0.89 -102.79 0.89 -102.79 -1.8 -102.59 -1.8 -102.59 -3.26 -102.38 -3.26 -102.38 -3.36 -102.18 -3.36 -102.18 -2.26 -101.98 -2.26 -101.98 0.41 -101.77 0.41 -101.77 3.01 -101.57 3.01 -101.57 5.09 -101.37 5.09 -101.37 6.78 -101.16 6.78 -101.16 7.96 -100.96 7.96 -100.96 8.27 -100.76 8.27 -100.76 8.35 -100.55 8.35 -100.55 8.56 -100.35 8.56 -100.35 8.64 -100.15 8.64 -100.15 8.63 -99.94 8.63 -99.94 8.3 -99.74 8.3 -99.74 8.36 -99.54 8.36 -99.54 8.12 -99.33 8.12 -99.33 7.85 -99.13 7.85 -99.13 8.03 -98.93 8.03 -98.93 7.87 -98.73 7.87 -98.73 7.55 -98.52 7.55 -98.52 7.57 -98.32 7.57 -98.32 7.64 -98.12 7.64 -98.12 7.34 -97.91 7.34 -97.91 7.17 -97.71 7.17 -97.71 6.88 -97.51 6.88 -97.51 6.85 -97.3 6.85 -97.3 6.29 -97.1 6.29 -97.1 6.5 -96.9 6.5 -96.9 6.18 -96.69 6.18 -96.69 5.77 -96.49 5.77 -96.49 5.57 -96.29 5.57 -96.29 5.04 -96.08 5.04 -96.08 4.59 -95.88 4.59 -95.88 4.53 -95.68 4.53 -95.68 4.5 -95.47 4.5 -95.47 4.41 -95.27 4.41 -95.27 3.87 -95.07 3.87 -95.07 3.87 -94.86 3.87 -94.86 3.62 -94.66 3.62 -94.66 3.89 -94.46 3.89 -94.46 3.42 -94.25 3.42 -94.25 3.16 -94.05 3.16 -94.05 3.08 -93.85 3.08 -93.85 2.72 -93.64 2.72 -93.64 1.77 -93.44 1.77 -93.44 0.75 -93.24 0.75 -93.24 -1.62 -93.03 -1.62 -93.03 -6.53 -92.83 -6.53 -92.83 -15.97 -92.63 -15.97 -92.63 -31.6 -92.42 -31.6 -92.42 -57.97 -92.22 -57.97 -92.22 -94.32 -92.02 -94.32 -92.02 -139.93 -91.81 -139.93 -91.81 -185.48 -91.61 -185.48 -91.61 -222.08 -91.41 -222.08 -91.41 -240.83 -91.21 -240.83 -91.21 -235.95 -91 -235.95 -91 -210.35 -90.8 -210.35 -90.8 -169.38 -90.6 -169.38 -90.6 -123.97 -90.39 -123.97 -90.39 -82.56 -90.19 -82.56 -90.19 -50.61 -89.99 -50.61 -89.99 -27.17 -89.78 -27.17 -89.78 -13.35 -89.58 -13.35 -89.58 -4.77 -89.38 -4.77 -89.38 -0.81 -89.17 -0.81 -89.17 1.34 -88.97 1.34 -88.97 1.8 -88.77 1.8 -88.77 2.18 -88.56 2.18 -88.56 1.3 -88.36 1.3 -88.36 -0.46 -88.16 -0.46 -88.16 -3.74 -87.95 -3.74 -87.95 -10.39 -87.75 -10.39 -87.75 -20.61 -87.55 -20.61 -87.55 -35.21 -87.34 -35.21 -87.34 -52.75 -87.14 -52.75 -87.14 -71.83 -86.94 -71.83 -86.94 -87.79 -86.73 -87.79 -86.73 -97.63 -86.53 -97.63 -86.53 -99.22 -86.33 -99.22 -86.33 -92.43 -86.12 -92.43 -86.12 -77.13 -85.92 -77.13 -85.92 -59.95 -85.72 -59.95 -85.72 -42.21 -85.51 -42.21 -85.51 -27.74 -85.31 -27.74 -85.31 -16.23 -85.11 -16.23 -85.11 -9.63 -84.9 -9.63 -84.9 -4.59 -84.7 -4.59 -84.7 -1.53 -84.5 -1.53 -84.5 -0.31 -84.29 -0.31 -84.29 0.86 -84.09 0.86 -84.09 1.53 -83.89 1.53 -83.89 0.44 -83.69 0.44 -83.69 -1.11 -83.48 -1.11 -83.48 -5.35 -83.28 -5.35 -83.28 -13.87 -83.08 -13.87 -83.08 -29.65 -82.87 -29.65 -82.87 -58.83 -82.67 -58.83 -82.67 -101.02 -82.47 -101.02 -82.47 -161.2 -82.26 -161.2 -82.26 -235.97 -82.06 -235.97 -82.06 -315.73 -81.86 -315.73 -81.86 -386.2 -81.65 -386.2 -81.65 -442.56 -81.45 -442.56 -81.45 -459.22 -81.25 -459.22 -81.25 -438.68 -81.04 -438.68 -81.04 -385.95 -80.84 -385.95 -80.84 -314.09 -80.64 -314.09 -80.64 -238.68 -80.43 -238.68 -80.43 -169.4 -80.23 -169.4 -80.23 -114.04 -80.03 -114.04 -80.03 -73.37 -79.82 -73.37 -79.82 -46.83 -79.62 -46.83 -79.62 -30.76 -79.42 -30.76 -79.42 -21.03 -79.21 -21.03 -79.21 -14.32 -79.01 -14.32 -79.01 -9.1 -78.81 -9.1 -78.81 -4.65 -78.6 -4.65 -78.6 -1.41 -78.4 -1.41 -78.4 1.2 -78.2 1.2 -78.2 2.79 -77.99 2.79 -77.99 3.47 -77.79 3.47 -77.79 3.96 -77.59 3.96 -77.59 4.7 -77.38 4.7 -77.38 5.01 -77.18 5.01 -77.18 4.86 -76.98 4.86 -76.98 5.07 -76.77 5.07 -76.77 5.32 -76.57 5.32 -76.57 5.52 -76.37 5.52 -76.37 5.54 -76.17 5.54 -76.17 5.84 -75.96 5.84 -75.96 6.17 -75.76 6.17 -75.76 6.07 -75.56 6.07 -75.56 6.53 -75.35 6.53 -75.35 6.58 -75.15 6.58 -75.15 6.56 -74.95 6.56 -74.95 6.48 -74.74 6.48 -74.74 6.61 -74.54 6.61 -74.54 6.72 -74.34 6.72 -74.34 6.47 -74.13 6.47 -74.13 6.48 -73.93 6.48 -73.93 6.57 -73.73 6.57 -73.73 6.55 -73.52 6.55 -73.52 6.86 -73.32 6.86 -73.32 6.3 -73.12 6.3 -73.12 6.53 -72.91 6.53 -72.91 6.35 -72.71 6.35 -72.71 6.57 -72.51 6.57 -72.51 6.58 -72.3 6.58 -72.3 6.24 -72.1 6.24 -72.1 6.14 -71.9 6.14 -71.9 5.97 -71.69 5.97 -71.69 5.91 -71.49 5.91 -71.49 5.81 -71.29 5.81 -71.29 5.71 -71.08 5.71 -71.08 5.65 -70.88 5.65 -70.88 5.73 -70.68 5.73 -70.68 5.59 -70.47 5.59 -70.47 5.5 -70.27 5.5 -70.27 5.9 -70.07 5.9 -70.07 6.03 -69.86 6.03 -69.86 6.13 -69.66 6.13 -69.66 6.05 -69.46 6.05 -69.46 6.14 -69.25 6.14 -69.25 6.22 -69.05 6.22 -69.05 6.14 -68.85 6.14 -68.85 6.42 -68.65 6.42 -68.65 6.4 -68.44 6.4 -68.44 6.42 -68.24 6.42 -68.24 6.41 -68.04 6.41 -68.04 6.43 -67.83 6.43 -67.83 6.46 -67.63 6.46 -67.63 6.54 -67.43 6.54 -67.43 6.22 -67.22 6.22 -67.22 6.48 -67.02 6.48 -67.02 6.46 -66.82 6.46 -66.82 6.2 -66.61 6.2 -66.61 6.39 -66.41 6.39 -66.41 6.38 -66.21 6.38 -66.21 6.31 -66 6.31 -66 6.51 -65.8 6.51 -65.8 6.32 -65.6 6.32 -65.6 6.42 -65.39 6.42 -65.39 6.11 -65.19 6.11 -65.19 6.53 -64.99 6.53 -64.99 6.3 -64.78 6.3 -64.78 6.19 -64.58 6.19 -64.58 6.86 -64.38 6.86 -64.38 6.34 -64.17 6.34 -64.17 6.57 -63.97 6.57 -63.97 6.43 -63.77 6.43 -63.77 6.53 -63.56 6.53 -63.56 6.52 -63.36 6.52 -63.36 6.36 -63.16 6.36 -63.16 6.63 -62.95 6.63 -62.95 6.51 -62.75 6.51 -62.75 6.53 -62.55 6.53 -62.55 6.54 -62.34 6.54 -62.34 6.67 -62.14 6.67 -62.14 6.55 -61.94 6.55 -61.94 6.66 -61.73 6.66 -61.73 6.69 -61.53 6.69 -61.53 6.37 -61.33 6.37 -61.33 6.65 -61.13 6.65 -61.13 6.64 -60.92 6.64 -60.92 6.67 -60.72 6.67 -60.72 6.8 -60.52 6.8 -60.52 6.62 -60.31 6.62 -60.31 6.55 -60.11 6.55 -60.11 6.93 -59.91 6.93 -59.91 6.83 -59.7 6.83 -59.7 6.83 -59.5 6.83 -59.5 6.75 -59.3 6.75 -59.3 6.65 -59.09 6.65 -59.09 6.72 -58.89 6.72 -58.89 6.95 -58.69 6.95 -58.69 6.84 -58.48 6.84 -58.48 6.61 -58.28 6.61 -58.28 6.88 -58.08 6.88 -58.08 6.7 -57.87 6.7 -57.87 6.62 -57.67 6.62 -57.67 6.59 -57.47 6.59 -57.47 6.67 -57.26 6.67 -57.26 6.87 -57.06 6.87 -57.06 6.63 -56.86 6.63 -56.86 6.54 -56.65 6.54 -56.65 6.36 -56.45 6.36 -56.45 6.39 -56.25 6.39 -56.25 6.42 -56.04 6.42 -56.04 6.45 -55.84 6.45 -55.84 6.61 -55.64 6.61 -55.64 6.57 -55.43 6.57 -55.43 6.77 -55.23 6.77 -55.23 6.76 -55.03 6.76 -55.03 6.78 -54.82 6.78 -54.82 7.03 -54.62 7.03 -54.62 6.85 -54.42 6.85 -54.42 6.99 -54.21 6.99 -54.21 7.06 -54.01 7.06 -54.01 7.07 -53.81 7.07 -53.81 7.04 -53.61 7.04 -53.61 7.23 -53.4 7.23 -53.4 7.26 -53.2 7.26 -53.2 7 -53 7 -53 7.18 -52.79 7.18 -52.79 7.04 -52.59 7.04 -52.59 6.89 -52.39 6.89 -52.39 7.03 -52.18 7.03 -52.18 7.03 -51.98 7.03 -51.98 7.06 -51.78 7.06 -51.78 7.19 -51.57 7.19 -51.57 7.03 -51.37 7.03 -51.37 6.92 -51.17 6.92 -51.17 7.23 -50.96 7.23 -50.96 7.08 -50.76 7.08 -50.76 6.82 -50.56 6.82 -50.56 7.42 -50.35 7.42 -50.35 7.08 -50.15 7.08 -50.15 7.36 -49.95 7.36 -49.95 7.2 -49.74 7.2 -49.74 7.17 -49.54 7.17 -49.54 7.21 -49.34 7.21 -49.34 7.43 -49.13 7.43 -49.13 7.67 -48.93 7.67 -48.93 7.6 -48.73 7.6 -48.73 7.49 -48.52 7.49 -48.52 7.38 -48.32 7.38 -48.32 7.41 -48.12 7.41 -48.12 7.54 -47.91 7.54 -47.91 7.67 -47.71 7.67 -47.71 7.38 -47.51 7.38 -47.51 7.6 -47.3 7.6 -47.3 7.68 -47.1 7.68 -47.1 7.55 -46.9 7.55 -46.9 7.35 -46.69 7.35 -46.69 7.23 -46.49 7.23 -46.49 7.38 -46.29 7.38 -46.29 7.31 -46.09 7.31 -46.09 7.19 -45.88 7.19 -45.88 6.99 -45.68 6.99 -45.68 7.12 -45.48 7.12 -45.48 6.71 -45.27 6.71 -45.27 6.61 -45.07 6.61 -45.07 6.48 -44.87 6.48 -44.87 6.18 -44.66 6.18 -44.66 5.46 -44.46 5.46 -44.46 4.43 -44.26 4.43 -44.26 2.97 -44.05 2.97 -44.05 -0.27 -43.85 -0.27 -43.85 -4.49 -43.65 -4.49 -43.65 -10.83 -43.44 -10.83 -43.44 -20.32 -43.24 -20.32 -43.24 -32.56 -43.04 -32.56 -43.04 -48.52 -42.83 -48.52 -42.83 -66.95 -42.63 -66.95 -42.63 -86.7 -42.43 -86.7 -42.43 -104.94 -42.22 -104.94 -42.22 -122.83 -42.02 -122.83 -42.02 -134.87 -41.82 -134.87 -41.82 -139.81 -41.61 -139.81 -41.61 -139.83 -41.41 -139.83 -41.41 -131.24 -41.21 -131.24 -41.21 -117.19 -41 -117.19 -41 -100.96 -40.8 -100.96 -40.8 -80.45 -40.6 -80.45 -40.6 -61.72 -40.39 -61.72 -40.39 -42.86 -40.19 -42.86 -40.19 -28.45 -39.99 -28.45 -39.99 -16.83 -39.78 -16.83 -39.78 -8.21 -39.58 -8.21 -39.58 -2.37 -39.38 -2.37 -39.38 1.93 -39.17 1.93 -39.17 4.6 -38.97 4.6 -38.97 5.76 -38.77 5.76 -38.77 7.15 -38.57 7.15 -38.57 7.34 -38.36 7.34 -38.36 7.75 -38.16 7.75 -38.16 7.71 -37.96 7.71 -37.96 7.71 -37.75 7.71 -37.75 7.29 -37.55 7.29 -37.55 7.29 -37.35 7.29 -37.35 6.46 -37.14 6.46 -37.14 5.78 -36.94 5.78 -36.94 4.68 -36.74 4.68 -36.74 2.93 -36.53 2.93 -36.53 1.38 -36.33 1.38 -36.33 -0.71 -36.13 -0.71 -36.13 -3.08 -35.92 -3.08 -35.92 -5.02 -35.72 -5.02 -35.72 -6.98 -35.52 -6.98 -35.52 -7.87 -35.31 -7.87 -35.31 -9.19 -35.11 -9.19 -35.11 -9.06 -34.91 -9.06 -34.91 -8.32 -34.7 -8.32 -34.7 -7.05 -34.5 -7.05 -34.5 -5.29 -34.3 -5.29 -34.3 -3.1 -34.09 -3.1 -34.09 -0.64 -33.89 -0.64 -33.89 1.61 -33.69 1.61 -33.69 3.46 -33.48 3.46 -33.48 5.22 -33.28 5.22 -33.28 6.4 -33.08 6.4 -33.08 7.36 -32.87 7.36 -32.87 7.85 -32.67 7.85 -32.67 8.46 -32.47 8.46 -32.47 9.03 -32.26 9.03 -32.26 8.83 -32.06 8.83 -32.06 8.97 -31.86 8.97 -31.86 8.9 -31.65 8.9 -31.65 9.17 -31.45 9.17 -31.45 9.2 -31.25 9.2 -31.25 9.12 -31.05 9.12 -31.05 9.2 -30.84 9.2 -30.84 9.1 -30.64 9.1 -30.64 9.25 -30.44 9.25 -30.44 9.21 -30.23 9.21 -30.23 9.39 -30.03 9.39 -30.03 9.17 -29.83 9.17 -29.83 9.56 -29.62 9.56 -29.62 9.5 -29.42 9.5 -29.42 9.47 -29.22 9.47 -29.22 9.44 -29.01 9.44 -29.01 9.46 -28.81 9.46 -28.81 9.38 -28.61 9.38 -28.61 9.71 -28.4 9.71 -28.4 9.43 -28.2 9.43 -28.2 9.57 -28 9.57 -28 9.61 -27.79 9.61 -27.79 9.45 -27.59 9.45 -27.59 9.58 -27.39 9.58 -27.39 9.78 -27.18 9.78 -27.18 9.56 -26.98 9.56 -26.98 9.51 -26.78 9.51 -26.78 9.75 -26.57 9.75 -26.57 9.56 -26.37 9.56 -26.37 9.59 -26.17 9.59 -26.17 9.84 -25.96 9.84 -25.96 9.68 -25.76 9.68 -25.76 9.68 -25.56 9.68 -25.56 9.71 -25.35 9.71 -25.35 9.6 -25.15 9.6 -25.15 9.73 -24.95 9.73 -24.95 9.54 -24.74 9.54 -24.74 9.81 -24.54 9.81 -24.54 9.78 -24.34 9.78 -24.34 9.83 -24.14 9.83 -24.14 9.73 -23.93 9.73 -23.93 9.91 -23.73 9.91 -23.73 9.7 -23.53 9.7 -23.53 9.74 -23.32 9.74 -23.32 9.82 -23.12 9.82 -23.12 9.65 -22.92 9.65 -22.92 9.52 -22.71 9.52 -22.71 9.77 -22.51 9.77 -22.51 9.8 -22.31 9.8 -22.31 9.64 -22.1 9.64 -22.1 9.88 -21.9 9.88 -21.9 9.99 -21.7 9.99 -21.7 9.89 -21.49 9.89 -21.49 9.82 -21.29 9.82 -21.29 9.85 -21.09 9.85 -21.09 9.71 -20.88 9.71 -20.88 9.89 -20.68 9.89 -20.68 9.88 -20.48 9.88 -20.48 10.08 -20.27 10.08 -20.27 10.07 -20.07 10.07 -20.07 10.04 -19.87 10.04 -19.87 10.07 -19.66 10.07 -19.66 10.05 -19.46 10.05 -19.46 9.94 -19.26 9.94 -19.26 10.13 -19.05 10.13 -19.05 10.16 -18.85 10.16 -18.85 10.16 -18.65 10.16 -18.65 10.34 -18.44 10.34 -18.44 10.07 -18.24 10.07 -18.24 10.02 -18.04 10.02 -18.04 10.09 -17.83 10.09 -17.83 10.23 -17.63 10.23 -17.63 10.13 -17.43 10.13 -17.43 10.01 -17.22 10.01 -17.22 10.14 -17.02 10.14 -17.02 10.02 -16.82 10.02 -16.82 10.07 -16.62 10.07 -16.62 10.1 -16.41 10.1 -16.41 10.12 -16.21 10.12 -16.21 10.02 -16.01 10.02 -16.01 10.23 -15.8 10.23 -15.8 10.12 -15.6 10.12 -15.6 10.07 -15.4 10.07 -15.4 10.06 -15.19 10.06 -15.19 10.11 -14.99 10.11 -14.99 10.11 -14.79 10.11 -14.79 10.37 -14.58 10.37 -14.58 10.35 -14.38 10.35 -14.38 10.27 -14.18 10.27 -14.18 10.37 -13.97 10.37 -13.97 10.3 -13.77 10.3 -13.77 10.51 -13.57 10.51 -13.57 10.3 -13.36 10.3 -13.36 10.32 -13.16 10.32 -13.16 10.23 -12.96 10.23 -12.96 10.33 -12.75 10.33 -12.75 10.36 -12.55 10.36 -12.55 10.35 -12.35 10.35 -12.35 10.38 -12.14 10.38 -12.14 10.49 -11.94 10.49 -11.94 10.44 -11.74 10.44 -11.74 10.28 -11.53 10.28 -11.53 10.36 -11.33 10.36 -11.33 10.26 -11.13 10.26 -11.13 10.37 -10.92 10.37 -10.92 10.43 -10.72 10.43 -10.72 10.41 -10.52 10.41 -10.52 10.44 -10.31 10.44 -10.31 10.33 -10.11 10.33 -10.11 10.5 -9.91 10.5 -9.91 10.42 -9.7 10.42 -9.7 10.46 -9.5 10.46 -9.5 10.41 -9.3 10.41 -9.3 10.58 -9.1 10.58 -9.1 10.52 -8.89 10.52 -8.89 10.35 -8.69 10.35 -8.69 10.51 -8.49 10.51 -8.49 10.62 -8.28 10.62 -8.28 10.59 -8.08 10.59 -8.08 10.45 -7.88 10.45 -7.88 10.47 -7.67 10.47 -7.67 10.41 -7.47 10.41 -7.47 10.36 -7.27 10.36 -7.27 10.19 -7.06 10.19 -7.06 10.29 -6.86 10.29 -6.86 10.26 -6.66 10.26 -6.66 10.4 -6.45 10.4 -6.45 10.38 -6.25 10.38 -6.25 10.39 -6.05 10.39 -6.05 10.35 -5.84 10.35 -5.84 10.39 -5.64 10.39 -5.64 10.39 -5.44 10.39 -5.44 10.36 -5.23 10.36 -5.23 10.65 -5.03 10.65 -5.03 10.65 -4.83 10.65 -4.83 10.57 -4.62 10.57 -4.62 10.61 -4.42 10.61 -4.42 10.73 -4.22 10.73 -4.22 10.67 -4.01 10.67 -4.01 10.78 -3.81 10.78 -3.81 10.72 -3.61 10.72 -3.61 10.64 -3.4 10.64 -3.4 10.72 -3.2 10.72 -3.2 10.83 -3 10.83 -3 10.76 -2.79 10.76 -2.79 10.79 -2.59 10.79 -2.59 10.77 -2.39 10.77 -2.39 10.76 -2.18 10.76 -2.18 11.02 -1.98 11.02 -1.98 10.88 -1.78 10.88 -1.78 10.97 -1.58 10.97 -1.58 10.97 -1.37 10.97 -1.37 10.87 -1.17 10.87 -1.17 10.95 -0.97 10.95 -0.97 10.83 -0.76 10.83 -0.76 10.86 -0.56 10.86 -0.56 11 -0.36 11 -0.36 10.8 -0.15 10.8 -0.15 11.01 0.05 11.01 0.05 10.79 0.25 10.79 0.25 11.03 0.46 11.03 0.46 11 0.66 11 0.66 10.99 0.86 10.99 0.86 10.89 1.07 10.89 1.07 10.95 1.27 10.95 1.27 10.78 1.47 10.78 1.47 10.86 1.68 10.86 1.68 10.83 1.88 10.83 1.88 10.68 2.08 10.68 2.08 10.79 2.29 10.79 2.29 10.81 2.49 10.81 2.49 10.56 2.69 10.56 2.69 10.66 2.9 10.66 2.9 10.74 3.1 10.74 3.1 10.61 3.3 10.61 3.3 10.78 3.51 10.78 3.51 10.78 3.71 10.78 3.71 10.8 3.91 10.8 3.91 10.89 4.12 10.89 4.12 10.98 4.32 10.98 4.32 10.97 4.52 10.97 4.52 10.91 4.73 10.91 4.73 10.96 4.93 10.96 4.93 11.22 5.13 11.22 5.13 11.01 5.34 11.01 5.34 11.14 5.54 11.14 5.54 11.15 5.74 11.15 5.74 11.13 5.94 11.13 5.94 11.06 6.15 11.06 6.15 11.13 6.35 11.13 6.35 11.14 6.55 11.14 6.55 11.31 6.76 11.31 6.76 11.19 6.96 11.19 6.96 11.25 7.16 11.25 7.16 11.27 7.37 11.27 7.37 11.21 7.57 11.21 7.57 11.24 7.77 11.24 7.77 11.1 7.98 11.1 7.98 11.43 8.18 11.43 8.18 11.26 8.38 11.26 8.38 11.26 8.59 11.26 8.59 11.07 8.79 11.07 8.79 11.04 8.99 11.04 8.99 11.09 9.2 11.09 9.2 11.21 9.4 11.21 9.4 11.2 9.6 11.2 9.6 10.81 9.81 10.81 9.81 10.74 10.01 10.74 10.01 10.37 10.21 10.37 10.21 9.89 10.42 9.89 10.42 9.21 10.62 9.21 10.62 8.51 10.82 8.51 10.82 7.01 11.03 7.01 11.03 5.02 11.23 5.02 11.23 3 11.43 3 11.43 0.29 11.64 0.29 11.64 -3.01 11.84 -3.01 11.84 -6.72 12.04 -6.72 12.04 -10.31 12.25 -10.31 12.25 -14.53 12.45 -14.53 12.45 -18.75 12.65 -18.75 12.65 -21.98 12.86 -21.98 12.86 -24.39 13.06 -24.39 13.06 -26.58 13.26 -26.58 13.26 -27.01 13.46 -27.01 13.46 -25.88 13.67 -25.88 13.67 -24.72 13.87 -24.72 13.87 -21.46 14.07 -21.46 14.07 -17.5 14.28 -17.5 14.28 -14.73 14.48 -14.73 14.48 -10.53 14.68 -10.53 14.68 -6.81 14.89 -6.81 14.89 -2.56 15.09 -2.56 15.09 0.36 15.29 0.36 15.29 3.07 15.5 3.07 15.5 5.37 15.7 5.37 15.7 7.24 15.9 7.24 15.9 8.61 16.11 8.61 16.11 9.53 16.31 9.53 16.31 10.27 16.51 10.27 16.51 10.8 16.72 10.8 16.72 11.01 16.92 11.01 16.92 11.19 17.12 11.19 17.12 11.31 17.33 11.31 17.33 11.52 17.53 11.52 17.53 11.41 17.73 11.41 17.73 11.61 17.94 11.61 17.94 11.7 18.14 11.7 18.14 11.62 18.34 11.62 18.34 11.55 18.55 11.55 18.55 11.56 18.75 11.56 18.75 11.47 18.95 11.47 18.95 11.65 19.16 11.65 19.16 11.69 19.36 11.69 19.36 11.71 19.56 11.71 19.56 11.57 19.77 11.57 19.77 11.72 19.97 11.72 19.97 11.57 20.17 11.57 20.17 11.64 20.38 11.64 20.38 11.53 20.58 11.53 20.58 11.76 20.78 11.76 20.78 11.72 20.98 11.72 20.98 11.74 21.19 11.74 21.19 11.8 21.39 11.8 21.39 11.72 21.59 11.72 21.59 11.71 21.8 11.71 21.8 11.75 22 11.75 22 11.69 22.2 11.69 22.2 11.76 22.41 11.76 22.41 11.63 22.61 11.63 22.61 11.72 22.81 11.72 22.81 11.52 23.02 11.52 23.02 11.55 23.22 11.55 23.22 11.49 23.42 11.49 23.42 11.45 23.63 11.45 23.63 11.4 23.83 11.4 23.83 11.13 24.03 11.13 24.03 11.02 24.24 11.02 24.24 11.01 24.44 11.01 24.44 10.53 24.64 10.53 24.64 10.38 24.85 10.38 24.85 9.86 25.05 9.86 25.05 9.67 25.25 9.67 25.25 9.01 25.46 9.01 25.46 8.75 25.66 8.75 25.66 8.15 25.86 8.15 25.86 7.83 26.07 7.83 26.07 7.4 26.27 7.4 26.27 7.12 26.47 7.12 26.47 7.12 26.68 7.12 26.68 6.92 26.88 6.92 26.88 7.22 27.08 7.22 27.08 7.53 27.29 7.53 27.29 7.84 27.49 7.84 27.49 8.21 27.69 8.21 27.69 8.7 27.9 8.7 27.9 9.33 28.1 9.33 28.1 9.71 28.3 9.71 28.3 10.23 28.5 10.23 28.5 10.61 28.71 10.61 28.71 10.91 28.91 10.91 28.91 11.17 29.11 11.17 29.11 11.38 29.32 11.38 29.32 11.6 29.52 11.6 29.52 11.81 29.72 11.81 29.72 11.87 29.93 11.87 29.93 11.8 30.13 11.8 30.13 12.01 30.33 12.01 30.33 12.09 30.54 12.09 30.54 12.05 30.74 12.05 30.74 12.09 30.94 12.09 30.94 11.95 31.15 11.95 31.15 12.16 31.35 12.16 31.35 12.03 31.55 12.03 31.55 12.12 31.76 12.12 31.76 12.07 31.96 12.07 31.96 12.08 32.16 12.08 32.16 12.14 32.37 12.14 32.37 11.96 32.57 11.96 32.57 12.09 32.77 12.09 32.77 12.2 32.98 12.2 32.98 12.1 33.18 12.1 33.18 12.03 33.38 12.03 33.38 11.96 33.59 11.96 33.59 12.09 33.79 12.09 33.79 12.16 33.99 12.16 33.99 12.03 34.2 12.03 34.2 12.11 34.4 12.11 34.4 12.01 34.6 12.01 34.6 12.19 34.81 12.19 34.81 12.15 35.01 12.15 35.01 12.14 35.21 12.14 35.21 12.02 35.42 12.02 35.42 12.13 35.62 12.13 35.62 12.09 35.82 12.09 35.82 12.09 36.02 12.09 36.02 12.11 36.23 12.11 36.23 12.19 36.43 12.19 36.43 12.19 36.63 12.19 36.63 12.15 36.84 12.15 36.84 12.14 37.04 12.14 37.04 12.25 37.24 12.25 37.24 12.17 37.45 12.17 37.45 12.24 37.65 12.24 37.65 12.21 37.85 12.21 37.85 12.32 38.06 12.32 38.06 12.19 38.26 12.19 38.26 12.14 38.46 12.14 38.46 12.27 38.67 12.27 38.67 12.24 38.87 12.24 38.87 12.31 39.07 12.31 39.07 12.19 39.28 12.19 39.28 12.3 39.48 12.3 39.48 12.22 39.68 12.22 39.68 12.18 39.89 12.18 39.89 12.21 40.09 12.21 40.09 12.35 40.29 12.35 40.29 12.25 40.5 12.25 40.5 12.28 40.7 12.28 40.7 12.32 40.9 12.32 40.9 12.37 41.11 12.37 41.11 12.35 41.31 12.35 41.31 12.35 41.51 12.35 41.51 12.21 41.72 12.21 41.72 12.27 41.92 12.27 41.92 12.3 42.12 12.3 42.12 12.4 42.33 12.4 42.33 12.35 42.53 12.35 42.53 12.33 42.73 12.33 42.73 12.3 42.93 12.3 42.93 12.41 43.14 12.41 43.14 12.29 43.34 12.29 43.34 12.44 43.54 12.44 43.54 12.36 43.75 12.36 43.75 12.35 43.95 12.35 43.95 12.35 44.15 12.35 44.15 12.39 44.36 12.39 44.36 12.37 44.56 12.37 44.56 12.46 44.76 12.46 44.76 12.37 44.97 12.37 44.97 12.39 45.17 12.39 45.17 12.53 45.37 12.53 45.37 12.4 45.58 12.4 45.58 12.4 45.78 12.4 45.78 12.37 45.98 12.37 45.98 12.39 46.19 12.39 46.19 12.42 46.39 12.42 46.39 12.42 46.59 12.42 46.59 12.31 46.8 12.31 46.8 12.47 47 12.47 47 12.32 47.2 12.32 47.2 12.38 47.41 12.38 47.41 12.46 47.61 12.46 47.61 12.41 47.81 12.41 47.81 12.38 48.02 12.38 48.02 12.39 48.22 12.39 48.22 12.53 48.42 12.53 48.42 12.42 48.63 12.42 48.63 12.43 48.83 12.43 48.83 12.48 49.03 12.48 49.03 12.47 49.24 12.47 49.24 12.52 49.44 12.52 49.44 12.51 49.64 12.51 49.64 12.65 49.85 12.65 49.85 12.23 50.05 12.23 50.05 12.52 50.25 12.52 50.25 12.41 50.45 12.41 50.45 12.42 50.66 12.42 50.66 12.51 50.86 12.51 50.86 12.45 51.06 12.45 51.06 12.55 51.27 12.55 51.27 12.58 51.47 12.58 51.47 12.6 51.67 12.6 51.67 12.53 51.88 12.53 51.88 12.58 52.08 12.58 52.08 12.54 52.28 12.54 52.28 12.5 52.49 12.5 52.49 12.66 52.69 12.66 52.69 12.59 52.89 12.59 52.89 12.52 53.1 12.52 53.1 12.58 53.3 12.58 53.3 12.58 53.5 12.58 53.5 12.64 53.71 12.64 53.71 12.59 53.91 12.59 53.91 12.64 54.11 12.64 54.11 12.5 54.32 12.5 54.32 12.66 54.52 12.66 54.52 12.55 54.72 12.55 54.72 12.73 54.93 12.73 54.93 12.76 55.13 12.76 55.13 12.61 55.33 12.61 55.33 12.63 55.54 12.63 55.54 12.74 55.74 12.74 55.74 12.66 55.94 12.66 55.94 12.66 56.15 12.66 56.15 12.62 56.35 12.62 56.35 12.8 56.55 12.8 56.55 12.71 56.76 12.71 56.76 12.71 56.96 12.71 56.96 12.6 57.16 12.6 57.16 12.75 57.37 12.75 57.37 12.84 57.57 12.84 57.57 12.65 57.77 12.65 57.77 12.69 57.97 12.69 57.97 12.67 58.18 12.67 58.18 12.63 58.38 12.63 58.38 12.77 58.58 12.77 58.58 12.67 58.79 12.67 58.79 12.72 58.99 12.72 58.99 12.63 59.19 12.63 59.19 12.71 59.4 12.71 59.4 12.76 59.6 12.76 59.6 12.68 59.8 12.68 59.8 12.7 60.01 12.7 60.01 12.78 60.21 12.78 60.21 12.66 60.41 12.66 60.41 12.66 60.62 12.66 60.62 12.76 60.82 12.76 60.82 12.8 61.02 12.8 61.02 12.71 61.23 12.71 61.23 12.83 61.43 12.83 61.43 12.7 61.63 12.7 61.63 12.78 61.84 12.78 61.84 12.8 62.04 12.8 62.04 12.82 62.24 12.82 62.24 12.67 62.45 12.67 62.45 12.7 62.65 12.7 62.65 12.85 62.85 12.85 62.85 12.73 63.06 12.73 63.06 12.75 63.26 12.75 63.26 12.81 63.46 12.81 63.46 12.8 63.67 12.8 63.67 12.78 63.87 12.78 63.87 12.8 64.07 12.8 64.07 12.75 64.28 12.75 64.28 12.85 64.48 12.85 64.48 12.76 64.68 12.76 64.68 12.8 64.89 12.8 64.89 12.82 65.09 12.82 65.09 12.79 65.29 12.79 65.29 12.74 65.49 12.74 65.49 12.8 65.7 12.8 65.7 12.93 65.9 12.93 65.9 12.79 66.1 12.79 66.1 12.75 66.31 12.75 66.31 12.79 66.51 12.79 66.51 12.81 66.71 12.81 66.71 12.81 66.92 12.81 66.92 12.83 67.12 12.83 67.12 12.85 67.32 12.85 67.32 12.84 67.53 12.84 67.53 12.82 67.73 12.82 67.73 12.86 67.93 12.86 67.93 12.81 68.14 12.81 68.14 12.89 68.34 12.89 68.34 12.97 68.54 12.97 68.54 12.98 68.75 12.98 68.75 12.87 68.95 12.87 68.95 12.86 69.15 12.86 69.15 12.83 69.36 12.83 69.36 12.82 69.56 12.82 69.56 12.88 69.76 12.88 69.76 12.79 69.97 12.79 69.97 12.99 70.17 12.99 70.17 13 70.37 13 70.37 12.91 70.58 12.91 70.58 12.94 70.78 12.94 70.78 12.88 70.98 12.88 70.98 12.91 71.19 12.91 71.19 13.01 71.39 13.01 71.39 13.02 71.59 13.02 71.59 12.85 71.8 12.85 71.8 12.87 72 12.87 72 13 72.2 13 72.2 12.9 72.41 12.9 72.41 12.98 72.61 12.98 72.61 12.92 72.81 12.92 72.81 12.87 73.01 12.87 73.01 12.94 73.22 12.94 73.22 12.96 73.42 12.96 73.42 12.96 73.62 12.96 73.62 12.98 73.83 12.98 73.83 12.89 74.03 12.89 74.03 13.02 74.23 13.02 74.23 12.97 74.44 12.97 74.44 12.99 74.64 12.99 74.64 13.08 74.84 13.08 74.84 13.06 75.05 13.06 75.05 13.01 75.25 13.01 75.25 13.01 75.45 13.01 75.45 13.04 75.66 13.04 75.66 13.06 75.86 13.06 75.86 12.92 76.06 12.92 76.06 13.01 76.27 13.01 76.27 12.99 76.47 12.99 76.47 13.06 76.67 13.06 76.67 12.94 76.88 12.94 76.88 12.98 77.08 12.98 77.08 13.03 77.28 13.03 77.28 13.06 77.49 13.06 77.49 12.9 77.69 12.9 77.69 12.94 77.89 12.94 77.89 13.13 78.1 13.13 78.1 13.08 78.3 13.08 78.3 13.11 78.5 13.11 78.5 12.95 78.71 12.95 78.71 13.09 78.91 13.09 78.91 13.04 79.11 13.04 79.11 13.08 79.32 13.08 79.32 13.12 79.52 13.12 79.52 13.01 79.72 13.01 79.72 13.18 79.93 13.18 79.93 13.09 80.13 13.09 80.13 13.06 80.33 13.06 80.33 13.02 80.53 13.02 80.53 13.05 80.74 13.05 80.74 13.11 80.94 13.11 80.94 13.16 81.14 13.16 81.14 13.09 81.35 13.09 81.35 13.02 81.55 13.02 81.55 13.15 81.75 13.15 81.75 13.06 81.96 13.06 81.96 13.08 82.16 13.08 82.16 13.07 82.36 13.07 82.36 13.13 82.57 13.13 82.57 13.14 82.77 13.14 82.77 13.12 82.97 13.12 82.97 13.13 83.18 13.13 83.18 13.14 83.38 13.14 83.38 13.07 83.58 13.07 83.58 13.17 83.79 13.17 83.79 13.11 83.99 13.11 83.99 13.1 84.19 13.1 84.19 13.1 84.4 13.1 84.4 13.14 84.6 13.14 84.6 13.08 84.8 13.08 84.8 13.15 85.01 13.15 85.01 13.06 85.21 13.06 85.21 13.13 85.41 13.13 85.41 13.18 85.62 13.18 85.62 13.21 85.82 13.21 85.82 13.25 86.02 13.25 86.02 13.08 86.23 13.08 86.23 13.17 86.43 13.17 86.43 13.24 86.63 13.24 86.63 13.17 86.84 13.17 86.84 13.17 87.04 13.17 87.04 13.2 87.24 13.2 87.24 13.18 87.45 13.18 87.45 13.14 87.65 13.14 87.65 13.25 87.85 13.25 87.85 13.18 88.05 13.18 88.05 13.21 88.26 13.21 88.26 13.13 88.46 13.13 88.46 13.1 88.66 13.1 88.66 13.17 88.87 13.17 88.87 13.21 89.07 13.21 89.07 13.18 89.27 13.18 89.27 13.15 89.48 13.15 89.48 13.2 89.68 13.2 89.68 13.17 89.88 13.17 89.88 13.19 90.09 13.19 90.09 13.33 90.29 13.33 90.29 13.2 90.49 13.2 90.49 13.22 90.7 13.22 90.7 13.32 90.9 13.32 90.9 13.22 91.1 13.22 91.1 13.22 91.31 13.22 91.31 13.18 91.51 13.18 91.51 13.27 91.71 13.27 91.71 13.19 91.92 13.19 91.92 13.3 92.12 13.3 92.12 13.19 92.32 13.19 92.32 13.28 92.53 13.28 92.53 13.22 92.73 13.22 92.73 13.22 92.93 13.22 92.93 13.17 93.14 13.17 93.14 13.24 93.34 13.24 93.34 13.25 93.54 13.25 93.54 13.31 93.75 13.31 93.75 13.31 93.95 13.31 93.95 13.23 94.15 13.23 94.15 13.26 94.36 13.26 94.36 13.24 94.56 13.24 94.56 13.28 94.76 13.28 94.76 13.29 94.97 13.29 94.97 13.33 95.17 13.33 95.17 13.28 95.37 13.28 95.37 13.18 95.57 13.18 95.57 13.2 95.78 13.2 95.78 13.31 95.98 13.31 95.98 13.24 96.18 13.24 96.18 13.33 96.39 13.33 96.39 13.28 96.59 13.28 96.59 13.31 96.79 13.31 96.79 13.39 97 13.39 97 13.27 97.2 13.27 97.2 13.24 97.4 13.24 97.4 13.27 97.61 13.27 97.61 13.3 97.81 13.3 97.81 13.23 98.01 13.23 98.01 13.35 98.22 13.35 98.22 13.24 98.42 13.24 98.42 13.27 98.62 13.27 98.62 13.36 98.83 13.36 98.83 13.3 99.03 13.3 99.03 13.3 99.23 13.3 99.23 13.36 99.44 13.36 99.44 13.27 99.64 13.27 99.64 13.32 99.84 13.32 99.84 13.36 100.05 13.36 100.05 13.39 100.25 13.39 100.25 13.35 100.45 13.35 100.45 13.36 100.66 13.36 100.66 13.4 100.86 13.4 100.86 13.37 101.06 13.37 101.06 13.4 101.27 13.4 101.27 13.36 101.47 13.36 101.47 13.42 101.67 13.42 101.67 13.37 101.88 13.37 101.88 13.42 102.08 13.42 102.08 13.36 102.28 13.36 102.28 13.33 102.49 13.33 102.49 13.39 102.69 13.39 102.69 13.39 102.89 13.39 102.89 13.46 103.09 13.46 103.09 13.35 103.3 13.35 103.3 13.46 103.5 13.46 103.5 13.31 103.7 13.31 103.7 13.46 103.91 13.46 103.91 13.47 104.11 13.47 104.11 13.36 104.31 13.36 104.31 13.43 104.52 13.43 104.52 13.43 104.72 13.43 104.72 13.39 104.92 13.39 104.92 13.43 105.13 13.43 105.13 13.41 105.33 13.41 105.33 13.44 105.53 13.44 105.53 13.47 105.74 13.47 105.74 13.45 105.94 13.45 105.94 13.36 106.14 13.36 106.14 13.52 106.35 13.52 106.35 13.42 106.55 13.42 106.55 13.45 106.75 13.45 106.75 13.46 106.96 13.46 106.96 13.42 107.16 13.42 107.16 13.43 107.36 13.43 107.36 13.48 107.57 13.48 107.57 13.41 107.77 13.41 107.77 13.42 107.97 13.42 107.97 13.43 108.18 13.43 108.18 13.41 108.38 13.41 108.38 13.48 108.58 13.48 108.58 13.49 108.79 13.49 108.79 13.53 108.99 13.53 108.99 13.46 109.19 13.46 109.19 13.45 109.4 13.45 109.4 13.51 109.6 13.51 109.6 13.5 109.8 13.5 109.8 13.51 110.01 13.51 110.01 13.49 110.21 13.49 110.21 13.46 110.41 13.46 110.41 13.45 110.61 13.45 110.61 13.41 110.82 13.41 110.82 13.51 111.02 13.51 111.02 13.48 111.22 13.48 111.22 13.55 111.43 13.55 111.43 13.49 111.63 13.49 111.63 13.5 111.83 13.5 111.83 13.53 112.04 13.53 112.04 13.47 112.24 13.47 112.24 13.55 112.44 13.55 112.44 13.44 112.65 13.44 112.65 13.46 112.85 13.46 112.85 13.51 113.05 13.51 113.05 13.56 113.26 13.56 113.26 13.55 113.46 13.55 113.46 13.5 113.66 13.5 113.66 13.58 113.87 13.58 113.87 13.51 114.07 13.51 114.07 13.52 114.27 13.52 114.27 13.52 114.48 13.52 114.48 13.51 114.68 13.51 114.68 13.58 114.88 13.58 114.88 13.54" class="primitive"/>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-21ee6edc-163">
-          <g class="color_RGB{Float64}(0.7186016914382806,8.086625054816313e-7,0.0097916074077615)" stroke-dasharray="none" stroke="#B70002" id="img-21ee6edc-164">
-            <g transform="translate(136.41,55.52)" id="img-21ee6edc-165">
-              <path fill="none" d="M-114.98,4.34 L -114.78 4.34 -114.78 4.35 -114.58 4.35 -114.58 4.34 -114.37 4.34 -114.37 4.34 -114.17 4.34 -114.17 4.34 -113.97 4.34 -113.97 4.33 -113.76 4.33 -113.76 4.32 -113.56 4.32 -113.56 4.29 -113.36 4.29 -113.36 4.24 -113.16 4.24 -113.16 4.17 -112.95 4.17 -112.95 4 -112.75 4 -112.75 3.73 -112.55 3.73 -112.55 3.18 -112.34 3.18 -112.34 2.12 -112.14 2.12 -112.14 0.31 -111.94 0.31 -111.94 -2.51 -111.73 -2.51 -111.73 -5.37 -111.53 -5.37 -111.53 -7.91 -111.33 -7.91 -111.33 -9 -111.12 -9 -111.12 -8.03 -110.92 -8.03 -110.92 -5.72 -110.72 -5.72 -110.72 -2.98 -110.51 -2.98 -110.51 -1.17 -110.31 -1.17 -110.31 0.27 -110.11 0.27 -110.11 0.86 -109.9 0.86 -109.9 0.96 -109.7 0.96 -109.7 1 -109.5 1 -109.5 0.89 -109.29 0.89 -109.29 0.97 -109.09 0.97 -109.09 0.51 -108.89 0.51 -108.89 0.69 -108.68 0.69 -108.68 -0.13 -108.48 -0.13 -108.48 -0.8 -108.28 -0.8 -108.28 -1.55 -108.07 -1.55 -108.07 -2.14 -107.87 -2.14 -107.87 -3.15 -107.67 -3.15 -107.67 -3.94 -107.46 -3.94 -107.46 -4.29 -107.26 -4.29 -107.26 -4.7 -107.06 -4.7 -107.06 -5.54 -106.85 -5.54 -106.85 -4.95 -106.65 -4.95 -106.65 -5.86 -106.45 -5.86 -106.45 -6.67 -106.24 -6.67 -106.24 -6.25 -106.04 -6.25 -106.04 -3.5 -105.84 -3.5 -105.84 0.25 -105.64 0.25 -105.64 -0.42 -105.43 -0.42 -105.43 -0.64 -105.23 -0.64 -105.23 0.7 -105.03 0.7 -105.03 0.85 -104.82 0.85 -104.82 1.64 -104.62 1.64 -104.62 2.59 -104.42 2.59 -104.42 2.78 -104.21 2.78 -104.21 2.78 -104.01 2.78 -104.01 2.66 -103.81 2.66 -103.81 2.1 -103.6 2.1 -103.6 1.94 -103.4 1.94 -103.4 1.65 -103.2 1.65 -103.2 1.45 -102.99 1.45 -102.99 1.17 -102.79 1.17 -102.79 0.3 -102.59 0.3 -102.59 0.32 -102.38 0.32 -102.38 0.1 -102.18 0.1 -102.18 -1.11 -101.98 -1.11 -101.98 -1.39 -101.77 -1.39 -101.77 -1.54 -101.57 -1.54 -101.57 -1.64 -101.37 -1.64 -101.37 -1.38 -101.16 -1.38 -101.16 -1.05 -100.96 -1.05 -100.96 -1.18 -100.76 -1.18 -100.76 -1.33 -100.55 -1.33 -100.55 -1.23 -100.35 -1.23 -100.35 -1.23 -100.15 -1.23 -100.15 -1.28 -99.94 -1.28 -99.94 -1.63 -99.74 -1.63 -99.74 -1.6 -99.54 -1.6 -99.54 -1.85 -99.33 -1.85 -99.33 -2.13 -99.13 -2.13 -99.13 -1.96 -98.93 -1.96 -98.93 -2.12 -98.73 -2.12 -98.73 -2.45 -98.52 -2.45 -98.52 -2.43 -98.32 -2.43 -98.32 -2.36 -98.12 -2.36 -98.12 -2.65 -97.91 -2.65 -97.91 -2.83 -97.71 -2.83 -97.71 -3.12 -97.51 -3.12 -97.51 -3.15 -97.3 -3.15 -97.3 -3.7 -97.1 -3.7 -97.1 -3.49 -96.9 -3.49 -96.9 -3.82 -96.69 -3.82 -96.69 -4.23 -96.49 -4.23 -96.49 -4.42 -96.29 -4.42 -96.29 -4.96 -96.08 -4.96 -96.08 -5.4 -95.88 -5.4 -95.88 -5.47 -95.68 -5.47 -95.68 -5.5 -95.47 -5.5 -95.47 -5.59 -95.27 -5.59 -95.27 -6.13 -95.07 -6.13 -95.07 -6.12 -94.86 -6.12 -94.86 -6.38 -94.66 -6.38 -94.66 -6.07 -94.46 -6.07 -94.46 -6.59 -94.25 -6.59 -94.25 -6.81 -94.05 -6.81 -94.05 -6.85 -93.85 -6.85 -93.85 -7.05 -93.64 -7.05 -93.64 -7.58 -93.44 -7.58 -93.44 -7.69 -93.24 -7.69 -93.24 -8.02 -93.03 -8.02 -93.03 -8.41 -92.83 -8.41 -92.83 -8.85 -92.63 -8.85 -92.63 -8.42 -92.42 -8.42 -92.42 -8.93 -92.22 -8.93 -92.22 -8.7 -92.02 -8.7 -92.02 -9.91 -91.81 -9.91 -91.81 -9.79 -91.61 -9.79 -91.61 -9.61 -91.41 -9.61 -91.41 -10.16 -91.21 -10.16 -91.21 -10.38 -91 -10.38 -91 -12.08 -90.8 -12.08 -90.8 -12.36 -90.6 -12.36 -90.6 -13.06 -90.39 -13.06 -90.39 -10.9 -90.19 -10.9 -90.19 -9.13 -89.99 -9.13 -89.99 -8.08 -89.78 -8.08 -89.78 -8.15 -89.58 -8.15 -89.58 -7.39 -89.38 -7.39 -89.38 -7.49 -89.17 -7.49 -89.17 -7.28 -88.97 -7.28 -88.97 -7.53 -88.77 -7.53 -88.77 -7.13 -88.56 -7.13 -88.56 -7.27 -88.36 -7.27 -88.36 -7.12 -88.16 -7.12 -88.16 -6.66 -87.95 -6.66 -87.95 -6.96 -87.75 -6.96 -87.75 -6.97 -87.55 -6.97 -87.55 -7.31 -87.34 -7.31 -87.34 -7.12 -87.14 -7.12 -87.14 -7.69 -86.94 -7.69 -86.94 -7.53 -86.73 -7.53 -86.73 -7.59 -86.53 -7.59 -86.53 -7.82 -86.33 -7.82 -86.33 -8.94 -86.12 -8.94 -86.12 -8.16 -85.92 -8.16 -85.92 -8.76 -85.72 -8.76 -85.72 -8.59 -85.51 -8.59 -85.51 -9.08 -85.31 -9.08 -85.31 -8.41 -85.11 -8.41 -85.11 -8.84 -84.9 -8.84 -84.9 -8.48 -84.7 -8.48 -84.7 -8.26 -84.5 -8.26 -84.5 -8.58 -84.29 -8.58 -84.29 -8.17 -84.09 -8.17 -84.09 -7.78 -83.89 -7.78 -83.89 -8.33 -83.69 -8.33 -83.69 -8.11 -83.48 -8.11 -83.48 -8.17 -83.28 -8.17 -83.28 -8.04 -83.08 -8.04 -83.08 -7.54 -82.87 -7.54 -82.87 -8.97 -82.67 -8.97 -82.67 -8.05 -82.47 -8.05 -82.47 -8.77 -82.26 -8.77 -82.26 -8.9 -82.06 -8.9 -82.06 -8.61 -81.86 -8.61 -81.86 -6.17 -81.65 -6.17 -81.65 -11.21 -81.45 -11.21 -81.45 -10.72 -81.25 -10.72 -81.25 -9.52 -81.04 -9.52 -81.04 -8.11 -80.84 -8.11 -80.84 -7.56 -80.64 -7.56 -80.64 -9.5 -80.43 -9.5 -80.43 -10.45 -80.23 -10.45 -80.23 -10.77 -80.03 -10.77 -80.03 -10.18 -79.82 -10.18 -79.82 -9.93 -79.62 -9.93 -79.62 -8.4 -79.42 -8.4 -79.42 -6.93 -79.21 -6.93 -79.21 -6.79 -79.01 -6.79 -79.01 -6.41 -78.81 -6.41 -78.81 -5.77 -78.6 -5.77 -78.6 -5.5 -78.4 -5.5 -78.4 -5.08 -78.2 -5.08 -78.2 -5.1 -77.99 -5.1 -77.99 -5.47 -77.79 -5.47 -77.79 -5.59 -77.59 -5.59 -77.59 -5.17 -77.38 -5.17 -77.38 -5.03 -77.18 -5.03 -77.18 -5.18 -76.98 -5.18 -76.98 -4.88 -76.77 -4.88 -76.77 -4.68 -76.57 -4.68 -76.57 -4.47 -76.37 -4.47 -76.37 -4.46 -76.17 -4.46 -76.17 -4.16 -75.96 -4.16 -75.96 -3.82 -75.76 -3.82 -75.76 -3.93 -75.56 -3.93 -75.56 -3.47 -75.35 -3.47 -75.35 -3.42 -75.15 -3.42 -75.15 -3.44 -74.95 -3.44 -74.95 -3.51 -74.74 -3.51 -74.74 -3.39 -74.54 -3.39 -74.54 -3.27 -74.34 -3.27 -74.34 -3.53 -74.13 -3.53 -74.13 -3.52 -73.93 -3.52 -73.93 -3.43 -73.73 -3.43 -73.73 -3.45 -73.52 -3.45 -73.52 -3.14 -73.32 -3.14 -73.32 -3.7 -73.12 -3.7 -73.12 -3.47 -72.91 -3.47 -72.91 -3.65 -72.71 -3.65 -72.71 -3.43 -72.51 -3.43 -72.51 -3.41 -72.3 -3.41 -72.3 -3.76 -72.1 -3.76 -72.1 -3.86 -71.9 -3.86 -71.9 -4.03 -71.69 -4.03 -71.69 -4.09 -71.49 -4.09 -71.49 -4.18 -71.29 -4.18 -71.29 -4.29 -71.08 -4.29 -71.08 -4.35 -70.88 -4.35 -70.88 -4.26 -70.68 -4.26 -70.68 -4.41 -70.47 -4.41 -70.47 -4.49 -70.27 -4.49 -70.27 -4.1 -70.07 -4.1 -70.07 -3.96 -69.86 -3.96 -69.86 -3.87 -69.66 -3.87 -69.66 -3.95 -69.46 -3.95 -69.46 -3.86 -69.25 -3.86 -69.25 -3.78 -69.05 -3.78 -69.05 -3.85 -68.85 -3.85 -68.85 -3.57 -68.65 -3.57 -68.65 -3.6 -68.44 -3.6 -68.44 -3.58 -68.24 -3.58 -68.24 -3.58 -68.04 -3.58 -68.04 -3.56 -67.83 -3.56 -67.83 -3.54 -67.63 -3.54 -67.63 -3.46 -67.43 -3.46 -67.43 -3.78 -67.22 -3.78 -67.22 -3.51 -67.02 -3.51 -67.02 -3.54 -66.82 -3.54 -66.82 -3.8 -66.61 -3.8 -66.61 -3.61 -66.41 -3.61 -66.41 -3.61 -66.21 -3.61 -66.21 -3.69 -66 -3.69 -66 -3.49 -65.8 -3.49 -65.8 -3.67 -65.6 -3.67 -65.6 -3.58 -65.39 -3.58 -65.39 -3.88 -65.19 -3.88 -65.19 -3.47 -64.99 -3.47 -64.99 -3.7 -64.78 -3.7 -64.78 -3.8 -64.58 -3.8 -64.58 -3.14 -64.38 -3.14 -64.38 -3.66 -64.17 -3.66 -64.17 -3.42 -63.97 -3.42 -63.97 -3.57 -63.77 -3.57 -63.77 -3.46 -63.56 -3.46 -63.56 -3.47 -63.36 -3.47 -63.36 -3.64 -63.16 -3.64 -63.16 -3.37 -62.95 -3.37 -62.95 -3.48 -62.75 -3.48 -62.75 -3.46 -62.55 -3.46 -62.55 -3.45 -62.34 -3.45 -62.34 -3.33 -62.14 -3.33 -62.14 -3.45 -61.94 -3.45 -61.94 -3.34 -61.73 -3.34 -61.73 -3.31 -61.53 -3.31 -61.53 -3.62 -61.33 -3.62 -61.33 -3.35 -61.13 -3.35 -61.13 -3.35 -60.92 -3.35 -60.92 -3.32 -60.72 -3.32 -60.72 -3.19 -60.52 -3.19 -60.52 -3.37 -60.31 -3.37 -60.31 -3.45 -60.11 -3.45 -60.11 -3.07 -59.91 -3.07 -59.91 -3.17 -59.7 -3.17 -59.7 -3.17 -59.5 -3.17 -59.5 -3.25 -59.3 -3.25 -59.3 -3.35 -59.09 -3.35 -59.09 -3.27 -58.89 -3.27 -58.89 -3.05 -58.69 -3.05 -58.69 -3.15 -58.48 -3.15 -58.48 -3.39 -58.28 -3.39 -58.28 -3.11 -58.08 -3.11 -58.08 -3.3 -57.87 -3.3 -57.87 -3.37 -57.67 -3.37 -57.67 -3.41 -57.47 -3.41 -57.47 -3.33 -57.26 -3.33 -57.26 -3.12 -57.06 -3.12 -57.06 -3.37 -56.86 -3.37 -56.86 -3.45 -56.65 -3.45 -56.65 -3.64 -56.45 -3.64 -56.45 -3.61 -56.25 -3.61 -56.25 -3.58 -56.04 -3.58 -56.04 -3.55 -55.84 -3.55 -55.84 -3.38 -55.64 -3.38 -55.64 -3.43 -55.43 -3.43 -55.43 -3.23 -55.23 -3.23 -55.23 -3.24 -55.03 -3.24 -55.03 -3.21 -54.82 -3.21 -54.82 -2.97 -54.62 -2.97 -54.62 -3.15 -54.42 -3.15 -54.42 -3.01 -54.21 -3.01 -54.21 -2.94 -54.01 -2.94 -54.01 -2.92 -53.81 -2.92 -53.81 -2.95 -53.61 -2.95 -53.61 -2.76 -53.4 -2.76 -53.4 -2.73 -53.2 -2.73 -53.2 -3 -53 -3 -53 -2.82 -52.79 -2.82 -52.79 -2.96 -52.59 -2.96 -52.59 -3.1 -52.39 -3.1 -52.39 -2.97 -52.18 -2.97 -52.18 -2.97 -51.98 -2.97 -51.98 -2.94 -51.78 -2.94 -51.78 -2.8 -51.57 -2.8 -51.57 -2.97 -51.37 -2.97 -51.37 -3.07 -51.17 -3.07 -51.17 -2.77 -50.96 -2.77 -50.96 -2.91 -50.76 -2.91 -50.76 -3.18 -50.56 -3.18 -50.56 -2.58 -50.35 -2.58 -50.35 -2.92 -50.15 -2.92 -50.15 -2.63 -49.95 -2.63 -49.95 -2.79 -49.74 -2.79 -49.74 -2.83 -49.54 -2.83 -49.54 -2.78 -49.34 -2.78 -49.34 -2.57 -49.13 -2.57 -49.13 -2.33 -48.93 -2.33 -48.93 -2.39 -48.73 -2.39 -48.73 -2.51 -48.52 -2.51 -48.52 -2.62 -48.32 -2.62 -48.32 -2.59 -48.12 -2.59 -48.12 -2.46 -47.91 -2.46 -47.91 -2.33 -47.71 -2.33 -47.71 -2.61 -47.51 -2.61 -47.51 -2.39 -47.3 -2.39 -47.3 -2.32 -47.1 -2.32 -47.1 -2.45 -46.9 -2.45 -46.9 -2.64 -46.69 -2.64 -46.69 -2.76 -46.49 -2.76 -46.49 -2.61 -46.29 -2.61 -46.29 -2.62 -46.09 -2.62 -46.09 -2.67 -45.88 -2.67 -45.88 -2.75 -45.68 -2.75 -45.68 -2.5 -45.48 -2.5 -45.48 -2.76 -45.27 -2.76 -45.27 -2.67 -45.07 -2.67 -45.07 -2.51 -44.87 -2.51 -44.87 -2.36 -44.66 -2.36 -44.66 -2.4 -44.46 -2.4 -44.46 -2.32 -44.26 -2.32 -44.26 -1.95 -44.05 -1.95 -44.05 -2.34 -43.85 -2.34 -43.85 -2.1 -43.65 -2.1 -43.65 -1.78 -43.44 -1.78 -43.44 -1.99 -43.24 -1.99 -43.24 -1.8 -43.04 -1.8 -43.04 -2.15 -42.83 -2.15 -42.83 -2.53 -42.63 -2.53 -42.63 -2.66 -42.43 -2.66 -42.43 -1.57 -42.22 -1.57 -42.22 -2.54 -42.02 -2.54 -42.02 -2.22 -41.82 -2.22 -41.82 -0.99 -41.61 -0.99 -41.61 -2.17 -41.41 -2.17 -41.41 -1.25 -41.21 -1.25 -41.21 -0.79 -41 -0.79 -41 -2.35 -40.8 -2.35 -40.8 -1.28 -40.6 -1.28 -40.6 -1.91 -40.39 -1.91 -40.39 -0.65 -40.19 -0.65 -40.19 -1.1 -39.99 -1.1 -39.99 -1.28 -39.78 -1.28 -39.78 -1.39 -39.58 -1.39 -39.58 -1.64 -39.38 -1.64 -39.38 -1.46 -39.17 -1.46 -39.17 -1.38 -38.97 -1.38 -38.97 -1.72 -38.77 -1.72 -38.77 -1.22 -38.57 -1.22 -38.57 -1.5 -38.36 -1.5 -38.36 -1.23 -38.16 -1.23 -38.16 -1.34 -37.96 -1.34 -37.96 -1.21 -37.75 -1.21 -37.75 -1.39 -37.55 -1.39 -37.55 -1.02 -37.35 -1.02 -37.35 -1.28 -37.14 -1.28 -37.14 -1.19 -36.94 -1.19 -36.94 -1.15 -36.74 -1.15 -36.74 -1.44 -36.53 -1.44 -36.53 -1.28 -36.33 -1.28 -36.33 -1.28 -36.13 -1.28 -36.13 -1.53 -35.92 -1.53 -35.92 -1.34 -35.72 -1.34 -35.72 -1.42 -35.52 -1.42 -35.52 -0.71 -35.31 -0.71 -35.31 -1.27 -35.11 -1.27 -35.11 -1.03 -34.91 -1.03 -34.91 -1 -34.7 -1 -34.7 -1.01 -34.5 -1.01 -34.5 -1.16 -34.3 -1.16 -34.3 -1.15 -34.09 -1.15 -34.09 -1.01 -33.89 -1.01 -33.89 -0.9 -33.69 -0.9 -33.69 -0.96 -33.48 -0.96 -33.48 -0.79 -33.28 -0.79 -33.28 -0.89 -33.08 -0.89 -33.08 -0.86 -32.87 -0.86 -32.87 -1.04 -32.67 -1.04 -32.67 -0.86 -32.47 -0.86 -32.47 -0.58 -32.26 -0.58 -32.26 -0.96 -32.06 -0.96 -32.06 -0.95 -31.86 -0.95 -31.86 -1.06 -31.65 -1.06 -31.65 -0.82 -31.45 -0.82 -31.45 -0.8 -31.25 -0.8 -31.25 -0.89 -31.05 -0.89 -31.05 -0.8 -30.84 -0.8 -30.84 -0.9 -30.64 -0.9 -30.64 -0.74 -30.44 -0.74 -30.44 -0.79 -30.23 -0.79 -30.23 -0.61 -30.03 -0.61 -30.03 -0.83 -29.83 -0.83 -29.83 -0.44 -29.62 -0.44 -29.62 -0.5 -29.42 -0.5 -29.42 -0.53 -29.22 -0.53 -29.22 -0.56 -29.01 -0.56 -29.01 -0.54 -28.81 -0.54 -28.81 -0.61 -28.61 -0.61 -28.61 -0.29 -28.4 -0.29 -28.4 -0.57 -28.2 -0.57 -28.2 -0.43 -28 -0.43 -28 -0.38 -27.79 -0.38 -27.79 -0.55 -27.59 -0.55 -27.59 -0.42 -27.39 -0.42 -27.39 -0.22 -27.18 -0.22 -27.18 -0.43 -26.98 -0.43 -26.98 -0.48 -26.78 -0.48 -26.78 -0.25 -26.57 -0.25 -26.57 -0.44 -26.37 -0.44 -26.37 -0.41 -26.17 -0.41 -26.17 -0.15 -25.96 -0.15 -25.96 -0.31 -25.76 -0.31 -25.76 -0.32 -25.56 -0.32 -25.56 -0.28 -25.35 -0.28 -25.35 -0.4 -25.15 -0.4 -25.15 -0.27 -24.95 -0.27 -24.95 -0.46 -24.74 -0.46 -24.74 -0.19 -24.54 -0.19 -24.54 -0.22 -24.34 -0.22 -24.34 -0.17 -24.14 -0.17 -24.14 -0.26 -23.93 -0.26 -23.93 -0.09 -23.73 -0.09 -23.73 -0.3 -23.53 -0.3 -23.53 -0.26 -23.32 -0.26 -23.32 -0.18 -23.12 -0.18 -23.12 -0.34 -22.92 -0.34 -22.92 -0.48 -22.71 -0.48 -22.71 -0.23 -22.51 -0.23 -22.51 -0.2 -22.31 -0.2 -22.31 -0.36 -22.1 -0.36 -22.1 -0.12 -21.9 -0.12 -21.9 -0.01 -21.7 -0.01 -21.7 -0.11 -21.49 -0.11 -21.49 -0.18 -21.29 -0.18 -21.29 -0.14 -21.09 -0.14 -21.09 -0.29 -20.88 -0.29 -20.88 -0.11 -20.68 -0.11 -20.68 -0.12 -20.48 -0.12 -20.48 0.09 -20.27 0.09 -20.27 0.07 -20.07 0.07 -20.07 0.04 -19.87 0.04 -19.87 0.08 -19.66 0.08 -19.66 0.05 -19.46 0.05 -19.46 -0.05 -19.26 -0.05 -19.26 0.13 -19.05 0.13 -19.05 0.16 -18.85 0.16 -18.85 0.16 -18.65 0.16 -18.65 0.35 -18.44 0.35 -18.44 0.07 -18.24 0.07 -18.24 0.03 -18.04 0.03 -18.04 0.09 -17.83 0.09 -17.83 0.23 -17.63 0.23 -17.63 0.13 -17.43 0.13 -17.43 0.01 -17.22 0.01 -17.22 0.14 -17.02 0.14 -17.02 0.02 -16.82 0.02 -16.82 0.08 -16.62 0.08 -16.62 0.11 -16.41 0.11 -16.41 0.13 -16.21 0.13 -16.21 0.02 -16.01 0.02 -16.01 0.24 -15.8 0.24 -15.8 0.12 -15.6 0.12 -15.6 0.08 -15.4 0.08 -15.4 0.07 -15.19 0.07 -15.19 0.12 -14.99 0.12 -14.99 0.11 -14.79 0.11 -14.79 0.37 -14.58 0.37 -14.58 0.36 -14.38 0.36 -14.38 0.27 -14.18 0.27 -14.18 0.37 -13.97 0.37 -13.97 0.3 -13.77 0.3 -13.77 0.51 -13.57 0.51 -13.57 0.3 -13.36 0.3 -13.36 0.33 -13.16 0.33 -13.16 0.23 -12.96 0.23 -12.96 0.34 -12.75 0.34 -12.75 0.36 -12.55 0.36 -12.55 0.35 -12.35 0.35 -12.35 0.39 -12.14 0.39 -12.14 0.49 -11.94 0.49 -11.94 0.45 -11.74 0.45 -11.74 0.29 -11.53 0.29 -11.53 0.36 -11.33 0.36 -11.33 0.26 -11.13 0.26 -11.13 0.37 -10.92 0.37 -10.92 0.43 -10.72 0.43 -10.72 0.41 -10.52 0.41 -10.52 0.44 -10.31 0.44 -10.31 0.34 -10.11 0.34 -10.11 0.5 -9.91 0.5 -9.91 0.42 -9.7 0.42 -9.7 0.46 -9.5 0.46 -9.5 0.41 -9.3 0.41 -9.3 0.59 -9.1 0.59 -9.1 0.52 -8.89 0.52 -8.89 0.35 -8.69 0.35 -8.69 0.52 -8.49 0.52 -8.49 0.62 -8.28 0.62 -8.28 0.59 -8.08 0.59 -8.08 0.46 -7.88 0.46 -7.88 0.48 -7.67 0.48 -7.67 0.41 -7.47 0.41 -7.47 0.36 -7.27 0.36 -7.27 0.2 -7.06 0.2 -7.06 0.29 -6.86 0.29 -6.86 0.26 -6.66 0.26 -6.66 0.4 -6.45 0.4 -6.45 0.38 -6.25 0.38 -6.25 0.39 -6.05 0.39 -6.05 0.36 -5.84 0.36 -5.84 0.39 -5.64 0.39 -5.64 0.4 -5.44 0.4 -5.44 0.36 -5.23 0.36 -5.23 0.66 -5.03 0.66 -5.03 0.66 -4.83 0.66 -4.83 0.58 -4.62 0.58 -4.62 0.62 -4.42 0.62 -4.42 0.73 -4.22 0.73 -4.22 0.68 -4.01 0.68 -4.01 0.79 -3.81 0.79 -3.81 0.72 -3.61 0.72 -3.61 0.64 -3.4 0.64 -3.4 0.73 -3.2 0.73 -3.2 0.83 -3 0.83 -3 0.76 -2.79 0.76 -2.79 0.8 -2.59 0.8 -2.59 0.77 -2.39 0.77 -2.39 0.76 -2.18 0.76 -2.18 1.03 -1.98 1.03 -1.98 0.88 -1.78 0.88 -1.78 0.97 -1.58 0.97 -1.58 0.98 -1.37 0.98 -1.37 0.87 -1.17 0.87 -1.17 0.95 -0.97 0.95 -0.97 0.83 -0.76 0.83 -0.76 0.87 -0.56 0.87 -0.56 1.01 -0.36 1.01 -0.36 0.81 -0.15 0.81 -0.15 1.01 0.05 1.01 0.05 0.8 0.25 0.8 0.25 1.03 0.46 1.03 0.46 1 0.66 1 0.66 0.99 0.86 0.99 0.86 0.9 1.07 0.9 1.07 0.96 1.27 0.96 1.27 0.79 1.47 0.79 1.47 0.87 1.68 0.87 1.68 0.83 1.88 0.83 1.88 0.68 2.08 0.68 2.08 0.79 2.29 0.79 2.29 0.81 2.49 0.81 2.49 0.56 2.69 0.56 2.69 0.66 2.9 0.66 2.9 0.74 3.1 0.74 3.1 0.61 3.3 0.61 3.3 0.78 3.51 0.78 3.51 0.78 3.71 0.78 3.71 0.8 3.91 0.8 3.91 0.89 4.12 0.89 4.12 0.98 4.32 0.98 4.32 0.97 4.52 0.97 4.52 0.91 4.73 0.91 4.73 0.96 4.93 0.96 4.93 1.23 5.13 1.23 5.13 1.01 5.34 1.01 5.34 1.15 5.54 1.15 5.54 1.15 5.74 1.15 5.74 1.13 5.94 1.13 5.94 1.06 6.15 1.06 6.15 1.13 6.35 1.13 6.35 1.15 6.55 1.15 6.55 1.31 6.76 1.31 6.76 1.19 6.96 1.19 6.96 1.25 7.16 1.25 7.16 1.28 7.37 1.28 7.37 1.21 7.57 1.21 7.57 1.25 7.77 1.25 7.77 1.11 7.98 1.11 7.98 1.45 8.18 1.45 8.18 1.3 8.38 1.3 8.38 1.31 8.59 1.31 8.59 1.14 8.79 1.14 8.79 1.14 8.99 1.14 8.99 1.22 9.2 1.22 9.2 1.4 9.4 1.4 9.4 1.47 9.6 1.47 9.6 1.21 9.81 1.21 9.81 1.36 10.01 1.36 10.01 1.3 10.21 1.3 10.21 1.31 10.42 1.31 10.42 1.31 10.62 1.31 10.62 1.59 10.82 1.59 10.82 1.41 11.03 1.41 11.03 1.24 11.23 1.24 11.23 1.45 11.43 1.45 11.43 1.51 11.64 1.51 11.64 1.5 11.84 1.5 11.84 1.44 12.04 1.44 12.04 1.79 12.25 1.79 12.25 1.57 12.45 1.57 12.45 1.15 12.65 1.15 12.65 1.33 12.86 1.33 12.86 1.54 13.06 1.54 13.06 1.02 13.26 1.02 13.26 1.16 13.46 1.16 13.46 1.7 13.67 1.7 13.67 1.23 13.87 1.23 13.87 1.85 14.07 1.85 14.07 2.5 14.28 2.5 14.28 1.52 14.48 1.52 14.48 1.7 14.68 1.7 14.68 1.49 14.89 1.49 14.89 2.07 15.09 2.07 15.09 1.73 15.29 1.73 15.29 1.62 15.5 1.62 15.5 1.68 15.7 1.68 15.7 1.74 15.9 1.74 15.9 1.72 16.11 1.72 16.11 1.64 16.31 1.64 16.31 1.67 16.51 1.67 16.51 1.7 16.72 1.7 16.72 1.59 16.92 1.59 16.92 1.54 17.12 1.54 17.12 1.52 17.33 1.52 17.33 1.65 17.53 1.65 17.53 1.49 17.73 1.49 17.73 1.66 17.94 1.66 17.94 1.73 18.14 1.73 18.14 1.64 18.34 1.64 18.34 1.56 18.55 1.56 18.55 1.56 18.75 1.56 18.75 1.47 18.95 1.47 18.95 1.65 19.16 1.65 19.16 1.69 19.36 1.69 19.36 1.71 19.56 1.71 19.56 1.58 19.77 1.58 19.77 1.72 19.97 1.72 19.97 1.57 20.17 1.57 20.17 1.64 20.38 1.64 20.38 1.53 20.58 1.53 20.58 1.76 20.78 1.76 20.78 1.72 20.98 1.72 20.98 1.75 21.19 1.75 21.19 1.8 21.39 1.8 21.39 1.73 21.59 1.73 21.59 1.73 21.8 1.73 21.8 1.79 22 1.79 22 1.73 22.2 1.73 22.2 1.82 22.41 1.82 22.41 1.7 22.61 1.7 22.61 1.82 22.81 1.82 22.81 1.65 23.02 1.65 23.02 1.72 23.22 1.72 23.22 1.71 23.42 1.71 23.42 1.74 23.63 1.74 23.63 1.79 23.83 1.79 23.83 1.65 24.03 1.65 24.03 1.7 24.24 1.7 24.24 1.91 24.44 1.91 24.44 1.7 24.64 1.7 24.64 1.89 24.85 1.89 24.85 1.75 25.05 1.75 25.05 1.98 25.25 1.98 25.25 1.79 25.46 1.79 25.46 2.01 25.66 2.01 25.66 1.87 25.86 1.87 25.86 1.94 26.07 1.94 26.07 1.88 26.27 1.88 26.27 1.84 26.47 1.84 26.47 1.97 26.68 1.97 26.68 1.74 26.88 1.74 26.88 1.97 27.08 1.97 27.08 2 27.29 2 27.29 1.97 27.49 1.97 27.49 1.93 27.69 1.93 27.69 1.96 27.9 1.96 27.9 2.13 28.1 2.13 28.1 2.03 28.3 2.03 28.3 2.12 28.5 2.12 28.5 2.11 28.71 2.11 28.71 2.05 28.91 2.05 28.91 2.04 29.11 2.04 29.11 2.02 29.32 2.02 29.32 2.04 29.52 2.04 29.52 2.12 29.72 2.12 29.72 2.08 29.93 2.08 29.93 1.93 30.13 1.93 30.13 2.1 30.33 2.1 30.33 2.14 30.54 2.14 30.54 2.07 30.74 2.07 30.74 2.09 30.94 2.09 30.94 1.96 31.15 1.96 31.15 2.16 31.35 2.16 31.35 2.03 31.55 2.03 31.55 2.12 31.76 2.12 31.76 2.07 31.96 2.07 31.96 2.08 32.16 2.08 32.16 2.14 32.37 2.14 32.37 1.96 32.57 1.96 32.57 2.09 32.77 2.09 32.77 2.21 32.98 2.21 32.98 2.1 33.18 2.1 33.18 2.03 33.38 2.03 33.38 1.96 33.59 1.96 33.59 2.09 33.79 2.09 33.79 2.16 33.99 2.16 33.99 2.03 34.2 2.03 34.2 2.11 34.4 2.11 34.4 2.01 34.6 2.01 34.6 2.2 34.81 2.2 34.81 2.16 35.01 2.16 35.01 2.14 35.21 2.14 35.21 2.03 35.42 2.03 35.42 2.14 35.62 2.14 35.62 2.09 35.82 2.09 35.82 2.09 36.02 2.09 36.02 2.11 36.23 2.11 36.23 2.2 36.43 2.2 36.43 2.19 36.63 2.19 36.63 2.15 36.84 2.15 36.84 2.14 37.04 2.14 37.04 2.26 37.24 2.26 37.24 2.18 37.45 2.18 37.45 2.24 37.65 2.24 37.65 2.21 37.85 2.21 37.85 2.32 38.06 2.32 38.06 2.2 38.26 2.2 38.26 2.14 38.46 2.14 38.46 2.28 38.67 2.28 38.67 2.25 38.87 2.25 38.87 2.31 39.07 2.31 39.07 2.19 39.28 2.19 39.28 2.3 39.48 2.3 39.48 2.22 39.68 2.22 39.68 2.18 39.89 2.18 39.89 2.22 40.09 2.22 40.09 2.36 40.29 2.36 40.29 2.26 40.5 2.26 40.5 2.29 40.7 2.29 40.7 2.32 40.9 2.32 40.9 2.37 41.11 2.37 41.11 2.35 41.31 2.35 41.31 2.35 41.51 2.35 41.51 2.21 41.72 2.21 41.72 2.28 41.92 2.28 41.92 2.31 42.12 2.31 42.12 2.4 42.33 2.4 42.33 2.35 42.53 2.35 42.53 2.33 42.73 2.33 42.73 2.31 42.93 2.31 42.93 2.42 43.14 2.42 43.14 2.3 43.34 2.3 43.34 2.45 43.54 2.45 43.54 2.36 43.75 2.36 43.75 2.36 43.95 2.36 43.95 2.36 44.15 2.36 44.15 2.4 44.36 2.4 44.36 2.37 44.56 2.37 44.56 2.47 44.76 2.47 44.76 2.38 44.97 2.38 44.97 2.39 45.17 2.39 45.17 2.54 45.37 2.54 45.37 2.4 45.58 2.4 45.58 2.4 45.78 2.4 45.78 2.37 45.98 2.37 45.98 2.39 46.19 2.39 46.19 2.42 46.39 2.42 46.39 2.42 46.59 2.42 46.59 2.32 46.8 2.32 46.8 2.47 47 2.47 47 2.32 47.2 2.32 47.2 2.38 47.41 2.38 47.41 2.46 47.61 2.46 47.61 2.41 47.81 2.41 47.81 2.38 48.02 2.38 48.02 2.39 48.22 2.39 48.22 2.53 48.42 2.53 48.42 2.43 48.63 2.43 48.63 2.44 48.83 2.44 48.83 2.48 49.03 2.48 49.03 2.47 49.24 2.47 49.24 2.53 49.44 2.53 49.44 2.51 49.64 2.51 49.64 2.65 49.85 2.65 49.85 2.23 50.05 2.23 50.05 2.53 50.25 2.53 50.25 2.42 50.45 2.42 50.45 2.43 50.66 2.43 50.66 2.51 50.86 2.51 50.86 2.45 51.06 2.45 51.06 2.56 51.27 2.56 51.27 2.58 51.47 2.58 51.47 2.6 51.67 2.6 51.67 2.53 51.88 2.53 51.88 2.58 52.08 2.58 52.08 2.54 52.28 2.54 52.28 2.51 52.49 2.51 52.49 2.67 52.69 2.67 52.69 2.59 52.89 2.59 52.89 2.53 53.1 2.53 53.1 2.59 53.3 2.59 53.3 2.58 53.5 2.58 53.5 2.64 53.71 2.64 53.71 2.59 53.91 2.59 53.91 2.65 54.11 2.65 54.11 2.51 54.32 2.51 54.32 2.66 54.52 2.66 54.52 2.56 54.72 2.56 54.72 2.74 54.93 2.74 54.93 2.76 55.13 2.76 55.13 2.61 55.33 2.61 55.33 2.63 55.54 2.63 55.54 2.75 55.74 2.75 55.74 2.66 55.94 2.66 55.94 2.66 56.15 2.66 56.15 2.63 56.35 2.63 56.35 2.8 56.55 2.8 56.55 2.71 56.76 2.71 56.76 2.71 56.96 2.71 56.96 2.6 57.16 2.6 57.16 2.76 57.37 2.76 57.37 2.84 57.57 2.84 57.57 2.65 57.77 2.65 57.77 2.69 57.97 2.69 57.97 2.67 58.18 2.67 58.18 2.64 58.38 2.64 58.38 2.78 58.58 2.78 58.58 2.67 58.79 2.67 58.79 2.72 58.99 2.72 58.99 2.63 59.19 2.63 59.19 2.71 59.4 2.71 59.4 2.76 59.6 2.76 59.6 2.68 59.8 2.68 59.8 2.7 60.01 2.7 60.01 2.79 60.21 2.79 60.21 2.66 60.41 2.66 60.41 2.66 60.62 2.66 60.62 2.77 60.82 2.77 60.82 2.8 61.02 2.8 61.02 2.72 61.23 2.72 61.23 2.84 61.43 2.84 61.43 2.7 61.63 2.7 61.63 2.78 61.84 2.78 61.84 2.8 62.04 2.8 62.04 2.82 62.24 2.82 62.24 2.67 62.45 2.67 62.45 2.71 62.65 2.71 62.65 2.85 62.85 2.85 62.85 2.73 63.06 2.73 63.06 2.75 63.26 2.75 63.26 2.81 63.46 2.81 63.46 2.81 63.67 2.81 63.67 2.78 63.87 2.78 63.87 2.8 64.07 2.8 64.07 2.75 64.28 2.75 64.28 2.86 64.48 2.86 64.48 2.76 64.68 2.76 64.68 2.8 64.89 2.8 64.89 2.82 65.09 2.82 65.09 2.8 65.29 2.8 65.29 2.74 65.49 2.74 65.49 2.8 65.7 2.8 65.7 2.94 65.9 2.94 65.9 2.79 66.1 2.79 66.1 2.75 66.31 2.75 66.31 2.8 66.51 2.8 66.51 2.81 66.71 2.81 66.71 2.81 66.92 2.81 66.92 2.83 67.12 2.83 67.12 2.86 67.32 2.86 67.32 2.85 67.53 2.85 67.53 2.83 67.73 2.83 67.73 2.86 67.93 2.86 67.93 2.81 68.14 2.81 68.14 2.89 68.34 2.89 68.34 2.97 68.54 2.97 68.54 2.98 68.75 2.98 68.75 2.88 68.95 2.88 68.95 2.87 69.15 2.87 69.15 2.84 69.36 2.84 69.36 2.83 69.56 2.83 69.56 2.89 69.76 2.89 69.76 2.79 69.97 2.79 69.97 2.99 70.17 2.99 70.17 3 70.37 3 70.37 2.91 70.58 2.91 70.58 2.95 70.78 2.95 70.78 2.89 70.98 2.89 70.98 2.91 71.19 2.91 71.19 3.01 71.39 3.01 71.39 3.02 71.59 3.02 71.59 2.86 71.8 2.86 71.8 2.87 72 2.87 72 3.01 72.2 3.01 72.2 2.9 72.41 2.9 72.41 2.98 72.61 2.98 72.61 2.93 72.81 2.93 72.81 2.87 73.01 2.87 73.01 2.94 73.22 2.94 73.22 2.96 73.42 2.96 73.42 2.96 73.62 2.96 73.62 2.98 73.83 2.98 73.83 2.89 74.03 2.89 74.03 3.02 74.23 3.02 74.23 2.98 74.44 2.98 74.44 2.99 74.64 2.99 74.64 3.08 74.84 3.08 74.84 3.07 75.05 3.07 75.05 3.01 75.25 3.01 75.25 3.01 75.45 3.01 75.45 3.04 75.66 3.04 75.66 3.06 75.86 3.06 75.86 2.92 76.06 2.92 76.06 3.01 76.27 3.01 76.27 3 76.47 3 76.47 3.07 76.67 3.07 76.67 2.94 76.88 2.94 76.88 2.98 77.08 2.98 77.08 3.03 77.28 3.03 77.28 3.07 77.49 3.07 77.49 2.9 77.69 2.9 77.69 2.94 77.89 2.94 77.89 3.13 78.1 3.13 78.1 3.08 78.3 3.08 78.3 3.12 78.5 3.12 78.5 2.96 78.71 2.96 78.71 3.09 78.91 3.09 78.91 3.04 79.11 3.04 79.11 3.09 79.32 3.09 79.32 3.12 79.52 3.12 79.52 3.01 79.72 3.01 79.72 3.19 79.93 3.19 79.93 3.09 80.13 3.09 80.13 3.07 80.33 3.07 80.33 3.02 80.53 3.02 80.53 3.06 80.74 3.06 80.74 3.11 80.94 3.11 80.94 3.17 81.14 3.17 81.14 3.09 81.35 3.09 81.35 3.03 81.55 3.03 81.55 3.15 81.75 3.15 81.75 3.07 81.96 3.07 81.96 3.09 82.16 3.09 82.16 3.07 82.36 3.07 82.36 3.13 82.57 3.13 82.57 3.14 82.77 3.14 82.77 3.12 82.97 3.12 82.97 3.13 83.18 3.13 83.18 3.14 83.38 3.14 83.38 3.07 83.58 3.07 83.58 3.17 83.79 3.17 83.79 3.11 83.99 3.11 83.99 3.1 84.19 3.1 84.19 3.1 84.4 3.1 84.4 3.14 84.6 3.14 84.6 3.08 84.8 3.08 84.8 3.16 85.01 3.16 85.01 3.07 85.21 3.07 85.21 3.13 85.41 3.13 85.41 3.18 85.62 3.18 85.62 3.21 85.82 3.21 85.82 3.25 86.02 3.25 86.02 3.08 86.23 3.08 86.23 3.17 86.43 3.17 86.43 3.24 86.63 3.24 86.63 3.18 86.84 3.18 86.84 3.17 87.04 3.17 87.04 3.21 87.24 3.21 87.24 3.19 87.45 3.19 87.45 3.14 87.65 3.14 87.65 3.25 87.85 3.25 87.85 3.18 88.05 3.18 88.05 3.21 88.26 3.21 88.26 3.13 88.46 3.13 88.46 3.1 88.66 3.1 88.66 3.17 88.87 3.17 88.87 3.21 89.07 3.21 89.07 3.18 89.27 3.18 89.27 3.15 89.48 3.15 89.48 3.2 89.68 3.2 89.68 3.18 89.88 3.18 89.88 3.19 90.09 3.19 90.09 3.33 90.29 3.33 90.29 3.2 90.49 3.2 90.49 3.23 90.7 3.23 90.7 3.33 90.9 3.33 90.9 3.22 91.1 3.22 91.1 3.22 91.31 3.22 91.31 3.19 91.51 3.19 91.51 3.27 91.71 3.27 91.71 3.19 91.92 3.19 91.92 3.31 92.12 3.31 92.12 3.2 92.32 3.2 92.32 3.29 92.53 3.29 92.53 3.22 92.73 3.22 92.73 3.23 92.93 3.23 92.93 3.18 93.14 3.18 93.14 3.24 93.34 3.24 93.34 3.25 93.54 3.25 93.54 3.31 93.75 3.31 93.75 3.31 93.95 3.31 93.95 3.23 94.15 3.23 94.15 3.26 94.36 3.26 94.36 3.24 94.56 3.24 94.56 3.29 94.76 3.29 94.76 3.29 94.97 3.29 94.97 3.33 95.17 3.33 95.17 3.29 95.37 3.29 95.37 3.18 95.57 3.18 95.57 3.2 95.78 3.2 95.78 3.32 95.98 3.32 95.98 3.24 96.18 3.24 96.18 3.33 96.39 3.33 96.39 3.29 96.59 3.29 96.59 3.31 96.79 3.31 96.79 3.4 97 3.4 97 3.28 97.2 3.28 97.2 3.24 97.4 3.24 97.4 3.27 97.61 3.27 97.61 3.3 97.81 3.3 97.81 3.23 98.01 3.23 98.01 3.35 98.22 3.35 98.22 3.24 98.42 3.24 98.42 3.27 98.62 3.27 98.62 3.36 98.83 3.36 98.83 3.3 99.03 3.3 99.03 3.31 99.23 3.31 99.23 3.37 99.44 3.37 99.44 3.28 99.64 3.28 99.64 3.32 99.84 3.32 99.84 3.36 100.05 3.36 100.05 3.39 100.25 3.39 100.25 3.35 100.45 3.35 100.45 3.36 100.66 3.36 100.66 3.4 100.86 3.4 100.86 3.37 101.06 3.37 101.06 3.4 101.27 3.4 101.27 3.36 101.47 3.36 101.47 3.42 101.67 3.42 101.67 3.37 101.88 3.37 101.88 3.42 102.08 3.42 102.08 3.37 102.28 3.37 102.28 3.34 102.49 3.34 102.49 3.39 102.69 3.39 102.69 3.4 102.89 3.4 102.89 3.47 103.09 3.47 103.09 3.36 103.3 3.36 103.3 3.46 103.5 3.46 103.5 3.31 103.7 3.31 103.7 3.46 103.91 3.46 103.91 3.47 104.11 3.47 104.11 3.36 104.31 3.36 104.31 3.43 104.52 3.43 104.52 3.43 104.72 3.43 104.72 3.4 104.92 3.4 104.92 3.43 105.13 3.43 105.13 3.42 105.33 3.42 105.33 3.44 105.53 3.44 105.53 3.48 105.74 3.48 105.74 3.45 105.94 3.45 105.94 3.36 106.14 3.36 106.14 3.53 106.35 3.53 106.35 3.42 106.55 3.42 106.55 3.45 106.75 3.45 106.75 3.46 106.96 3.46 106.96 3.42 107.16 3.42 107.16 3.43 107.36 3.43 107.36 3.48 107.57 3.48 107.57 3.41 107.77 3.41 107.77 3.43 107.97 3.43 107.97 3.44 108.18 3.44 108.18 3.41 108.38 3.41 108.38 3.48 108.58 3.48 108.58 3.49 108.79 3.49 108.79 3.53 108.99 3.53 108.99 3.46 109.19 3.46 109.19 3.46 109.4 3.46 109.4 3.51 109.6 3.51 109.6 3.5 109.8 3.5 109.8 3.52 110.01 3.52 110.01 3.49 110.21 3.49 110.21 3.46 110.41 3.46 110.41 3.46 110.61 3.46 110.61 3.41 110.82 3.41 110.82 3.52 111.02 3.52 111.02 3.48 111.22 3.48 111.22 3.55 111.43 3.55 111.43 3.49 111.63 3.49 111.63 3.5 111.83 3.5 111.83 3.53 112.04 3.53 112.04 3.47 112.24 3.47 112.24 3.56 112.44 3.56 112.44 3.44 112.65 3.44 112.65 3.46 112.85 3.46 112.85 3.51 113.05 3.51 113.05 3.56 113.26 3.56 113.26 3.56 113.46 3.56 113.46 3.5 113.66 3.5 113.66 3.58 113.87 3.58 113.87 3.51 114.07 3.51 114.07 3.52 114.27 3.52 114.27 3.53 114.48 3.53 114.48 3.52 114.68 3.52 114.68 3.58 114.88 3.58 114.88 3.54" class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-5306244c-163">
+          <g class="color_RGB{Float64}(0.7186016914382806,8.086625054816313e-7,0.0097916074077615)" stroke-dasharray="none" stroke="#B70002" id="img-5306244c-164">
+            <g transform="translate(136.41,55.52)" id="img-5306244c-165">
+              <path fill="none" d="M-114.98,4.34 L -114.78 4.34 -114.78 4.35 -114.58 4.35 -114.58 4.34 -114.37 4.34 -114.37 4.34 -114.17 4.34 -114.17 4.34 -113.97 4.34 -113.97 4.33 -113.76 4.33 -113.76 4.32 -113.56 4.32 -113.56 4.29 -113.36 4.29 -113.36 4.24 -113.16 4.24 -113.16 4.17 -112.95 4.17 -112.95 4 -112.75 4 -112.75 3.73 -112.55 3.73 -112.55 3.18 -112.34 3.18 -112.34 2.13 -112.14 2.13 -112.14 0.31 -111.94 0.31 -111.94 -2.51 -111.73 -2.51 -111.73 -5.37 -111.53 -5.37 -111.53 -7.91 -111.33 -7.91 -111.33 -9 -111.12 -9 -111.12 -8.03 -110.92 -8.03 -110.92 -5.72 -110.72 -5.72 -110.72 -2.98 -110.51 -2.98 -110.51 -1.17 -110.31 -1.17 -110.31 0.27 -110.11 0.27 -110.11 0.86 -109.9 0.86 -109.9 0.96 -109.7 0.96 -109.7 1 -109.5 1 -109.5 0.89 -109.29 0.89 -109.29 0.97 -109.09 0.97 -109.09 0.52 -108.89 0.52 -108.89 0.69 -108.68 0.69 -108.68 -0.13 -108.48 -0.13 -108.48 -0.8 -108.28 -0.8 -108.28 -1.55 -108.07 -1.55 -108.07 -2.14 -107.87 -2.14 -107.87 -3.15 -107.67 -3.15 -107.67 -3.94 -107.46 -3.94 -107.46 -4.29 -107.26 -4.29 -107.26 -4.7 -107.06 -4.7 -107.06 -5.54 -106.85 -5.54 -106.85 -4.95 -106.65 -4.95 -106.65 -5.86 -106.45 -5.86 -106.45 -6.67 -106.24 -6.67 -106.24 -6.25 -106.04 -6.25 -106.04 -3.88 -105.84 -3.88 -105.84 0.25 -105.64 0.25 -105.64 -0.42 -105.43 -0.42 -105.43 -0.64 -105.23 -0.64 -105.23 0.7 -105.03 0.7 -105.03 0.85 -104.82 0.85 -104.82 1.64 -104.62 1.64 -104.62 2.59 -104.42 2.59 -104.42 2.78 -104.21 2.78 -104.21 2.78 -104.01 2.78 -104.01 2.66 -103.81 2.66 -103.81 2.1 -103.6 2.1 -103.6 1.94 -103.4 1.94 -103.4 1.65 -103.2 1.65 -103.2 1.45 -102.99 1.45 -102.99 1.17 -102.79 1.17 -102.79 0.3 -102.59 0.3 -102.59 0.29 -102.38 0.29 -102.38 0.1 -102.18 0.1 -102.18 -1.11 -101.98 -1.11 -101.98 -1.39 -101.77 -1.39 -101.77 -1.54 -101.57 -1.54 -101.57 -1.64 -101.37 -1.64 -101.37 -1.38 -101.16 -1.38 -101.16 -1.05 -100.96 -1.05 -100.96 -1.18 -100.76 -1.18 -100.76 -1.33 -100.55 -1.33 -100.55 -1.23 -100.35 -1.23 -100.35 -1.23 -100.15 -1.23 -100.15 -1.28 -99.94 -1.28 -99.94 -1.63 -99.74 -1.63 -99.74 -1.6 -99.54 -1.6 -99.54 -1.85 -99.33 -1.85 -99.33 -2.13 -99.13 -2.13 -99.13 -1.96 -98.93 -1.96 -98.93 -2.12 -98.73 -2.12 -98.73 -2.45 -98.52 -2.45 -98.52 -2.43 -98.32 -2.43 -98.32 -2.36 -98.12 -2.36 -98.12 -2.65 -97.91 -2.65 -97.91 -2.82 -97.71 -2.82 -97.71 -3.12 -97.51 -3.12 -97.51 -3.15 -97.3 -3.15 -97.3 -3.7 -97.1 -3.7 -97.1 -3.49 -96.9 -3.49 -96.9 -3.82 -96.69 -3.82 -96.69 -4.23 -96.49 -4.23 -96.49 -4.42 -96.29 -4.42 -96.29 -4.96 -96.08 -4.96 -96.08 -5.4 -95.88 -5.4 -95.88 -5.47 -95.68 -5.47 -95.68 -5.5 -95.47 -5.5 -95.47 -5.59 -95.27 -5.59 -95.27 -6.13 -95.07 -6.13 -95.07 -6.12 -94.86 -6.12 -94.86 -6.38 -94.66 -6.38 -94.66 -6.07 -94.46 -6.07 -94.46 -6.59 -94.25 -6.59 -94.25 -6.81 -94.05 -6.81 -94.05 -6.85 -93.85 -6.85 -93.85 -7.05 -93.64 -7.05 -93.64 -7.58 -93.44 -7.58 -93.44 -7.69 -93.24 -7.69 -93.24 -8.02 -93.03 -8.02 -93.03 -8.4 -92.83 -8.4 -92.83 -8.85 -92.63 -8.85 -92.63 -8.42 -92.42 -8.42 -92.42 -8.93 -92.22 -8.93 -92.22 -8.7 -92.02 -8.7 -92.02 -9.91 -91.81 -9.91 -91.81 -9.79 -91.61 -9.79 -91.61 -9.61 -91.41 -9.61 -91.41 -10.16 -91.21 -10.16 -91.21 -10.37 -91 -10.37 -91 -12.08 -90.8 -12.08 -90.8 -12.35 -90.6 -12.35 -90.6 -13.06 -90.39 -13.06 -90.39 -11 -90.19 -11 -90.19 -9.13 -89.99 -9.13 -89.99 -8.08 -89.78 -8.08 -89.78 -8.15 -89.58 -8.15 -89.58 -7.39 -89.38 -7.39 -89.38 -7.49 -89.17 -7.49 -89.17 -7.28 -88.97 -7.28 -88.97 -7.53 -88.77 -7.53 -88.77 -7.12 -88.56 -7.12 -88.56 -7.27 -88.36 -7.27 -88.36 -7.12 -88.16 -7.12 -88.16 -6.66 -87.95 -6.66 -87.95 -6.96 -87.75 -6.96 -87.75 -6.97 -87.55 -6.97 -87.55 -7.31 -87.34 -7.31 -87.34 -7.12 -87.14 -7.12 -87.14 -7.69 -86.94 -7.69 -86.94 -7.53 -86.73 -7.53 -86.73 -7.59 -86.53 -7.59 -86.53 -7.82 -86.33 -7.82 -86.33 -8.94 -86.12 -8.94 -86.12 -8.16 -85.92 -8.16 -85.92 -8.76 -85.72 -8.76 -85.72 -8.59 -85.51 -8.59 -85.51 -9.08 -85.31 -9.08 -85.31 -8.43 -85.11 -8.43 -85.11 -8.84 -84.9 -8.84 -84.9 -8.48 -84.7 -8.48 -84.7 -8.26 -84.5 -8.26 -84.5 -8.58 -84.29 -8.58 -84.29 -8.17 -84.09 -8.17 -84.09 -7.78 -83.89 -7.78 -83.89 -8.33 -83.69 -8.33 -83.69 -8.11 -83.48 -8.11 -83.48 -8.17 -83.28 -8.17 -83.28 -8.04 -83.08 -8.04 -83.08 -7.54 -82.87 -7.54 -82.87 -8.97 -82.67 -8.97 -82.67 -8.05 -82.47 -8.05 -82.47 -8.77 -82.26 -8.77 -82.26 -8.9 -82.06 -8.9 -82.06 -8.61 -81.86 -8.61 -81.86 -6.17 -81.65 -6.17 -81.65 -11.21 -81.45 -11.21 -81.45 -10.72 -81.25 -10.72 -81.25 -9.51 -81.04 -9.51 -81.04 -8.11 -80.84 -8.11 -80.84 -7.56 -80.64 -7.56 -80.64 -9.5 -80.43 -9.5 -80.43 -10.44 -80.23 -10.44 -80.23 -10.77 -80.03 -10.77 -80.03 -10.18 -79.82 -10.18 -79.82 -9.93 -79.62 -9.93 -79.62 -8.42 -79.42 -8.42 -79.42 -6.93 -79.21 -6.93 -79.21 -6.79 -79.01 -6.79 -79.01 -6.41 -78.81 -6.41 -78.81 -5.77 -78.6 -5.77 -78.6 -5.5 -78.4 -5.5 -78.4 -5.08 -78.2 -5.08 -78.2 -5.1 -77.99 -5.1 -77.99 -5.47 -77.79 -5.47 -77.79 -5.58 -77.59 -5.58 -77.59 -5.17 -77.38 -5.17 -77.38 -5.03 -77.18 -5.03 -77.18 -5.18 -76.98 -5.18 -76.98 -4.88 -76.77 -4.88 -76.77 -4.68 -76.57 -4.68 -76.57 -4.47 -76.37 -4.47 -76.37 -4.46 -76.17 -4.46 -76.17 -4.16 -75.96 -4.16 -75.96 -3.82 -75.76 -3.82 -75.76 -3.93 -75.56 -3.93 -75.56 -3.47 -75.35 -3.47 -75.35 -3.42 -75.15 -3.42 -75.15 -3.44 -74.95 -3.44 -74.95 -3.51 -74.74 -3.51 -74.74 -3.39 -74.54 -3.39 -74.54 -3.27 -74.34 -3.27 -74.34 -3.53 -74.13 -3.53 -74.13 -3.52 -73.93 -3.52 -73.93 -3.43 -73.73 -3.43 -73.73 -3.45 -73.52 -3.45 -73.52 -3.14 -73.32 -3.14 -73.32 -3.7 -73.12 -3.7 -73.12 -3.47 -72.91 -3.47 -72.91 -3.64 -72.71 -3.64 -72.71 -3.43 -72.51 -3.43 -72.51 -3.41 -72.3 -3.41 -72.3 -3.76 -72.1 -3.76 -72.1 -3.85 -71.9 -3.85 -71.9 -4.03 -71.69 -4.03 -71.69 -4.08 -71.49 -4.08 -71.49 -4.18 -71.29 -4.18 -71.29 -4.29 -71.08 -4.29 -71.08 -4.35 -70.88 -4.35 -70.88 -4.26 -70.68 -4.26 -70.68 -4.41 -70.47 -4.41 -70.47 -4.49 -70.27 -4.49 -70.27 -4.1 -70.07 -4.1 -70.07 -3.96 -69.86 -3.96 -69.86 -3.87 -69.66 -3.87 -69.66 -3.95 -69.46 -3.95 -69.46 -3.86 -69.25 -3.86 -69.25 -3.78 -69.05 -3.78 -69.05 -3.85 -68.85 -3.85 -68.85 -3.57 -68.65 -3.57 -68.65 -3.6 -68.44 -3.6 -68.44 -3.58 -68.24 -3.58 -68.24 -3.58 -68.04 -3.58 -68.04 -3.56 -67.83 -3.56 -67.83 -3.54 -67.63 -3.54 -67.63 -3.46 -67.43 -3.46 -67.43 -3.78 -67.22 -3.78 -67.22 -3.51 -67.02 -3.51 -67.02 -3.54 -66.82 -3.54 -66.82 -3.8 -66.61 -3.8 -66.61 -3.61 -66.41 -3.61 -66.41 -3.61 -66.21 -3.61 -66.21 -3.69 -66 -3.69 -66 -3.49 -65.8 -3.49 -65.8 -3.67 -65.6 -3.67 -65.6 -3.58 -65.39 -3.58 -65.39 -3.88 -65.19 -3.88 -65.19 -3.47 -64.99 -3.47 -64.99 -3.7 -64.78 -3.7 -64.78 -3.8 -64.58 -3.8 -64.58 -3.14 -64.38 -3.14 -64.38 -3.66 -64.17 -3.66 -64.17 -3.42 -63.97 -3.42 -63.97 -3.57 -63.77 -3.57 -63.77 -3.46 -63.56 -3.46 -63.56 -3.47 -63.36 -3.47 -63.36 -3.64 -63.16 -3.64 -63.16 -3.37 -62.95 -3.37 -62.95 -3.48 -62.75 -3.48 -62.75 -3.46 -62.55 -3.46 -62.55 -3.45 -62.34 -3.45 -62.34 -3.33 -62.14 -3.33 -62.14 -3.45 -61.94 -3.45 -61.94 -3.34 -61.73 -3.34 -61.73 -3.31 -61.53 -3.31 -61.53 -3.62 -61.33 -3.62 -61.33 -3.35 -61.13 -3.35 -61.13 -3.35 -60.92 -3.35 -60.92 -3.32 -60.72 -3.32 -60.72 -3.19 -60.52 -3.19 -60.52 -3.37 -60.31 -3.37 -60.31 -3.45 -60.11 -3.45 -60.11 -3.07 -59.91 -3.07 -59.91 -3.16 -59.7 -3.16 -59.7 -3.17 -59.5 -3.17 -59.5 -3.25 -59.3 -3.25 -59.3 -3.35 -59.09 -3.35 -59.09 -3.27 -58.89 -3.27 -58.89 -3.05 -58.69 -3.05 -58.69 -3.15 -58.48 -3.15 -58.48 -3.39 -58.28 -3.39 -58.28 -3.11 -58.08 -3.11 -58.08 -3.3 -57.87 -3.3 -57.87 -3.37 -57.67 -3.37 -57.67 -3.4 -57.47 -3.4 -57.47 -3.33 -57.26 -3.33 -57.26 -3.12 -57.06 -3.12 -57.06 -3.37 -56.86 -3.37 -56.86 -3.45 -56.65 -3.45 -56.65 -3.64 -56.45 -3.64 -56.45 -3.61 -56.25 -3.61 -56.25 -3.58 -56.04 -3.58 -56.04 -3.55 -55.84 -3.55 -55.84 -3.38 -55.64 -3.38 -55.64 -3.43 -55.43 -3.43 -55.43 -3.23 -55.23 -3.23 -55.23 -3.24 -55.03 -3.24 -55.03 -3.21 -54.82 -3.21 -54.82 -2.97 -54.62 -2.97 -54.62 -3.15 -54.42 -3.15 -54.42 -3.01 -54.21 -3.01 -54.21 -2.94 -54.01 -2.94 -54.01 -2.92 -53.81 -2.92 -53.81 -2.95 -53.61 -2.95 -53.61 -2.76 -53.4 -2.76 -53.4 -2.73 -53.2 -2.73 -53.2 -3 -53 -3 -53 -2.82 -52.79 -2.82 -52.79 -2.96 -52.59 -2.96 -52.59 -3.1 -52.39 -3.1 -52.39 -2.97 -52.18 -2.97 -52.18 -2.97 -51.98 -2.97 -51.98 -2.94 -51.78 -2.94 -51.78 -2.8 -51.57 -2.8 -51.57 -2.97 -51.37 -2.97 -51.37 -3.07 -51.17 -3.07 -51.17 -2.77 -50.96 -2.77 -50.96 -2.91 -50.76 -2.91 -50.76 -3.17 -50.56 -3.17 -50.56 -2.58 -50.35 -2.58 -50.35 -2.92 -50.15 -2.92 -50.15 -2.63 -49.95 -2.63 -49.95 -2.79 -49.74 -2.79 -49.74 -2.83 -49.54 -2.83 -49.54 -2.78 -49.34 -2.78 -49.34 -2.57 -49.13 -2.57 -49.13 -2.33 -48.93 -2.33 -48.93 -2.39 -48.73 -2.39 -48.73 -2.51 -48.52 -2.51 -48.52 -2.62 -48.32 -2.62 -48.32 -2.59 -48.12 -2.59 -48.12 -2.46 -47.91 -2.46 -47.91 -2.33 -47.71 -2.33 -47.71 -2.61 -47.51 -2.61 -47.51 -2.39 -47.3 -2.39 -47.3 -2.32 -47.1 -2.32 -47.1 -2.45 -46.9 -2.45 -46.9 -2.64 -46.69 -2.64 -46.69 -2.76 -46.49 -2.76 -46.49 -2.61 -46.29 -2.61 -46.29 -2.62 -46.09 -2.62 -46.09 -2.67 -45.88 -2.67 -45.88 -2.75 -45.68 -2.75 -45.68 -2.5 -45.48 -2.5 -45.48 -2.76 -45.27 -2.76 -45.27 -2.67 -45.07 -2.67 -45.07 -2.51 -44.87 -2.51 -44.87 -2.36 -44.66 -2.36 -44.66 -2.4 -44.46 -2.4 -44.46 -2.32 -44.26 -2.32 -44.26 -1.95 -44.05 -1.95 -44.05 -2.34 -43.85 -2.34 -43.85 -2.1 -43.65 -2.1 -43.65 -1.78 -43.44 -1.78 -43.44 -1.99 -43.24 -1.99 -43.24 -1.8 -43.04 -1.8 -43.04 -2.15 -42.83 -2.15 -42.83 -2.53 -42.63 -2.53 -42.63 -2.66 -42.43 -2.66 -42.43 -1.57 -42.22 -1.57 -42.22 -2.54 -42.02 -2.54 -42.02 -2.22 -41.82 -2.22 -41.82 -0.98 -41.61 -0.98 -41.61 -2.17 -41.41 -2.17 -41.41 -1.25 -41.21 -1.25 -41.21 -0.79 -41 -0.79 -41 -2.35 -40.8 -2.35 -40.8 -1.28 -40.6 -1.28 -40.6 -1.91 -40.39 -1.91 -40.39 -0.65 -40.19 -0.65 -40.19 -1.1 -39.99 -1.1 -39.99 -1.28 -39.78 -1.28 -39.78 -1.39 -39.58 -1.39 -39.58 -1.64 -39.38 -1.64 -39.38 -1.46 -39.17 -1.46 -39.17 -1.38 -38.97 -1.38 -38.97 -1.72 -38.77 -1.72 -38.77 -1.22 -38.57 -1.22 -38.57 -1.5 -38.36 -1.5 -38.36 -1.23 -38.16 -1.23 -38.16 -1.34 -37.96 -1.34 -37.96 -1.21 -37.75 -1.21 -37.75 -1.39 -37.55 -1.39 -37.55 -1.02 -37.35 -1.02 -37.35 -1.28 -37.14 -1.28 -37.14 -1.19 -36.94 -1.19 -36.94 -1.15 -36.74 -1.15 -36.74 -1.44 -36.53 -1.44 -36.53 -1.28 -36.33 -1.28 -36.33 -1.28 -36.13 -1.28 -36.13 -1.53 -35.92 -1.53 -35.92 -1.34 -35.72 -1.34 -35.72 -1.41 -35.52 -1.41 -35.52 -0.71 -35.31 -0.71 -35.31 -1.27 -35.11 -1.27 -35.11 -1.03 -34.91 -1.03 -34.91 -1 -34.7 -1 -34.7 -1.01 -34.5 -1.01 -34.5 -1.16 -34.3 -1.16 -34.3 -1.15 -34.09 -1.15 -34.09 -1.01 -33.89 -1.01 -33.89 -0.9 -33.69 -0.9 -33.69 -0.96 -33.48 -0.96 -33.48 -0.79 -33.28 -0.79 -33.28 -0.89 -33.08 -0.89 -33.08 -0.86 -32.87 -0.86 -32.87 -1.03 -32.67 -1.03 -32.67 -0.86 -32.47 -0.86 -32.47 -0.58 -32.26 -0.58 -32.26 -0.96 -32.06 -0.96 -32.06 -0.95 -31.86 -0.95 -31.86 -1.06 -31.65 -1.06 -31.65 -0.82 -31.45 -0.82 -31.45 -0.8 -31.25 -0.8 -31.25 -0.89 -31.05 -0.89 -31.05 -0.8 -30.84 -0.8 -30.84 -0.9 -30.64 -0.9 -30.64 -0.74 -30.44 -0.74 -30.44 -0.79 -30.23 -0.79 -30.23 -0.61 -30.03 -0.61 -30.03 -0.83 -29.83 -0.83 -29.83 -0.44 -29.62 -0.44 -29.62 -0.5 -29.42 -0.5 -29.42 -0.53 -29.22 -0.53 -29.22 -0.56 -29.01 -0.56 -29.01 -0.53 -28.81 -0.53 -28.81 -0.61 -28.61 -0.61 -28.61 -0.29 -28.4 -0.29 -28.4 -0.57 -28.2 -0.57 -28.2 -0.43 -28 -0.43 -28 -0.38 -27.79 -0.38 -27.79 -0.55 -27.59 -0.55 -27.59 -0.42 -27.39 -0.42 -27.39 -0.22 -27.18 -0.22 -27.18 -0.43 -26.98 -0.43 -26.98 -0.48 -26.78 -0.48 -26.78 -0.25 -26.57 -0.25 -26.57 -0.44 -26.37 -0.44 -26.37 -0.4 -26.17 -0.4 -26.17 -0.15 -25.96 -0.15 -25.96 -0.31 -25.76 -0.31 -25.76 -0.32 -25.56 -0.32 -25.56 -0.28 -25.35 -0.28 -25.35 -0.4 -25.15 -0.4 -25.15 -0.27 -24.95 -0.27 -24.95 -0.46 -24.74 -0.46 -24.74 -0.19 -24.54 -0.19 -24.54 -0.22 -24.34 -0.22 -24.34 -0.17 -24.14 -0.17 -24.14 -0.26 -23.93 -0.26 -23.93 -0.09 -23.73 -0.09 -23.73 -0.3 -23.53 -0.3 -23.53 -0.26 -23.32 -0.26 -23.32 -0.18 -23.12 -0.18 -23.12 -0.34 -22.92 -0.34 -22.92 -0.48 -22.71 -0.48 -22.71 -0.23 -22.51 -0.23 -22.51 -0.2 -22.31 -0.2 -22.31 -0.36 -22.1 -0.36 -22.1 -0.12 -21.9 -0.12 -21.9 -0.01 -21.7 -0.01 -21.7 -0.11 -21.49 -0.11 -21.49 -0.17 -21.29 -0.17 -21.29 -0.14 -21.09 -0.14 -21.09 -0.29 -20.88 -0.29 -20.88 -0.11 -20.68 -0.11 -20.68 -0.12 -20.48 -0.12 -20.48 0.09 -20.27 0.09 -20.27 0.07 -20.07 0.07 -20.07 0.04 -19.87 0.04 -19.87 0.08 -19.66 0.08 -19.66 0.05 -19.46 0.05 -19.46 -0.05 -19.26 -0.05 -19.26 0.13 -19.05 0.13 -19.05 0.16 -18.85 0.16 -18.85 0.16 -18.65 0.16 -18.65 0.35 -18.44 0.35 -18.44 0.07 -18.24 0.07 -18.24 0.03 -18.04 0.03 -18.04 0.09 -17.83 0.09 -17.83 0.23 -17.63 0.23 -17.63 0.13 -17.43 0.13 -17.43 0.01 -17.22 0.01 -17.22 0.14 -17.02 0.14 -17.02 0.02 -16.82 0.02 -16.82 0.08 -16.62 0.08 -16.62 0.11 -16.41 0.11 -16.41 0.13 -16.21 0.13 -16.21 0.02 -16.01 0.02 -16.01 0.24 -15.8 0.24 -15.8 0.12 -15.6 0.12 -15.6 0.08 -15.4 0.08 -15.4 0.07 -15.19 0.07 -15.19 0.12 -14.99 0.12 -14.99 0.11 -14.79 0.11 -14.79 0.37 -14.58 0.37 -14.58 0.36 -14.38 0.36 -14.38 0.27 -14.18 0.27 -14.18 0.37 -13.97 0.37 -13.97 0.3 -13.77 0.3 -13.77 0.51 -13.57 0.51 -13.57 0.3 -13.36 0.3 -13.36 0.33 -13.16 0.33 -13.16 0.23 -12.96 0.23 -12.96 0.34 -12.75 0.34 -12.75 0.36 -12.55 0.36 -12.55 0.35 -12.35 0.35 -12.35 0.39 -12.14 0.39 -12.14 0.49 -11.94 0.49 -11.94 0.45 -11.74 0.45 -11.74 0.29 -11.53 0.29 -11.53 0.36 -11.33 0.36 -11.33 0.27 -11.13 0.27 -11.13 0.37 -10.92 0.37 -10.92 0.43 -10.72 0.43 -10.72 0.41 -10.52 0.41 -10.52 0.44 -10.31 0.44 -10.31 0.34 -10.11 0.34 -10.11 0.5 -9.91 0.5 -9.91 0.42 -9.7 0.42 -9.7 0.46 -9.5 0.46 -9.5 0.41 -9.3 0.41 -9.3 0.59 -9.1 0.59 -9.1 0.52 -8.89 0.52 -8.89 0.35 -8.69 0.35 -8.69 0.52 -8.49 0.52 -8.49 0.63 -8.28 0.63 -8.28 0.59 -8.08 0.59 -8.08 0.46 -7.88 0.46 -7.88 0.48 -7.67 0.48 -7.67 0.41 -7.47 0.41 -7.47 0.36 -7.27 0.36 -7.27 0.2 -7.06 0.2 -7.06 0.29 -6.86 0.29 -6.86 0.27 -6.66 0.27 -6.66 0.4 -6.45 0.4 -6.45 0.38 -6.25 0.38 -6.25 0.39 -6.05 0.39 -6.05 0.36 -5.84 0.36 -5.84 0.39 -5.64 0.39 -5.64 0.4 -5.44 0.4 -5.44 0.36 -5.23 0.36 -5.23 0.66 -5.03 0.66 -5.03 0.66 -4.83 0.66 -4.83 0.58 -4.62 0.58 -4.62 0.62 -4.42 0.62 -4.42 0.74 -4.22 0.74 -4.22 0.68 -4.01 0.68 -4.01 0.79 -3.81 0.79 -3.81 0.73 -3.61 0.73 -3.61 0.64 -3.4 0.64 -3.4 0.73 -3.2 0.73 -3.2 0.83 -3 0.83 -3 0.76 -2.79 0.76 -2.79 0.8 -2.59 0.8 -2.59 0.77 -2.39 0.77 -2.39 0.76 -2.18 0.76 -2.18 1.03 -1.98 1.03 -1.98 0.88 -1.78 0.88 -1.78 0.98 -1.58 0.98 -1.58 0.98 -1.37 0.98 -1.37 0.87 -1.17 0.87 -1.17 0.95 -0.97 0.95 -0.97 0.83 -0.76 0.83 -0.76 0.87 -0.56 0.87 -0.56 1.01 -0.36 1.01 -0.36 0.81 -0.15 0.81 -0.15 1.01 0.05 1.01 0.05 0.8 0.25 0.8 0.25 1.03 0.46 1.03 0.46 1 0.66 1 0.66 0.99 0.86 0.99 0.86 0.9 1.07 0.9 1.07 0.96 1.27 0.96 1.27 0.79 1.47 0.79 1.47 0.87 1.68 0.87 1.68 0.83 1.88 0.83 1.88 0.68 2.08 0.68 2.08 0.79 2.29 0.79 2.29 0.81 2.49 0.81 2.49 0.56 2.69 0.56 2.69 0.66 2.9 0.66 2.9 0.74 3.1 0.74 3.1 0.62 3.3 0.62 3.3 0.78 3.51 0.78 3.51 0.78 3.71 0.78 3.71 0.8 3.91 0.8 3.91 0.89 4.12 0.89 4.12 0.98 4.32 0.98 4.32 0.97 4.52 0.97 4.52 0.91 4.73 0.91 4.73 0.96 4.93 0.96 4.93 1.23 5.13 1.23 5.13 1.01 5.34 1.01 5.34 1.15 5.54 1.15 5.54 1.15 5.74 1.15 5.74 1.13 5.94 1.13 5.94 1.06 6.15 1.06 6.15 1.13 6.35 1.13 6.35 1.15 6.55 1.15 6.55 1.31 6.76 1.31 6.76 1.2 6.96 1.2 6.96 1.25 7.16 1.25 7.16 1.28 7.37 1.28 7.37 1.21 7.57 1.21 7.57 1.25 7.77 1.25 7.77 1.11 7.98 1.11 7.98 1.45 8.18 1.45 8.18 1.3 8.38 1.3 8.38 1.31 8.59 1.31 8.59 1.14 8.79 1.14 8.79 1.14 8.99 1.14 8.99 1.22 9.2 1.22 9.2 1.4 9.4 1.4 9.4 1.47 9.6 1.47 9.6 1.21 9.81 1.21 9.81 1.36 10.01 1.36 10.01 1.3 10.21 1.3 10.21 1.31 10.42 1.31 10.42 1.31 10.62 1.31 10.62 1.59 10.82 1.59 10.82 1.41 11.03 1.41 11.03 1.24 11.23 1.24 11.23 1.45 11.43 1.45 11.43 1.51 11.64 1.51 11.64 1.5 11.84 1.5 11.84 1.44 12.04 1.44 12.04 1.79 12.25 1.79 12.25 1.57 12.45 1.57 12.45 1.15 12.65 1.15 12.65 1.33 12.86 1.33 12.86 1.54 13.06 1.54 13.06 1.02 13.26 1.02 13.26 1.16 13.46 1.16 13.46 1.71 13.67 1.71 13.67 1.23 13.87 1.23 13.87 1.85 14.07 1.85 14.07 2.5 14.28 2.5 14.28 1.52 14.48 1.52 14.48 1.7 14.68 1.7 14.68 1.5 14.89 1.5 14.89 2.07 15.09 2.07 15.09 1.73 15.29 1.73 15.29 1.62 15.5 1.62 15.5 1.68 15.7 1.68 15.7 1.74 15.9 1.74 15.9 1.72 16.11 1.72 16.11 1.65 16.31 1.65 16.31 1.67 16.51 1.67 16.51 1.7 16.72 1.7 16.72 1.59 16.92 1.59 16.92 1.54 17.12 1.54 17.12 1.52 17.33 1.52 17.33 1.65 17.53 1.65 17.53 1.49 17.73 1.49 17.73 1.66 17.94 1.66 17.94 1.73 18.14 1.73 18.14 1.64 18.34 1.64 18.34 1.56 18.55 1.56 18.55 1.56 18.75 1.56 18.75 1.47 18.95 1.47 18.95 1.65 19.16 1.65 19.16 1.69 19.36 1.69 19.36 1.71 19.56 1.71 19.56 1.58 19.77 1.58 19.77 1.72 19.97 1.72 19.97 1.57 20.17 1.57 20.17 1.64 20.38 1.64 20.38 1.54 20.58 1.54 20.58 1.77 20.78 1.77 20.78 1.72 20.98 1.72 20.98 1.75 21.19 1.75 21.19 1.8 21.39 1.8 21.39 1.73 21.59 1.73 21.59 1.73 21.8 1.73 21.8 1.79 22 1.79 22 1.73 22.2 1.73 22.2 1.82 22.41 1.82 22.41 1.7 22.61 1.7 22.61 1.82 22.81 1.82 22.81 1.65 23.02 1.65 23.02 1.72 23.22 1.72 23.22 1.71 23.42 1.71 23.42 1.74 23.63 1.74 23.63 1.79 23.83 1.79 23.83 1.65 24.03 1.65 24.03 1.7 24.24 1.7 24.24 1.91 24.44 1.91 24.44 1.71 24.64 1.71 24.64 1.9 24.85 1.9 24.85 1.76 25.05 1.76 25.05 1.98 25.25 1.98 25.25 1.79 25.46 1.79 25.46 2.01 25.66 2.01 25.66 1.87 25.86 1.87 25.86 1.94 26.07 1.94 26.07 1.88 26.27 1.88 26.27 1.84 26.47 1.84 26.47 1.97 26.68 1.97 26.68 1.75 26.88 1.75 26.88 1.97 27.08 1.97 27.08 2 27.29 2 27.29 1.98 27.49 1.98 27.49 1.94 27.69 1.94 27.69 1.97 27.9 1.97 27.9 2.13 28.1 2.13 28.1 2.03 28.3 2.03 28.3 2.12 28.5 2.12 28.5 2.11 28.71 2.11 28.71 2.05 28.91 2.05 28.91 2.04 29.11 2.04 29.11 2.02 29.32 2.02 29.32 2.04 29.52 2.04 29.52 2.12 29.72 2.12 29.72 2.08 29.93 2.08 29.93 1.93 30.13 1.93 30.13 2.1 30.33 2.1 30.33 2.14 30.54 2.14 30.54 2.07 30.74 2.07 30.74 2.09 30.94 2.09 30.94 1.96 31.15 1.96 31.15 2.16 31.35 2.16 31.35 2.03 31.55 2.03 31.55 2.12 31.76 2.12 31.76 2.07 31.96 2.07 31.96 2.08 32.16 2.08 32.16 2.14 32.37 2.14 32.37 1.96 32.57 1.96 32.57 2.09 32.77 2.09 32.77 2.21 32.98 2.21 32.98 2.1 33.18 2.1 33.18 2.03 33.38 2.03 33.38 1.96 33.59 1.96 33.59 2.09 33.79 2.09 33.79 2.16 33.99 2.16 33.99 2.03 34.2 2.03 34.2 2.11 34.4 2.11 34.4 2.01 34.6 2.01 34.6 2.2 34.81 2.2 34.81 2.16 35.01 2.16 35.01 2.14 35.21 2.14 35.21 2.03 35.42 2.03 35.42 2.14 35.62 2.14 35.62 2.09 35.82 2.09 35.82 2.09 36.02 2.09 36.02 2.12 36.23 2.12 36.23 2.2 36.43 2.2 36.43 2.19 36.63 2.19 36.63 2.15 36.84 2.15 36.84 2.14 37.04 2.14 37.04 2.26 37.24 2.26 37.24 2.18 37.45 2.18 37.45 2.24 37.65 2.24 37.65 2.21 37.85 2.21 37.85 2.32 38.06 2.32 38.06 2.2 38.26 2.2 38.26 2.14 38.46 2.14 38.46 2.28 38.67 2.28 38.67 2.25 38.87 2.25 38.87 2.31 39.07 2.31 39.07 2.19 39.28 2.19 39.28 2.3 39.48 2.3 39.48 2.22 39.68 2.22 39.68 2.18 39.89 2.18 39.89 2.22 40.09 2.22 40.09 2.36 40.29 2.36 40.29 2.26 40.5 2.26 40.5 2.29 40.7 2.29 40.7 2.32 40.9 2.32 40.9 2.37 41.11 2.37 41.11 2.35 41.31 2.35 41.31 2.36 41.51 2.36 41.51 2.22 41.72 2.22 41.72 2.28 41.92 2.28 41.92 2.31 42.12 2.31 42.12 2.4 42.33 2.4 42.33 2.35 42.53 2.35 42.53 2.34 42.73 2.34 42.73 2.31 42.93 2.31 42.93 2.42 43.14 2.42 43.14 2.3 43.34 2.3 43.34 2.45 43.54 2.45 43.54 2.36 43.75 2.36 43.75 2.36 43.95 2.36 43.95 2.36 44.15 2.36 44.15 2.4 44.36 2.4 44.36 2.37 44.56 2.37 44.56 2.47 44.76 2.47 44.76 2.38 44.97 2.38 44.97 2.39 45.17 2.39 45.17 2.54 45.37 2.54 45.37 2.4 45.58 2.4 45.58 2.4 45.78 2.4 45.78 2.37 45.98 2.37 45.98 2.39 46.19 2.39 46.19 2.42 46.39 2.42 46.39 2.42 46.59 2.42 46.59 2.32 46.8 2.32 46.8 2.47 47 2.47 47 2.32 47.2 2.32 47.2 2.38 47.41 2.38 47.41 2.47 47.61 2.47 47.61 2.41 47.81 2.41 47.81 2.38 48.02 2.38 48.02 2.39 48.22 2.39 48.22 2.53 48.42 2.53 48.42 2.43 48.63 2.43 48.63 2.44 48.83 2.44 48.83 2.48 49.03 2.48 49.03 2.47 49.24 2.47 49.24 2.53 49.44 2.53 49.44 2.51 49.64 2.51 49.64 2.65 49.85 2.65 49.85 2.23 50.05 2.23 50.05 2.53 50.25 2.53 50.25 2.42 50.45 2.42 50.45 2.43 50.66 2.43 50.66 2.51 50.86 2.51 50.86 2.45 51.06 2.45 51.06 2.56 51.27 2.56 51.27 2.58 51.47 2.58 51.47 2.6 51.67 2.6 51.67 2.53 51.88 2.53 51.88 2.58 52.08 2.58 52.08 2.54 52.28 2.54 52.28 2.51 52.49 2.51 52.49 2.67 52.69 2.67 52.69 2.59 52.89 2.59 52.89 2.53 53.1 2.53 53.1 2.59 53.3 2.59 53.3 2.59 53.5 2.59 53.5 2.64 53.71 2.64 53.71 2.59 53.91 2.59 53.91 2.65 54.11 2.65 54.11 2.51 54.32 2.51 54.32 2.66 54.52 2.66 54.52 2.56 54.72 2.56 54.72 2.74 54.93 2.74 54.93 2.76 55.13 2.76 55.13 2.61 55.33 2.61 55.33 2.63 55.54 2.63 55.54 2.75 55.74 2.75 55.74 2.66 55.94 2.66 55.94 2.66 56.15 2.66 56.15 2.63 56.35 2.63 56.35 2.8 56.55 2.8 56.55 2.71 56.76 2.71 56.76 2.71 56.96 2.71 56.96 2.6 57.16 2.6 57.16 2.76 57.37 2.76 57.37 2.84 57.57 2.84 57.57 2.65 57.77 2.65 57.77 2.69 57.97 2.69 57.97 2.67 58.18 2.67 58.18 2.64 58.38 2.64 58.38 2.78 58.58 2.78 58.58 2.67 58.79 2.67 58.79 2.72 58.99 2.72 58.99 2.63 59.19 2.63 59.19 2.71 59.4 2.71 59.4 2.76 59.6 2.76 59.6 2.68 59.8 2.68 59.8 2.7 60.01 2.7 60.01 2.79 60.21 2.79 60.21 2.66 60.41 2.66 60.41 2.66 60.62 2.66 60.62 2.77 60.82 2.77 60.82 2.8 61.02 2.8 61.02 2.72 61.23 2.72 61.23 2.84 61.43 2.84 61.43 2.7 61.63 2.7 61.63 2.78 61.84 2.78 61.84 2.8 62.04 2.8 62.04 2.82 62.24 2.82 62.24 2.67 62.45 2.67 62.45 2.71 62.65 2.71 62.65 2.85 62.85 2.85 62.85 2.73 63.06 2.73 63.06 2.75 63.26 2.75 63.26 2.82 63.46 2.82 63.46 2.81 63.67 2.81 63.67 2.78 63.87 2.78 63.87 2.8 64.07 2.8 64.07 2.75 64.28 2.75 64.28 2.86 64.48 2.86 64.48 2.76 64.68 2.76 64.68 2.81 64.89 2.81 64.89 2.82 65.09 2.82 65.09 2.8 65.29 2.8 65.29 2.74 65.49 2.74 65.49 2.8 65.7 2.8 65.7 2.94 65.9 2.94 65.9 2.79 66.1 2.79 66.1 2.75 66.31 2.75 66.31 2.8 66.51 2.8 66.51 2.81 66.71 2.81 66.71 2.82 66.92 2.82 66.92 2.83 67.12 2.83 67.12 2.86 67.32 2.86 67.32 2.85 67.53 2.85 67.53 2.83 67.73 2.83 67.73 2.86 67.93 2.86 67.93 2.81 68.14 2.81 68.14 2.89 68.34 2.89 68.34 2.97 68.54 2.97 68.54 2.98 68.75 2.98 68.75 2.88 68.95 2.88 68.95 2.87 69.15 2.87 69.15 2.84 69.36 2.84 69.36 2.83 69.56 2.83 69.56 2.89 69.76 2.89 69.76 2.79 69.97 2.79 69.97 2.99 70.17 2.99 70.17 3 70.37 3 70.37 2.91 70.58 2.91 70.58 2.95 70.78 2.95 70.78 2.89 70.98 2.89 70.98 2.91 71.19 2.91 71.19 3.01 71.39 3.01 71.39 3.03 71.59 3.03 71.59 2.86 71.8 2.86 71.8 2.87 72 2.87 72 3.01 72.2 3.01 72.2 2.91 72.41 2.91 72.41 2.98 72.61 2.98 72.61 2.93 72.81 2.93 72.81 2.87 73.01 2.87 73.01 2.94 73.22 2.94 73.22 2.96 73.42 2.96 73.42 2.96 73.62 2.96 73.62 2.98 73.83 2.98 73.83 2.89 74.03 2.89 74.03 3.02 74.23 3.02 74.23 2.98 74.44 2.98 74.44 2.99 74.64 2.99 74.64 3.08 74.84 3.08 74.84 3.07 75.05 3.07 75.05 3.01 75.25 3.01 75.25 3.01 75.45 3.01 75.45 3.04 75.66 3.04 75.66 3.06 75.86 3.06 75.86 2.93 76.06 2.93 76.06 3.01 76.27 3.01 76.27 3 76.47 3 76.47 3.07 76.67 3.07 76.67 2.94 76.88 2.94 76.88 2.98 77.08 2.98 77.08 3.03 77.28 3.03 77.28 3.07 77.49 3.07 77.49 2.91 77.69 2.91 77.69 2.94 77.89 2.94 77.89 3.13 78.1 3.13 78.1 3.08 78.3 3.08 78.3 3.12 78.5 3.12 78.5 2.96 78.71 2.96 78.71 3.09 78.91 3.09 78.91 3.04 79.11 3.04 79.11 3.09 79.32 3.09 79.32 3.12 79.52 3.12 79.52 3.01 79.72 3.01 79.72 3.19 79.93 3.19 79.93 3.09 80.13 3.09 80.13 3.07 80.33 3.07 80.33 3.02 80.53 3.02 80.53 3.06 80.74 3.06 80.74 3.11 80.94 3.11 80.94 3.17 81.14 3.17 81.14 3.09 81.35 3.09 81.35 3.03 81.55 3.03 81.55 3.15 81.75 3.15 81.75 3.07 81.96 3.07 81.96 3.09 82.16 3.09 82.16 3.07 82.36 3.07 82.36 3.13 82.57 3.13 82.57 3.15 82.77 3.15 82.77 3.12 82.97 3.12 82.97 3.13 83.18 3.13 83.18 3.14 83.38 3.14 83.38 3.07 83.58 3.07 83.58 3.17 83.79 3.17 83.79 3.11 83.99 3.11 83.99 3.1 84.19 3.1 84.19 3.1 84.4 3.1 84.4 3.15 84.6 3.15 84.6 3.08 84.8 3.08 84.8 3.16 85.01 3.16 85.01 3.07 85.21 3.07 85.21 3.14 85.41 3.14 85.41 3.18 85.62 3.18 85.62 3.21 85.82 3.21 85.82 3.25 86.02 3.25 86.02 3.08 86.23 3.08 86.23 3.17 86.43 3.17 86.43 3.24 86.63 3.24 86.63 3.18 86.84 3.18 86.84 3.17 87.04 3.17 87.04 3.21 87.24 3.21 87.24 3.19 87.45 3.19 87.45 3.14 87.65 3.14 87.65 3.26 87.85 3.26 87.85 3.18 88.05 3.18 88.05 3.21 88.26 3.21 88.26 3.14 88.46 3.14 88.46 3.1 88.66 3.1 88.66 3.17 88.87 3.17 88.87 3.21 89.07 3.21 89.07 3.18 89.27 3.18 89.27 3.16 89.48 3.16 89.48 3.2 89.68 3.2 89.68 3.18 89.88 3.18 89.88 3.19 90.09 3.19 90.09 3.33 90.29 3.33 90.29 3.2 90.49 3.2 90.49 3.23 90.7 3.23 90.7 3.33 90.9 3.33 90.9 3.22 91.1 3.22 91.1 3.22 91.31 3.22 91.31 3.19 91.51 3.19 91.51 3.27 91.71 3.27 91.71 3.19 91.92 3.19 91.92 3.31 92.12 3.31 92.12 3.2 92.32 3.2 92.32 3.29 92.53 3.29 92.53 3.22 92.73 3.22 92.73 3.23 92.93 3.23 92.93 3.18 93.14 3.18 93.14 3.24 93.34 3.24 93.34 3.25 93.54 3.25 93.54 3.31 93.75 3.31 93.75 3.31 93.95 3.31 93.95 3.23 94.15 3.23 94.15 3.27 94.36 3.27 94.36 3.24 94.56 3.24 94.56 3.29 94.76 3.29 94.76 3.29 94.97 3.29 94.97 3.33 95.17 3.33 95.17 3.29 95.37 3.29 95.37 3.18 95.57 3.18 95.57 3.2 95.78 3.2 95.78 3.32 95.98 3.32 95.98 3.24 96.18 3.24 96.18 3.33 96.39 3.33 96.39 3.29 96.59 3.29 96.59 3.31 96.79 3.31 96.79 3.4 97 3.4 97 3.28 97.2 3.28 97.2 3.24 97.4 3.24 97.4 3.28 97.61 3.28 97.61 3.3 97.81 3.3 97.81 3.23 98.01 3.23 98.01 3.35 98.22 3.35 98.22 3.24 98.42 3.24 98.42 3.28 98.62 3.28 98.62 3.36 98.83 3.36 98.83 3.3 99.03 3.3 99.03 3.31 99.23 3.31 99.23 3.37 99.44 3.37 99.44 3.28 99.64 3.28 99.64 3.32 99.84 3.32 99.84 3.36 100.05 3.36 100.05 3.39 100.25 3.39 100.25 3.35 100.45 3.35 100.45 3.36 100.66 3.36 100.66 3.4 100.86 3.4 100.86 3.37 101.06 3.37 101.06 3.4 101.27 3.4 101.27 3.36 101.47 3.36 101.47 3.42 101.67 3.42 101.67 3.37 101.88 3.37 101.88 3.42 102.08 3.42 102.08 3.37 102.28 3.37 102.28 3.34 102.49 3.34 102.49 3.39 102.69 3.39 102.69 3.4 102.89 3.4 102.89 3.47 103.09 3.47 103.09 3.36 103.3 3.36 103.3 3.46 103.5 3.46 103.5 3.31 103.7 3.31 103.7 3.46 103.91 3.46 103.91 3.47 104.11 3.47 104.11 3.36 104.31 3.36 104.31 3.43 104.52 3.43 104.52 3.43 104.72 3.43 104.72 3.4 104.92 3.4 104.92 3.43 105.13 3.43 105.13 3.42 105.33 3.42 105.33 3.44 105.53 3.44 105.53 3.48 105.74 3.48 105.74 3.45 105.94 3.45 105.94 3.36 106.14 3.36 106.14 3.53 106.35 3.53 106.35 3.42 106.55 3.42 106.55 3.45 106.75 3.45 106.75 3.46 106.96 3.46 106.96 3.42 107.16 3.42 107.16 3.43 107.36 3.43 107.36 3.49 107.57 3.49 107.57 3.41 107.77 3.41 107.77 3.43 107.97 3.43 107.97 3.44 108.18 3.44 108.18 3.41 108.38 3.41 108.38 3.48 108.58 3.48 108.58 3.49 108.79 3.49 108.79 3.53 108.99 3.53 108.99 3.46 109.19 3.46 109.19 3.46 109.4 3.46 109.4 3.51 109.6 3.51 109.6 3.51 109.8 3.51 109.8 3.52 110.01 3.52 110.01 3.49 110.21 3.49 110.21 3.46 110.41 3.46 110.41 3.46 110.61 3.46 110.61 3.41 110.82 3.41 110.82 3.52 111.02 3.52 111.02 3.48 111.22 3.48 111.22 3.55 111.43 3.55 111.43 3.5 111.63 3.5 111.63 3.51 111.83 3.51 111.83 3.53 112.04 3.53 112.04 3.47 112.24 3.47 112.24 3.56 112.44 3.56 112.44 3.44 112.65 3.44 112.65 3.46 112.85 3.46 112.85 3.51 113.05 3.51 113.05 3.56 113.26 3.56 113.26 3.56 113.46 3.56 113.46 3.5 113.66 3.5 113.66 3.58 113.87 3.58 113.87 3.51 114.07 3.51 114.07 3.52 114.27 3.52 114.27 3.53 114.48 3.53 114.48 3.52 114.68 3.52 114.68 3.58 114.88 3.58 114.88 3.54" class="primitive"/>
             </g>
           </g>
         </g>
       </g>
     </g>
   </g>
-  <g class="guide ylabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-21ee6edc-166">
-    <g transform="translate(18.43,59.87)" id="img-21ee6edc-167">
+  <g class="guide ylabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-5306244c-166">
+    <g transform="translate(18.43,59.87)" id="img-5306244c-167">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">0</text>
       </g>
     </g>
-    <g transform="translate(18.43,39.51)" id="img-21ee6edc-168">
+    <g transform="translate(18.43,39.51)" id="img-5306244c-168">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">1×10⁴</text>
       </g>
     </g>
-    <g transform="translate(18.43,19.16)" id="img-21ee6edc-169">
+    <g transform="translate(18.43,19.16)" id="img-5306244c-169">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">2×10⁴</text>
       </g>
     </g>
   </g>
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-21ee6edc-170">
-    <g transform="translate(4.18,31.76)" id="img-21ee6edc-171">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-5306244c-170">
+    <g transform="translate(4.18,31.76)" id="img-5306244c-171">
       <g class="primitive">
         <text text-anchor="middle" dy="0.35em" transform="rotate(-90,0, 2)">Counts</text>
       </g>
     </g>
   </g>
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-21ee6edc-172">
-    <g transform="translate(136.36,0.71)" id="img-21ee6edc-173">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-5306244c-172">
+    <g transform="translate(136.36,0.71)" id="img-5306244c-173">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">III-E K412[0][all]</text>
       </g>
@@ -499,7 +499,7 @@
   </g>
 </g>
 <defs>
-  <clipPath id="img-21ee6edc-4">
+  <clipPath id="img-5306244c-4">
     <path d="M19.43,5.66 L 253.29 5.66 253.29 61.87 19.43 61.87" />
   </clipPath>
 </defs>
