@@ -70,8 +70,7 @@ using NeXLCore
         @test channel(n"Mn K-L3",det3)==channel(energy(n"Mn K-L3"),det3)
     end
     @testset "readEMSA" begin
-        path=@__DIR__
-        sp = loadspectrum("$(path)\\K412 spectra\\Al2O3 std.msa")
+        sp = loadspectrum(joinpath(@__DIR__,"K412 spectra", "Al2O3 std.msa"))
         @test sp[:BeamEnergy] == 20.0e3
         @test sp[:ProbeCurrent] == 1.10989
         @test sp[:Elevation] == deg2rad(35.0)
