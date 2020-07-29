@@ -112,17 +112,19 @@ multiplication reduces to sum over a single index.  Often this sum is zero becau
 Note:  `specdata` should be preprocessed so that no element is less than or equal to zero.
 """
 function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64
+    function dot3(a,b,c)
+        sum=zero(eltype(a))
+        @avx for i in eachindex(a)  # @avx takes overall time from 670 μs down to 430 μs
+            sum+=a[i]*b[i]*c[i]
+        end
+        return sum
+    end
     fi, fl, oi, ol = filt.filters[i], filt.filters[l], filt.offsets[i], filt.offsets[l]
     roi = max(oi,ol):min(oi+length(fi)-1, ol+length(fl)-1) # The ROI over which both filters are non-zero.
     return length(roi) > 0 ? #
-        # sum(view(fi, roi.start-oi+1:roi.stop-oi+1) .* view(specdata, roi) .* view(fl, roi.start-ol+1:roi.stop-ol+1)) :
-        sum(fi[roi.start-oi+1:roi.stop-oi+1] .* specdata[roi] .* fl[roi.start-ol+1:roi.stop-ol+1]) :
+        dot3(view(fi,roi.start-oi+1:roi.stop-oi+1), view(specdata,roi), view(fl,roi.start-ol+1:roi.stop-ol+1)) :
         0.0
 end
-
-
-filteredcovar2(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64 =
-     sum(filterdata(filt,i) .* specdata .* filterdata(filt,l))
 
 
 """
@@ -131,7 +133,7 @@ filteredcovar2(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::F
 Compute a single channel in the filtered spectrum.
 """
 filtereddatum(filt::TopHatFilter, d::Vector{Float64}, i::Int)::Float64 =
-    sum(filt.filters[i] .* view(d,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
+    dot(filt.filters[i], view(d,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
@@ -484,7 +486,7 @@ end
 Extract the filtered data representing the specified range.  `roi` must be fully contained within the
 filtered data in `fd`.
 """
-NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = fd.filtered[roi]
+NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = view(fd.filtered,roi)
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.identifier for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =

@@ -300,7 +300,7 @@ Creates a copy of the spectrum counts data as the specified Number type. If the 
 property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
 by setting all channels less-than-or-equal to det.lld to zero.
 """
-function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) where {T<:Number}
+function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false)::Array{T} where {T<:Number}
     res = map(n -> convert(numType, n), spec.counts)
     if applyLLD && haskey(spec, :Detector)
         fill!(view(res, 1:lld(spec[:Detector])), zero(numType))
@@ -308,9 +308,9 @@ function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false) wh
     return res
 end
 
-function counts(spec::Spectrum, channels::AbstractRange{<:Integer}, numType::Type{T}, applyLLD = false) where {T<:Real}
+function counts(spec::Spectrum, channels::AbstractRange{<:Integer}, numType::Type{T}, applyLLD = false)::Array{T} where {T<:Real}
     if (first(channels) >= 1) && (last(channels)<=length(spec))
-        res = map(n -> convert(numType, n), spec.counts[channels])
+        res = T[ convert(numType, n) for n in spec.counts[channels] ]
     else
         res = zeros(numType, length(channels))
         r = max(first(channels),1):min(last(channels), length(spec))

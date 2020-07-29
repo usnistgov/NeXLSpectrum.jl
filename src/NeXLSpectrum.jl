@@ -12,6 +12,7 @@ using Mmap
 using EzXML: readxml
 import Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
+using LoopVectorization
 using Statistics
 using DataAPI
 using CSV

@@ -30,7 +30,7 @@ Like extract(fd,roi) except extracts the covariance diagnonal elements over the 
 `roi` must be fully contained within the data in `fd`.
 """
 NeXLUncertainties.covariance(fd::FilteredUnknownW, roi::UnitRange{Int})::AbstractVector{Float64} =
-    fd.covariance[roi]
+    view(fd.covariance,roi)
 
 """
 Weighted least squares for FilteredUnknownW
@@ -72,9 +72,9 @@ least squares model.
 """
 function tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilter, scale::Float64 = 1.0)::FilteredUnknownW
     data = counts(spec, 1:length(thf), Float64, true)
-    filtered = [ filtereddatum(thf,data,i) for i in eachindex(data) ]
-    dp = map(x->max(x, 1.0),data) # To ensure covariance isn't zero or infinite precision
-    covar = [ filteredcovar(thf, dp, i, i) for i in eachindex(data) ]
+    filtered = Float64[ filtereddatum(thf,data,i) for i in eachindex(data) ]
+    dp = Float64[ max(x, 1.0) for x in data ] # To ensure covariance isn't zero or infinite precision
+    covar = Float64[ filteredcovar(thf, dp, i, i) for i in eachindex(data) ]
     return FilteredUnknownW(UnknownLabel(spec), scale, eachindex(data), data, filtered, covar)
 end
 
