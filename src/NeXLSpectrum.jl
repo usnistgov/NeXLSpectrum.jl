@@ -10,7 +10,6 @@ using Unitful: mm
 using FileIO
 using Mmap
 using EzXML: readxml
-using PeriodicTable
 import Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
 using Statistics
