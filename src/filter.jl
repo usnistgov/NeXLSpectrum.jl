@@ -112,7 +112,7 @@ multiplication reduces to sum over a single index.  Often this sum is zero becau
 Note:  `specdata` should be preprocessed so that no element is less than or equal to zero.
 """
 function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64
-    function dot3(a,b,c)
+    function dot3(a,b,c) # vmapreduce((ai,bi,ci)->ai*bi*ci, +, a, b, c)
         sum=zero(eltype(a))
         @avx for i in eachindex(a)  # @avx takes overall time from 670 μs down to 430 μs
             sum+=a[i]*b[i]*c[i]

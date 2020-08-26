@@ -301,7 +301,7 @@ property then the detector's lld (low-level discriminator) and applyLLD=true the
 by setting all channels less-than-or-equal to det.lld to zero.
 """
 function counts(spec::Spectrum, numType::Type{T} = Float64, applyLLD = false)::Array{T} where {T<:Number}
-    res = map(n -> convert(numType, n), spec.counts)
+    res = T[convert(numType, n) for n in spec.counts]
     if applyLLD && haskey(spec, :Detector)
         fill!(view(res, 1:lld(spec[:Detector])), zero(numType))
     end
