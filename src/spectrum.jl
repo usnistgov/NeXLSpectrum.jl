@@ -141,6 +141,7 @@ Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.p
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
 Base.first(spec::Spectrum) = first(spec.counts)
 Base.last(spec::Spectrum) = last(spec.counts)
+properties(spec::Spectrum) = spec.properties
 
 """
     rangeofenergies(spec::Spectrum, ch)
@@ -222,6 +223,12 @@ matching(spec::Spectrum, resMnKa::Float64, lld::Int = 1)::BasicEDS =
 
 matching(spec::Spectrum, resMnKa::Float64, lld::Int, minByFam::Dict{Shell,Element})::BasicEDS =
     BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
+
+function matches(spec::Spectrum, det::Detector)::Bool
+    return (det isa EDSDetector) &&
+        abs(energy(1,spec) - energy(1,det))<channelwidth(1,det) &&
+        abs(energy(length(spec), spec) - energy(length(spec), det))<channelwidth(length(spec), det)
+end
 
 Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties, sym, def)
 Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]

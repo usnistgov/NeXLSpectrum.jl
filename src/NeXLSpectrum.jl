@@ -48,6 +48,7 @@ export simpleEDSwICC # Create a basic EDS detector with a naive incomplete charg
 export extent # Determine the energy extent of an x-ray line on a detector ( Emin, Emax )
 export extents # Determine the energy extents of many x-ray lines on a detector
 export matching # Build a detector to match a spectrum
+export matches # Do the spectrum and detector match
 export lld # Low-level discriminator in eV
 export detectorresponse # Build a matrix that describes the detectors response to X-rays
 
@@ -172,8 +173,6 @@ export kratio
 
 include("qquant.jl")
 export VectorQuant
-export HyperspectrumQuant
-export asimage # Display
 
 include("llsq.jl")
 # The implementation for weighted filter-fit.
@@ -203,6 +202,11 @@ export ScaleROISum # <: SpectrumScaling
 export ScalePeak # <: SpectrumScaling
 export ScaleWidth # <: SpectrumScaling
 export scaledcounts # Return spectrum channel data scaled according the SpectrumScaling model
+
+include("reference.jl")
+export FilterFitPacket
+export reference
+export references
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

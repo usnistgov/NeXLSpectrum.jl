@@ -67,6 +67,8 @@ end
 A list of the X-rays associated with this CharXRayLabel.
 """
 xrays(cl::CharXRayLabel) = cl.xrays
+spectrum(cl::CharXRayLabel) = cl.spec
+properties(cl::CharXRayLabel) = properties(cl.spec)
 
 NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 

@@ -78,22 +78,9 @@ function tophatfilter(::Type{FilteredUnknownW}, spec::Spectrum, thf::TopHatFilte
     return FilteredUnknownW(UnknownLabel(spec), scale, eachindex(data), data, filtered, covar)
 end
 
-"""
-    filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousww)::UncertainValues
-
-Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
-By default use the generalized LLSQ fitting (pseudo-inverse implementation).
-
-This function is designed to reperform the fit if one or more k-ratio is less-than-or-equal-to zero.  The
-FilteredReference corresponding to the negative value is removed from the fit and the fit is reperformed. How the
-non-positive value is handled is determine by forcezeros. If forcezeros=true, then the returned k-ratio for the
-non-positive value will be set to zero (but the uncertainty remains the fitted one).  However, if forcezeros=false,
-then the final non-positive k-ratio is returned along with the associated uncertainty.  forcezeros=false is better
-when a number of fit k-ratio sets are combined to produce an averaged k-ratio with reduced uncertainty. forcezeros=true
-would bias the result positive.
-"""
-function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
-    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
+# Actually perform the filter fit and return k-ratios in an UncertainValues object
+function _filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)
+    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], UncertainValues[] # start with all the FilteredReference
     while refit
         refit = false
         fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
@@ -110,9 +97,33 @@ function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}
             end
         end
     end # while
-    kr = cat(append!(retained, removed))
+    return cat(append!(retained, removed))
+end
+
+"""
+    filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg=fitcontiguousww, forcezeros = true)::FilterFitResult
+
+Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
+By default use the generalized LLSQ fitting (pseudo-inverse implementation).
+
+This function is designed to reperform the fit if one or more k-ratio is less-than-or-equal-to zero.  The
+FilteredReference corresponding to the negative value is removed from the fit and the fit is reperformed. How the
+non-positive value is handled is determine by forcezeros. If forcezeros=true, then the returned k-ratio for the
+non-positive value will be set to zero (but the uncertainty remains the fitted one).  However, if forcezeros=false,
+then the final non-positive k-ratio is returned along with the associated uncertainty.  forcezeros=false is better
+when a number of fit k-ratio sets are combined to produce an averaged k-ratio with reduced uncertainty. forcezeros=true
+would bias the result positive.
+"""
+function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
+    kr = _filterfitk(unk, ffs, alg, forcezeros)
     resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
+end
+
+function filterfitk(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)
+    uvs = _filterfit(unk, ffs, alg, forcezeros)
+    return [ KRatio(xrays(lbl), properties(unk), properties(spectrum(lbl)), spectrum(lbl)[:Composition], uvs[lbl])
+        for lbl in labels(uvs) ]
 end
 
 function fit(ty::Type{FilteredUnknownW}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)

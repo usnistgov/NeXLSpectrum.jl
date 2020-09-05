@@ -299,6 +299,9 @@ channel(eV::Float64, det::EDSDetector) =
 channel(sf::SpectrumFeature, det::EDSDetector) =
     channel(energy(sf), det.scale)
 
+channelwidth(ch::Int64, det::EDSDetector) =
+    energy(ch+1, det) - energy(ch, det)
+
 
 """"
     profile(ch::Int, xrayE::Float64, det::EDSDetector)

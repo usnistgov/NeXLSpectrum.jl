@@ -53,6 +53,7 @@ depth(sig::Signal) = size(sig.counts,1)
 
 NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
 channel(sig::Signal, energy) = channel(energy, sig.energy)
+properties(sig::Signal)::Dict{Symbol, Any} = sig.properties
 
 """
     compressed(sig::Signal)
@@ -219,7 +220,7 @@ the data as Spectrum objects.
 struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
     signal::Signal{T}
     index::CartesianIndices # Spectrum indices
-    properties::Dict{Symbol, Any}
+    properties::Dict{Symbol, Any} # Duplicate of Signal properties plus HyperSpectrum-only properties
 
     HyperSpectrum(sig::Signal) =
         new{typeof(sig.counts[1]),ndims(sig.counts)-1}(sig, CartesianIndices(size(sig.counts)[2:end]),sig.properties)
@@ -241,7 +242,7 @@ function ashyperspectrum(sig::Signal, name::AbstractString="Hyper-Spectrum")
 end
 
 Base.show(io::IO, hss::HyperSpectrum) =
-    print(io,"HyperSpectrum[$(get(hss.signal.properties,:Name,"Unnamed")),$(hss.signal.energy),$(size(hss.index))]")
+    print(io,"HyperSpectrum[$(get(hss.properties,:Name,"Unnamed")),$(hss.signal.energy),$(size(hss.index))]")
 
 Base.eltype(hss::HyperSpectrum) = Spectrum
 Base.length(hss::HyperSpectrum) = length(hss.index)
@@ -259,7 +260,7 @@ dose(hs::HyperSpectrum) = hs[:ProbeCurrent]*hs[:LiveTime]
 
 function Base.getindex(hss::HyperSpectrum, idx...)::Spectrum
     so(i) = i*size(hss.signal.counts, 1)
-    props = copy(hss.signal.properties)
+    props = copy(hss.properties)
     props[:Cartesian] = [ idx... ]
     return Spectrum(hss.signal.energy, hss.signal[:, idx...], props)
 end
@@ -267,14 +268,15 @@ end
 Base.getindex(hss::HyperSpectrum, i::Int)::Spectrum =
     getindex(hss, hss.index[i]...)
 Base.getindex(hss::HyperSpectrum, sy::Symbol) =
-    getindex(hss.signal.properties, sy)
+    getindex(hss.properties, sy)
 Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) =
-    setindex!(hss.signal.properties, val, sy)
+    setindex!(hss.properties, val, sy)
 
 NeXLCore.energy(hs::HyperSpectrum, ch) = energy(ch, hs.signal.energy)
 channel(hs::HyperSpectrum, energy) = channel(energy, hs.signal.energy)
 rangeofenergies(hs::HyperSpectrum, ch) =
     ( energy(ch, hs.signal.energy), energy(ch+1, hs.signal.energy) )
+properties(hss::HyperSpectrum)::Dict{Symbol, Any} = hss.properties
 
 """
     sum(hss::HyperSpectrum)
@@ -282,7 +284,7 @@ rangeofenergies(hs::HyperSpectrum, ch) =
 Produce a sum spectrum.
 """
 Base.sum(hss::HyperSpectrum)=
-    Spectrum(hss.signal.energy, sum(hss.signal), copy(hss.signal.properties))
+    Spectrum(hss.signal.energy, sum(hss.signal), copy(hss.properties))
 
 """
     sum(sig::Signal, filt::Function)
@@ -290,7 +292,7 @@ Base.sum(hss::HyperSpectrum)=
 Produce a sum Spectrum from those pixels for which filt(hss, idx)==true.
 """
 Base.sum(hss::HyperSpectrum, filt::Function) =
-    Spectrum(hss.signal.energy, sum(hss.signal, filt), copy(hss.signal.properties))
+    Spectrum(hss.signal.energy, sum(hss.signal, filt), copy(hss.properties))
 
 """
     maxpixel(hss::HyperSpectrum)
@@ -298,7 +300,7 @@ Base.sum(hss::HyperSpectrum, filt::Function) =
 Produce a maxpixel spectrum.
 """
 maxpixel(hss::HyperSpectrum) =
-    Spectrum(hss.signal.energy, maxpixel(hss.signal), copy(hss.signal.properties))
+    Spectrum(hss.signal.energy, maxpixel(hss.signal), copy(hss.properties))
 
 """
     plane(hss::HyperSpectrum, chs::Union{Int,AbstractUnitRange{<:Integer}}, norm=false) =
@@ -323,12 +325,12 @@ indexofmaxpixel(hs::HyperSpectrum) =
 using Images
 
 """
-    roiimages(hss::Signal, achs::Vector{AbstractUnitRange{<:Integer}})
+    roiimages(hss::Signal, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function roiimages(hss::Signal, achs::Vector{AbstractUnitRange{<:Integer}})
+function roiimages(hss::Signal, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
     ps = map(chs->plane(hss,chs,false),achs)
     maxval = maximum(map(p->maximum(p),ps))
     return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
@@ -353,21 +355,21 @@ function roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
 end
 
 """
-    roiimages(hss::HyperSpectrum, achs::Vector{AbstractUnitRange{<:Integer}})
+    roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{Integer}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-roiimages(hss::HyperSpectrum, achs::Vector{AbstractUnitRange{<:Integer}}) =
+roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{<:Integer}}) =
     roiimages(hss.signal, achs)
 
 """
-    roiimages(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
+    roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n=5)
 
 Create an array of Gray images representing the intensity in each of the CharXRay lines
 in `cxrs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function roiimages(hss::HyperSpectrum, cxrs::Vector{CharXRay}, n=5)
+function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n=5)
     achs = map( cxr->channel(energy(cxr), hss.signal.energy)-n:channel(energy(cxr), hss.signal.energy)+n, cxrs)
     return roiimages(hss.signal, achs)
 end
