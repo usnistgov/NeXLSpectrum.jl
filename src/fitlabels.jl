@@ -106,9 +106,8 @@ NeXLCore.element(escl::EscapeLabel) = element(escl.xrays[1])
 A FilteredLabel that represents the unknown spectrum.
 """
 struct UnknownLabel <: FilteredLabel
-    spec::Spectrum
+    spec::Union{HyperSpectrum, Spectrum}
 end
-
 
 Base.show(io::IO, unk::UnknownLabel) = print(io, unk.spec[:Name])
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = isequal(ul1.spec, ul2.spec)

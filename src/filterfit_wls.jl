@@ -80,7 +80,7 @@ end
 
 # Actually perform the filter fit and return k-ratios in an UncertainValues object
 function _filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)
-    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], UncertainValues[] # start with all the FilteredReference
+    trimmed, refit, removed = copy(ffs), true, UncertainValues[] # start with all the FilteredReference
     while refit
         refit = false
         fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
@@ -96,8 +96,12 @@ function _filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference
                 end
             end
         end
+        if !refit
+            return cat(append!(retained, removed))
+        end
     end # while
-    return cat(append!(retained, removed))
+    @assert false
+    return removed # To maintain type
 end
 
 """
