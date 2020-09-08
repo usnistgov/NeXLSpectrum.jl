@@ -500,6 +500,11 @@ struct BasicEDS <: EDSDetector
     end
 end
 
+function Base.show(io::IO, beds::BasicEDS)
+    els=join(symbol.(map(klm->beds.minByShell[klm], Shell.(1:4))),",")
+    print(io,"BasicEDS[$(beds.channelcount) chs, $(beds.scale), $(beds.resolution), $(beds.lld) ch LLD, [$els]]")
+end
+
 """
     visible(sf::SpectrumFeature, det::Detector)
 

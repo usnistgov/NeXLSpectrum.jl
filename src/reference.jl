@@ -1,11 +1,14 @@
 
-
-
 struct FilterFitPacket
     detector::Detector
     filter::TopHatFilter
     references::Vector{FilteredReference}
 end # struct
+
+function Base.show(io::IO, ffp::FilterFitPacket)
+    lines = join(map(r->"\t$(r.identifier),", ffp.references),"\n")
+    print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
+end
 
 function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing)
     if !isnothing(lt)
@@ -34,11 +37,13 @@ reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
 reference(elm::Element, filename::AbstractString; kwargs...) =
     reference( elm, loadspectrum(filename); kwargs... )
 
-function references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, fwhm::Float64)::FilterFitPacket
+references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, fwhm::Float64)::FilterFitPacket =
+    references(refs, matching(refs[1][1], fwhm))
+
+function references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, det::EDSDetector)::FilterFitPacket
     chcount = length(refs[1][1])
     @assert all(length(r[1])==chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
-    det = matching(refs[1][1], fwhm)
-    @assert all(matches(r[1], det) for r in refs[2:end]) "All the spectra must match the detector $det."
+    @assert all(matches(r[1], det) for r in refs[1:end]) "All the spectra must match the detector $det."
     ff = buildfilter(det)
     refs = mapreduce(ref->filterreference(ff, ref...), append!, refs)
     return FilterFitPacket(det, ff, selectBestReferences(refs))
