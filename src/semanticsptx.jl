@@ -62,7 +62,7 @@ function readptx(
    # W1 – real-time timer value in 10 ns
    # W2 – dead-time timer value in 10 ns
    # W3 – event counter
-   sig = Signal(scale, props, (rh - ry, rw - rx, nch), UInt16)
+   hss = HyperSpectrum(scale, props, (rh - ry, rw - rx), nch, UInt16)
    data = zip.files[findfirst(f -> f.name == "Data", zip.files)]
    real, dead, deadpct = zeros(UInt64, length(dets)), zeros(UInt64, length(dets)), Mean()
    seen = Set{String}()
@@ -96,7 +96,7 @@ function readptx(
                   r, c = w3 ÷ rw - ry + 1, w3 % rw - rx + 1
                   # println("r,c=>($r, $c) => $ch @ $(w1÷256)")
                   if ch >= 1 && ch <= nch && r >= 1 && r <= rw && c >= 1 && c <= rh
-                     sig[r, c, ch] += 1
+                     hss[r, c, ch] += 1
                   end
                end
             end
@@ -108,10 +108,10 @@ function readptx(
          end
       end
    end
-   sig[:Dwell] = dwell
-   sig[:Elapse] = 1.0e-8 * real # second
-   sig[:RealTime] = 1.0e-8 * real / ((rh - ry) * (rw - rx))
-   sig[:LiveTime] = 1.0e-8 * (real - dead) / ((rh - ry) * (rw - rx)) # seconds
-   sig[:DeadPercent] = OnlineStats.value(deadpct)
-   return HyperSpectrum(sig)
+   hss[:Dwell] = dwell
+   hss[:Elapse] = 1.0e-8 * real # second
+   hss[:RealTime] = 1.0e-8 * real / ((rh - ry) * (rw - rx))
+   hss[:LiveTime] = 1.0e-8 * (real - dead) / ((rh - ry) * (rw - rx)) # seconds
+   hss[:DeadPercent] = OnlineStats.value(deadpct)
+   return hss
 end

@@ -1,343 +1,213 @@
-
 """
-The multidimensional dataset with an `EnergyScale` and `Symbol` indexed properties.  A `Signal`
-contains N spatial/temporal axes and 1 data axis. An object might be constructed as
-`Signal(energy, props, (4096, 1024, 2048))` where there are 4096 channels, 1024 rows and 2048 columns.
-`Signal` may be 1, 2,.. N dimensional but since they reside in memory, there are practical limits.
+   HyperSpectrum(arr::Array{T<:Real}, energy::EnergyScale, props::Array{Symbol, Any})
 
-A type for data sets containing multiple closely related spectra.  A Signal is
-slighly more restricted than an Array{Spectrum,N} because all the Spectra in a Signal are
-assumed to have certain properties in common -  the EnergyScale and a set of common Spectrum
-properties.  You can also specify an efficient packing of the data by using
-UInt8, UInt16, ... etc as required to hold the data.
-
-Special property tags:
-
-    :Elapse  # Total elapse time for map (so sig[:RealTime] ≈ sig[:Elapse]/length(sig)
-    :Axes # Names for axes [ "Data", "Y", "X" ]
-"""
-struct Signal{T<:Real, N} <: AbstractArray{T, N}
-    energy::EnergyScale
-    properties::Dict{Symbol, Any}
-    counts::Array{T, N}
-    hash::UInt
-
-    Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, sz::Tuple{Int, Vararg{Int}}, ty::Type{<:Real}) =
-         new{ty, length(sz)}(energy, properties, zeros(ty, sz), reduce(hash, hash.( (energy, properties, UInt(0x12347863)))))
-    Signal(energy::EnergyScale, properties::Dict{Symbol,Any}, data::AbstractArray) =
-        new{typeof(data[1]), ndims(data)}(energy, properties, data, mapreduce(hash,hash,(energy, properties, data)))
-end
-
-Base.show(io::IO, sig::Signal) =
-    print(io,"Signal[$(get(sig.properties,:Name,"Unnamed")),$(sig.energy),$(size(sig)),$(size(sig.counts))]")
-
-Base.getindex(sig::Signal, ci...) =
-    getindex(sig.counts,ci...)
-Base.getindex(sig::Signal, si::Symbol) =
-    getindex(sig.properties, si)
-Base.setindex!(sig::Signal, v::Real, ci::Int...) =
-    setindex!(sig.counts, v, ci...)
-Base.setindex!(sig::Signal, val::Any, si::Symbol) =
-    setindex!(sig.properties, val, si)
-Base.eltype(sig::Signal) = eltype(sig.counts)
-Base.length(sig::Signal) = length(sig.counts)
-Base.ndims(sig::Signal) = ndims(sig.counts)
-Base.size(sig::Signal) = size(sig.counts)
-Base.size(sig::Signal, n) = size(sig.counts, n)
-Base.axes(sig::Signal) = Base.axes(sig.counts)
-Base.axes(sig::Signal, n) = Base.axes(sig.counts, n)
-Base.eachindex(sig::Signal) = eachindex(sig.counts)
-Base.stride(sig::Signal, k) = stride(sig.counts, k)
-Base.strides(sig::Signal) = strides(sig.counts)
-depth(sig::Signal) = size(sig.counts,1)
-
-NeXLCore.energy(sig::Signal, ch) = energy(ch, sig.energy)
-channel(sig::Signal, energy) = channel(energy, sig.energy)
-properties(sig::Signal)::Dict{Symbol, Any} = sig.properties
-
-"""
-    compressed(sig::Signal)
-
-Returns a Signal with smaller or equal storage space to `sig` without losing any infomation.
-"""
-function compressed(sig::Signal)
-    maxval = maximum(sig.counts)
-    if (typeof(sig.counts[1]) in ( UInt16, UInt32 )) && (maxval <= 255)
-        res = convert(Array{UInt8,ndims(sig.counts)},sig.counts)
-        return Signal(sig.energy, sig.properties, res)
-    elseif (typeof(sig.counts[1]) isa UInt32 ) && (maxval <= 65535)
-        res = convert(Array{UInt16,ndims(sig.counts)},sig.counts)
-        return Signal(sig.energy, sig.properties, res)
-    elseif (typeof(sig.counts[1]) in ( Int16, Int32 )) && (maxval <= 127)
-        res = convert(Array{Int8,ndims(sig.counts)},sig.counts)
-        return Signal(sig.energy, sig.properties, res)
-    elseif (typeof(sig.counts[1]) isa Int32 ) && (maxval <= 32767)
-        res = convert(Array{Int16,ndims(sig.counts)},sig.counts)
-        return Signal(sig.energy, sig.properties, res)
-    elseif typeof(sig.counts[1]) isa Float64
-        res = convert(Array{Float32,ndims(sig.counts)},sig.counts)
-        return Signal(sig.energy, sig.properties, res)
-    end
-    return sig
-end
-
-"""
-   plane(hss::Signal, chs::AbstractUnitRange{<:Integer}, normalize=false)
-
-Sums a contiguous range of data planes into an Array. The dimension of the result is
-one less than the dimension of the Signal.
-"""
-function plane(sig::Signal, chs::AbstractUnitRange{<:Integer}, normalize=false)
-    res = map(ci->sum(convert.(Float64, sig.counts[chs,ci])), CartesianIndices((size(sig)[2:end])))
-    if normalize
-        res/=maximum(res)
-    end
-    return res
-end
-
-"""
-   plane(hss::Signal, ch::Int, normalize=false)
-
-Sums a contiguous range of data planes into an Array. The dimension of the result is
-one less than the dimension of the Signal.
-"""
-function plane(sig::Signal, ch::Int, normalize=false)
-    res = sig.counts[ch,CartesianIndices((size(sig)[2:end]))]
-    if normalize
-        res/=maximum(res)
-    end
-    return res
-end
-
-"""
-    maxpixel(sig::Signal)
-
-Compute Bright's Max-Pixel derived signal.
-"""
-function maxpixel(sig::Signal)
-    function maxi(i)
-        tmp=zero(eltype(sig.counts))
-        for idx in i:stride(sig.counts,2):length(sig.counts)
-            tmp = max(tmp, sig.counts[idx])
-        end
-        return tmp
-    end
-    return map(i->maxi(i), Base.axes(sig.counts,1))
-end
-
-"""
-    indexofmaxpixel(sig::Signal, ch::Int) # at channel `ch`
-    indexofmaxpixel(sig::Signal) # all channels
-    indexofmaxpixel(sig::Signal, ch::Int, cis::CartesianIndices)
-    indexofmaxpixel(sig::Signal, cis::CartesianIndices)
-    indexofmaxpixel(hs::HyperSpectrum, ch::Int) # at channel `ch`
-    indexofmaxpixel(hs::HyperSpectrum) # all channels
-    indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices)
-    indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices)
-
-Find the coordinates producing the maximum value in data[ch] or data[:] within 'cis' or full
-spatial dimensions.
-"""
-function indexofmaxpixel(sig::Signal, ch::Int, cis::CartesianIndices)
-    maxidx, max = cis[1], sig.counts[ch, cis[1]]
-    for idx in cis
-        if sig.counts[ch, idx] > max
-            maxidx = idx
-            max=sig.counts[ch, idx]
-        end
-    end
-    return maxidx
-end
-
-indexofmaxpixel(sig::Signal, ch::Int) =
-    indexofmaxpixel(sig, ch, CartesianIndices(size(sig.counts)[2:end]))
-
-indexofmaxpixel(sig::Signal) =
-    indexofmaxpixel(sig, CartesianIndices(size(sig.counts)[2:end]))
-
-indexofmaxpixel(sig::Signal, cis::CartesianIndices) =
-    map(i->indexofmaxpixel(sig,i,cis),Base.axes(sig,1))
-
-"""
-    sum(sig::Signal)
-
-Computes the sum at each data index over all non-data axes.
-"""
-function Base.sum(sig::Signal)
-    # Sum each plane (make sure result variable is large enough...)
-    function sumi(i::Int)
-        if eltype(sig.counts) in [ UInt8, UInt16, UInt32, Int8, Int16, Int32 ]
-            tmp::Int64=0
-            for idx in i:stride(sig.counts,2):length(sig.counts)
-                @inbounds tmp += sig.counts[idx]
-            end
-            return tmp
-        else
-            tmpf::Float64=0.0
-            for idx in i:stride(sig.counts,2):length(sig.counts)
-                @inbounds tmpf += sig.counts[idx]
-            end
-            return tmpf
-        end
-    end
-    return map(i->sumi(i), Base.axes(sig.counts,1))
-end
-
-"""
-    sum(sig::Signal, filt::Function)
-
-Produce a sum vector from those pixels for which `filt(hss, idx)==true` where `idx`
-is an index over the dimensions 2:end.
-"""
-function Base.sum(sig::Signal, filt::Function)
-    # Sum each plane (make sure result variable is large enough...)
-    function sumi(i::Int, incld)
-        if eltype(sig.counts) in [ UInt8, UInt16, UInt32, Int8, Int16, Int32 ]
-            tmp::Int64=0
-            for idx in incld
-                tmp += sig.counts[i, idx]
-            end
-            return tmp
-        else
-            tmpf::Float64=0.0
-            for idx in incld
-                tmpf += sig.counts[i, idx]
-            end
-            return tmpf
-        end
-    end
-    cis = CartesianIndices(( size(sig.counts)[2:end] ))
-    include = filter(i->filt(sig, i), cis)
-    return map(i->sumi(i, include), Base.axes(sig.counts,1))
-end
-
-"""
-   HyperSpectrum(sig::Signal)
-
-HyperSpectrum is a wrapper around Signal to facilitate access to the
-the data as Spectrum objects.
+A HyperSpectrum takes a Array{T<:Real, N} and converts it into an Array{Spectrum{T<:Real},N-1}.  In other words,
+it makes it easy to interpet an hyperdimensional Array of numbers as an Array of spectra.
 """
 struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
-    signal::Signal{T}
+    counts::Array{T}
     index::CartesianIndices # Spectrum indices
-    properties::Dict{Symbol, Any} # Duplicate of Signal properties plus HyperSpectrum-only properties
+    energy::EnergyScale
+    properties::Dict{Symbol, Any}
 
-    HyperSpectrum(sig::Signal) =
-        new{typeof(sig.counts[1]),ndims(sig.counts)-1}(sig, CartesianIndices(size(sig.counts)[2:end]),sig.properties)
+    HyperSpectrum(energy::EnergyScale, props::Dict{Symbol, Any}, arr::Array{<:Real}) =
+        new{eltype(arr), ndims(arr)-1}(arr, CartesianIndices(size(arr)[2:end]), energy, props)
+
+    HyperSpectrum(energy::EnergyScale,
+            props::Dict{Symbol, Any},
+            dims::NTuple,
+            depth::Int,
+            type::Type{Real}
+        ) =
+        new{type, length(dims)}(zeros(type, dims...), CartesianIndices(dims...), energy, props)
 end
 
-"""
-    ashyperspectrum(sig::Signal, name::AbstractString="Hyper-Spectrum")
-
-Convert the Array{<:Real, N} perspective into a Array{Spectrum{<:Real}, N} perspective.
-
-Special property tags:
-
-    :Cartesian # The pixel index of a Spectrum extracted from a HyperSpectrum
-"""
-function ashyperspectrum(sig::Signal, name::AbstractString="Hyper-Spectrum")
-    res=HyperSpectrum(sig)
-    res[:Name]=name
-    return res
+function Base.show(io::IO, hss::HyperSpectrum{T,N}) where {T<:Real,N}
+    print(io,"HyperSpectrum{$T,$N}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(size(hss.index))]")
 end
 
-Base.show(io::IO, hss::HyperSpectrum) =
-    print(io,"HyperSpectrum[$(get(hss.properties,:Name,"Unnamed")),$(hss.signal.energy),$(size(hss.index))]")
 
-Base.eltype(hss::HyperSpectrum) = Spectrum
-Base.length(hss::HyperSpectrum) = length(hss.index)
-Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
-Base.size(hss::HyperSpectrum) = size(hss.index)
-Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
+Base.eltype(hss::HyperSpectrum) = Spectrum{eltype(hss.counts)}
+Base.length(hss::HyperSpectrum) = prod(size(hss))
+#Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
+Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
+Base.size(hss::HyperSpectrum, n) = size(hss.counts, n+1)
 Base.axes(hss::HyperSpectrum) = Base.axes(hss.index)
 Base.axes(hss::HyperSpectrum, n) = Base.axes(hss.index, n)
-Base.eachindex(hss::HyperSpectrum) = hss.index
-Base.stride(hss::HyperSpectrum, k) = stride(hss.index, k)
-Base.strides(hss::HyperSpectrum) = strides(hss.index)
-depth(hss::HyperSpectrum) = depth(hss.signal)
-dose(hs::HyperSpectrum) = hs[:ProbeCurrent]*hs[:LiveTime]
+Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
+Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts, k+1)
+Base.strides(hss::HyperSpectrum) = strides(hss.counts)[2:end]
+depth(hss::HyperSpectrum) = size(hss.counts,1)
+dose(hss::HyperSpectrum) = hss[:ProbeCurrent]*hss[:LiveTime]
 
-
-function Base.getindex(hss::HyperSpectrum, idx...)::Spectrum
-    so(i) = i*size(hss.signal.counts, 1)
+function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real, N}
     props = copy(hss.properties)
-    props[:Cartesian] = [ idx... ]
-    return Spectrum(hss.signal.energy, hss.signal[:, idx...], props)
+    props[:Cartesian] = hss.index[idx]
+    return Spectrum(hss.energy, hss.counts[:, hss.index[idx]], props)
 end
-
-Base.getindex(hss::HyperSpectrum, i::Int)::Spectrum =
-    getindex(hss, hss.index[i]...)
+function Base.getindex(hss::HyperSpectrum{T,N}, idx::Vararg{Int, N})::Spectrum{T} where {T<:Real, N}
+    props = copy(hss.properties)
+    props[:Cartesian] = CartesianIndex(idx...)
+    return Spectrum(hss.energy, hss.counts[:, idx...], props)
+end
+function region(hss::HyperSpectrum{T,N}, ranges::AbstractRange...)::HyperSpectrum{T,N} where {T<:Real, N}
+    HyperSpectrum(hss.energy, hss.properties, hss.counts[:, ranges...])
+end
 Base.getindex(hss::HyperSpectrum, sy::Symbol) =
     getindex(hss.properties, sy)
 Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) =
     setindex!(hss.properties, val, sy)
 
-NeXLCore.energy(hs::HyperSpectrum, ch) = energy(ch, hs.signal.energy)
-channel(hs::HyperSpectrum, energy) = channel(energy, hs.signal.energy)
-rangeofenergies(hs::HyperSpectrum, ch) =
-    ( energy(ch, hs.signal.energy), energy(ch+1, hs.signal.energy) )
+NeXLCore.energy(ch::Integer, hss::HyperSpectrum) = energy(ch, hss.energy)
+channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
+rangeofenergies(ch::Integer, hss::HyperSpectrum) =
+    ( energy(ch, hss.energy), energy(ch+1, hss.energy) )
 properties(hss::HyperSpectrum)::Dict{Symbol, Any} = hss.properties
+counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = hss.counts[ch,ci]
+"""
+    compressed(hss::HyperSpectrum)
+
+Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing any infomation (except Float64 which
+compresses to Float32 with loss of precision).
+"""
+function compressed(hss::HyperSpectrum)
+    maxval = maximum(hss.counts)
+    if (eltype(hss.counts) in ( UInt16, UInt32 )) && (maxval <= 255)
+        return HyperSpectrum(UInt8.(hss.counts), hss.energy, hss.properties)
+    elseif (eltype(hss.counts) isa UInt32 ) && (maxval <= 65535)
+        return HyperSpectrum(UInt16.(hss.counts), hss.energy, hss.properties)
+    elseif (eltype(hss.counts) in ( Int16, Int32 )) && (maxval <= 127)
+        return HyperSpectrum(Int8.(hss.counts), hss.energy, hss.properties)
+    elseif (eltype(hss.counts) isa Int32 ) && (maxval <= 32767)
+        return HyperSpectrum(Int16.(hss.counts), hss.energy, hss.properties)
+    elseif eltype(hss.counts) isa Float64
+        return HyperSpectrum(Float32.(hss.counts), hss.energy, hss.properties)
+    end
+    return hss
+end
 
 """
-    sum(hss::HyperSpectrum)
+   plane(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}, normalize=false)
 
-Produce a sum spectrum.
+Sums a contiguous range of data planes into an Array. The dimension of the result is
+one less than the dimension of the HyperSpectrum.
 """
-Base.sum(hss::HyperSpectrum)=
-    Spectrum(hss.signal.energy, sum(hss.signal), copy(hss.properties))
+function plane(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}, normalize=false)
+    res = map(ci->sum(Float64.(hss.counts[chs,ci])), hss.index)
+    if normalize
+        res/=maximum(res)
+    end
+    return res
+end
 
 """
-    sum(sig::Signal, filt::Function)
+   plane(hss::HyperSpectrum, ch::Int, normalize=false)
 
-Produce a sum Spectrum from those pixels for which filt(hss, idx)==true.
+Sums a contiguous range of data planes into an Array. The dimension of the result is
+one less than the dimension of the HyperSpectrum.
 """
-Base.sum(hss::HyperSpectrum, filt::Function) =
-    Spectrum(hss.signal.energy, sum(hss.signal, filt), copy(hss.properties))
+function plane(hss::HyperSpectrum, ch::Int, normalize=false)
+    res = hss.counts[ch,hss.index]
+    if normalize
+        res/=maximum(res)
+    end
+    return res
+end
 
 """
     maxpixel(hss::HyperSpectrum)
 
-Produce a maxpixel spectrum.
+Compute Bright's Max-Pixel derived signal.
 """
-maxpixel(hss::HyperSpectrum) =
-    Spectrum(hss.signal.energy, maxpixel(hss.signal), copy(hss.properties))
+function maxpixel(hss::HyperSpectrum)
+    maxi(i) = maximum( ( hss.counts[idx] for idx in i:stride(hss.counts,2):length(hss.counts) ))
+    return Spectrum(hss.energy, map(i->maxi(i), Base.axes(hss.counts,1)), hss.properties)
+end
 
 """
-    plane(hss::HyperSpectrum, chs::Union{Int,AbstractUnitRange{<:Integer}}, norm=false) =
+    indexofmaxpixel(hss::HyperSpectrum, ch::Int) # at channel `ch`
+    indexofmaxpixel(hss::HyperSpectrum) # all channels
+    indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
+    indexofmaxpixel(hss::HyperSpectrum, cis::CartesianIndices)
 
-Extract as an Array the sum of the data in `chs`.
+Find the coordinates producing the maximum value in data[ch] or data[:] within 'cis' or full
+spatial dimensions.
 """
-plane(hss::HyperSpectrum, chs, norm=false) =
-    plane(hss.signal, chs, norm)
+function indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
+    maxidx, max = cis[1], hss.counts[ch, cis[1]]
+    for idx in cis
+        if hss.counts[ch, idx] > max
+            maxidx = idx
+            max=hss.counts[ch, idx]
+        end
+    end
+    return maxidx
+end
 
-indexofmaxpixel(hs::HyperSpectrum, ch::Int, cis::CartesianIndices) =
-    indexofmaxpixel(hs.signal, ch, cis)
+indexofmaxpixel(hss::HyperSpectrum, ch::Int) =
+    indexofmaxpixel(hss, ch, CartesianIndices(size(hss.counts)[2:end]))
 
-indexofmaxpixel(hs::HyperSpectrum, ch::Int) =
-    indexofmaxpixel(hs.signal, ch)
+indexofmaxpixel(hss::HyperSpectrum) =
+    indexofmaxpixel(hss, CartesianIndices(size(hss.counts)[2:end]))
 
-indexofmaxpixel(hs::HyperSpectrum, cis::CartesianIndices) =
-    indexofmaxpixel(hs.signal, cis)
+indexofmaxpixel(hss::HyperSpectrum, cis::CartesianIndices) =
+    map(i->indexofmaxpixel(hss,i,cis),Base.axes(hss,1))
 
-indexofmaxpixel(hs::HyperSpectrum) =
-    indexofmaxpixel(hs.signal)
+"""
+    Base.sum(hss::HyperSpectrum{T, N}) where {T<:Real, N}
+    Base.sum(hss::HyperSpectrum{T, N}, mask::Union{BitArray, Array{Bool}}) where {T<:Real, N}
+    Base.sum(hss::HyperSpectrum{T, N}, filt::Function) where {T<:Real, N}
+
+Compute a sum spectrum for all or a subset of the pixels in `hss`.
+"""
+
+function Base.sum(hss::HyperSpectrum{T, N}, mask::Union{BitArray, Array{Bool}}) where {T<:Real, N}
+    @assert size(mask)==size(hss) "$(size(mask)) ≠ $(size(hss))"
+    RT = T isa Int ? Int64 : Float64
+    vals = mapreduce(ci->hss.counts[:,ci], (a,b)->a .+= b, filter(ci->mask[ci], hss.index), init=zeros(RT, depth(hss)))
+    props=copy(hss.properties)
+    if haskey(hss.properties,:LiveTime)
+        props[:LiveTime] = count(mask)*hss[:LiveTime]
+    end
+    return Spectrum(hss.energy, vals, props)
+end
+
+function Base.sum(hss::HyperSpectrum{T, N}) where {T<:Real, N}
+    RT = T isa Int ? Int64 : Float64
+    vals = mapreduce(ci->hss.counts[:,ci], (a,b)->a .+= b, hss.index, init=zeros(RT, depth(hss)))
+    props=copy(hss.properties)
+    if haskey(hss.properties,:LiveTime)
+        props[:LiveTime] = length(hss)*hss[:LiveTime]
+    end
+    return Spectrum(hss.energy, vals, props)
+end
+
+function Base.sum(hss::HyperSpectrum{T, N}, filt::Function) where {T<:Real, N}
+    RT = T isa Int ? Int64 : Float64
+    vals = mapreduce(ci->hss.counts[:,ci], (a,b)->a .+= b, filter(ci->filt(hss,ci), hss.index), init=zeros(RT, depth(hss)))
+    props=copy(hss.properties)
+    if haskey(hss.properties,:LiveTime)
+        props[:LiveTime] = count(ci->filt(hss,ci), hss.index) * hss[:LiveTime]
+    end
+    return Spectrum(hss.energy, vals, props)
+end
 
 using Images
 
 """
-    roiimages(hss::Signal, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
+    roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
-function roiimages(hss::Signal, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
+function roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
     ps = map(chs->plane(hss,chs,false),achs)
     maxval = maximum(map(p->maximum(p),ps))
     return map(p->Gray.(convert.(N0f8, p/maxval)),ps)
 end
 
 """
-    roiimage(hss::Signal, chs::AbstractUnitRange{<:Integer})
+    roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer})
 
 Create a count map from the specified contiguous range of channels.
 """
@@ -345,23 +215,14 @@ roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
     Gray.(convert.(N0f8, plane(hss, chs, true)))
 
 """
-    roiimage(hss::Signal, cxr::CharXRay, n=5)
+    roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
 
 Create a count map for the specified characteristic X-ray.
 """
 function roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
-    center = channel(energy(cxr), hss.signal.energy)
+    center = channel(energy(cxr), hss.energy)
     return roiimage(hss, center-n:center+n)
 end
-
-"""
-    roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{Integer}})
-
-Create an array of Gray images representing the intensity in each range of channels in
-in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
-"""
-roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{<:Integer}}) =
-    roiimages(hss.signal, achs)
 
 """
     roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n=5)
@@ -370,6 +231,6 @@ Create an array of Gray images representing the intensity in each of the CharXRa
 in `cxrs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
 function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n=5)
-    achs = map( cxr->channel(energy(cxr), hss.signal.energy)-n:channel(energy(cxr), hss.signal.energy)+n, cxrs)
-    return roiimages(hss.signal, achs)
+    achs = map( cxr->channel(energy(cxr), hss.energy)-n:channel(energy(cxr), hss.energy)+n, cxrs)
+    return roiimages(hss, achs)
 end

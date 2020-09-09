@@ -71,10 +71,8 @@ NeXLSpectrum.simpleEDSwICC
 ```
 
 ```@docs
-NeXLSpectrum.Signal
 NeXLSpectrum.HyperSpectrum
 NeXLSpectrum.readrplraw
-NeXLSpectrum.ashyperspectrum
 
 NeXLSpectrum.plane
 NeXLSpectrum.roiimage

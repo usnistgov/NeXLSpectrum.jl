@@ -62,8 +62,9 @@ function NeXLSpectrum.fit(vq::VectorQuant, hs::HyperSpectrum, zero = x -> max(0.
     scales = [ dose(hs)*vq.references[i][5] for i in eachindex(vq.references) ]
     # @threads seems to slow this (maybe cache misses??)
     for ci in CartesianIndices(hs)
-        @avx krs[:, ci] = zero.((vecs * hs.signal.counts[:,ci])./scales)
+        @avx krs[:, ci] = (vecs * hs.counts[:,ci])./scales
     end
+    map!(zero, krs, krs)
     res = KRatios[]
     for i in filter(ii->vq.references[ii][1] isa CharXRayLabel, eachindex(vq.references))
         k, lbl = krs[i], vq.references[i][1]

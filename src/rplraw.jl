@@ -20,15 +20,14 @@ struct RPLHeader
     end
 end
 
-readrplraw(rplio::IO, rawio::IO, scale::EnergyScale, props::Dict{Symbol,Any}=Dict{Symbol,Any}()) =
-    readraw(rawio, readrpl(rplio), scale, props)
+readrplraw(rplio::IO, rawio::IO) = readraw(rawio, readrpl(rplio))
 
 """
-    readrplraw(rplfilename::AbstractString, rawfilename::AbstractString, scale::EnergyScale, props::Dict{Symbol,Any}=Dict{Symbol,Any}())
-    readrplraw(rplio::IO, rawio::IO, scale::EnergyScale, props::Dict{Symbol,Any}=Dict{Symbol,Any}())
+    readrplraw(rplfilename::AbstractString, rawfilename::AbstractString)
+    readrplraw(rplio::IO, rawio::IO)
 
-Read a RPL/RAW file pair from IO or filename into a Signal obect.  The reader supports :bigendian, :littleendian
-ordering and :vector or :image alignment.  Since the Signal can be very large it is beneficial to release and collected
+Read a RPL/RAW file pair from IO or filename into an Array obect.  The reader supports :bigendian, :littleendian
+ordering and :vector or :image alignment.  Since the Array can be very large it is beneficial to release and collected
 the associated memory when you are done with the data by assigning `nothing` to the variable (or allowing it to go
 out of scope) and then calling `GC.gc()` to force a garbage collection.
 
@@ -37,7 +36,7 @@ out of scope) and then calling `GC.gc()` to force a garbage collection.
     ** `:littleendian` => Intel/AMD and others
     ** `:bigendian` => ARM/PowerPC/Motorola
     * Alignment:  The data in the file can be organized as `:vector` or `:image`.  However, the data will be
-reorganized into 'vector' format when returned as a Signal.
+reorganized into 'vector' format when returned as a Array.
     **`:vector` => Spectrum/data vector as contiguous blocks by pixel
     ** `:image` => Each channel of data organized in image planes
     * Data types: signed/unsigned 8/16/32-bit integers or 16-bit/32-bit/64-bit floats
@@ -62,18 +61,18 @@ table.
 
 This .rpl file indicates the image is 849 pixels wide and 846 pixels high, with 4096 levels in the depth dimension.
 """
-function readrplraw(rplfilename::AbstractString, rawfilename::AbstractString, scale::EnergyScale, props::Dict{Symbol,Any}=Dict{Symbol,Any}())
+function readrplraw(rplfilename::AbstractString, rawfilename::AbstractString)::Array{<:Real}
     open(rplfilename, read=true) do rplio
         open(rawfilename, read=true) do rawio
-            return readrplraw(rplio, rawio, scale, props)
+            return readrplraw(rplio, rawio)
         end
     end
 end
 
-readrplraw(filenamebase::AbstractString, scale::EnergyScale, props::Dict{Symbol,Any}=Dict{Symbol,Any}()) =
-    readrplraw(String(filenamebase)*".rpl", String(filenamebase)*".raw", scale, props)
+readrplraw(filenamebase::AbstractString)::Array{<:Real} =
+    readrplraw(String(filenamebase)*".rpl", String(filenamebase)*".raw")
 
-function readrpl(io::IO)
+function readrpl(io::IO)::RPLHeader
     w, h, d, o = -1, -1, -1, -1
     dl, dtv, bo, rb = -1, "", :unknown, :unknown
     for row in CSV.Rows(read(io))
@@ -138,12 +137,12 @@ function readrpl(io::IO)
 end
 
 """
-    readraw(ios::IOStream, T::Type{<:Real}, size::NTuple{Int, N}, energy::EnergyScale, props::Dict{Symbol,Any}) =
+    readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
 
-Construct a full Signal from the counts data in binary from the specified stream.  Always
-returns the data in [d,w,h] order.
+Construct an Array from the data in binary from the specified stream.  Always returns the data in [d,w,h] order
+regardless of how the data is organized on disk.
 """
-function readraw(ios::IOStream, rpl::RPLHeader, energy::EnergyScale, props::Dict{Symbol,Any})
+function readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
     if rpl.recordedBy==:vector
         size = ( rpl.depth, rpl.width, rpl.height )
     else
@@ -167,30 +166,30 @@ function readraw(ios::IOStream, rpl::RPLHeader, energy::EnergyScale, props::Dict
             res[d,w,h] = data[w,h,d]
         end
     end
-    return Signal(energy, props, res)
+    return res
 end
 
-function writerplraw(rplbasefile::String, sig::Signal)
+function writerplraw(rplbasefile::String, arr::Array{<:Real})
     open(rplbasefile*".rpl",write=true) do rplio
         println(rplio,"key\tvalue")
-        println(rplio,"width\t$(size(sig,2))")
-        println(rplio,"height\t$(size(sig,3))")
-        println(rplio,"depth\t$(size(sig,1))")
+        println(rplio,"width\t$(size(arr,2))")
+        println(rplio,"height\t$(size(arr,3))")
+        println(rplio,"depth\t$(size(arr,1))")
         println(rplio,"offset\t0")
-        println(rplio,"data-length\t$(sizeof(sig.counts[1]))")
-        if typeof(sig.counts[1]) in (Int8, Int16, Int32)
+        println(rplio,"data-length\t$(sizeof(eltype(arr)))")
+        if eltype(arr) in (Int8, Int16, Int32)
             println(rplio,"data-type\tsigned")
-        elseif typeof(sig.counts[1]) in (UInt8, UInt16, UInt32)
+        elseif eltype(arr) in (UInt8, UInt16, UInt32)
             println(rplio,"data-type\tunsigned")
-        elseif typeof(sig.counts[1]) in (Float16, Float32, Float64)
+        elseif eltype(arr) in (Float16, Float32, Float64)
             println(rplio,"data-type\tfloat")
         else
-            error("Unexpected type $(typeof(sig.counts[1])) in write RPL/RAW.")
+            error("Unsupported type $(eltype(arr)) in write RPL/RAW.")
         end
         println(rplio,"byte-order\tlittle-endian")
         println(rplio,"record-by\tvector")
     end
     open(rplbasefile*".raw",write=true) do rawio
-        write(rawio, sig.counts)
+        write(rawio, arr)
     end
 end

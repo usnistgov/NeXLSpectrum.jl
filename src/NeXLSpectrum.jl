@@ -99,9 +99,7 @@ export sameproperty # Returns the property value if all the spectra share the sa
 export textplot # A quick way to visualize a spectrum
 
 include("hyperspectrum.jl")
-export Signal  # The base class that makes hyperspectral data look like an Array of Real
-export HyperSpectrum # The wrapper that makes a Signal look like an Array of Spectrum
-export ashyperspectrum # Converts a Signal into a HyperSpectrum
+export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum
 export plane # Sum planes in a HyperSpectrum
 export roiimage # Convert a range of data channels into a Gray-scale image
 export roiimages # Convert a vector of ranges-of-channels into Gray-scale images
@@ -109,12 +107,14 @@ export compressed # Compresses Integer type data down to the smallest integer ty
 export maxpixel # Bright's max-pixel derived spectrum
 export indexofmaxpixel # Index producing the max pixel
 export depth # Number of spectral or result planes
+export region # Extract a region from within the HyperSpectrum as a HyperSpectrum
+export properties # The HyperSpectrum properties (mutable)
 
 include("rplraw.jl")
 export RPLHeader
-export readrplraw # Read a RPL/RAW file into a Signal
+export readrplraw # Read a RPL/RAW file into a Array
 export readrpl # Read the RPL file into a RPLHeader
-export writerplraw # Write a Signal into a RPL/RAW
+export writerplraw # Write a Array into a RPL/RAW
 
 include("emsa.jl")
 include("aspextiff.jl")

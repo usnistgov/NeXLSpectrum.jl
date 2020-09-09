@@ -102,7 +102,7 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
         for ci in CartesianIndices(hs)
-            data[len] = hs.signal.counts[len, ci]
+            data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
@@ -119,7 +119,7 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         for ci in CartesianIndices(hs)
-            data[len] = hs.signal.counts[len, ci]
+            data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             uvs = _filterfit(unk, ffp.references)
             krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.identifier for ref in ffp.references ))

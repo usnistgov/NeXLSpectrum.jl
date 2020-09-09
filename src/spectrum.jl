@@ -144,11 +144,11 @@ Base.last(spec::Spectrum) = last(spec.counts)
 properties(spec::Spectrum) = spec.properties
 
 """
-    rangeofenergies(spec::Spectrum, ch)
+    rangeofenergies(ch::Integer, spec::Spectrum)
 
 Returns the low and high energy extremes for the channels `ch`.
 """
-rangeofenergies(spec::Spectrum, ch) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
+rangeofenergies(ch::Integer, spec::Spectrum) = (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
 NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
 NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum) = requiredbutmissing(ty, spec.properties)
