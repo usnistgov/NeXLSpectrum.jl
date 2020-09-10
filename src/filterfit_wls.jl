@@ -119,14 +119,15 @@ when a number of fit k-ratio sets are combined to produce an averaged k-ratio wi
 would bias the result positive.
 """
 function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
-    kr = _filterfitk(unk, ffs, alg, forcezeros)
+    kr = _filterfit(unk, ffs, alg, forcezeros)
     resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
     return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
 end
 
 function filterfitk(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)
     uvs = _filterfit(unk, ffs, alg, forcezeros)
-    return [ KRatio(xrays(lbl), properties(unk), properties(spectrum(lbl)), spectrum(lbl)[:Composition], uvs[lbl])
+    unkprops = properties(spectrum(unk.identifier))
+    return [ KRatio(xrays(lbl), unkprops, properties(spectrum(lbl)), spectrum(lbl)[:Composition], uvs[lbl])
         for lbl in labels(uvs) ]
 end
 
