@@ -22,10 +22,21 @@ struct HyperSpectrum{T<:Real, N} <: AbstractArray{Spectrum{T}, N}
         new{type, length(dims)}(zeros(type, dims...), CartesianIndices(dims...), energy, props)
 end
 
-function Base.show(io::IO, hss::HyperSpectrum{T,N}) where {T<:Real,N}
-    print(io,"HyperSpectrum{$T,$N}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(size(hss.index))]")
+function Base.show(io::IO, m::MIME"text/plain", hss::HyperSpectrum)
+    sz = join(repr.(size(hss)), " × ")
+    print(io,"$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]")
 end
 
+
+function Base.show(io::IO, m::MIME"text/html", hss::HyperSpectrum)
+    sz = join(repr.(size(hss)), " × ")
+    print(io,"<p>$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]</p>")
+end
+
+function Base.show(io::IO, hss::HyperSpectrum)
+    sz = join(repr.(size(hss)), " × ")
+    print(io,"$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]")
+end
 
 Base.eltype(hss::HyperSpectrum) = Spectrum{eltype(hss.counts)}
 Base.length(hss::HyperSpectrum) = prod(size(hss))
@@ -64,25 +75,36 @@ rangeofenergies(ch::Integer, hss::HyperSpectrum) =
     ( energy(ch, hss.energy), energy(ch+1, hss.energy) )
 properties(hss::HyperSpectrum)::Dict{Symbol, Any} = hss.properties
 counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = hss.counts[ch,ci]
-"""
-    compressed(hss::HyperSpectrum)
 
-Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing any infomation (except Float64 which
-compresses to Float32 with loss of precision).
 """
-function compressed(hss::HyperSpectrum)
-    maxval = maximum(hss.counts)
-    if (eltype(hss.counts) in ( UInt16, UInt32 )) && (maxval <= 255)
-        return HyperSpectrum(UInt8.(hss.counts), hss.energy, hss.properties)
-    elseif (eltype(hss.counts) isa UInt32 ) && (maxval <= 65535)
-        return HyperSpectrum(UInt16.(hss.counts), hss.energy, hss.properties)
-    elseif (eltype(hss.counts) in ( Int16, Int32 )) && (maxval <= 127)
-        return HyperSpectrum(Int8.(hss.counts), hss.energy, hss.properties)
-    elseif (eltype(hss.counts) isa Int32 ) && (maxval <= 32767)
-        return HyperSpectrum(Int16.(hss.counts), hss.energy, hss.properties)
+    compress(hss::HyperSpectrum)
+
+Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing any infomation (except AbstractFloat
+which compresses to Float32 with loss of precision).
+"""
+function compress(hss::HyperSpectrum)
+    (minval, maxval) = extrema(hss.counts)
+    if eltype(hss.counts) in ( Int16, Int32, Int64 )
+        println("Signed")
+        for newtype in filter(ty->sizeof(eltype(hss.counts)) > sizeof(ty), ( Int8, Int16, Int32 ))
+            if minval >= typemin(newtype) && maxval <=typemax(newtype)
+                return HyperSpectrum(hss.energy, hss.properties, newtype.(hss.counts))
+            end
+        end
+    elseif eltype(hss.counts) in ( UInt16, UInt32, UInt64 )
+        println("Unsigned")
+        for newtype in filter(ty->sizeof(eltype(hss.counts)) > sizeof(ty), ( UInt8, UInt16, UInt32 ))
+            if maxval <= typemax(newtype)
+                return HyperSpectrum(hss.energy, hss.properties, newtype.(hss.counts))
+            end
+        end
     elseif eltype(hss.counts) isa Float64
-        return HyperSpectrum(Float32.(hss.counts), hss.energy, hss.properties)
+        println("Float64")
+        if sizeof(eltype(hss.counts)) < sizeof(Float32) && minval >= typemin(Float32) && maxval <=typemax(Float32)
+            return HyperSpectrum(hss.energy, hss.properties, Float32.(hss.counts))
+        end
     end
+    println("Unchanged")
     return hss
 end
 

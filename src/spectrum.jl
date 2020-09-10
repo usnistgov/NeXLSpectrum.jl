@@ -119,7 +119,7 @@ Base.isless(s1::Spectrum, s2::Spectrum) =
 # Make it act like an AbstractVector
 Base.eltype(spec::Spectrum) = eltype(spec.counts)
 Base.length(spec::Spectrum) = length(spec.counts)
-Base.ndims(spec::Spectrum) = ndims(spec.counts)
+Base.ndims(spec::Spectrum) = 1
 Base.size(spec::Spectrum) = size(spec.counts)
 Base.size(spec::Spectrum, n) = size(spec.counts, n)
 Base.axes(spec::Spectrum) = Base.axes(spec.counts)
@@ -159,11 +159,17 @@ sameproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) = all(spec -> spec
     specs[1][prop] : #
     error("The property $prop is not equal for all these spectra.")
 
-function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{<:Real})
+function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum)
     comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
     e0 = haskey(spec, :BeamEnergy) ? "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3)) keV" : "Unknown keV"
     textplot(io, spec, size = (12, 80))
-    print(io, "\n$(spec[:Name])[$e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]")
+    print(io, "\nSpectrum{$(eltype(spec.counts))}[$(spec[:Name]), $(spec.energy), $(length(spec.counts)) ch, $e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]")
+end
+
+function Base.show(io::IO, m::MIME"text/html", spec::Spectrum)
+    #print(io, "<p>")
+    show(io, MIME"text/plain", spec)
+    #print(io, "</p>")
 end
 
 function textplot(io::IO, spec::Spectrum; size = (16, 80))

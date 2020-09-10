@@ -13,7 +13,7 @@ struct RPLHeader
         @assert h>0
         @assert d>0
         @assert o>=0
-        @assert dt in [ Int8, Int16, Int32, UInt8, UInt16, UInt32, Float16, Float32, Float64 ]
+        @assert dt in [ Int8, Int16, Int32, Int64, UInt8, UInt16, UInt32, UInt64, Float16, Float32, Float64 ]
         @assert bo in [ :littleendian, :bigendian ]
         @assert rb in [ :vector, :image ]
         new(w,h,d,o,dt,bo,rb)
@@ -88,7 +88,7 @@ function readrpl(io::IO)::RPLHeader
         elseif key=="DATA-LENGTH"
             dl=parse(Int,val)
         elseif key=="DATA-TYPE"
-            dtv=val
+            dtv=uppercase(val)
         elseif key=="BYTE-ORDER"
             bo = uppercase(val)=="BIG-ENDIAN" ? :bigendian : :littleendian
         elseif key=="RECORD-BY"
@@ -106,7 +106,7 @@ function readrpl(io::IO)::RPLHeader
         elseif dl==8
             dt=Int64
         else
-            error("Unexpected data-length $dl in $rplfilename")
+            error("Unexpected data-length $dl")
         end
     elseif dtv=="UNSIGNED"
         if dl == 1
@@ -118,7 +118,7 @@ function readrpl(io::IO)::RPLHeader
         elseif dl==8
             dt=UInt64
         else
-            error("Unexpected data-length $dl in $rplfilename")
+            error("Unexpected data-length $dl")
         end
     elseif dtv=="FLOAT"
         if dl==2
@@ -128,10 +128,10 @@ function readrpl(io::IO)::RPLHeader
         elseif dl==8
             dt=Float64
         else
-            error("Unexpected data-length $dl in $rplfilename")
+            error("Unexpected data-length $dl")
         end
     else
-        error("Unexepected data-type $dt in $rplfilename.")
+        error("Unexepected data-type $dt.")
     end
     return RPLHeader(w,h,d,o,dt,bo,rb)
 end
@@ -177,9 +177,9 @@ function writerplraw(rplbasefile::String, arr::Array{<:Real})
         println(rplio,"depth\t$(size(arr,1))")
         println(rplio,"offset\t0")
         println(rplio,"data-length\t$(sizeof(eltype(arr)))")
-        if eltype(arr) in (Int8, Int16, Int32)
+        if eltype(arr) in (Int8, Int16, Int3, Int64)
             println(rplio,"data-type\tsigned")
-        elseif eltype(arr) in (UInt8, UInt16, UInt32)
+        elseif eltype(arr) in (UInt8, UInt16, UInt32, UInt64 )
             println(rplio,"data-type\tunsigned")
         elseif eltype(arr) in (Float16, Float32, Float64)
             println(rplio,"data-type\tfloat")

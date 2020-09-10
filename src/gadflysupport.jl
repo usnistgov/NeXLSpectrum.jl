@@ -374,4 +374,15 @@ function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)
     plot(eff, 100.0, emax)
 end
 
+function plotandimage(plot::Gadfly.Plot, image::Array)
+    io = IOBuffer(maxsize=10*1024*1024)
+    save(Stream(format"PNG",io), image)
+    pix = max(size(image,1),size(image,2))
+    scaleX, scaleY = size(image,1)/pix, size(image,2)/pix
+    return compose(context(),
+        (context(0.0, 0.0, 0.8, 1.0), Gadfly.render(plot) ),
+        (context(0.8, 0.0, 0.2, 1.0), bitmap("image/png", take!(io), 0.5*(1.0 - scaleX), 0.5*(1.0 - scaleY), scaleX, scaleY)),
+    )
+end
+
 @info "Loading Gadfly support into NeXLSpectrum."
