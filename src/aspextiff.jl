@@ -56,6 +56,11 @@ struct _TIFFIFD
     end
 end
 
+function Base.get(ifd::_TIFFIFD, id::Integer, def)
+    idx = findfirst(atf->atf.tagId==id, ifd.ifdTags)
+    return isnothing(idx) ? def : ifd.ifdTags[idx]
+end
+
 struct _TIFFInternals
     ifds::Vector{_TIFFIFD}
     function _TIFFInternals(ios)
