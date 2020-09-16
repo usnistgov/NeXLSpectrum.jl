@@ -12,24 +12,24 @@ end
 
 function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing)
     if !isnothing(lt)
-        @assert lt>0.0 "The live time must be larger than zero."
+        @assert lt>0.0 "The live time must be larger than zero for $(spec[:Name])."
         spec[:LiveTime] = lt
     end
     if !isnothing(pc)
-        @assert pc>0.0 "The probe current must be larger than zero."
+        @assert pc>0.0 "The probe current must be larger than zero for $(spec[:Name])."
         spec[:ProbeCurrent] = pc
     end
     if !isnothing(e0)
-        @assert e0 >= 1.0e3 "The beam energy ($(e0/1000.0)) keV is too low."
+        @assert e0 >= 1.0e3 "The beam energy ($(e0/1000.0)) keV is too low for $(spec[:Name])."
         spec[:BeamEnergy] = e0
     end
-    @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined.  (Use the `lt` keyword argument)"
-    @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined.  (Use the `pc` keyword argument)"
-    @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined.  (Use the `e0` keyword argument)"
+    @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined for $(spec[:Name]).  (Use the `lt` keyword argument)"
+    @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
+    @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
     return ( spec, elm, mat)
 end
 
-reference(elm::Element, spec::Spectrum) = reference(elm, spec, spec[:Composition]; kwargs)
+reference(elm::Element, spec::Spectrum; kwargs...) = reference(elm, spec, spec[:Composition]; kwargs)
 
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
     reference( elm, loadspectrum(filename), mat; kwargs... )
