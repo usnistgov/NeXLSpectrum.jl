@@ -315,7 +315,7 @@ contiguous interval over which all the X-rays in the interval are sufficiently c
 interfere with each other on the specified detector.
 """
 labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6) =
-    labeledextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
+    labeledextents(isvisible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
 
 """
     charXRayLabels(#
@@ -349,7 +349,7 @@ function charXRayLabels(#
 end
 
 escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) =
-    escapeextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl, maxE)
+    escapeextents(isvisible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl, maxE)
 
 
 """

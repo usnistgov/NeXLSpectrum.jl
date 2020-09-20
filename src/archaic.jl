@@ -11,7 +11,7 @@ contiguous interval over which all the X-rays in the interval are sufficiently c
 interfere with each other on the specified detector.
 """
 labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64=1.0e6) =
-    labeledextents(visible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
+    labeledextents(isvisible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
 
 """
     function labeledextents(
@@ -29,7 +29,7 @@ labeledextents(elms::Vector{Element}, det::Detector, ampl::Float64, maxE::Float6
     labeledextents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
-    extents(visible(characteristic(elm,alltransitions),det),det,ampl)
+    extents(isvisible(characteristic(elm,alltransitions),det),det,ampl)
 
 extents(elms::Vector{Element}, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
     extents(mapreduce(elm->characteristic(elm,alltransitions),append!,elms),det,ampl)

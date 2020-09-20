@@ -60,13 +60,13 @@ using NeXLCore
         @test all(ch->channel(energy(ch,det3),det3)==ch,1:4096)
         @test resolution(energy(n"Mn K-L3"),det3)==126.0
         @test isapprox(resolution(energy(n"C K-L2"),det3),45.867,atol=0.001)
-        @test visible(n"C K-L2", det3)
-        @test !visible(n"Ca L3-M3", det3)
-        @test length(visible(characteristic(n"Sc",ltransitions), det3))>=7
-        @test !visible(n"Xe M3-N5",det3)
-        @test visible(n"Cs M3-N5",det3)
-        @test length(visible(characteristic(n"U",ntransitions),det3))==0
-        @test length(visible(characteristic(n"Pu",ntransitions),det3))==0 # Database doesn't contain any...
+        @test isvisible(n"C K-L2", det3)
+        @test !isvisible(n"Ca L3-M3", det3)
+        @test length(isvisible(characteristic(n"Sc",ltransitions), det3))>=7
+        @test !isvisible(n"Xe M3-N5",det3)
+        @test isvisible(n"Cs M3-N5",det3)
+        @test length(isvisible(characteristic(n"U",ntransitions),det3))==0
+        @test length(isvisible(characteristic(n"Pu",ntransitions),det3))==0 # Database doesn't contain any...
         @test channel(n"Mn K-L3",det3)==channel(energy(n"Mn K-L3"),det3)
     end
     @testset "readEMSA" begin

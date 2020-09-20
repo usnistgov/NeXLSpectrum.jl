@@ -36,7 +36,7 @@ export SpectrumFeature # A CharXRay or EscapeArtifact (ComptonArtifact)
 export EDSDetector # Abstract base for BasicEDS and other EDS detector-like things
 export BasicEDS # A basic EDS detector with min visibility by line family
 export channel # energy to channel
-export visible # Is a SpectrumFeature visible in the spectrum??
+export isvisible # Is a SpectrumFeature visible in the spectrum??
 export linewidth # energy to linewidth
 export channelcount # Detector channel count
 export apply # Create a copy of a spectrum with the specified detector

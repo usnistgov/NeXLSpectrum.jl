@@ -218,7 +218,7 @@ Implements:
     channel(eV::Float64, det::Detector)::Int
     profile(energy::Float64, xrayE::Float64, det::Detector)
     lld(det::Detector)::Int
-    visible(sf::SpectrumFeature, det::Detector)
+    isvisible(sf::SpectrumFeature, det::Detector)
 """
 abstract type Detector end
 
@@ -319,13 +319,13 @@ profile(nrg::Float64, xrayE::Float64, det::EDSDetector) =
 
 
 """
-    visible(cxrs::AbstractVector{<:SpectrumFeature}, det::Detector)
+    isvisible(cxrs::AbstractVector{<:SpectrumFeature}, det::Detector)
 
 Returns the characteristic x-rays that are visible on the specified detector (ie. Between the LLD and the maximum
 channel).
 """
-visible(sfs::AbstractVector{<:SpectrumFeature}, det::Detector) =
-    filter(sf->visible(sf,det), sfs)
+isvisible(sfs::AbstractVector{<:SpectrumFeature}, det::Detector) =
+    filter(sf->isvisible(sf,det), sfs)
 
 """
     extents(cxrs::AbstractVector{<:SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
@@ -353,12 +353,12 @@ function extents( #
     end
     inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
     # Note: extent(cxr,...) takes line weight into account
-    es=map(cxr->extent(cxr, det, ampl), filter(cxr->weight(cxr)>ampl, visible(cxrs, det)))
+    es=map(cxr->extent(cxr, det, ampl), filter(cxr->weight(cxr)>ampl, isvisible(cxrs, det)))
     return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
 end
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
-    extents(visible(characteristic(elm,alltransitions),det),det,ampl)
+    extents(isvisible(characteristic(elm,alltransitions),det),det,ampl)
 
 """
     function labeledextents(
@@ -376,7 +376,7 @@ function labeledextents(
     det::Detector,
     ampl::Float64
 )::Vector{Tuple{Vector{T},UnitRange{Int}}} where T <: SpectrumFeature
-    fcxrs = filter(cxr-> weight(cxr)>ampl, visible(cxrs, det))
+    fcxrs = filter(cxr-> weight(cxr)>ampl, isvisible(cxrs, det))
     es = map(xr -> extent(xr, det, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
@@ -418,7 +418,7 @@ function escapeextents(
     minweight::Float64=0.5
 )::Vector{Tuple{Vector{EscapeArtifact},UnitRange{Int}}} where T <: SpectrumFeature
     escs = map(tr -> EscapeArtifact(tr, escape), filter(c->exists(EscapeArtifact, c, escape), cxrs))
-    escs = filter(esc->visible(esc, det), escs)
+    escs = filter(esc->isvisible(esc, det), escs)
     es = map(esc -> extent(energy(esc), det.resolution, 0.01), escs) # EscapeFeature -> energy ranges
     le = collect(zip(escs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
@@ -506,18 +506,18 @@ function Base.show(io::IO, beds::BasicEDS)
 end
 
 """
-    visible(sf::SpectrumFeature, det::Detector)
+    isvisible(sf::SpectrumFeature, det::Detector)
 
 Is `sf` visible on the specified Detector?
 """
-function visible(esc::EscapeArtifact, det::BasicEDS)
+function isvisible(esc::EscapeArtifact, det::BasicEDS)
     ass=AtomicSubShell(det.minByShell[KShell], n"K1")
     return (energy(esc)>=energy(ass)) &&
     (energy(esc)>energy(lld(det), det)) && #
     (energy(esc)<energy(det.channelcount+1, det))
 end
 
-visible(cxr::CharXRay, det::BasicEDS) =
+isvisible(cxr::CharXRay, det::BasicEDS) =
     (element(cxr)>=det.minByShell[shell(cxr)]) && #
     (energy(cxr)>energy(lld(det), det)) && #
     (energy(cxr)<energy(det.channelcount+1, det))
