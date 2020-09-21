@@ -1,4 +1,5 @@
 using Test
+using Pkg
 using Pkg.Artifacts
 using NeXLSpectrum
 using DataFrames
@@ -17,7 +18,7 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
         println("Artifact dir: $artifact_dir")
         tarball = joinpath(artifact_dir, "rplraw.tar.gz")
         download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX",tarball)
-        Pkg.unpack(tarball, artifact_dir, verbose=true)
+        unpack(tarball, artifact_dir, verbose=true)
         rm(tarball)
     end
     # Now bind that hash within our `Artifacts.toml`.  `force = true` means that if it already exists,
