@@ -91,21 +91,21 @@ function compress(hss::HyperSpectrum{T,N}) where {T<:Real, N}
     if eltype(T) in (Int16, Int32, Int64)
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
             if minval >= typemin(newtype) && maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, hss.properties, newtype.(data))
+                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data))
             end
         end
     elseif T in (UInt16, UInt32, UInt64)
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (UInt8, UInt16, UInt32))
             if maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, hss.properties, newtype.(data))
+                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data))
             end
         end
     elseif T isa Float64
         if sizeof(T) < sizeof(Float32) && minval >= typemin(Float32) && maxval <= typemax(Float32)
-            return HyperSpectrum(hss.energy, hss.properties, Float32.(data))
+            return HyperSpectrum(hss.energy, copy(hss.properties), Float32.(data))
         end
     end
-    return maxi < depth(hss) ? HyperSpectrum(hss.energy, hss.properties, data) : hss
+    return maxi < depth(hss) ? HyperSpectrum(hss.energy, copy(hss.properties), data) : hss
 end
 
 """
@@ -137,19 +137,49 @@ function plane(hss::HyperSpectrum, ch::Int, normalize = false)
 end
 
 """
-    maxpixel(hss::HyperSpectrum)
-    maxpixel(hss::HyperSpectrum, cis::CartesianIndices)
+    maxpixel(hss::HyperSpectrum, filt=ci->true)
+    maxpixel(hss::HyperSpectrum, cis::CartesianIndices, filt=ci->true)
+    minpixel(hss::HyperSpectrum, filt=ci->true)
+    minpixel(hss::HyperSpectrum, cis::CartesianIndices, filt=ci->true)
 
 Compute Bright's Max-Pixel derived signal for the entire HyperSpectrum or a rectanglar sub-region.
 """
-maxpixel(hss::HyperSpectrum) = maxpixel(hss, CartesianIndices(hss))
-function maxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real, N}
+maxpixel(hss::HyperSpectrum, filt::Function=ci->true) = maxpixel(hss, CartesianIndices(hss), filt)
+maxpixel(hss::HyperSpectrum, mask::BitArray) = maxpixel(hss, CartesianIndices(hss), ci->mask[ci])
+function maxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
     data, res = counts(hss), zeros(T, depth(hss))
-    for ci in cis, ch in Base.OneTo(size(res,1))
-        if res[ch] = max(res[ch], data[ch, ci])
+    for ci in filter(ci->filt(ci), cis), ch in Base.OneTo(size(res,1))
+        res[ch] = max(res[ch], data[ch, ci])
     end
-    return Spectrum(hss.energy, res, hss.properties)
+    return Spectrum(hss.energy, res, copy(hss.properties))
 end
+minpixel(hss::HyperSpectrum, filt::Function=ci->true) = minpixel(hss, CartesianIndices(hss), filt)
+minpixel(hss::HyperSpectrum, mask::BitArray) = minpixel(hss, CartesianIndices(hss), ci->mask[ci])
+function minpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
+    data, res = counts(hss), fill(typemax(T), (depth(hss), ))
+    for ci in filter(ci->filt(ci), cis), ch in Base.OneTo(size(res,1))
+        res[ch] = min(res[ch], data[ch, ci])
+    end
+    return Spectrum(hss.energy, res, copy(hss.properties))
+end
+avgpixel(hss::HyperSpectrum, filt::Function=ci->true) = avgpixel(hss, CartesianIndices(hss), filt)
+avgpixel(hss::HyperSpectrum, mask::BitArray) = avgpixel(hss, CartesianIndices(hss), ci->mask[ci])
+function avgpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
+    data, res, cx = counts(hss), zeros(Float64, depth(hss)), 0
+    for ci in filter(ci->filt(ci), cis)
+        for ch in Base.OneTo(size(res,1))
+            res[ch] += data[ch, ci]
+        end
+        cx+=1
+    end
+    return Spectrum(hss.energy, res ./ max(1.0, cx), copy(hss.properties))
+end
+
+function sumcounts(hss::HyperSpectrum, cis::CartesianIndices=CartesianIndices(hss))
+    data = counts(hss)
+    return [ sum(Int.(data[:,ci])) for ci in cis ]
+end
+
 """
     indexofmaxpixel(hss::HyperSpectrum, ch::Int) # at channel `ch`
     indexofmaxpixel(hss::HyperSpectrum) # all channels

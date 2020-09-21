@@ -104,8 +104,10 @@ export plane # Sum planes in a HyperSpectrum
 export roiimage # Convert a range of data channels into a Gray-scale image
 export roiimages # Convert a vector of ranges-of-channels into Gray-scale images
 export compress # Compresses Integer type data down to the smallest integer type that that will hold the max value.
-export maxpixel # Bright's max-pixel derived spectrum
+export maxpixel, minpixel # Bright's max-pixel derived spectrum
 export indexofmaxpixel # Index producing the max pixel
+export avgpixel # Average intensity in a pixel
+export sumcounts # Array containing the total number of counts in at each pixel
 export depth # Number of spectral or result planes
 export region # Extract a region from within the HyperSpectrum as a HyperSpectrum
 export properties # The HyperSpectrum properties (mutable)
