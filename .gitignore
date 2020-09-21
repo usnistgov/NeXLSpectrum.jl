@@ -15,3 +15,4 @@ Manifest.toml
 weave/*.html
 weave/jl_*
 staging.jl
+test/Artifacts.toml

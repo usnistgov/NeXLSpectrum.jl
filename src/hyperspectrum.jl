@@ -57,7 +57,7 @@ dose(hss::HyperSpectrum) = hss[:ProbeCurrent] * hss[:LiveTime]
 function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real,N}
     props = copy(hss.properties)
     props[:Cartesian] = hss.index[idx]
-    return Spectrum(hss.energy, counts()[:, hss.index[idx]], props)
+    return Spectrum(hss.energy, counts(hss)[:, hss.index[idx]], props)
 end
 function Base.getindex(hss::HyperSpectrum{T,N}, idx::Vararg{Int,N})::Spectrum{T} where {T<:Real,N}
     props = copy(hss.properties)
@@ -190,7 +190,7 @@ Find the coordinates producing the maximum value in data[ch] or data[:] within '
 spatial dimensions.
 """
 function indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
-    data = counts()
+    data = counts(hss)
     maxidx, max = cis[1], data[ch, cis[1]]
     for idx in cis
         if data[ch, idx] > max
