@@ -18,7 +18,7 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
         println("Artifact dir: $artifact_dir")
         tarball = joinpath(artifact_dir, "rplraw.tar.gz")
         download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX",tarball)
-        probe_platform_engines!()
+        Pkg.probe_platform_engines!()
         Pkg.unpack(tarball, artifact_dir, verbose=true)
         rm(tarball)
     end
