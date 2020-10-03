@@ -385,4 +385,6 @@ function plotandimage(plot::Gadfly.Plot, image::Array)
     )
 end
 
+Gadfly.plot(ffp::FilterFitPacket; kwargs...) = plot( spectra(ffp)...; klms=collect(elms(ffp)), kwargs...)
+
 @info "Loading Gadfly support into NeXLSpectrum."

@@ -209,6 +209,7 @@ include("reference.jl")
 export FilterFitPacket
 export reference
 export references
+export spectra
 
 include("labeled.jl")
 export labeledimage # Displays an image and caption.

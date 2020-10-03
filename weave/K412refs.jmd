@@ -1,8 +1,9 @@
 ## Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection
 
-This document demonstrates the low-level API for filter fitting spectra.  It is more flexible than the higher-
-level API but much more complex.  In most situations, the high level API discussed [here]() is more appropriate.
+This document demonstrates the high-level API for filter fitting spectra.  This API is less flexible than
+the low-level API discussed [here](K412fit.html).
 
+#### Libraries
 Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.
 
 Loading `NeXLSpectrum` also automatically makes `NeXLCore` and `NeXLUncertainties` available.
@@ -15,66 +16,63 @@ using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass f
 using Gadfly                    # Plotting
 using DataFrames, Latexify      # Tables
 ```
-#### Read in the Spectra
+#### The `reference` and `references` functions
+Use the `reference` and `references` functions to build the filtered references.
 ```julia
-path = "K412 spectra"
-# Load a single spectrum
-fe = loadspectrum(joinpath(path, "Fe std.msa"))
-# Create a detector model to match it
-det = matching(fe, 132.0, 10)
-# Now load all the spectra using this detector
-unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),det)).(0:4)
-al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"),det)
-caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"),det)
-fe = loadspectrum(joinpath(path, "Fe std.msa"),det)
-mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
-sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
+# Where to find the files relative to this script file.
+path = joinpath(@__DIR__, "K412 spectra")
+
+refs = references(
+  [
+    # Specify a reference for iron (arg 1), in "Fe std.msa" (arg2) that is pure iron (arg3).
+    reference(n"Fe", joinpath(path, "Fe std.msa"), mat"Fe"),
+    # specify a conductive surface coating layer using the `coating` named argument
+    reference(n"Si", joinpath(path, "SiO2 std.msa"), mat"SiO2", coating = Film(pure(n"C"), 10.0e-7)),
+    reference(n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2", coating = Film(pure(n"C"), 10.0e-7)),
+    reference(n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2", coating = Film(pure(n"C"), 10.0e-7)),
+    # Read the composition from the spectrum file's ##D2STDCMP tag
+    reference(n"Mg", joinpath(path, "MgO std.msa"), coating = Film(pure(n"C"), 10.0e-7)),
+    # Read the conductive coating from the spectrum file's ##CONDCOATING tag
+    reference(n"Al", joinpath(path, "Al2O3 std.msa"), mat"Al2O3"),
+  ],
+  132.0  # Detector resolution at Mn Kα (eV)
+)
+```
+
+#### Load the Unknowns
+```julia
+# Now load all the spectra using the same detector as constructed by `references(...)`
+unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),refs.detector)).(0:4)
 # Add carbon coating
 map(s->s[:Coating]=Film(pure(n"C"), 30.0e-7), unks)
-map(s->s[:Coating]=Film(pure(n"C"), 10.0e-7), (al2o3, caf2, mgo, sio2));
 ```
 
 Table: The spectra
 ```julia; echo=false
-latexify(asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2]), env=:mdtable, latex=false, fmt="%0.4g")
+latexify(asa(DataFrame, Spectrum[unks..., NeXLSpectrum.spectra(refs)...]), env=:mdtable, latex=false, fmt="%0.4g")
 ```
+
 Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`:ProbeCurrent`); 3) take-off angle
 (`:TakeOffAngle`); 4) beam energy (`:BeamEnergy`); and detector (`:Detector`) properties defined.  These properties
 are necessary for extracting the k-ratios and estimating the composition.
 ```julia
-sio2[:LiveTime], sio2[:ProbeCurrent], sio2[:TakeOffAngle], sio2[:BeamEnergy], sio2[:Detector]
+u=unks[1]
+u[:LiveTime], u[:ProbeCurrent], u[:TakeOffAngle], u[:BeamEnergy], u[:Detector]
 ```
+
 #### The Unknowns
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 display(plot(unks..., klms=[n"O",n"Mg",n"Al",n"Si",n"Ca",n"Fe"], xmax=8.0e3))
 ```
 #### The Reference Spectra
-Build a convenient structure so it is easy to appreciate the necessary information and to splat it into
-`filteredReference`.
+Plot the reference spectra...
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-refs = (
-  # spectrum, element, composition
-  ( al2o3, n"Al", mat"Al2O3" ), #
-  ( mgo,   n"Mg", mat"MgO" ),   #
-  ( fe,    n"Fe", mat"Fe" ),    #
-  ( sio2,  n"Si", mat"SiO2" ),  #
-  ( sio2,  n"O",  mat"SiO2" ),  #
-  ( caf2,  n"Ca", mat"CaF2" ), )
-display(plot(al2o3, caf2, fe, mgo, sio2, klms=collect( ref[2] for ref in refs), xmax=8.0e3))
-```
-
-#### Pre-filter the Reference Spectra
-```julia
-# Build a top-hat filter
-filt = buildfilter(NeXLSpectrum.GaussianFilter,det)
-# Filter all the reference spectra
-frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
-# frs is now a FilteredReference[] used to fit the unknowns.
+plot(spectra(refs)..., klms=collect(elms(refs)), xmax=8.0e3)
 ```
 
 #### Fit the Pre-Filtered References to the Unknowns
 ```julia
-res= [ fit(unk,filt,frs,false) for unk in unks ]
+res= [ fit(u,refs) for u in unks ]
 ```
 ```julia; echo=false
 latexify(asa(DataFrame, res), env=:mdtable, latex=false, fmt="%0.4g")
