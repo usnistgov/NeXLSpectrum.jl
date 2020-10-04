@@ -170,17 +170,21 @@ end
 
 
 """
-    NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult)::DataFrame
+    NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true, material=nothing)::DataFrame
 
 Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
+  * If charOnly then only display characteristic X-ray data (not escapes etc.)
+  * If `material` is a Material then the computed k-ratio will also be tabulated along with kmeas/kcalc.
 """
-function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true)::DataFrame
+function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true, material=nothing)::DataFrame
     lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
         UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
+    kcalc, ratio = Float64[], Float64[]
     for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
         if (!charOnly) || kl isa CharXRayLabel
+            stdspec, unkspec = spectrum(kl), ffr.label.spec
             push!(lbl, ffr.label)
-            push!(std, spectrum(kl)[:Name])
+            push!(std, stdspec[:Name])
             push!(klbl, kl)
             push!(roi1, kl.roi.start)
             push!(roi2, kl.roi.stop)
@@ -190,9 +194,36 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly
             push!(peak, pb[1])
             push!(back, pb[2])
             push!(ptob, peaktobackground(ffr, kl))
+            if material isa Material
+                kc = NaN64
+                if kl isa CharXRayLabel
+                    try
+                        zcu = zafcorrection(XPP, ReedFluorescence, NullCoating, material, kl.xrays, unkspec[:BeamEnergy])
+                        zcs = zafcorrection(XPP, ReedFluorescence, NullCoating, stdspec[:Composition], kl.xrays, stdspec[:BeamEnergy])
+                        kc = k(zcu, zcs, unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
+                    catch
+                        kc = NaN64
+                    end
+                end
+                push!(kcalc, kc)
+                push!(ratio, NeXLUncertainties.value(kl, ffr.kratios)/kc)
+            end
         end
     end
-    return DataFrame(
+    return material isa Material ? DataFrame(
+        Spectrum = lbl,
+        Feature = klbl,
+        Reference = std,
+        Start = roi1,
+        Stop = roi2,
+        K = kr,
+        dK = dkr,
+        Peak = peak,
+        Back = back,
+        PtoB = ptob,
+        Kcalc = kcalc,
+        Ratio = ratio,
+    ) : DataFrame(
         Spectrum = lbl,
         Feature = klbl,
         Reference = std,
