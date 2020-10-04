@@ -43,10 +43,10 @@ function kratios(ffr::FitResult)::Vector{KRatio}
         KRatio(
             lbl.xrays,
             copy(unknown(ffr).spec.properties),
-            copy(lbl.spec.properties),
-            lbl.spec[:Composition],
+            copy(lbl.spectrum.properties),
+            lbl.spectrum[:Composition],
             ffr.kratios[lbl],
-        ) for lbl in filter(l -> (l isa CharXRayLabel) && haskey(l.spec[:Composition], element(l)), labels(ffr.kratios))
+        ) for lbl in filter(l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)), labels(ffr.kratios))
     ]
 end
 
@@ -141,12 +141,12 @@ A Spectrum containing the histogram representing the unknown spectrum
 minus the fitted characteristic peaks shapes times the best fit coefficient.
 """
 function residual(ffr::FilterFitResult)::Spectrum
-    props = copy(ffr.label.spec.properties)
-    props[:Name] = "Residual[$(ffr.label.spec.properties[:Name])]"
-    return Spectrum(ffr.label.spec.energy, ffr.residual, props)
+    props = copy(ffr.label.spectrum.properties)
+    props[:Name] = "Residual[$(ffr.label.spectrum.properties[:Name])]"
+    return Spectrum(ffr.label.spectrum.energy, ffr.residual, props)
 end
 
-spectrum(ffr::FilterFitResult)::Spectrum = ffr.label.spec
+spectrum(ffr::FilterFitResult)::Spectrum = ffr.label.spectrum
 
 """
     characteristiccounts(ffr::FiterFitResult, strip)
@@ -243,6 +243,6 @@ end
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
 function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
-    scaled(ff) = (NeXLUncertainties.value(ff.identifier, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
+    scaled(ff) = (NeXLUncertainties.value(ff.label, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end

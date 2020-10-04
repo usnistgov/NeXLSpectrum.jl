@@ -17,7 +17,7 @@ struct VectorQuant
     collection of `FilteredReference`(s), and a `TopHatFilter`.
     """
     function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
-        refs = [(fref.identifier, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
+        refs = [(fref.label, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
         x = zeros(Float64, (length(filt.filters), length(frefs)))
         for (c, fref) in enumerate(frefs)
             x[fref.ffroi, c] = fref.filtered

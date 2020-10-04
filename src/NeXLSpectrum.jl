@@ -209,6 +209,7 @@ include("reference.jl")
 export FilterFitPacket
 export reference
 export references
+export spectra
 
 include("labeled.jl")
 export labeledimage # Displays an image and caption.
@@ -217,6 +218,9 @@ export plotandimage # Display an image the right of a Gadfly plot
 
 include("line.jl")
 export drawline
+
+include("quantify.jl")
+export quantify
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

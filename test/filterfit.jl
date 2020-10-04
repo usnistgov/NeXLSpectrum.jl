@@ -58,23 +58,23 @@ using Statistics
 
         ## The comparison is against the k-ratios from DTSA-II.
         # The results won't be identical because the filters and other assumptions are different.
-        @test isapprox(NeXLUncertainties.value(ok.identifier, ff), 0.6529, atol = 0.0016)
-        @test isapprox(NeXLUncertainties.value(fekb.identifier, ff), 0.0665, atol = 0.0002)
-        @test isapprox(NeXLUncertainties.value(mgk.identifier, ff), 0.1473, atol = 0.0004)
-        @test isapprox(NeXLUncertainties.value(alk.identifier, ff), 0.0668, atol = 0.0005)
-        @test isapprox(NeXLUncertainties.value(sik.identifier, ff), 0.3506, atol = 0.0008)
-        @test isapprox(NeXLUncertainties.value(cak.identifier, ff), 0.1921, atol = 0.0001)
-        @test isapprox(NeXLUncertainties.value(fel.identifier, ff), 0.0418, atol = 0.0002)
-        @test isapprox(NeXLUncertainties.value(feka.identifier, ff), 0.0669, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(ok.label, ff), 0.6529, atol = 0.0016)
+        @test isapprox(NeXLUncertainties.value(fekb.label, ff), 0.0665, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(mgk.label, ff), 0.1473, atol = 0.0004)
+        @test isapprox(NeXLUncertainties.value(alk.label, ff), 0.0668, atol = 0.0005)
+        @test isapprox(NeXLUncertainties.value(sik.label, ff), 0.3506, atol = 0.0008)
+        @test isapprox(NeXLUncertainties.value(cak.label, ff), 0.1921, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(fel.label, ff), 0.0418, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(feka.label, ff), 0.0669, atol = 0.0001)
 
-        @test isapprox(σ(ok.identifier, ff), 0.00081, atol = 0.0001)
-        @test isapprox(σ(mgk.identifier, ff), 0.00018, atol = 0.00005)
-        @test isapprox(σ(alk.identifier, ff), 0.00012, atol = 0.00005)
-        @test isapprox(σ(sik.identifier, ff), 0.00024, atol = 0.00005)
-        @test isapprox(σ(cak.identifier, ff), 0.00022, atol = 0.00005)
-        @test isapprox(σ(fel.identifier, ff), 0.00043, atol = 0.00006)
-        @test isapprox(σ(feka.identifier, ff), 0.00019, atol = 0.00005)
-        @test isapprox(σ(fekb.identifier, ff), 0.00078, atol = 0.0002)
+        @test isapprox(σ(ok.label, ff), 0.00081, atol = 0.0001)
+        @test isapprox(σ(mgk.label, ff), 0.00018, atol = 0.00005)
+        @test isapprox(σ(alk.label, ff), 0.00012, atol = 0.00005)
+        @test isapprox(σ(sik.label, ff), 0.00024, atol = 0.00005)
+        @test isapprox(σ(cak.label, ff), 0.00022, atol = 0.00005)
+        @test isapprox(σ(fel.label, ff), 0.00043, atol = 0.00006)
+        @test isapprox(σ(feka.label, ff), 0.00019, atol = 0.00005)
+        @test isapprox(σ(fekb.label, ff), 0.00078, atol = 0.0002)
     end;
 
     @testset "LLSQ_K412_2" begin

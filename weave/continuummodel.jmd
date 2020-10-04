@@ -42,11 +42,11 @@ plot(lyrs..., Coord.cartesian(xmin=0, xmax=e0))
 model, mc = Castellano2004a, Riveros1993
 eff = SDDEfficiency(AP33Tabulation(); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
 
-spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","III-E K412[0][4].msa"))
 det=matching(spec, 132.0, 10)
 roi = channel(4.5e3,det):channel(6.0e3,det)
 
-spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","III-E K412[0][4].msa"))
 cmod = ContinuumModel(spec[:Composition], spec[:BeamEnergy], spec[:TakeOffAngle], bremsstrahlung=model)
 emt = map(ch->ch>=lld(det) ? emitted(cmod,energy(ch,det)) : 0.0,1:channelcount(det))
 resp = NeXLSpectrum.detectorresponse(det, eff)
@@ -56,7 +56,7 @@ plot(layer(x=eachindex(emt),y=emt, Geom.line),layer(x=eachindex(meas),y=meas, Ge
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","III-E K412[0][4].msa"))
 brem = fitcontinuum(spec, resp, [roi], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 
@@ -64,35 +64,35 @@ plot(spec, brem, yscale=0.05, xmax=12.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","Al2O3 std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","Al2O3 std.msa"))
 brem = fitcontinuum(spec, resp, [roi], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","SiO2 std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","SiO2 std.msa"))
 brem = fitcontinuum(spec, resp, [roi], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","MgO std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","MgO std.msa"))
 brem = fitcontinuum(spec, resp, [roi], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.01, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","CaF2 std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","CaF2 std.msa"))
 brem = fitcontinuum(spec, resp, [roi], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.05, xmax=8.0e3)
 ```
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","Fe std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","Fe std.msa"))
 brem = fitcontinuum(spec, resp, [ channel(2.0e3,det):channel(4.0e3,det)], brem=model, mc=mc)
 println("k = $(brem[:K]/dose(spec))")
 plot(spec, brem, yscale=0.05, xmax=8.0e3)
@@ -100,42 +100,40 @@ plot(spec, brem, yscale=0.05, xmax=8.0e3)
 
 
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-spec = loadspectrum(joinpath("K412 spectra","III-E K412[0][4].msa"))
+path = joinpath(@__DIR__,"K412 spectra")
+spec = loadspectrum(joinpath(path,"III-E K412[0][4].msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","Al2O3 std.msa"))
+spec = loadspectrum(joinpath(path,"Al2O3 std.msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","SiO2 std.msa"))
+spec = loadspectrum(joinpath(path,"SiO2 std.msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","MgO std.msa"))
+spec = loadspectrum(joinpath(path,"MgO std.msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","CaF2 std.msa"))
+spec = loadspectrum(joinpath(path,"CaF2 std.msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","Fe std.msa"))
+spec = loadspectrum(joinpath(path,"Fe std.msa"))
 display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
 
-spec = loadspectrum(joinpath("K412 spectra","Fe std.msa"))
-display(plot(spec, subtractcontinuum(spec, det, resp), yscale=0.05, xmax=8.0e3))
-
-spec = loadspectrum(joinpath("spectra","Ag std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","Ag std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.05))
 
-spec = loadspectrum(joinpath("spectra","Au std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","Au std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.05))
 
-spec = loadspectrum(joinpath("spectra","B std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","B std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.5))
 
-spec = loadspectrum(joinpath("spectra","Bi std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","Bi std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.05))
 
-spec = loadspectrum(joinpath("spectra","BN std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","BN std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.20))
 
-spec = loadspectrum(joinpath("spectra","C std.msa"))
+spec = loadspectrum(joinpath(@__DIR__, "spectra","C std.msa"))
 display(plot(spec, fittedcontinuum(spec, det, resp, mode=:Global), fittedcontinuum(spec, det, resp, mode=:Local), yscale=0.05))
 ```

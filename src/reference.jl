@@ -6,11 +6,14 @@ struct FilterFitPacket
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
-    lines = join(map(r->"\t$(r.identifier),", ffp.references),"\n")
+    lines = join(map(r->"\t$(r.label),", ffp.references),"\n")
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
 end
 
-function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing)
+spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
+NeXLCore.elms(ffp::FilterFitPacket) =  union( (elms(spec, true) for spec in spectra(ffp) )...)
+
+function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing, coating=nothing)
     if !isnothing(lt)
         @assert lt>0.0 "The live time must be larger than zero for $(spec[:Name])."
         spec[:LiveTime] = lt
@@ -23,13 +26,18 @@ function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt
         @assert e0 >= 1.0e3 "The beam energy ($(e0/1000.0)) keV is too low for $(spec[:Name])."
         spec[:BeamEnergy] = e0
     end
+    if !isnothing(coating)
+        @assert coating isa Film
+        spec[:Coating] = coating
+    end
+    spec[:Composition] = mat
     @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined for $(spec[:Name]).  (Use the `lt` keyword argument)"
     @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
     @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
     return ( spec, elm, mat)
 end
 
-reference(elm::Element, spec::Spectrum; kwargs...) = reference(elm, spec, spec[:Composition]; kwargs)
+reference(elm::Element, spec::Spectrum; kwargs...) = reference(elm, spec, spec[:Composition]; kwargs...)
 
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
     reference( elm, loadspectrum(filename), mat; kwargs... )
@@ -49,7 +57,7 @@ function references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, 
     return FilterFitPacket(det, ff, selectBestReferences(refs))
 end
 
-fit(spec::Spectrum, ffp::FilterFitPacket) = fit(FilteredUnknownW, spec, ffp.filter, ffp.refs)
+fit(spec::Spectrum, ffp::FilterFitPacket) = fit(FilteredUnknownW, spec, ffp.filter, ffp.references)
 """
 fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
 
@@ -107,8 +115,8 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].identifier isa CharXRayLabel, eachindex(ffp.references))
-            k, lbl = krs[i], ffp.references[i].identifier
+        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+            k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
         end
@@ -122,11 +130,11 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
             data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             uvs = _filterfit(unk, ffp.references)
-            krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.identifier for ref in ffp.references ))
+            krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.label for ref in ffp.references ))
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].identifier isa CharXRayLabel, eachindex(ffp.references))
-            k, lbl = krs[i], ffp.references[i].identifier
+        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+            k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
         end

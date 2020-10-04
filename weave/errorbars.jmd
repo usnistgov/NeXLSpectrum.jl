@@ -27,7 +27,7 @@ using BenchmarkTools
 ###### K412
 Load the spectra, define the fit model and apply it.
 ```julia
-path = "K412 spectra"
+path = joinpath(@__DIR__,"K412 spectra")
 fe = loadspectrum(joinpath(path, "Fe std.msa"))
 det = matching(fe, 132.0, 10)
 unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),det)).(0:4)
@@ -76,7 +76,7 @@ display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 ###### AMM-6005a
 Repeat using the ADM glass.  Fe is not present in ADM-6005a but we fit it to see what a null result looks like.
 ```julia
-path = normpath(joinpath("..","test","ADM6005a spectra"))
+path = normpath(joinpath(@__DIR__, "..","test","ADM6005a spectra"))
 unks = map(i->loadspectrum(joinpath(path,"ADM-6005a_$i.msa")),1:15)
 al, caf2, fe, ge, si, sio2, ti, zn = map(f->loadspectrum(joinpath(path,"$f.msa")), ("Al std", "CaF2 std", "Fe std", "Ge std", "Si std", "SiO2 std", "Ti trimmed","Zn std"))
 

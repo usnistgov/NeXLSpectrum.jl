@@ -9,7 +9,7 @@ using DataFrames, Latexify       # For tables.
 ```
 Load the spectra from EMSA files.
 ```julia
-path = "XRF Stainless"
+path = joinpath(@__DIR__, "XRF Stainless")
 # We use map to apply `readEMSA` to each of the files
 specs = steel, fe, ni, cr, ti, si, s, sn = map(fn->loadspectrum(joinpath(path, fn)), (
   "Steel_50kv_50_ma_Rh_vac_D1.msa",

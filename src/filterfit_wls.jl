@@ -6,7 +6,7 @@ Represents the unknown in a filter fit using the weighted fitting model.  This i
 optimistic resulting covariance matrix.
 """
 struct FilteredUnknownW <: FilteredUnknown
-    identifier::UnknownLabel # A way of identifying this filtered datum
+    label::UnknownLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data (always 1:...)
     data::Vector{Float64} # Spectrum data over ffroi
@@ -90,7 +90,7 @@ function _filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference
         if forcezeros
             for lbl in keys(kr)
                 if NeXLUncertainties.value(lbl, kr) < 0.0
-                    splice!(trimmed, findfirst(ff -> ff.identifier == lbl, trimmed))
+                    splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
                     push!(removed, uvs([lbl], [0.0], reshape([σ(lbl, kr)], (1, 1))))
                     refit = true
                 end
@@ -121,12 +121,12 @@ would bias the result positive.
 function filterfit(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)::FilterFitResult
     kr = _filterfit(unk, ffs, alg, forcezeros)
     resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.identifier, kr, unk.roi, unk.data, resid, pb)
+    return FilterFitResult(unk.label, kr, unk.roi, unk.data, resid, pb)
 end
 
 function filterfitk(unk::FilteredUnknownW, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousww, forcezeros = true)
     uvs = _filterfit(unk, ffs, alg, forcezeros)
-    unkprops = properties(spectrum(unk.identifier))
+    unkprops = properties(spectrum(unk.label))
     return [ KRatio(xrays(lbl), unkprops, properties(spectrum(lbl)), spectrum(lbl)[:Composition], uvs[lbl])
         for lbl in labels(uvs) ]
 end

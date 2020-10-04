@@ -17,18 +17,18 @@ using DataFrames, Latexify      # Tables
 ```
 #### Read in the Spectra
 ```julia
-path = "K412 spectra"
+path = joinpath(@__DIR__, "K412 spectra")
 # Load a single spectrum
-fe = loadspectrum(joinpath("$(path)", "Fe std.msa"))
+fe = loadspectrum(joinpath(path, "Fe std.msa"))
 # Create a detector model to match it
 det = matching(fe, 132.0, 10)
 # Now load all the spectra using this detector
-unks = (i->loadspectrum(joinpath("$(path)", "III-E K412[$i][4].msa"),det)).(0:4)
-al2o3 = loadspectrum(joinpath("$(path)", "Al2O3 std.msa"),det)
-caf2 = loadspectrum(joinpath("$(path)", "CaF2 std.msa"),det)
-fe = loadspectrum(joinpath("$(path)", "Fe std.msa"),det)
-mgo = loadspectrum(joinpath("$(path)", "MgO std.msa"),det)
-sio2 = loadspectrum(joinpath("$(path)", "SiO2 std.msa"),det)
+unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),det)).(0:4)
+al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"),det)
+caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"),det)
+fe = loadspectrum(joinpath(path, "Fe std.msa"),det)
+mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
+sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
 ```
 ```julia; echo=false
 latexify(asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2]), env=:mdtable, latex=false, fmt="%0.4g")

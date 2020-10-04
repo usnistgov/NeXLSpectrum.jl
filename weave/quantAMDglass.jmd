@@ -19,8 +19,7 @@ using Statistics
 Load 15 unknowns and the reference spectra.
 
 ```julia
-dir = "C:/Users/nicho/.julia/dev/NeXLSpectrum/test"
-path = joinpath("..","test","ADM6005a spectra")
+path = joinpath(@__DIR__, "..", "test", "ADM6005a spectra")
 unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i = 1:15)
 al = loadspectrum(joinpath(path, "Al std.msa"))
 caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"))

@@ -18,7 +18,8 @@ end
 pages = [
     "Home" => "index.md",
     "Spectrum Methods" => "spectrum.md",
-    "Fitting K412" => "K412fit.md",
+    "Fitting K412 (simple API)" => "k412refs.md",
+    "Fitting K412 (flexible API)" => "K412fit.md",
     "Fitting K412 (quick fit)" => "K412quick.md",
     # "Quantifying AMD-6005a glass" => "quantAMDglass.md",
     "Fitting XRF Spectra" => "XRFspectra.md",
