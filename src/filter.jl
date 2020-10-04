@@ -249,7 +249,7 @@ region-of-interest (continguous range of channles) and computing
 useful output statistics.
 """
 struct FilteredReference <: FilteredDatum
-    identifier::ReferenceLabel # A way of identifying this filtered datum
+    label::ReferenceLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data
     ffroi::UnitRange{Int} # ROI for the filtered data
@@ -259,7 +259,7 @@ struct FilteredReference <: FilteredDatum
     covscale::Float64  # Schamber's variance scale factor
 end
 
-Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.identifier)]")
+Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.label)]")
 
 """
     _filter(
@@ -296,7 +296,7 @@ function tophatfilter(
     scale::Float64,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
-    spec, roi = escLabel.spec, escLabel.roi
+    spec, roi = escLabel.spectrum, escLabel.roi
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, thf, tol)
     return FilteredReference(escLabel, scale, roi, f..., charonly, thf.weights[(roi.start+roi.stop)÷2])
@@ -401,7 +401,7 @@ function tophatfilter(
     tol::Float64 = 1.0e-6,
 )::FilteredReference
     ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
-    spec, roi, ashell = charLabel.spec, charLabel.roi, ashellof(charLabel.xrays)
+    spec, roi, ashell = charLabel.spectrum, charLabel.roi, ashellof(charLabel.xrays)
     return FilteredReference(
         charLabel,
         scale,
@@ -443,7 +443,7 @@ function tophatfilter(
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
-    spec, roi = reflabel.spec, reflabel.roi
+    spec, roi = reflabel.spectrum, reflabel.roi
     return FilteredReference(
         reflabel,
         scale,
@@ -463,7 +463,7 @@ full covariance calculation for the generalized model is so expensive relative t
 """
 abstract type FilteredUnknown <: FilteredDatum end
 
-Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.identifier)
+Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.label)
 
 """
     extract(fd::FilteredReference, roi::UnitRange{Int})
@@ -488,7 +488,7 @@ filtered data in `fd`.
 """
 NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = view(fd.filtered,roi)
 
-_buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.identifier for ff in ffs)
+_buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
     Diagonal( [ unk.scale / ffs[i].scale for i in eachindex(ffs) ] )
 
@@ -496,7 +496,7 @@ _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
 function _computeResidual(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, kr::UncertainValues)
     res = copy(unk.data)
     for ff in ffs
-        res[ff.roi] -= (NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly
+        res[ff.roi] -= (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly
     end
     return res
 end
@@ -510,7 +510,7 @@ function _computecounts( #
     res = Dict{ReferenceLabel,NTuple{2,Float64}}()
     for ff in ffs
         su = sum(unk.data[ff.roi])
-        res[ff.identifier] = (su, su - sum((NeXLUncertainties.value(ff.identifier, kr) * ff.scale / unk.scale) * ff.charonly))
+        res[ff.label] = (su, su - sum((NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly))
     end
     return res
 end
@@ -535,10 +535,10 @@ intensity in the filtered data.
 """
 function selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
     best = FilteredReference[]
-    elms = Set(element(ref.identifier) for ref in refs)
+    elms = Set(element(ref.label) for ref in refs)
     for elm in elms
         rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
-        for ref in filter(ref -> element(ref.identifier) == elm, refs)
+        for ref in filter(ref -> element(ref.label) == elm, refs)
             # Pick the reference with the largest filtered value
             mrf = maximum(ref.filtered)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])

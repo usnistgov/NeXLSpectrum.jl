@@ -1,12 +1,14 @@
 using Test
 using NeXLSpectrum
+using Random
 
 
 between(x,a,b) = x >= min(a,b) && x<=max(a,b)
 
 N = 100
-ci1s = CartesianIndex.( zip(rand(-1000:1000,N), rand(-1000:1000,N)) )
-ci2s = CartesianIndex.( zip(rand(-1000:1000,N), rand(-1000:1000,N)) )
+mt = MersenneTwister(0xBADF00D)
+ci1s = CartesianIndex.( zip(rand(mt, -1000:1000,N), rand(mt, -1000:1000,N)) )
+ci2s = CartesianIndex.( zip(rand(mt, -1000:1000,N), rand(mt, -1000:1000,N)) )
 
 for (ci1, ci2) in zip(ci1s, ci2s)
     # println(ci1, " to ", ci2)

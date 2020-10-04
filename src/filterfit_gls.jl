@@ -5,7 +5,7 @@ Represents the unknown in a filter fit using the full generalized fitting model.
 calculate but uses the full generalized linear fitting model which produces the correct fit covariances.
 """
 struct FilteredUnknownG <: FilteredUnknown
-    identifier::UnknownLabel # A way of identifying this filtered datum
+    label::UnknownLabel # A way of identifying this filtered datum
     scale::Float64 # A dose or other scale correction factor
     data::Vector{Float64} # Spectrum data
     filtered::Vector{Float64} # Filtered spectrum data
@@ -51,7 +51,7 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
         refit = false
         for lbl in keys(kr)
             if NeXLUncertainties.value(lbl, kr) <= 0.0
-                splice!(trimmed, findfirst(ff->ff.identifier==lbl, trimmed))
+                splice!(trimmed, findfirst(ff->ff.label==lbl, trimmed))
                 push!(removed, uvs([lbl],[forcezeros ? 0.0 : NeXLUncertainties.value(lbl, kr)], reshape([σ(lbl, kr)], (1,1))))
                 refit=true
             end
@@ -59,7 +59,7 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
     end
     kr = cat(append!(retained, removed))
     resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.identifier, kr, eachindex(unk.data), unk.data, resid, pb)
+    return FilterFitResult(unk.label, kr, eachindex(unk.data), unk.data, resid, pb)
 end
 
 """

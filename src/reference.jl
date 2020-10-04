@@ -6,11 +6,11 @@ struct FilterFitPacket
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
-    lines = join(map(r->"\t$(r.identifier),", ffp.references),"\n")
+    lines = join(map(r->"\t$(r.label),", ffp.references),"\n")
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
 end
 
-spectra(ffp::FilterFitPacket) = (ref.identifier.spec for ref in ffp.references)
+spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
 NeXLCore.elms(ffp::FilterFitPacket) =  union( (elms(spec, true) for spec in spectra(ffp) )...)
 
 function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing, coating=nothing)
@@ -115,8 +115,8 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].identifier isa CharXRayLabel, eachindex(ffp.references))
-            k, lbl = krs[i], ffp.references[i].identifier
+        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+            k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
         end
@@ -130,11 +130,11 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
             data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             uvs = _filterfit(unk, ffp.references)
-            krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.identifier for ref in ffp.references ))
+            krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.label for ref in ffp.references ))
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].identifier isa CharXRayLabel, eachindex(ffp.references))
-            k, lbl = krs[i], ffp.references[i].identifier
+        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+            k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
         end

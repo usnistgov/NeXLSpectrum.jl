@@ -17,7 +17,7 @@ using DataFrames, Latexify      # Tables
 ```
 #### Read in the Spectra
 ```julia
-path = "K412 spectra"
+path = joinpath(@__DIR__,"K412 spectra")
 # Load a single spectrum
 fe = loadspectrum(joinpath(path, "Fe std.msa"))
 # Create a detector model to match it

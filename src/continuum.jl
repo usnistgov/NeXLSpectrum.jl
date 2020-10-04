@@ -1,7 +1,7 @@
 # Model and fit the continuum
 
 struct ContinuumModel
-  mat::Material
+  material::Material
   e0::Float64
   takeoff::Float64
   mc::Type{<:MatrixCorrection}
@@ -13,12 +13,12 @@ struct ContinuumModel
   the *detected* quantity of continuum generated in the sample.
   """
   ContinuumModel(
-    mat::Material,
+    material::Material,
     e0::Float64,
     takeoff::Float64;
     matrixcorrection::Type{<:MatrixCorrection} = Riveros1993,
     bremsstrahlung::Type{<:NeXLBremsstrahlung} = Castellano2004b,
-  ) = new(mat, e0, takeoff, matrixcorrection, bremsstrahlung)
+  ) = new(material, e0, takeoff, matrixcorrection, bremsstrahlung)
 end
 
 """
@@ -29,7 +29,7 @@ model object at the specified measured energy `ea`.
 """
 function emitted(cm::ContinuumModel, ea::Float64) #
   g = generated(cm, ea)
-  return g > 0.0 ? g * correctcontinuum(continuumcorrection(cm.mc, cm.mat, ea, cm.e0), cm.takeoff) : 0.0
+  return g > 0.0 ? g * correctcontinuum(continuumcorrection(cm.mc, cm.material, ea, cm.e0), cm.takeoff) : 0.0
 end
 
 """
@@ -39,7 +39,7 @@ Compute the intensity of the measured continuum generated from the material and 
 model object at the specified measured energy `ea`.
 """
 generated(cm::ContinuumModel, ea::Float64) = #
-  ea <= cm.e0 ? bremsstrahlung(cm.br, ea, cm.e0, cm.mat) : 0.0
+  ea <= cm.e0 ? bremsstrahlung(cm.br, ea, cm.e0, cm.material) : 0.0
 
 
 """

@@ -276,7 +276,7 @@ end
 function Gadfly.plot(ffr::FilterFitResult, roi::Union{Missing,UnitRange{Int}} = missing; palette = NeXLPalette, style = NeXLSpectrumStyle, xmax=missing)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp = minimum( lbl.roi[1] for lbl in keys(ffrr.kratios)):maximum( lbl.roi[end] for lbl in keys(ffrr.kratios))
-        return max(lld(ffr.label.spec),tmp[1]-length(ffrr.roi)÷40):min(tmp[end]+length(ffrr.roi)÷10,ffrr.roi[end])
+        return max(lld(ffr.label.spectrum),tmp[1]-length(ffrr.roi)÷40):min(tmp[end]+length(ffrr.roi)÷10,ffrr.roi[end])
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
     roi = ismissing(roi) ? defroi(ffr) : roi
@@ -337,18 +337,18 @@ function Gadfly.plot(fr::FilteredReference; palette=NeXLPalette)
     ]
     try
         plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
-            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
+            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.label)),
             Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] ))
     catch
         plot(layers..., Coord.cartesian(xmin=fr.ffroi[1]-length(fr.ffroi)÷10, xmax=fr.ffroi[end]+length(fr.ffroi)÷10),
-            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.identifier)),
+            Guide.xlabel("Channel"), Guide.ylabel("Counts"), Guide.title(repr(fr.label)),
         #    Guide.manual_color_key("Legend",["Spectrum", "Filtered", "Char. Only", "Filter ROC", "Base ROC"], [ palette[1:3]..., roicolors...] )
         )
         end
 end
 
 Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) =
-    spy(filterdata(ff, fr.ffroi), Guide.title(repr(fr.identifier)), Guide.xlabel("Channels"), Guide.ylabel("Channels"))
+    spy(filterdata(ff, fr.ffroi), Guide.title(repr(fr.label)), Guide.xlabel("Channels"), Guide.ylabel("Channels"))
 
 function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
     colors = distinguishable_colors(

@@ -9,3 +9,5 @@ To Do:
     * det -> detector
     * identifier -> label
   * Fix or remove filter_fit.gls
+  * Remove archaic.jl
+  * Move quantify(ffr::FilterFitResult) to NeXLSpectrum

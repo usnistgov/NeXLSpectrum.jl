@@ -13,7 +13,7 @@ let start_dir = pwd()
         mkpath(outpath)
     end
 
-    weaveit.(("errorbars.jmd",  "K412fit.jmd",  "XRFspectra.jmd",  "K412quick.jmd",  "continuummodel.jmd" ))
+    weaveit.(("errorbars.jmd",  "k412refs.jmd", "K412fit.jmd",  "XRFspectra.jmd",  "K412quick.jmd",  "continuummodel.jmd" ))
 
     cd(start_dir)
 end
