@@ -7,6 +7,12 @@ struct LabeledView
     image::Array
 end
 
+
+"""
+    labeledimage(label::String, image::Array)
+
+Displays a string label below an image.  Useful in Weave, Juno or Jupyter.
+"""
 function labeledimage(label::String, image::Array)
     io = IOBuffer(maxsize=10*1024*1024)
     save(Stream(format"PNG",io), image)
@@ -18,6 +24,13 @@ function labeledimage(label::String, image::Array)
     )
 end
 
+
+
+"""
+    labeledimages(labels::AbstractVector{<:AbstractString}, images::AbstractVector{<:AbstractArray}; ncols=3, halign = hleft)
+
+Create a matrix of labeled images.  Useful in Weave, Juno or Jupyter.
+"""
 function labeledimages(labels::AbstractVector{<:AbstractString}, images::AbstractVector{<:AbstractArray}; ncols=3, halign = hleft)
     @assert length(labels)==length(images)
     nrows = (length(images)+ncols-1) ÷ ncols

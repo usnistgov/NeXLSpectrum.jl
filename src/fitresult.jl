@@ -42,7 +42,7 @@ function kratios(ffr::FitResult)::Vector{KRatio}
     return KRatio[
         KRatio(
             lbl.xrays,
-            copy(unknown(ffr).spec.properties),
+            copy(unknown(ffr).spectrum.properties),
             copy(lbl.spectrum.properties),
             lbl.spectrum[:Composition],
             ffr.kratios[lbl],

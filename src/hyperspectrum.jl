@@ -1,8 +1,29 @@
 """
    HyperSpectrum(arr::Array{T<:Real}, energy::EnergyScale, props::Array{Symbol, Any})
 
-A HyperSpectrum takes a Array{T<:Real, N} and converts it into an Array{Spectrum{T<:Real},N-1}.  In other words,
-it makes it easy to interpet an hyperdimensional Array of numbers as an Array of spectra.
+
+The HyperSpectrum struct represents a multi-dimensional array of Spectrum objects.  The dimension of a HyperSpectrum
+may be 1 for a traverse or a line-scan, 2 for a spectrum image or higher for time-series of spectrum images or
+multi-slice spectrum images.
+
+HyperSpectra differ from Array{Spectrum} in that the spectra in a HyperSpectrum must share properties like
+:LiveTime and :ProbeCurrent.
+
+
+Internally, HyperSpectrum reinterpretes an Array{T<:Real, N+1} as an Array{Spectrum{T<:Real},N-1}.
+
+Often HyperSpectrum objects are read from a RPL/RAW file (using `readrplraw(filenamebase::AbstractString)`) but
+can be constructed from any Array{<:Real}.
+
+HyperSpectrum objects can be indexed using the standard Julia array idioms including a single integer index or a
+CartesianIndex.  For example, to iterate over every spectrum in a HyperSpectrum
+
+    % Construct a 20 × 20 spectrum image with 2048 channels of [0,255].
+    hs = HyperSpectrum{es, props, (20,20), 2048, UInt8}
+    for idx in eachindex(hs)
+        spec = hs[idx]   % get a Spectrum representing the data at idx
+        spec[22] = 1     % Set the 22nd channel to 1
+    end
 """
 struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
     counts::Array{T}
@@ -52,6 +73,12 @@ Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
 Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts, k + 1)
 Base.strides(hss::HyperSpectrum) = strides(hss.counts)[2:end]
 depth(hss::HyperSpectrum) = size(hss.counts, 1)
+
+"""
+    dose(hss::HyperSpectrum)
+
+Returns the product of the probe current and the live-time.
+"""
 dose(hss::HyperSpectrum) = hss[:ProbeCurrent] * hss[:LiveTime]
 
 function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real,N}
@@ -64,9 +91,17 @@ function Base.getindex(hss::HyperSpectrum{T,N}, idx::Vararg{Int,N})::Spectrum{T}
     props[:Cartesian] = CartesianIndex(idx...)
     return Spectrum(hss.energy, counts(hss)[:, idx...], props)
 end
+
+"""
+    region(hss::HyperSpectrum{T, N}, ranges::AbstractRange...)::HyperSpectrum where {T<:Real,N}
+
+Creates a view of a HyperSpectrum to represent the range of pixels within the `hss` HyperSpectrum.  Does
+not copy the data or properties so any modifications to the region are also made to `hss`.
+"""
 function region(hss::HyperSpectrum{T,N}, ranges::AbstractRange...)::HyperSpectrum{T,N} where {T<:Real,N}
     HyperSpectrum(hss.energy, hss.properties, counts(hss)[:, ranges...])
 end
+
 Base.getindex(hss::HyperSpectrum, sy::Symbol) = getindex(hss.properties, sy)
 Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) = setindex!(hss.properties, val, sy)
 
@@ -74,8 +109,24 @@ NeXLCore.energy(ch::Integer, hss::HyperSpectrum) = energy(ch, hss.energy)
 channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
 rangeofenergies(ch::Integer, hss::HyperSpectrum) = (energy(ch, hss.energy), energy(ch + 1, hss.energy))
 properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
-counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = counts(hss)[ch, ci]
+
+"""
+    counts(hss::HyperSpectrum{T,N})::Array{T,N+1}
+
+Creates type-friendly view of the counts data array.  Use of this function helps to avoid performance
+penalties associated with boxing/unboxing the counts data.
+
+    counts(hss::HyperSpectrum{T,N}, ci::CartesianIndex)::Vector{T}
+
+Access the counts data associated with the pixel `ci`.
+
+    counts(hss::HyperSpectrum{T,N}, ci::CartesianIndex, ch::Int)::T
+
+Access the counts data at the pixel represented by `ci` and the channel represented by `ch`.
+"""
 counts(hss::HyperSpectrum{T,N}) where {T<:Real, N} = convert(Array{T,N+1}, hss.counts)
+counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = counts(hss)[ch, ci]
+counts(hss::HyperSpectrum, ci::CartesianIndex) = counts(hss)[:, ci]
 
 """
     compress(hss::HyperSpectrum)
@@ -112,9 +163,9 @@ end
    plane(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}, normalize=false)
 
 Sums a contiguous range of data planes into an Array. The dimension of the result is
-one less than the dimension of the HyperSpectrum.
+one less than the dimension of the HyperSpectrum and is stored as a Float64 to ensure that not information is lost.
 """
-function plane(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}, normalize = false)
+function plane(hss::HyperSpectrum{T,N}, chs::AbstractUnitRange{<:Integer}, normalize = false) where {T<:Real, N}
     res = map(ci -> sum(Float64.(counts(hss)[chs, ci])), hss.index)
     if normalize
         res /= maximum(res)
@@ -139,8 +190,10 @@ end
 """
     maxpixel(hss::HyperSpectrum, filt=ci->true)
     maxpixel(hss::HyperSpectrum, cis::CartesianIndices, filt=ci->true)
+    maxpixel(hss::HyperSpectrum, mask::BitArray)
     minpixel(hss::HyperSpectrum, filt=ci->true)
     minpixel(hss::HyperSpectrum, cis::CartesianIndices, filt=ci->true)
+    minpixel(hss::HyperSpectrum, mask::BitArray)
 
 Compute Bright's Max-Pixel derived signal for the entire HyperSpectrum or a rectanglar sub-region.
 """
@@ -214,6 +267,7 @@ function indexofmaxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {
     end
     return cix
 end
+
 """
     Base.sum(hss::HyperSpectrum{T, N}) where {T<:Real, N}
     Base.sum(hss::HyperSpectrum{T, N}, mask::Union{BitArray, Array{Bool}}) where {T<:Real, N}
