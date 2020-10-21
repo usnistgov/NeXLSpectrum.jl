@@ -124,7 +124,7 @@ end
     filt = buildfilter(det)
     frs = filterreferences(filt, refs...)
     qq = VectorQuant(frs, filt)
-    res=fit(qq, hs) # Array{KRatios}
+    res = fit(qq, hs) # Array{KRatios}
     @test res[1] isa KRatios
     @test all(map(a->isapprox(a..., atol=0.00001), zip((r.kratios[12,23] for r in res), ( 1.10457, 0.006895, 0.0, 0.0, 0.0, 0.063778, 0.0 ))))
     @test all(map(a->isapprox(a..., atol=0.00001), zip((r.kratios[60,29] for r in res), ( 1.070000, 0.01006, 0.36027, 0.20048, 0.025442, 1.11138, 0.002127 ))))

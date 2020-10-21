@@ -152,7 +152,6 @@ export FilteredReference # A filtered datum representing a contiguous region of 
 export buildfilter
 export estimatebackground
 export ascontiguous
-#export fitcontiguousg, fitcontiguousp, fitcontiguousw, fitcontiguouso
 export filterfit
 export filteredresidual
 export filterreference

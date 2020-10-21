@@ -1,5 +1,3 @@
-using Base.Threads
-
 # Schamber's Vector quant algorithm - It foregoes the a weighted least squares fit for a simple
 # homoskedastic fit.  In doing this it can precompute a fitting matrix which requires nothing
 # more than a single matrix multiplication to perform the fit.  This makes this mechanism
