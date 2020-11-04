@@ -22,3 +22,21 @@ function NeXLMatrixCorrection.quantify(
     krs = filter(kr -> !(element(kr) in strip), kratios(ffr))
     return quantify(iter, ffr.label, optimizeks(kro, krs))
 end
+
+"""
+    NeXLMatrixCorrection.quantify(
+        spec::Spectrum,
+        ffp::FilterFitPacket;
+        kwargs...
+    )::IterationResult
+
+Failitates quantifying spectra.  First filter fits and then matrix corrects.
+"""
+function NeXLMatrixCorrection.quantify(
+    spec::Spectrum,
+    ffp::FilterFitPacket;
+    kwargs...
+)::IterationResult
+    return quantify(fit(spec, ffp), kwargs...)
+end
+

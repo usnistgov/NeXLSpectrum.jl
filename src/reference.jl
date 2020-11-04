@@ -13,7 +13,13 @@ end
 spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
 NeXLCore.elms(ffp::FilterFitPacket) =  union( (elms(spec, true) for spec in spectra(ffp) )...)
 
-function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing, coating=nothing)
+struct ReferencePacket 
+    spectrum::Spectrum
+    element::Element
+    material::Material
+end
+
+function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing, coating=nothing)::ReferencePacket
     if !isnothing(lt)
         @assert lt>0.0 "The live time must be larger than zero for $(spec[:Name])."
         spec[:LiveTime] = lt
@@ -34,7 +40,7 @@ function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt
     @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined for $(spec[:Name]).  (Use the `lt` keyword argument)"
     @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
     @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
-    return ( spec, elm, mat)
+    return ReferencePacket( spec, elm, mat)
 end
 
 reference(elm::Element, spec::Spectrum; kwargs...) = reference(elm, spec, spec[:Composition]; kwargs...)
@@ -45,19 +51,20 @@ reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
 reference(elm::Element, filename::AbstractString; kwargs...) =
     reference( elm, loadspectrum(filename); kwargs... )
 
-references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(refs[1][1], fwhm))
+references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
+    references(refs, matching(refs[1].spectrum, fwhm))
 
-function references(refs::AbstractVector{<:Tuple{Spectrum, Element, Material}}, det::EDSDetector)::FilterFitPacket
-    chcount = length(refs[1][1])
-    @assert all(length(r[1])==chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
-    @assert all(matches(r[1], det) for r in refs[1:end]) "All the spectra must match the detector $det."
+function references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; dettol::Float64=1.0)::FilterFitPacket
+    chcount = length(refs[1].spectrum)
+    @assert all(length(r.spectrum)==chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
+    # @assert all(matches(r.spectrum, det, dettol) for r in refs[1:end]) "All the spectra must match the detector $det."
     ff = buildfilter(det)
-    refs = mapreduce(ref->filterreference(ff, ref...), append!, refs)
-    return FilterFitPacket(det, ff, selectBestReferences(refs))
+    frefs = mapreduce( ref->filterreference(ff, ref.spectrum, ref.element, ref.material), append!, refs )
+    return FilterFitPacket(det, ff, frefs)
 end
 
 fit(spec::Spectrum, ffp::FilterFitPacket) = fit(FilteredUnknownW, spec, ffp.filter, ffp.references)
+
 """
 fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
 

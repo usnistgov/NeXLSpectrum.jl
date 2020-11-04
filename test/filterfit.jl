@@ -331,4 +331,21 @@ using Statistics
         @test_broken isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
     end
 
+    @testset "ADM6005a - Refs" begin
+        path = joinpath(@__DIR__,"ADM6005a spectra")
+        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i in 1:15)
+        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
+        ffp = references( [ 
+            reference( n"Al", joinpath(path, "Al std.msa"), mat"Al" ),
+            reference( n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2" ),
+            reference( n"Fe", joinpath(path, "Fe std.msa"), mat"Fe" ),
+            reference( n"Ge", joinpath(path, "Ge std.msa"), mat"Ge" ),
+            reference( n"Si", joinpath(path, "Si std.msa"), mat"Si" ),
+            reference( n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),
+            reference( n"Ti", joinpath(path, "Ti trimmed.msa"), mat"Ti" ),
+            reference( n"Zn", joinpath(path, "Zn std.msa"), mat"Zn" ) ], det, dettol=100.0)
+
+        res = map(u->fit(u, ffp), unks)
+    end
+
 end
