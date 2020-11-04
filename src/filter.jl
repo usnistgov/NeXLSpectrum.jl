@@ -531,23 +531,22 @@ end
     selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
 
 For each roi in each element, pick the best FilteredReference with the highest
-intensity in the filtered data.
+intensity in the characteristic-only data.
 """
 function selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
-    best = FilteredReference[]
-    elms = Set(element(ref.label) for ref in refs)
+    rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
+    elms = unique( element(ref.label) for ref in refs )
     for elm in elms
-        rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
         for ref in filter(ref -> element(ref.label) == elm, refs)
-            # Pick the reference with the largest filtered value
-            mrf = maximum(ref.filtered)
+            comp = get(ref.label.spectrum, :Composition, missing)
+            # Pick the reference with the largest charonly value but prefer pure elements over compounds
+            mrf = maximum(ref.charonly)* (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)  
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
                 rois[ref.roi] = (ref, mrf)
             end
         end
-        append!(best, map(v -> v[1], values(rois)))
     end
-    return best
+    return [ v[1] for v in values(rois) ]
 end
 
 function filterreference(
