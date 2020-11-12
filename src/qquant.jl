@@ -10,13 +10,12 @@ struct VectorQuant
 
     """
         VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
-
+    
     Constructs a structure used to perform accelerated filtered spectrum fits based on the specified
     collection of `FilteredReference`(s), and a `TopHatFilter`.
     """
     function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
-        bestrefs = selectBestReferences(frefs)
-        refs = [(fref.label, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in bestrefs]
+        refs = [(fref.label, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
         x = zeros(Float64, (length(filt.filters), length(frefs)))
         for (c, fref) in enumerate(frefs)
             x[fref.ffroi, c] = fref.filtered
