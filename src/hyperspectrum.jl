@@ -137,7 +137,7 @@ which compresses to Float32 with loss of precision).  Can change the storage typ
 function compress(hss::HyperSpectrum{T,N}) where {T<:Real, N}
     data = counts(hss)
     (minval, maxval) = extrema(data)
-    maxi = mapreduce(ci -> findlast(c -> c != 0.0, data[:, ci]), max, CartesianIndices(hss))
+    maxi = mapreduce(ci -> something(findlast(c -> c != 0.0, data[:, ci]), 0), max, CartesianIndices(hss))
     data = maxi < depth(hss) ? data[1:maxi, axes(hss.counts)[2:end]...] : data
     if eltype(T) in (Int16, Int32, Int64)
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
