@@ -39,6 +39,7 @@ Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [NeXLUncertainties
 The k-ratios associated with each `CharXRayLabel` as a vector 'KRatio' objects.
 """
 function kratios(ffr::FitResult)::Vector{KRatio}
+    lbls = filter(l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)), labels(ffr.kratios))
     return KRatio[
         KRatio(
             lbl.xrays,
@@ -46,8 +47,33 @@ function kratios(ffr::FitResult)::Vector{KRatio}
             copy(lbl.spectrum.properties),
             lbl.spectrum[:Composition],
             ffr.kratios[lbl],
-        ) for lbl in filter(l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)), labels(ffr.kratios))
+        ) for lbl in lbls
     ]
+end
+
+
+"""
+    extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
+
+Extract a `Standard` for the `Element` from a `FilterFitResult` associated with
+the `Material`.  The standard will consist of one or more `KRatio` objects
+associated with a `Material`. 
+"""
+function extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
+    @assert haskey(mat, elm)
+    lbls = filter( l-> (l isa CharXRayLabel) && (elm==element(l)) && #
+        haskey(l.spectrum, :Composition) && isequal(mat, l.spectrum[:Composition]), 
+        labels(ffr.kratios))
+    krs = KRatio[
+        KRatio(
+            lbl.xrays,
+            copy(unknown(ffr).spectrum.properties),
+            copy(lbl.spectrum.properties),
+            lbl.spectrum[:Composition],
+            ffr.kratios[lbl],
+        ) for lbl in lbls ]
+    @assert length(krs)>0 "There are no k-ratios associated with the $elm in $mat."
+    return Standard(mat, krs)
 end
 
 """

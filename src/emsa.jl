@@ -147,7 +147,8 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
 					elseif key == "TIME"
 						time = Time(DateTime(value, count(c->c==':',value) == 2 ? "H:M:S" : "H:M"))
 	                elseif key == "TITLE"
-	                    props[:Name]=value
+						props[:Name]=value
+						props[:Title]=value
 	                elseif key == "OWNER"
 	                    props[:Owner]=value
 	                elseif key == "ELEVANGLE"
