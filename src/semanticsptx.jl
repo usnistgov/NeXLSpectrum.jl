@@ -3,7 +3,7 @@ using OnlineStats: Mean, value, fit!
 """
     readptx(fn::AbstractString, scale::EnergyScale, nch::Int, dets=[true,true,true,true],frames=1:1000)
 
-Read a SEMantics .ptx file into a HyperSpectrum.  Really needs a better ZIP file reader to work...GC.
+Read a SEMantics .ptx file into a HyperSpectrum.  Really needs a better ZIP file reader to work....
 """
 function readptx(
    fn::AbstractString,

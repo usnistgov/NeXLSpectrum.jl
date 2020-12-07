@@ -107,6 +107,7 @@ function Gadfly.plot(
     autoklms = false,
     xmin = 0.0,
     xmax = missing,
+    legend=true,
     norm = NoScaling(),
     yscale = 1.05,
     ytransform = identity,
@@ -250,15 +251,18 @@ function Gadfly.plot(
     end
     Gadfly.with_theme(style) do
         try
+            leg = legend ? 
+                ( Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]) ) : 
+                ( )
             plot(
                 layers...,
                 Guide.XLabel("Energy (eV)"),
                 Guide.YLabel(ylbl),
                 Scale.x_continuous(format = :plain),
                 Scale.y_continuous(format = :plain),
-                Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
                 Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
-            )
+                leg...,
+            ) 
         catch
             plot(
                 layers...,
@@ -266,8 +270,8 @@ function Gadfly.plot(
                 Guide.YLabel(ylbl),
                 Scale.x_continuous(format = :plain),
                 Scale.y_continuous(format = :plain),
-                # Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]),
                 Coord.Cartesian(ymin = 0, ymax = ytransform(yscale * maxI), xmin = convert(Float64,xmin), xmax = maxE),
+                leg...,
             )
         end
     end

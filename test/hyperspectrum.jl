@@ -107,27 +107,45 @@ rrpath = artifact_path(rplraw_hash)
 end
 
 @testset "QQHyperspec" begin
-    les = LinearEnergyScale(0.0, 10.0)
-    props = Dict{Symbol,Any}(:LiveTime => 0.01, :BeamEnergy => 20.0e3, :ProbeCurrent=>1.0, :Name=>"Map[15]")
-    raw = readrplraw(joinpath(rrpath, "map[15]"))
-    hs = HyperSpectrum(les, props, raw)
-    mp = maxpixel(hs)
-    cstd, festd, fes2std, mgostd, sistd = map(n->loadspectrum(joinpath(rrpath, "standards", "$n std.msa")), ("C", "Fe", "FeS2", "MgO", "Si"))
-    det = matching(festd, 132.0, 10)
-    refs = (
-        ( cstd, n"C", mat"C" ),
-        ( festd, n"Fe", mat"Fe" ),
-        ( fes2std, n"S", mat"FeS2" ),
-        ( mgostd, n"O", mat"MgO" ),
-        ( sistd, n"Si", mat"Si" )
+    hs = HyperSpectrum(
+        LinearEnergyScale(0.0, 10.0),
+        Dict{Symbol,Any}(:LiveTime => 0.01, :BeamEnergy => 20.0e3, :ProbeCurrent=>1.0, :Name=>"Map[15]"),
+        readrplraw(joinpath(rrpath, "map[15]"))
     )
-    filt = buildfilter(det)
-    frs = filterreferences(filt, refs...)
-    qq = VectorQuant(frs, filt)
-    res = fit(qq, hs) # Array{KRatios}
-    @test res[1] isa KRatios
-    @test all(map(a->isapprox(a..., atol=0.00001), zip((r.kratios[12,23] for r in res), ( 1.10457, 0.006895, 0.0, 0.0, 0.0, 0.063778, 0.0 ))))
-    @test all(map(a->isapprox(a..., atol=0.00001), zip((r.kratios[60,29] for r in res), ( 1.070000, 0.01006, 0.36027, 0.20048, 0.025442, 1.11138, 0.002127 ))))
+    ffp = references( [
+        reference( n"C", joinpath(rrpath, "standards", "C std.msa"), mat"C" ),
+        reference( n"Fe", joinpath(rrpath, "standards", "Fe std.msa"), mat"Fe" ),
+        reference( n"S", joinpath(rrpath, "standards", "FeS2 std.msa"), mat"FeS2" ),
+        reference( n"O", joinpath(rrpath, "standards", "MgO std.msa"), mat"MgO" ),
+        reference( n"Si", joinpath(rrpath, "standards", "Si std.msa"), mat"Si" ) ],
+        132.0
+    )
+    res = fit(hs, ffp, mode=:Fast)
+    @test res isa Vector{KRatios}
+    # Test if :Fast quant equivalent to :Full quant for a couple of pixels
+    res12_23 = fit(hs[12,23],ffp)
+
+    matches(kr1::KRatio, kr2::KRatio) = kr1.element == kr2.element && brightest(kr1.lines)==brightest(kr2.lines)
+
+    for krs in res
+        kr1 = krs[12,23]
+        for kr2 in kratios(res12_23)
+            if matches(kr1,kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    res60_29 = fit(hs[60,29],ffp)
+    for krs in res
+        kr1 = krs[60,29]
+        for kr2 in kratios(res60_29)
+            if matches(kr1,kr2)
+                @test equivalent(kr1.kratio,kr2.kratio)
+            end
+        end
+    end
+
     raw = nothing
     GC.gc()
 end
