@@ -98,6 +98,7 @@ export maxproperty, minproperty # Min value of a property over a vector of spect
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
 export textplot # A quick way to visualize a spectrum
 export findsimilar # Find the spectra that are most similar to each other
+export χ² # Compare spectra
 
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum

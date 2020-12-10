@@ -335,6 +335,12 @@ function counts(spec::Spectrum, channels::AbstractRange{<:Integer}, numType::Typ
     return res
 end
 
+function counts(spec::Spectrum, channels::AbstractVector{<:Integer}, numType::Type{T}=Float64)::Array{T} where {T<:Real}
+    return T[ convert(numType, n) for n in spec.counts[channels] ]
+end
+
+
+
 """
     lld(spec::Spectrum)
 
@@ -798,17 +804,14 @@ scales are equivalent for all the spectra.  The resultant energy scale is the sc
 :ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
 """
 function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; applylld=false)::Spectrum where T <: Real
-    props = commonproperties(specs)
-    cxs, ds, pc, rt = zeros(restype, maximum(length.(specs))), 0.0, 0.0, 0.0
+    cxs = zeros(restype, maximum(length.(specs)))
     for spec in specs
         cxs .+= counts(spec, eachindex(cxs), restype, applylld)
-        ds += dose(spec)
-        pc += spec[:ProbeCurrent]
-        rt += get(spec, :RealTime, NaN64)
     end
-    pc /= length(specs)
-    props[:ProbeCurrent] = pc
-    props[:LiveTime] = ds / pc
+    props = commonproperties(specs)
+    props[:ProbeCurrent] = mean(sp[:ProbeCurrent] for sp in specs)
+    props[:LiveTime] = sum(dose.(specs))/props[:ProbeCurrent]
+    rt = sum(get(sp, :RealTime, NaN64) for sp in specs)
     if !isnan(rt)
         props[:RealTime] = rt
     end
@@ -817,31 +820,70 @@ function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; a
 end
 
 """
-    measure_dissimilarity(specs::AbstractVector{Spectrum)::Vector{Float64}
+    χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::T where {T<:Real}
+    χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T}
 
-Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
+Computes the dose corrected χ² metric of similarity between `s1` and `s2`.
+Or computes the matrix of χ² for the array of spectra.
 """
-function measure_dissimilarity(specs::AbstractVector{Spectrum{T}})::Vector{Float64} where T <: Real
-    function χ2(sp,m)
-        m1(v) = max(v, oneunit(v))
-        cxs = counts(sp, eachindex(m), Float64, true)
-        return sum( ((cxs / dose(sp) .- m) ./ (sqrt.(m1.(cxs))/dose(sp))).^2 )/(length(sp)-1)
-    end
-    χ2s = zeros(Float64,length(specs))
-    for (i, rmspec) in enumerate(specs)
-        # Remove one spectrum
-        others = filter(s->s!=rmspec, specs)
-        # Compute the mean counts/(nA⋅s)
-        mcpnas = zeros(Float64, maximum(length.(others)))
-        for spec in others
-            mcpnas .+= counts(spec, eachindex(mcpnas), Float64, true) / dose(spec) # counts/(nA⋅s)
-        end
-        mcpnas /= length(others) # mean counts/(nA⋅s)
-        # Compute how different this spectrum is from the others
-        χ2s[i] = χ2(rmspec, mcpnas)
+function χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::T where {T<:Real}
+    k1, k2 = 1.0/dose(s1), 1.0/dose(s2)
+    d = sum((k1*s1[ch]-k2*s2[ch])^2 for ch in chs)
+    s = sum(sqrt(k1^2*max(one(T), s1[ch])+k2^2*max(one(T),s2[ch])) for ch in chs)
+    return d/s
+end
+
+function χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
+    χ2s = zeros(Float64, (length(specs), length(specs)))
+    for i in eachindex(specs), j in i+1:length(specs)
+        χ2s[i,j] =  χ²(specs[i], specs[j], chs)
+        χ2s[j,i] = χ2s[i,j]
     end
     return χ2s
 end
+
+"""
+    measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, chs)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractVector{Spectrum}, minE::Float64=100.0)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
+
+Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
+The first version covers all the channels between minE and the nominal beam energy. The second version
+only considers those channels representing peaks in a spectrum from the `Material` on the `Detector`.
+The statistic returned is the χ² for each spectrum relative to the mean spectrum.  It should be nominally
+a vector of 1's for spectra that differ only by count statistics.
+"""
+function measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, chs)::Vector{Float64} where T <: Real
+    s = sum(specs)
+    return [ χ²(spec, s, chs) for spec in specs ]
+end
+function measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, minE::Float64=100.0)::Vector{Float64} where T <: Real
+    e0 = maximum(spec[:BeamEnergy] for spec in specs)
+    chs = minimum(channel(minE, spec) for spec in specs):maximum(channel(e0, spec) for spec in specs)
+    return measure_dissimilarity(specs, chs)
+end
+function measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64} where T <: Real
+    function mrg(inp::Vector{UnitRange{Int}})::Vector{UnitRange{Int}}
+        simp = sort(inp)
+        st, res = simp[1], UnitRange{Int}[]
+        for r in simp[2:end]
+            if isempty(intersect(st, r))
+                push!(res, st)
+                st = r
+            else
+                st = first(st):max(last(r),last(st))
+            end
+        end
+        push!(res, st)
+        return res
+    end
+    e0 = maximum(spec[:BeamEnergy] for spec in specs)
+    # Figure out the contiguous ROIs and the channels in the ROIs 
+    rois = mrg(mapreduce(elm->extents(characteristic(elm, alltransitions, 0.01, e0), det, 0.001), append!, keys(mat)))
+    chs = mapreduce(collect, append!, rois)
+    return measure_dissimilarity(specs, chs)
+end
+
 
 """
     findsimilar(specs::AbstractVector{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}}
