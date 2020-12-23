@@ -796,14 +796,14 @@ end
 
 
 """
-    Base.sum(specs::AbstractVector{Spectrum{T}}; restype::Type{<:Real}=Tapplylld=false)::Spectrum{T}
+    Base.sum(specs::AbstractVector{Spectrum{T}}; restype::Type{<:Real}=T, applylld=false, name=Nothing|String)::Spectrum{T}
 
 Computes the sum spectrum over an `AbstractVector{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
 :ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
 """
-function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; applylld=false)::Spectrum where T <: Real
+function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; applylld=false, name=nothing)::Spectrum where T <: Real
     cxs = zeros(restype, maximum(length.(specs)))
     for spec in specs
         cxs .+= counts(spec, eachindex(cxs), restype, applylld)
@@ -815,7 +815,7 @@ function Base.sum(specs::AbstractVector{Spectrum{T}}, restype::Type{<:Real}=T; a
     if !isnan(rt)
         props[:RealTime] = rt
     end
-    props[:Name] = "Sum[$(length(specs)) spectra]"
+    props[:Name] = something(name, "Sum[$(length(specs)) spectra]")
     return Spectrum(specs[1].energy, cxs, props)
 end
 
