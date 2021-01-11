@@ -42,5 +42,20 @@ struct SavitzkyGolayFilter{M,N} <: SpectrumFilter end
     return expr
 end
 
-apply(filt::Function, spec::Spectrum, applyLLD=false) =
-    Spectrum(spec.energy, filt(counts(spec, eltype(spec), applyLLD)), copy(spec.properties))
+"""
+    apply(filt::SavitzkyGolayFilter, spec::Spectrum, applyLLD=false)
+
+Applys a function to the channel data in `spec` (with/wo the low-level discriminator.)
+The function can only be a function of the counts data and can not change the
+energy scale or spectrum properties.  The result is a Spectrum.
+
+Example:
+
+    apply(SavitzkyGolayFilter{6,4}(),spec)
+"""
+function apply(filt::SavitzkyGolayFilter, spec::Spectrum, applyLLD=false) 
+    res = Spectrum(spec.energy, filt(counts(spec, eltype(spec), applyLLD)), copy(spec.properties))
+    res[:Name]=repr(filt)[1:end-1]*"$(spec[:Name]))"
+    res[:Parent] = spec
+    res
+end
