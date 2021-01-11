@@ -250,10 +250,10 @@ function Gadfly.plot(
         append!(layers, sumPeaks(coincidences))
     end
     Gadfly.with_theme(style) do
+        leg = legend ? 
+            tuple( Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]) ) : 
+            tuple(  )
         try
-            leg = legend ? 
-                ( Guide.manual_color_key(length(specs) > 1 ? "Spectra" : "Spectrum", names, palette[1:length(specs)]) ) : 
-                ( )
             plot(
                 layers...,
                 Guide.XLabel("Energy (eV)"),
