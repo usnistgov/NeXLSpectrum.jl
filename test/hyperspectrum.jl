@@ -3,7 +3,7 @@ using Pkg
 using Pkg.Artifacts
 using NeXLSpectrum
 using DataFrames
-# using Downloads
+using Downloads: download
 
 # This is the path to the Artifacts.toml we will manipulate
 artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
@@ -17,9 +17,11 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
     # create_artifact() returns the content-hash of the artifact directory once we're finished creating it
     rplraw_hash = create_artifact() do artifact_dir
         println("Artifact dir: $artifact_dir")
-        tarball = joinpath(artifact_dir, "rplraw.tar.gz")
-        # Downloads.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX",tarball)
-        download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX",tarball)
+        tarball = if VERSION >= v"1.6.0-beta1.0"
+            Downloads.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+        else
+            Base.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+        end
         Pkg.probe_platform_engines!()
         Pkg.unpack(tarball, artifact_dir, verbose=true)
         rm(tarball)
