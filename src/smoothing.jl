@@ -1,102 +1,61 @@
-function buildSavitzkyGolay(coeffs)
-        res = Array{Rational{Int}}(undef, 2 * length(coeffs) - 1)
-        for i in eachindex(coeffs)
-                res[i] = coeffs[i]
-                res[end-(i-1)] = coeffs[i]
+abstract type SpectrumFilter end
+
+# From: https://gist.github.com/jiahao/b8b5ac328c18b7ae8a17
+
+
+struct SavitzkyGolayFilter{M,N} <: SpectrumFilter end
+@generated function (::SavitzkyGolayFilter{M,N})(data::AbstractVector{T}) where {M,N,T}
+    # Create Jacobian matrix
+    J = zeros(2M + 1, N + 1)
+    for i in 1:2M + 1, j in 1:N + 1
+        J[i, j] = (i - M - 1)^(j - 1)
+    end
+    e₁ = zeros(N + 1)
+    e₁[1] = 1.0
+
+        # Compute filter coefficients
+    C = J' \ e₁
+        # Evaluate filter on data matrix
+
+    To = typeof(C[1] * one(T)) # Calculate type of output
+    expr = quote
+        n = size(data, 1)
+        smoothed = zeros($To, n)
+        @inbounds for i in eachindex(smoothed)
+            smoothed[i] += $(C[M + 1]) * data[i]
         end
-        return res
+        smoothed
+    end
+
+    for j = 1:M
+        insert!(expr.args[6].args[3].args[2].args, 1,
+                        :(if i - $j ≥ 1
+            smoothed[i] += $(C[M + 1 - j]) * data[i - $j]
+        end)
+                )
+        push!(expr.args[6].args[3].args[2].args,
+                        :(if i + $j ≤ n
+            smoothed[i] += $(C[M + 1 + j]) * data[i + $j]
+        end)
+                )
+    end
+    return expr
 end
 
-const SV2 = buildSavitzkyGolay( (17 // 35, 12 // 35, -3 // 35) )
-const SV3 = buildSavitzkyGolay( (7 // 21, 6 // 21, 3 // 21, -2 // 21) )
-const SV4 = buildSavitzkyGolay( (59 // 231, 54 // 231, 39 // 231, 14 // 231, -21 // 231) )
-const SV5 = buildSavitzkyGolay( (89 // 429, 84 // 429, 69 // 429, 44 // 429, 9 // 429, -36 // 429) )
-const SV6 = buildSavitzkyGolay( (25 // 143, 24 // 143, 21 // 143, 16 // 143, 9 // 143, 0 // 143, -11 // 143) )
-const SV7 = buildSavitzkyGolay( (
-        167 // 1105,
-        162 // 1105,
-        147 // 1105,
-        122 // 1105,
-        87 // 1105,
-        42 // 1105,
-        -13 // 1105,
-        -78 // 1105,
-) )
-const SV8 = buildSavitzkyGolay( (
-        43 // 323,
-        42 // 323,
-        39 // 323,
-        34 // 323,
-        27 // 323,
-        18 // 323,
-        7 // 323,
-        -6 // 323,
-        -21 // 323,
-) )
-const SV9 = buildSavitzkyGolay( (
-        269 // 2261,
-        264 // 2261,
-        249 // 2261,
-        224 // 2261,
-        189 // 2261,
-        144 // 2261,
-        89 // 2261,
-        24 // 2261,
-        -51 // 2261,
-        -136 // 2261,
-) )
-const SV10 = buildSavitzkyGolay( (
-        329 // 3059,
-        324 // 3059,
-        309 // 3059,
-        284 // 3059,
-        249 // 3059,
-        204 // 3059,
-        149 // 3059,
-        84 // 3059,
-        9 // 3059,
-        -76 // 3059,
-        -171 // 3059,
-) )
-const SV11 = buildSavitzkyGolay( (
-        79 // 805,
-        78 // 805,
-        75 // 805,
-        70 // 805,
-        63 // 805,
-        54 // 805,
-        43 // 805,
-        30 // 805,
-        15 // 805,
-        -2 // 805,
-        -21 // 805,
-        -42 // 805,
-) )
-const SV12 = buildSavitzkyGolay( (
-        467 // 5175,
-        462 // 5175,
-        447 // 5175,
-        422 // 5175,
-        387 // 5175,
-        342 // 5175,
-        287 // 5175,
-        222 // 5175,
-        147 // 5175,
-        62 // 5175,
-        -33 // 5175,
-        -138 // 5175,
-        -253 // 5175,
-) )
+"""
+    apply(filt::SavitzkyGolayFilter, spec::Spectrum, applyLLD=false)
 
-function applyfilter(spec::Spectrum, filt, applyLLD = true)
-        ty = typeof(promote(spec.counts[1], filt[1])[1])
-        sc, fl = counts(spec, ty, applyLLD), convert.(ty, filt)
-        res = Array{ty}(undef, length(spec.counts))
-        for c = length[filt/2]+1:length(spec)-(length(filt)-length(filt / 2))
-                res[c] = sc[c-length[filt/2]:c+length(filt)-length(filt / 2)].filt
-        end
-        return res
+Applys a function to the channel data in `spec` (with/wo the low-level discriminator.)
+The function can only be a function of the counts data and can not change the
+energy scale or spectrum properties.  The result is a Spectrum.
+
+Example:
+
+    apply(SavitzkyGolayFilter{6,4}(),spec)
+"""
+function apply(filt::SavitzkyGolayFilter, spec::Spectrum, applyLLD=false) 
+    res = Spectrum(spec.energy, filt(counts(spec, eltype(spec), applyLLD)), copy(spec.properties))
+    res[:Name]=repr(filt)[1:end-1]*"$(spec[:Name]))"
+    res[:Parent] = spec
+    res
 end
-
-filtered(spec::Spectrum, filt, applyLLD = true)::Spectrum =
-        Spectrum(spec.energy, applyfilter(spec, filter, applyLLD), copy(spec.properties))

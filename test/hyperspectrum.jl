@@ -3,11 +3,12 @@ using Pkg
 using Pkg.Artifacts
 using NeXLSpectrum
 using DataFrames
+using Downloads: download
 
 # This is the path to the Artifacts.toml we will manipulate
 artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
 
-# Query the `Artifacts.toml` file for the hash bound to the name "iris"
+# Query the `Artifacts.toml` file for the hash bound to the name "rplraw"
 # (returns `nothing` if no such binding exists)
 rplraw_hash = artifact_hash("rplraw", artifacts_toml)
 
@@ -16,8 +17,11 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
     # create_artifact() returns the content-hash of the artifact directory once we're finished creating it
     rplraw_hash = create_artifact() do artifact_dir
         println("Artifact dir: $artifact_dir")
-        tarball = joinpath(artifact_dir, "rplraw.tar.gz")
-        download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX",tarball)
+        tarball = if VERSION >= v"1.6.0-beta1.0"
+            Downloads.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+        else
+            Base.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+        end
         Pkg.probe_platform_engines!()
         Pkg.unpack(tarball, artifact_dir, verbose=true)
         rm(tarball)
@@ -28,7 +32,7 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
     bind_artifact!(artifacts_toml, "rplraw", rplraw_hash)
 end
 
-# Get the path of the iris dataset, either newly created or previously generated.
+# Get the path of the rplraw dataset, either newly created or previously generated.
 # this should be something like `~/.julia/artifacts/dbd04e28be047a54fbe9bf67e934be5b5e0d357a`
 rrpath = artifact_path(rplraw_hash)
 

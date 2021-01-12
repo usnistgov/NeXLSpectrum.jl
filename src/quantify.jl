@@ -21,8 +21,8 @@ function NeXLMatrixCorrection.quantify(
     kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
 )::IterationResult
     iter = Iteration(mc, fl, cc, updater = WegsteinUpdateRule())
-    krs = filter(kr -> !(element(kr) in strip), kratios(ffr))
-    return quantify(iter, ffr.label, optimizeks(kro, krs), standards=standards)
+    krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
+    return quantify(iter, ffr.label, krs; standards=standards)
 end
 
 """
@@ -39,6 +39,6 @@ function NeXLMatrixCorrection.quantify(
     ffp::FilterFitPacket;
     kwargs...
 )::IterationResult
-    return quantify(fit(spec, ffp), kwargs...)
+    return quantify(fit(spec, ffp); kwargs...)
 end
 
