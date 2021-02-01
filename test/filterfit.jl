@@ -344,8 +344,13 @@ using Statistics
             reference( n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),
             reference( n"Ti", joinpath(path, "Ti trimmed.msa"), mat"Ti" ),
             reference( n"Zn", joinpath(path, "Zn std.msa"), mat"Zn" ) ], det, dettol=100.0)
-
         res = map(u->fit(u, ffp), unks)
+        @test isapprox(mean(values(findlabel(res[1], n"Al K-L3"),res)),0.0279,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Ti K-L3"),res)),0.0641,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Ge K-M3"),res)),0.2737,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Zn K-M3"),res)),0.1209,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Fe L3-M5"),res)),0.00033,atol=0.00001)
+        @test isapprox(mean(values(findlabel(res[1], n"Fe K-L3"),res)),0.0003026,atol=0.00001)
     end
 
 end
