@@ -17,10 +17,11 @@ if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
     # create_artifact() returns the content-hash of the artifact directory once we're finished creating it
     rplraw_hash = create_artifact() do artifact_dir
         println("Artifact dir: $artifact_dir")
+        url = "https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX"
         tarball = if VERSION >= v"1.6.0-beta1.0"
-            Downloads.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+            Downloads.download(url)
         else
-            Base.download("https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX")
+            Base.download(url)
         end
         Pkg.probe_platform_engines!()
         Pkg.unpack(tarball, artifact_dir, verbose=true)
@@ -124,10 +125,10 @@ end
         reference( n"Si", joinpath(rrpath, "standards", "Si std.msa"), mat"Si" ) ],
         132.0
     )
-    res = fit(hs, ffp, mode=:Fast)
+    res = fit_spectrum(hs, ffp, mode=:Fast)
     @test res isa Vector{KRatios}
     # Test if :Fast quant equivalent to :Full quant for a couple of pixels
-    res12_23 = fit(hs[12,23],ffp)
+    res12_23 = fit_spectrum(hs[12,23],ffp)
 
     matches(kr1::KRatio, kr2::KRatio) = kr1.element == kr2.element && brightest(kr1.lines)==brightest(kr2.lines)
 
@@ -140,7 +141,7 @@ end
         end
     end
 
-    res60_29 = fit(hs[60,29],ffp)
+    res60_29 = fit_spectrum(hs[60,29],ffp)
     for krs in res
         kr1 = krs[60,29]
         for kr2 in kratios(res60_29)

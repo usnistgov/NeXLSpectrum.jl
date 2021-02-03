@@ -66,6 +66,18 @@ function glssvd(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractMatrix{
     return olspinv(w*y, w*x, 1.0, xLabels, tol)
 end
 
+"""
+    glschol(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::Matrix{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+
+Solves the generalized least squares problem y = x β + ϵ for β using covariance whitening and the ordinary least squares pseudo-inverse.
+"""
+function glschol(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+    checkcovariance!(cov)
+    w = inv(cholesky(cov).L) # cov_whitening(Matrix(cov))
+    #olssvd(w*y, w*a, 1.0, xLabels, tol)
+    return olspinv(w*y, w*x, 1.0, xLabels, tol)
+end
+
 
 """
     wlssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues

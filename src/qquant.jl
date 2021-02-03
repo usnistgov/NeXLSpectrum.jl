@@ -31,7 +31,7 @@ NeXLCore.minproperties(::VectorQuant) = (:BeamEnergy, :TakeOffAngle, :)
 Base.show(io::IO, vq::VectorQuant) =
     print(io, "VectorQuant[\n" * join(map(r -> "\t" * repr(r[1]), vq.references), ",\n") * "\n]")
 
-function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum, zero = x -> max(0.0, x))::FilterFitResult
+function fit_spectrum(vq::VectorQuant, spec::Spectrum, zero = x -> max(0.0, x))::FilterFitResult
     raw = counts(spec, Float64)
     krs = zero.(vq.vectors * raw)
     spsc = dose(spec)
@@ -54,7 +54,7 @@ function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum, zero = x -> max(0.0, 
     return FilterFitResult(UnknownLabel(spec), kratios, 1:length(raw), raw, residual, peakback)
 end
 
-function NeXLSpectrum.fit(vq::VectorQuant, hs::HyperSpectrum, zero = x -> max(0.0, x))::Array{KRatios}
+function fit_spectrum(vq::VectorQuant, hs::HyperSpectrum, zero = x -> max(0.0, x))::Array{KRatios}
     krs = zeros(Float32, length(vq.references), size(hs)...)
     vecs = vq.vectors[:, 1:depth(hs)]
     scales = [ dose(hs)*vq.references[i][5] for i in eachindex(vq.references) ]

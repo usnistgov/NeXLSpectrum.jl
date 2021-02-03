@@ -10,7 +10,7 @@ using Unitful: mm
 using FileIO
 using Mmap
 using EzXML: readxml
-import Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
+using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
 using LoopVectorization
 using Statistics
@@ -164,7 +164,7 @@ export FitResult
 export BasicFitResult
 export FilterFitResult
 export findlabel
-export fit
+export fit_spectrum
 export heterogeneity
 export peaktobackground
 export characteristiccounts

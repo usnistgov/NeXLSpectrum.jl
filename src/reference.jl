@@ -63,10 +63,13 @@ function references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; det
     return FilterFitPacket(det, ff, frefs)
 end
 
-fit(spec::Spectrum, ffp::FilterFitPacket) = fit(FilteredUnknownW, spec, ffp.filter, ffp.references)
+fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) = fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
+
+fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) = 
+    map(spec->fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
 
 """
-fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
+fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
 
   * mode = :Fast - Uses precomputed, filtered "vector" fit method
   * mode = :Intermediate - Uses an optimized full fit without refits for k(s) < 0.0
@@ -94,7 +97,7 @@ with 64 GiB memory give a relative feel for the speed of each algorithm.  Yes, :
 | :Full         | 2056           | 2.7 G        | 786.1        | 4.2%     |
 |---------------|----------------|--------------|--------------|----------|
 """
-function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
+function fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
     _tophatfilterhs = (hs, data, thf, scale) -> begin
         @assert length(data)<=length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
         filtered = Float64[ filtereddatum(thf,data,i) for i in eachindex(data) ]
@@ -109,7 +112,7 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
     if mode==:Fast
         vq = VectorQuant(ffp.references, ffp.filter)
-        return fit(vq, hs, zero)
+        return fit_spectrum(vq, hs, zero)
     elseif mode==:Intermediate
         krs = zeros(Float32, length(ffp.references), size(hs)...)
         idose = 1.0/dose(hs)
@@ -150,3 +153,10 @@ function fit(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero =
         @assert false "The mode argument must be :Fast, :Intermediate or :Full."
     end
 end
+
+
+fit_spectrum(ty::Type{FilteredUnknownG}, unk::Spectrum, ffp::FilterFitPacket, forcezeros::Bool = true) =
+    fit_spectrum(ty, unk, ffp.filter, ffp.references, forcezeros)
+
+fit_spectrum(ty::Type{FilteredUnknownG}, unks::AbstractVector{<:Spectrum}, ffp::FilterFitPacket, forcezeros::Bool = true) =
+    fit_spectrum(ty, unks, ffp.filter, ffp.references, forcezeros)

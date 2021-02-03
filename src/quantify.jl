@@ -39,6 +39,6 @@ function NeXLMatrixCorrection.quantify(
     ffp::FilterFitPacket;
     kwargs...
 )::IterationResult
-    return quantify(fit(spec, ffp); kwargs...)
+    return quantify(fit_spectrum(spec, ffp); kwargs...)
 end
 
