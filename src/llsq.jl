@@ -73,8 +73,7 @@ Solves the generalized least squares problem y = x β + ϵ for β using covarian
 """
 function glschol(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     checkcovariance!(cov)
-    w = inv(cholesky(cov).L) # cov_whitening(Matrix(cov))
-    #olssvd(w*y, w*a, 1.0, xLabels, tol)
+    w = inv(cholesky(cov).L)
     return olspinv(w*y, w*x, 1.0, xLabels, tol)
 end
 
@@ -86,7 +85,7 @@ Solves the weighted least squares problem y = x β + ϵ  for β using singular v
 """
 function wlssvd(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    olssvd(w*y, w*x, 1.0, xLabels, tol)
+    return olssvd(w*y, w*x, 1.0, xLabels, tol)
 end
 
 """
@@ -96,13 +95,14 @@ Solves the weighted least squares problem a⋅x = y for x using singular value d
 """
 function wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    olspinv(w*y, w*a, 1.0, xLabels, tol)
+    return olspinv(w*y, w*a, 1.0, xLabels, tol)
 end
 
 """
-    wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xlabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues
+    wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, covscales::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
 
-Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
+Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.  Rescales the rescaleCovariances
+according to `covscales`.
 """
 function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, covscales::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
     function rescaleCovariances(uvs::UncertainValues, covscales::AbstractVector{N})::UncertainValues

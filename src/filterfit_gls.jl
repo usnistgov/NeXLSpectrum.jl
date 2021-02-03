@@ -22,7 +22,6 @@ function tophatfilter(::Type{FilteredUnknownG}, spec::Spectrum, thf::TopHatFilte
     filtered = [ filtereddatum(thf, data, i) for i in eachindex(data) ]
     dp = map(x->max(x, 1.0), data) # To ensure covariance isn't zero or infinite precision
     covar = [ filteredcovar(thf, dp, r, c) for r in eachindex(data), c in eachindex(data) ]
-    #covar = Matrix{Float64}(I, ( length(data), length(data)))
     return FilteredUnknownG(UnknownLabel(spec), scale, data, filtered, covar)
 end
 
@@ -44,6 +43,7 @@ By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg::Function = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
     trimmed, removed = copy(ffs), UncertainValues[] # start with all the FilteredReference
     while true
+        # Build a list of contiguous rois each of which is fit as a batch
         fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
         # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
         retained = map(fr -> alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
@@ -95,7 +95,6 @@ function fitcontiguousc(unk::FilteredUnknownG, ffs::AbstractVector{FilteredRefer
     x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * glschol(extract(unk, chs), x, unk.covariance[chs,chs], lbls)
 end
-
 
 """
 Weighted least squares using the diagonal from the FilteredUnknownG covariance as a matrix fed into glspinv.

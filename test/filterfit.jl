@@ -1,6 +1,7 @@
 using Test
 using NeXLSpectrum
 using Statistics
+using LinearAlgebra
 
 @testset "Filter Fitting" begin
     @testset "Filter" begin
@@ -268,6 +269,41 @@ using Statistics
         @test isapprox(mean(values(geroi[2], res)), 0.2628, atol=0.001)
         @test isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
     end
+
+    @testset "ADM6005a - Refs" begin
+        path = joinpath(@__DIR__,"ADM6005a spectra")
+        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i in 1:15)
+        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
+        ffp = references( [ 
+            reference( n"Al", joinpath(path, "Al std.msa"), mat"Al" ),
+            reference( n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2" ),
+            reference( n"Fe", joinpath(path, "Fe std.msa"), mat"Fe" ),
+            reference( n"Ge", joinpath(path, "Ge std.msa"), mat"Ge" ),
+            reference( n"Si", joinpath(path, "Si std.msa"), mat"Si" ),
+            reference( n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),
+            reference( n"Ti", joinpath(path, "Ti trimmed.msa"), mat"Ti" ),
+            reference( n"Zn", joinpath(path, "Zn std.msa"), mat"Zn" ) ], det, dettol=100.0)
+        res = fit_spectrum(unks, ffp)
+        @test isapprox(mean(values(findlabel(res[1], n"Al K-L3"),res)),0.0279,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Ti K-L3"),res)),0.0641,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Ge K-M3"),res)),0.2737,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Zn K-M3"),res)),0.1209,atol=0.0001)
+        @test isapprox(mean(values(findlabel(res[1], n"Fe L3-M5"),res)),0.00033,atol=0.00001)
+        @test isapprox(mean(values(findlabel(res[1], n"Fe K-L3"),res)),0.0003026,atol=0.00001)
+    end
+
+    # Check that the covariance of the filtered spectrum is calculated correctly as F*diagm(S)*transpose(F)
+    @testset "Filtered covariance" begin
+        spec = loadspectrum(joinpath(@__DIR__,"ADM6005a spectra", "ADM-6005a_1.msa"))
+        det = matching(spec, 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
+        filt = buildfilter(VariableWidthFilter, det)
+        specdata = counts(spec)
+        cov1 = [ NeXLSpectrum.filteredcovar(filt, specdata, r, c) for r in eachindex(specdata), c in eachindex(specdata) ]
+        filtd = NeXLSpectrum.filterdata(filt)
+        cov2 = filtd*diagm(specdata)*transpose(filtd)
+        @test all(isapprox(cov1[ii],cov2[ii], rtol = 1.0e-6, atol=1.0e-12) for ii in eachindex(cov1))
+    end
+
     @testset "ADM6005a - Gen" begin
         # same as above but using the FilteredUnknownG code with the generalized algorithm
         path = joinpath(@__DIR__,"ADM6005a spectra")
@@ -331,28 +367,6 @@ using Statistics
         @test_broken isapprox(mean(values(geroi[3], res)), 0.279, atol=0.011)
     end
 
-    @testset "ADM6005a - Refs" begin
-        path = joinpath(@__DIR__,"ADM6005a spectra")
-        unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i in 1:15)
-        det = matching(unks[1], 128.0, 110, Dict(Shell(1) => n"Be", Shell(2) => n"Sc", Shell(3) => n"Cs", Shell(4) => n"Pu"))
-        ffp = references( [ 
-            reference( n"Al", joinpath(path, "Al std.msa"), mat"Al" ),
-            reference( n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2" ),
-            reference( n"Fe", joinpath(path, "Fe std.msa"), mat"Fe" ),
-            reference( n"Ge", joinpath(path, "Ge std.msa"), mat"Ge" ),
-            reference( n"Si", joinpath(path, "Si std.msa"), mat"Si" ),
-            reference( n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),
-            reference( n"Ti", joinpath(path, "Ti trimmed.msa"), mat"Ti" ),
-            reference( n"Zn", joinpath(path, "Zn std.msa"), mat"Zn" ) ], det, dettol=100.0)
-        res = fit_spectrum(unks, ffp)
-        @test isapprox(mean(values(findlabel(res[1], n"Al K-L3"),res)),0.0279,atol=0.0001)
-        @test isapprox(mean(values(findlabel(res[1], n"Ti K-L3"),res)),0.0641,atol=0.0001)
-        @test isapprox(mean(values(findlabel(res[1], n"Ge K-M3"),res)),0.2737,atol=0.0001)
-        @test isapprox(mean(values(findlabel(res[1], n"Zn K-M3"),res)),0.1209,atol=0.0001)
-        @test isapprox(mean(values(findlabel(res[1], n"Fe L3-M5"),res)),0.00033,atol=0.00001)
-        @test isapprox(mean(values(findlabel(res[1], n"Fe K-L3"),res)),0.0003026,atol=0.00001)
-    end
-
     @testset "ADM6005a - GLS" begin
         path = joinpath(@__DIR__,"ADM6005a spectra")
         unks = loadspectrum.(joinpath(path, "ADM-6005a_$(i).msa") for i in 1:15)
@@ -374,5 +388,4 @@ using Statistics
         @test_broken isapprox(mean(values(findlabel(res[1], n"Fe L3-M5"),res)),0.00033,atol=0.00001)
         @test_broken isapprox(mean(values(findlabel(res[1], n"Fe K-L3"),res)),0.0003026,atol=0.00001)
     end
-
 end

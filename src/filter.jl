@@ -94,11 +94,14 @@ function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
     return res
 end
 
-function filterdata(filt::TopHatFilter, region::UnitRange{Int})::Matrix{Float64}
+function filterdata(filt::TopHatFilter, region::AbstractUnitRange{Int})::Matrix{Float64}
     res = zeros(Float64, length(region), length(region))
-    foreach(r -> res[r-region.start+1,:] = filterdata(filt, r)[region], region)
+    foreach(r -> res[r-first(region)+1,:] = filterdata(filt, r)[region], region)
     return res
 end
+
+filterdata(filt::TopHatFilter) = #
+    filterdata(filt, eachindex(filt.filters))
 
 """
     filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, row::Int, col::Int)::Float64
@@ -126,14 +129,13 @@ function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l:
         0.0
 end
 
-
 """
     filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, ch::Int)::Float64 =
 
 Compute a single channel in the filtered spectrum.
 """
-filtereddatum(filt::TopHatFilter, d::Vector{Float64}, i::Int)::Float64 =
-    dot(filt.filters[i], view(d,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
+filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, i::Int)::Float64 =
+    dot(filt.filters[i], view(specdata,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
