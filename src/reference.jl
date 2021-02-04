@@ -6,26 +6,34 @@ struct FilterFitPacket
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
-    lines = join(map(r->"\t$(r.label),", ffp.references),"\n")
+    lines = join(map(r -> "\t$(r.label),", ffp.references), "\n")
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
 end
 
 spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
-NeXLCore.elms(ffp::FilterFitPacket) =  union( (elms(spec, true) for spec in spectra(ffp) )...)
+NeXLCore.elms(ffp::FilterFitPacket) = union((elms(spec, true) for spec in spectra(ffp))...)
 
-struct ReferencePacket 
+struct ReferencePacket
     spectrum::Spectrum
     element::Element
     material::Material
 end
 
-function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt = nothing, e0 = nothing, coating=nothing)::ReferencePacket
+function reference(
+    elm::Element,
+    spec::Spectrum,
+    mat::Material;
+    pc = nothing,
+    lt = nothing,
+    e0 = nothing,
+    coating = nothing,
+)::ReferencePacket
     if !isnothing(lt)
-        @assert lt>0.0 "The live time must be larger than zero for $(spec[:Name])."
+        @assert lt > 0.0 "The live time must be larger than zero for $(spec[:Name])."
         spec[:LiveTime] = lt
     end
     if !isnothing(pc)
-        @assert pc>0.0 "The probe current must be larger than zero for $(spec[:Name])."
+        @assert pc > 0.0 "The probe current must be larger than zero for $(spec[:Name])."
         spec[:ProbeCurrent] = pc
     end
     if !isnothing(e0)
@@ -40,33 +48,41 @@ function reference(elm::Element, spec::Spectrum, mat::Material; pc = nothing, lt
     @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined for $(spec[:Name]).  (Use the `lt` keyword argument)"
     @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
     @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
-    return ReferencePacket( spec, elm, mat)
+    return ReferencePacket(spec, elm, mat)
 end
 
-reference(elm::Element, spec::Spectrum; kwargs...) = reference(elm, spec, spec[:Composition]; kwargs...)
+reference(elm::Element, spec::Spectrum; kwargs...) =
+    reference(elm, spec, spec[:Composition]; kwargs...)
 
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
-    reference( elm, loadspectrum(filename), mat; kwargs... )
+    reference(elm, loadspectrum(filename), mat; kwargs...)
 
 reference(elm::Element, filename::AbstractString; kwargs...) =
-    reference( elm, loadspectrum(filename); kwargs... )
+    reference(elm, loadspectrum(filename); kwargs...)
 
 references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
     references(refs, matching(refs[1].spectrum, fwhm))
 
-function references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; dettol::Float64=1.0)::FilterFitPacket
+function references(
+    refs::AbstractVector{ReferencePacket},
+    det::EDSDetector,
+)::FilterFitPacket
     chcount = length(refs[1].spectrum)
-    @assert all(length(r.spectrum)==chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
-    # @assert all(matches(r.spectrum, det, dettol) for r in refs[1:end]) "All the spectra must match the detector $det."
+    @assert all(length(r.spectrum) == chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
     ff = buildfilter(det)
-    frefs = mapreduce( ref->filterreference(ff, ref.spectrum, ref.element, ref.material), append!, refs )
+    frefs = mapreduce(
+        ref -> filterreference(ff, ref.spectrum, ref.element, ref.material),
+        append!,
+        refs,
+    )
     return FilterFitPacket(det, ff, frefs)
 end
 
-fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) = fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
+fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
+    fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
 
-fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) = 
-    map(spec->fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
+fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
+    map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
 
 """
 fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
@@ -97,25 +113,50 @@ with 64 GiB memory give a relative feel for the speed of each algorithm.  Yes, :
 | :Full         | 2056           | 2.7 G        | 786.1        | 4.2%     |
 |---------------|----------------|--------------|--------------|----------|
 """
-function fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
-    _tophatfilterhs = (hs, data, thf, scale) -> begin
-        @assert length(data)<=length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
-        filtered = Float64[ filtereddatum(thf,data,i) for i in eachindex(data) ]
-        dp = Float64[ max(x, 1.0) for x in data ] # To ensure covariance isn't zero or infinite precision
-        covar = Float64[ filteredcovar(thf, dp, i, i) for i in eachindex(data) ]
-        return FilteredUnknownW(UnknownLabel(hs), scale, eachindex(data), data, filtered, covar)
-    end
-    fitcontiguousx = (unk, ffs, chs) ->
-        _buildscale(unk, ffs) * pinv(_buildmodel(ffs, chs), rtol=1.0e-6)*extract(unk, chs)
-    _filterfitx = (unk, ffs, fitrois) ->
-        Iterators.flatten(map(fr -> fitcontiguousx(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs), fr), fitrois))
+function fit_spectrum(
+    hs::HyperSpectrum,
+    ffp::FilterFitPacket;
+    mode::Symbol = :Fast,
+    zero = x -> max(0.0, x),
+)::Array{KRatios}
+    _tophatfilterhs =
+        (hs, data, thf, scale) -> begin
+            @assert length(data) <= length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
+            filtered = Float64[filtereddatum(thf, data, i) for i in eachindex(data)]
+            dp = Float64[max(x, 1.0) for x in data] # To ensure covariance isn't zero or infinite precision
+            covar = Float64[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+            return FilteredUnknownW(
+                UnknownLabel(hs),
+                scale,
+                eachindex(data),
+                data,
+                filtered,
+                covar,
+            )
+        end
+    fitcontiguousx =
+        (unk, ffs, chs) ->
+            _buildscale(unk, ffs) *
+            pinv(_buildmodel(ffs, chs), rtol = 1.0e-6) *
+            extract(unk, chs)
+    _filterfitx =
+        (unk, ffs, fitrois) -> Iterators.flatten(
+            map(
+                fr -> fitcontiguousx(
+                    unk,
+                    filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs),
+                    fr,
+                ),
+                fitrois,
+            ),
+        )
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
-    if mode==:Fast
+    if mode == :Fast
         vq = VectorQuant(ffp.references, ffp.filter)
         return fit_spectrum(vq, hs, zero)
-    elseif mode==:Intermediate
+    elseif mode == :Intermediate
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0/dose(hs)
+        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
@@ -125,28 +166,55 @@ function fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fas
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+        for i in filter(
+            ii -> ffp.references[ii].label isa CharXRayLabel,
+            eachindex(ffp.references),
+        )
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
-            push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
+            push!(
+                res,
+                KRatios(
+                    xrays(lbl),
+                    properties(hs),
+                    rprops,
+                    rprops[:Composition],
+                    krs[i, :, :],
+                ),
+            )
         end
         return res
-    elseif mode==:Full
+    elseif mode == :Full
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0/dose(hs)
+        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             uvs = _filterfit(unk, ffp.references)
-            krs[:, ci] = map(id->convert(Float32, value(id, uvs)), ( ref.label for ref in ffp.references ))
+            krs[:, ci] = map(
+                id -> convert(Float32, value(id, uvs)),
+                (ref.label for ref in ffp.references),
+            )
         end
         res = KRatios[]
-        for i in filter(ii->ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))
+        for i in filter(
+            ii -> ffp.references[ii].label isa CharXRayLabel,
+            eachindex(ffp.references),
+        )
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
-            push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
+            push!(
+                res,
+                KRatios(
+                    xrays(lbl),
+                    properties(hs),
+                    rprops,
+                    rprops[:Composition],
+                    krs[i, :, :],
+                ),
+            )
         end
         return res
     else
@@ -155,8 +223,16 @@ function fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fas
 end
 
 
-fit_spectrum(ty::Type{FilteredUnknownG}, unk::Spectrum, ffp::FilterFitPacket, forcezeros::Bool = true) =
-    fit_spectrum(ty, unk, ffp.filter, ffp.references, forcezeros)
+fit_spectrum(
+    ty::Type{FilteredUnknownG},
+    unk::Spectrum,
+    ffp::FilterFitPacket,
+    forcezeros::Bool = true,
+) = fit_spectrum(ty, unk, ffp.filter, ffp.references, forcezeros)
 
-fit_spectrum(ty::Type{FilteredUnknownG}, unks::AbstractVector{<:Spectrum}, ffp::FilterFitPacket, forcezeros::Bool = true) =
-    fit_spectrum(ty, unks, ffp.filter, ffp.references, forcezeros)
+fit_spectrum(
+    ty::Type{FilteredUnknownG},
+    unks::AbstractVector{<:Spectrum},
+    ffp::FilterFitPacket,
+    forcezeros::Bool = true,
+) = fit_spectrum(ty, unks, ffp.filter, ffp.references, forcezeros)

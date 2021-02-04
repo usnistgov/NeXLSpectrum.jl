@@ -46,7 +46,9 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
         # Build a list of contiguous rois each of which is fit as a batch
         fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
         # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
-        retained = map(fr -> alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
+        retained = map(fitrois) do fr
+            alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr)
+        end
         kr = cat(retained)
         refit = false
         for lbl in keys(kr)

@@ -10,10 +10,10 @@ struct _ATField
     tagId::UInt16
     tagType::UInt16
     tagCount::UInt32
-    tagData
+    tagData::Any
 
     function _ATField(ios, order)
-        _TIFF_TYPES =  (
+        _TIFF_TYPES = (
             UInt8, # byte
             UInt8, # ASCII
             UInt16, # short
@@ -57,7 +57,7 @@ struct _TIFFIFD
 end
 
 function Base.get(ifd::_TIFFIFD, id::Integer, def)
-    idx = findfirst(atf->atf.tagId==id, ifd.ifdTags)
+    idx = findfirst(atf -> atf.tagId == id, ifd.ifdTags)
     return isnothing(idx) ? def : ifd.ifdTags[idx]
 end
 
@@ -96,7 +96,7 @@ function _parseDesc(desc::AbstractString)
         try
             if k == "MAG"
                 res[:ImageMag] = number(v)
-                res[:FieldOfView] = (3.5*25.4*1.0e3) / number(v) # Assumed 3.5" image width in microns
+                res[:FieldOfView] = (3.5 * 25.4 * 1.0e3) / number(v) # Assumed 3.5" image width in microns
             elseif k == "ZOOM"
                 res[:ImageZoom] = number(v)
             elseif k == "ANALYSIS_DATE"
@@ -164,13 +164,17 @@ function detectAspexTIFF(ios)
     try
         seekstart(ios)
         ti = _TIFFInternals(ios)
-        return any(ifd->any(fld->fld.tagId==TIFF_SPECTRAL_DATA, ifd.ifdTags), ti.ifds)
+        return any(ifd -> any(fld -> fld.tagId == TIFF_SPECTRAL_DATA, ifd.ifdTags), ti.ifds)
     catch
         return false
     end
 end
 
-function readAspexTIFF(file::AbstractString; withImgs = false, astype::Type{<:Real} = Float64)
+function readAspexTIFF(
+    file::AbstractString;
+    withImgs = false,
+    astype::Type{<:Real} = Float64,
+)
     open(file, read = true) do ios
         return readAspexTIFF(ios, withImgs = withImgs, astype = astype)
     end
@@ -186,7 +190,13 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     TIFF_IMAGE_DESCRIPTION = 270 # ASCII
     TIFF_SOFTWARE = 305 # ASCII
     floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
-    number(v) = parse(astype, match(astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
+    number(v) = parse(
+        astype,
+        match(
+            astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",
+            v,
+        )[1],
+    )
     res = missing
     ti = _TIFFInternals(ios)
     for ifd in ti.ifds
@@ -218,27 +228,36 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
             seekstart(ios)
             imgs = missing # FileIO.load(Stream(format"TIFF", ios))
             if haskey(res, :FieldOfView) && haskey(res, :ImageZoom)
-                if res[:ImageZoom]==1.0
-                    pix = 0.001 * res[:FieldOfView] / size(imgs,2)
-                    off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
-                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
-                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
-                    foreach( i -> res[Symbol("Image$i")] = AxisArray(imgs[:,:,i], ay, ax), 1:size(imgs,3))
-                elseif size(imgs,3)==2
-                    pix = 0.001 * res[:FieldOfView] * res[:ImageZoom] / size(imgs,2)
-                    ay = Axis{:y}(0.0:-pix*mm:-pix*(size(imgs,1)-1)*mm)
-                    ax = Axis{:x}(0.0:pix*mm:pix*(size(imgs,2)-1)*mm)
-                    res[Symbol("Image1")] = AxisArray(imgs[:,:,1], ay, ax)
-                    pix = 0.001 * res[:FieldOfView] / size(imgs,2)
-                    off = haskey(res, :StagePosition) ? ( res[:StagePosition][:Y]*mm, res[:StagePosition][:X]*mm ) : ( 0.0mm, 0.0mm)
-                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs,1)-1)*mm)
-                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs,2)-1)*mm)
-                    res[Symbol("Image2")] = AxisArray(imgs[:,:,2], ay, ax)
+                if res[:ImageZoom] == 1.0
+                    pix = 0.001 * res[:FieldOfView] / size(imgs, 2)
+                    off =
+                        haskey(res, :StagePosition) ?
+                        (res[:StagePosition][:Y] * mm, res[:StagePosition][:X] * mm) :
+                        (0.0mm, 0.0mm)
+                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs, 1)-1)*mm)
+                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs, 2)-1)*mm)
+                    foreach(
+                        i -> res[Symbol("Image$i")] = AxisArray(imgs[:, :, i], ay, ax),
+                        1:size(imgs, 3),
+                    )
+                elseif size(imgs, 3) == 2
+                    pix = 0.001 * res[:FieldOfView] * res[:ImageZoom] / size(imgs, 2)
+                    ay = Axis{:y}(0.0:-pix*mm:-pix*(size(imgs, 1)-1)*mm)
+                    ax = Axis{:x}(0.0:pix*mm:pix*(size(imgs, 2)-1)*mm)
+                    res[Symbol("Image1")] = AxisArray(imgs[:, :, 1], ay, ax)
+                    pix = 0.001 * res[:FieldOfView] / size(imgs, 2)
+                    off =
+                        haskey(res, :StagePosition) ?
+                        (res[:StagePosition][:Y] * mm, res[:StagePosition][:X] * mm) :
+                        (0.0mm, 0.0mm)
+                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs, 1)-1)*mm)
+                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs, 2)-1)*mm)
+                    res[Symbol("Image2")] = AxisArray(imgs[:, :, 2], ay, ax)
                 else
-                    foreach( i -> res[Symbol("Image$i")] = imgs[:,:,i], 1:size(imgs,3))
+                    foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:size(imgs, 3))
                 end
             else
-                foreach( i -> res[Symbol("Image$i")] = imgs[:,:,i], 1:size(imgs,3))
+                foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:size(imgs, 3))
             end
         catch err
             @info err

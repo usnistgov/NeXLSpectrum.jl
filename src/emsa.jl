@@ -3,7 +3,7 @@
 function isemsa(io::IO)
 	for (lx, line) in enumerate(eachline(io))
 		tmp = split_emsa_header_item(line)
-		if (tmp==nothing) || #
+		if isnothing(tmp) || #
 		   (lx==1 && !(tmp[1]=="FORMAT" && uppercase(tmp[2])=="EMSA/MAS SPECTRAL DATA FILE")) || #
 		   (lx==2 && !(tmp[1]=="VERSION" && tmp[2]=="1.0"))
 			return false

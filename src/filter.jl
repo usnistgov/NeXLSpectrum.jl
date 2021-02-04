@@ -96,7 +96,7 @@ end
 
 function filterdata(filt::TopHatFilter, region::AbstractUnitRange{Int})::Matrix{Float64}
     res = zeros(Float64, length(region), length(region))
-    foreach(r -> res[r-first(region)+1,:] = filterdata(filt, r)[region], region)
+    foreach(r -> res[r-first(region)+1, :] = filterdata(filt, r)[region], region)
     return res
 end
 
@@ -114,19 +114,27 @@ multiplication reduces to sum over a single index.  Often this sum is zero becau
 
 Note:  `specdata` should be preprocessed so that no element is less than or equal to zero.
 """
-function filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, i::Int, l::Int)::Float64
-    function dot3(a,b,c) # vmapreduce((ai,bi,ci)->ai*bi*ci, +, a, b, c)
-        sum=zero(eltype(a))
+function filteredcovar(
+    filt::TopHatFilter,
+    specdata::Vector{Float64},
+    i::Int,
+    l::Int,
+)::Float64
+    function dot3(a, b, c) # vmapreduce((ai,bi,ci)->ai*bi*ci, +, a, b, c)
+        sum = zero(eltype(a))
         @avx for i in eachindex(a)  # @avx takes overall time from 670 μs down to 430 μs
-            sum+=a[i]*b[i]*c[i]
+            sum += a[i] * b[i] * c[i]
         end
         return sum
     end
     fi, fl, oi, ol = filt.filters[i], filt.filters[l], filt.offsets[i], filt.offsets[l]
-    roi = max(oi,ol):min(oi+length(fi)-1, ol+length(fl)-1) # The ROI over which both filters are non-zero.
+    roi = max(oi, ol):min(oi + length(fi) - 1, ol + length(fl) - 1) # The ROI over which both filters are non-zero.
     return length(roi) > 0 ? #
-        dot3(view(fi,roi.start-oi+1:roi.stop-oi+1), view(specdata,roi), view(fl,roi.start-ol+1:roi.stop-ol+1)) :
-        0.0
+           dot3(
+        view(fi, roi.start-oi+1:roi.stop-oi+1),
+        view(specdata, roi),
+        view(fl, roi.start-ol+1:roi.stop-ol+1),
+    ) : 0.0
 end
 
 """
@@ -134,8 +142,10 @@ end
 
 Compute a single channel in the filtered spectrum.
 """
-filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, i::Int)::Float64 =
-    dot(filt.filters[i], view(specdata,filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
+filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, i::Int)::Float64 = dot(
+    filt.filters[i],
+    view(specdata, filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1),
+)
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
@@ -183,18 +193,25 @@ function buildfilter(
         if (chmin >= 1) && (chmax <= cc)
             for i = 0:(chmax-chmin)÷2
                 filt[ch1, chmax-i] = (
-                    filt[ch1, i+chmin] =
-                        filtint(energy(i + chmin, det), energy(i + chmin + 1, det), eb[1], ea[1], ea[2], eb[2])
+                    filt[ch1, i+chmin] = filtint(
+                        energy(i + chmin, det),
+                        energy(i + chmin + 1, det),
+                        eb[1],
+                        ea[1],
+                        ea[2],
+                        eb[2],
+                    )
                 )
             end
-            filt[ch1, chmax] = (filt[ch1, chmin] -= sum(filt[ch1, chmin:min(cc, chmax)]) / 2.0)
+            filt[ch1, chmax] =
+                (filt[ch1, chmin] -= sum(filt[ch1, chmin:min(cc, chmax)]) / 2.0)
             @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
             @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
         end
         m, n = M(ea[2], ea[1]), N(eb[1], ea[1])
         @assert m > 0.0 "m=$(m)!!!!"
         @assert n > 0.0 "n=$(n)!!!!"
-        wgts[ch1] = 2.87 + 1.758e-4*energy(ch1, det)
+        wgts[ch1] = 2.87 + 1.758e-4 * energy(ch1, det)
         # wgts[ch1] = 2.0*n*m/(n+2.0*m)  # Schamber's formula (see Schamber 1997, note the formula in Statham 1977, Anal Chem 49, 14 doesn't seem to work.)
     end
     @assert all(r -> abs(sum(r)) < 1.0e-12, eachrow(filt)) "A filter does not sum to zero."
@@ -227,14 +244,15 @@ function buildfilter(
         chmin, chmax = channel(ex[1], det), channel(ex[2], det)
         if (chmin >= 1) && (chmax <= cc)
             for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
-                filt[ch1, chmax-i] = (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
+                filt[ch1, chmax-i] =
+                    (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
             end
             # Offset the Gaussian to ensure the sum is zero.
             filt[ch1, chmin:chmax] .-= sum(filt[ch1, chmin:chmax]) / length(chmin:chmax)
             @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
             @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
         end
-        wgts[ch1] = 2.87 + 1.758e-4*energy(ch1, det)
+        wgts[ch1] = 2.87 + 1.758e-4 * energy(ch1, det)
     end
     @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
     return TopHatFilter(ty, det, filt, wgts)
@@ -282,7 +300,7 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter, tol::Fl
     data[1:roi.start-1] = map(tangents[1], 1-roi.start:-1)
     data[roi.stop+1:end] = map(tangents[2], 1:length(data)-roi.stop)
     # Compute the filtered data
-    filtered = [ filtereddatum(thf, data, i) for i in eachindex(data) ]
+    filtered = [filtereddatum(thf, data, i) for i in eachindex(data)]
     maxval = maximum(filtered)
     ff = findfirst(f -> abs(f) > tol * maxval, filtered)
     if isnothing(ff)
@@ -301,7 +319,14 @@ function tophatfilter(
     spec, roi = escLabel.spectrum, escLabel.roi
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, thf, tol)
-    return FilteredReference(escLabel, scale, roi, f..., charonly, thf.weights[(roi.start+roi.stop)÷2])
+    return FilteredReference(
+        escLabel,
+        scale,
+        roi,
+        f...,
+        charonly,
+        thf.weights[(roi.start+roi.stop)÷2],
+    )
 end
 
 """
@@ -317,7 +342,11 @@ contiguous interval over which all the X-rays in the interval are sufficiently c
 interfere with each other on the specified detector.
 """
 labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6) =
-    labeledextents(isvisible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl)
+    labeledextents(
+        isvisible(characteristic(elm, alltransitions, ampl, maxE), det),
+        det,
+        ampl,
+    )
 
 """
     charXRayLabels(#
@@ -343,15 +372,21 @@ function charXRayLabels(#
     @assert elm in allElms "$elm must be in $allElms."
     intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
     # Find all the ROIs associated with other elements
-    urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in filter(a -> a ≠ elm, allElms)))
+    urs = collect(
+        Iterators.flatten(extents(ae, det, ampl) for ae in filter(a -> a ≠ elm, allElms)),
+    )
     # Find elm's ROIs that don't intersect another element's ROI
     lxs = filter(lx -> !intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
-#   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
+    #   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
     return ReferenceLabel[CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
-escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) =
-    escapeextents(isvisible(characteristic(elm, alltransitions, ampl, maxE), det), det, ampl, maxE)
+escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) = escapeextents(
+    isvisible(characteristic(elm, alltransitions, ampl, maxE), det),
+    det,
+    ampl,
+    maxE,
+)
 
 
 """
@@ -381,7 +416,7 @@ function escapeLabels(#
     urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in allElms))
     # Find elm's ROIs that don't intersect an element's primary ROI
     lxs = filter(lx -> !intersects(urs, lx[2]), escapeextents(elm, det, ampl, maxE))
-#   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
+    #   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
     return ReferenceLabel[EscapeLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
@@ -422,7 +457,10 @@ tophatfilter(
 )::Vector{FilteredReference} = map(
     lbl -> tophatfilter(lbl, filt, scale, tol), #
     filter(
-        lbl -> (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) && (weight(brightest(lbl.xrays)) > 1.0e-3),
+        lbl ->
+            (lbl.roi.start >= 1) &&
+                (lbl.roi.stop <= length(filt)) &&
+                (weight(brightest(lbl.xrays)) > 1.0e-3),
         labels,
     ),
 )
@@ -488,17 +526,25 @@ end
 Extract the filtered data representing the specified range.  `roi` must be fully contained within the
 filtered data in `fd`.
 """
-NeXLUncertainties.extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64} = view(fd.filtered,roi)
+NeXLUncertainties.extract(
+    fd::FilteredUnknown,
+    roi::UnitRange{Int},
+)::AbstractVector{Float64} = view(fd.filtered, roi)
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
-    Diagonal( [ unk.scale / ffs[i].scale for i in eachindex(ffs) ] )
+    Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
-function _computeResidual(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}, kr::UncertainValues)
+function _computeResidual(
+    unk::FilteredUnknown,
+    ffs::AbstractVector{FilteredReference},
+    kr::UncertainValues,
+)
     res = copy(unk.data)
     for ff in ffs
-        res[ff.roi] -= (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly
+        res[ff.roi] -=
+            (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly
     end
     return res
 end
@@ -512,7 +558,13 @@ function _computecounts( #
     res = Dict{ReferenceLabel,NTuple{2,Float64}}()
     for ff in ffs
         su = sum(unk.data[ff.roi])
-        res[ff.label] = (su, su - sum((NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly))
+        res[ff.label] = (
+            su,
+            su - sum(
+                (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) *
+                ff.charonly,
+            ),
+        )
     end
     return res
 end
@@ -535,20 +587,22 @@ end
 For each roi in each element, pick the best FilteredReference with the highest
 intensity in the characteristic-only data.
 """
-function selectBestReferences(refs::AbstractVector{FilteredReference})::Vector{FilteredReference}
+function selectBestReferences(
+    refs::AbstractVector{FilteredReference},
+)::Vector{FilteredReference}
     rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
-    elms = unique( element(ref.label) for ref in refs )
+    elms = unique(element(ref.label) for ref in refs)
     for elm in elms
         for ref in filter(ref -> element(ref.label) == elm, refs)
             comp = get(ref.label.spectrum, :Composition, missing)
             # Pick the reference with the largest charonly value but prefer pure elements over compounds
-            mrf = maximum(ref.charonly)* (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)  
+            mrf = maximum(ref.charonly) * (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
                 rois[ref.roi] = (ref, mrf)
             end
         end
     end
-    return [ v[1] for v in values(rois) ]
+    return [v[1] for v in values(rois)]
 end
 
 function filterreference(
@@ -556,21 +610,21 @@ function filterreference(
     spec::Spectrum,
     elm::Element,
     elms::AbstractArray{Element};
-    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
-    withEsc::Bool = false
+    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+    withEsc::Bool = false,
 )::Vector{FilteredReference}
     @assert elm in elms
-    cprops=merge(spec.properties, props)
+    cprops = merge(spec.properties, props)
     if !haskey(cprops, :Detector)
-        cprops[:Detector]=filt.detector
+        cprops[:Detector] = filt.detector
     end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
     lbls = charXRayLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy])
     if withEsc
-        append!(lbls,escapeLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy]))
+        append!(lbls, escapeLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy]))
     end
     # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
-    return tophatfilter(lbls, filt, 1.0 / (cprops[:ProbeCurrent]*cprops[:LiveTime]))
+    return tophatfilter(lbls, filt, 1.0 / (cprops[:ProbeCurrent] * cprops[:LiveTime]))
 end
 
 function filterreference(
@@ -578,18 +632,22 @@ function filterreference(
     spec::Spectrum,
     elm::Element,
     comp::Material;
-    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
-    withEsc::Bool = false
+    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+    withEsc::Bool = false,
 )::Vector{FilteredReference}
-    if !haskey(spec,:Composition)
+    if !haskey(spec, :Composition)
         spec[:Composition] = comp
     end
-    filterreference(filt, spec, elm, collect(keys(comp)), props=props, withEsc=withEsc)
+    filterreference(filt, spec, elm, collect(keys(comp)), props = props, withEsc = withEsc)
 end
 
 filterreferences(
     filt::TopHatFilter,
-    refs::Tuple{Spectrum, Element, Material}...;
-    props::Dict{Symbol,<:Any}=Dict{Symbol,Any}(),
-    withEsc::Bool = false
-) = mapreduce(ref->filterreference(filt, ref..., props=props, withEsc=withEsc), append!, refs)
+    refs::Tuple{Spectrum,Element,Material}...;
+    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+    withEsc::Bool = false,
+) = mapreduce(
+    ref -> filterreference(filt, ref..., props = props, withEsc = withEsc),
+    append!,
+    refs,
+) 

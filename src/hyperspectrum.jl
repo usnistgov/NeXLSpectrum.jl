@@ -32,10 +32,25 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
     properties::Dict{Symbol,Any}
 
     HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}) =
-        new{eltype(arr),ndims(arr) - 1}(arr, CartesianIndices(size(arr)[2:end]), energy, props)
+        new{eltype(arr),ndims(arr) - 1}(
+            arr,
+            CartesianIndices(size(arr)[2:end]),
+            energy,
+            props,
+        )
 
-    HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, dims::NTuple, depth::Int, type::Type{Real}) =
-        new{type,length(dims)}(zeros(type, dims...), CartesianIndices(dims...), energy, props)
+    HyperSpectrum(
+        energy::EnergyScale,
+        props::Dict{Symbol,Any},
+        dims::NTuple,
+        depth::Int,
+        type::Type{Real},
+    ) = new{type,length(dims)}(
+        zeros(type, dims...),
+        CartesianIndices(dims...),
+        energy,
+        props,
+    )
 end
 
 function Base.show(io::IO, m::MIME"text/plain", hss::HyperSpectrum)
@@ -62,7 +77,7 @@ function Base.show(io::IO, hss::HyperSpectrum)
     )
 end
 
-Base.eltype(hss::HyperSpectrum{T,N}) where {T<:Real, N} = Spectrum{T}
+Base.eltype(hss::HyperSpectrum{T,N}) where {T<:Real,N} = Spectrum{T}
 Base.length(hss::HyperSpectrum) = prod(size(hss))
 #Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
 Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
@@ -86,7 +101,10 @@ function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<
     props[:Cartesian] = hss.index[idx]
     return Spectrum(hss.energy, counts(hss)[:, hss.index[idx]], props)
 end
-function Base.getindex(hss::HyperSpectrum{T,N}, idx::Vararg{Int,N})::Spectrum{T} where {T<:Real,N}
+function Base.getindex(
+    hss::HyperSpectrum{T,N},
+    idx::Vararg{Int,N},
+)::Spectrum{T} where {T<:Real,N}
     props = copy(hss.properties)
     props[:Cartesian] = CartesianIndex(idx...)
     return Spectrum(hss.energy, counts(hss)[:, idx...], props)
@@ -98,16 +116,21 @@ end
 Creates a view of a HyperSpectrum to represent the range of pixels within the `hss` HyperSpectrum.  Does
 not copy the data or properties so any modifications to the region are also made to `hss`.
 """
-function region(hss::HyperSpectrum{T,N}, ranges::AbstractRange...)::HyperSpectrum{T,N} where {T<:Real,N}
+function region(
+    hss::HyperSpectrum{T,N},
+    ranges::AbstractRange...,
+)::HyperSpectrum{T,N} where {T<:Real,N}
     HyperSpectrum(hss.energy, hss.properties, counts(hss)[:, ranges...])
 end
 
 Base.getindex(hss::HyperSpectrum, sy::Symbol) = getindex(hss.properties, sy)
-Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) = setindex!(hss.properties, val, sy)
+Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol) =
+    setindex!(hss.properties, val, sy)
 
 NeXLCore.energy(ch::Integer, hss::HyperSpectrum) = energy(ch, hss.energy)
 channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
-rangeofenergies(ch::Integer, hss::HyperSpectrum) = (energy(ch, hss.energy), energy(ch + 1, hss.energy))
+rangeofenergies(ch::Integer, hss::HyperSpectrum) =
+    (energy(ch, hss.energy), energy(ch + 1, hss.energy))
 properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
 
 """
@@ -124,7 +147,7 @@ Access the counts data associated with the pixel `ci`.
 
 Access the counts data at the pixel represented by `ci` and the channel represented by `ch`.
 """
-counts(hss::HyperSpectrum{T,N}) where {T<:Real, N} = convert(Array{T,N+1}, hss.counts)
+counts(hss::HyperSpectrum{T,N}) where {T<:Real,N} = convert(Array{T,N + 1}, hss.counts)
 counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = counts(hss)[ch, ci]
 counts(hss::HyperSpectrum, ci::CartesianIndex) = counts(hss)[:, ci]
 
@@ -134,10 +157,14 @@ counts(hss::HyperSpectrum, ci::CartesianIndex) = counts(hss)[:, ci]
 Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing any infomation (except AbstractFloat
 which compresses to Float32 with loss of precision).  Can change the storage type and/or reduce the depth of hss.
 """
-function compress(hss::HyperSpectrum{T,N}) where {T<:Real, N}
+function compress(hss::HyperSpectrum{T,N}) where {T<:Real,N}
     data = counts(hss)
     (minval, maxval) = extrema(data)
-    maxi = mapreduce(ci -> something(findlast(c -> c != 0.0, data[:, ci]), 0), max, CartesianIndices(hss))
+    maxi = mapreduce(
+        ci -> something(findlast(c -> c != 0.0, data[:, ci]), 0),
+        max,
+        CartesianIndices(hss),
+    )
     data = maxi < depth(hss) ? data[1:maxi, axes(hss.counts)[2:end]...] : data
     if eltype(T) in (Int16, Int32, Int64)
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
@@ -152,7 +179,9 @@ function compress(hss::HyperSpectrum{T,N}) where {T<:Real, N}
             end
         end
     elseif T isa Float64
-        if sizeof(T) < sizeof(Float32) && minval >= typemin(Float32) && maxval <= typemax(Float32)
+        if sizeof(T) < sizeof(Float32) &&
+           minval >= typemin(Float32) &&
+           maxval <= typemax(Float32)
             return HyperSpectrum(hss.energy, copy(hss.properties), Float32.(data))
         end
     end
@@ -165,7 +194,11 @@ end
 Sums a contiguous range of data planes into an Array. The dimension of the result is
 one less than the dimension of the HyperSpectrum and is stored as a Float64 to ensure that not information is lost.
 """
-function plane(hss::HyperSpectrum{T,N}, chs::AbstractUnitRange{<:Integer}, normalize = false) where {T<:Real, N}
+function plane(
+    hss::HyperSpectrum{T,N},
+    chs::AbstractUnitRange{<:Integer},
+    normalize = false,
+) where {T<:Real,N}
     res = map(ci -> sum(Float64.(counts(hss)[chs, ci])), hss.index)
     if normalize
         res /= maximum(res)
@@ -197,40 +230,58 @@ end
 
 Compute Bright's Max-Pixel derived signal for the entire HyperSpectrum or a rectanglar sub-region.
 """
-maxpixel(hss::HyperSpectrum, filt::Function=ci->true) = maxpixel(hss, CartesianIndices(hss), filt)
-maxpixel(hss::HyperSpectrum, mask::BitArray) = maxpixel(hss, CartesianIndices(hss), ci->mask[ci])
-function maxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
+maxpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
+    maxpixel(hss, CartesianIndices(hss), filt)
+maxpixel(hss::HyperSpectrum, mask::BitArray) =
+    maxpixel(hss, CartesianIndices(hss), ci -> mask[ci])
+function maxpixel(
+    hss::HyperSpectrum{T,N},
+    cis::CartesianIndices,
+    filt::Function = ci -> true,
+) where {T<:Real,N}
     data, res = counts(hss), zeros(T, depth(hss))
-    for ci in filter(ci->filt(ci), cis), ch in Base.OneTo(size(res,1))
+    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(size(res, 1))
         res[ch] = max(res[ch], data[ch, ci])
     end
     return Spectrum(hss.energy, res, copy(hss.properties))
 end
-minpixel(hss::HyperSpectrum, filt::Function=ci->true) = minpixel(hss, CartesianIndices(hss), filt)
-minpixel(hss::HyperSpectrum, mask::BitArray) = minpixel(hss, CartesianIndices(hss), ci->mask[ci])
-function minpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
-    data, res = counts(hss), fill(typemax(T), (depth(hss), ))
-    for ci in filter(ci->filt(ci), cis), ch in Base.OneTo(size(res,1))
+minpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
+    minpixel(hss, CartesianIndices(hss), filt)
+minpixel(hss::HyperSpectrum, mask::BitArray) =
+    minpixel(hss, CartesianIndices(hss), ci -> mask[ci])
+function minpixel(
+    hss::HyperSpectrum{T,N},
+    cis::CartesianIndices,
+    filt::Function = ci -> true,
+) where {T<:Real,N}
+    data, res = counts(hss), fill(typemax(T), (depth(hss),))
+    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(size(res, 1))
         res[ch] = min(res[ch], data[ch, ci])
     end
     return Spectrum(hss.energy, res, copy(hss.properties))
 end
-avgpixel(hss::HyperSpectrum, filt::Function=ci->true) = avgpixel(hss, CartesianIndices(hss), filt)
-avgpixel(hss::HyperSpectrum, mask::BitArray) = avgpixel(hss, CartesianIndices(hss), ci->mask[ci])
-function avgpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices, filt::Function=ci->true) where {T<:Real, N}
+avgpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
+    avgpixel(hss, CartesianIndices(hss), filt)
+avgpixel(hss::HyperSpectrum, mask::BitArray) =
+    avgpixel(hss, CartesianIndices(hss), ci -> mask[ci])
+function avgpixel(
+    hss::HyperSpectrum{T,N},
+    cis::CartesianIndices,
+    filt::Function = ci -> true,
+) where {T<:Real,N}
     data, res, cx = counts(hss), zeros(Float64, depth(hss)), 0
-    for ci in filter(ci->filt(ci), cis)
-        for ch in Base.OneTo(size(res,1))
+    for ci in filter(ci -> filt(ci), cis)
+        for ch in Base.OneTo(size(res, 1))
             res[ch] += data[ch, ci]
         end
-        cx+=1
+        cx += 1
     end
     return Spectrum(hss.energy, res ./ max(1.0, cx), copy(hss.properties))
 end
 
-function sumcounts(hss::HyperSpectrum, cis::CartesianIndices=CartesianIndices(hss))
+function sumcounts(hss::HyperSpectrum, cis::CartesianIndices = CartesianIndices(hss))
     data = counts(hss)
-    return [ sum(Int.(data[:,ci])) for ci in cis ]
+    return [sum(Int.(data[:, ci])) for ci in cis]
 end
 
 """
@@ -254,11 +305,12 @@ function indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
     return maxidx
 end
 
-indexofmaxpixel(hss::HyperSpectrum, ch::Int) = indexofmaxpixel(hss, ch, CartesianIndices(hss))
+indexofmaxpixel(hss::HyperSpectrum, ch::Int) =
+    indexofmaxpixel(hss, ch, CartesianIndices(hss))
 
 indexofmaxpixel(hss::HyperSpectrum) = indexofmaxpixel(hss, CartesianIndices(hss))
 
-function indexofmaxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real, N}
+function indexofmaxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real,N}
     res, cix = zeros(T, depth(hss)), CartesianIndex[hss.index[1] for _ = 1:depth(hss)]
     data = counts(hss)
     for ci in cis, i in filter(i -> data[i, ci] > res[i], eachindex(res))
@@ -276,7 +328,10 @@ end
 Compute a sum spectrum for all or a subset of the pixels in `hss`.
 """
 
-function Base.sum(hss::HyperSpectrum{T,N}, mask::Union{BitArray,Array{Bool}}) where {T<:Real,N}
+function Base.sum(
+    hss::HyperSpectrum{T,N},
+    mask::Union{BitArray,Array{Bool}},
+) where {T<:Real,N}
     @assert size(mask) == size(hss) "$(size(mask)) ≠ $(size(hss))"
     RT = T isa Int ? Int64 : Float64
     data = counts(hss)
@@ -296,7 +351,12 @@ end
 function Base.sum(hss::HyperSpectrum{T,N}) where {T<:Real,N}
     RT = T isa Int ? Int64 : Float64
     data = counts(hss)
-    vals = mapreduce(ci -> data[:, ci], (a, b) -> a .+= b, hss.index, init = zeros(RT, depth(hss)))
+    vals = mapreduce(
+        ci -> data[:, ci],
+        (a, b) -> a .+= b,
+        hss.index,
+        init = zeros(RT, depth(hss)),
+    )
     props = copy(hss.properties)
     if haskey(hss.properties, :LiveTime)
         props[:LiveTime] = length(hss) * hss[:LiveTime]
@@ -339,7 +399,8 @@ end
 
 Create a count map from the specified contiguous range of channels.
 """
-roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) = Gray.(convert.(N0f8, plane(hss, chs, true)))
+roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
+    Gray.(convert.(N0f8, plane(hss, chs, true)))
 
 """
     roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
@@ -358,6 +419,9 @@ Create an array of Gray images representing the intensity in each of the CharXRa
 in `cxrs`.  They are normalized such the the most intense pixel in any of them defines white.
 """
 function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n = 5)
-    achs = map(cxr -> channel(energy(cxr), hss.energy)-n:channel(energy(cxr), hss.energy)+n, cxrs)
+    achs = map(
+        cxr -> channel(energy(cxr), hss.energy)-n:channel(energy(cxr), hss.energy)+n,
+        cxrs,
+    )
     return roiimages(hss, achs)
 end

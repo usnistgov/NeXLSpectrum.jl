@@ -22,7 +22,7 @@ function NeXLMatrixCorrection.quantify(
 )::IterationResult
     iter = Iteration(mc, fl, cc, updater = WegsteinUpdateRule())
     krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
-    return quantify(iter, ffr.label, krs; standards=standards)
+    return quantify(iter, ffr.label, krs; standards = standards)
 end
 
 """
@@ -37,7 +37,7 @@ Failitates quantifying spectra.  First filter fits and then matrix corrects.
 function NeXLMatrixCorrection.quantify(
     spec::Spectrum,
     ffp::FilterFitPacket;
-    kwargs...
+    kwargs...,
 )::IterationResult
     return quantify(fit_spectrum(spec, ffp); kwargs...)
 end

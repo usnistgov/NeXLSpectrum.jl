@@ -6,15 +6,21 @@ using NeXLUncertainties
 
 Solves the ordinary least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """
-function olssvd(y::AbstractVector{N}, a::AbstractMatrix{N}, sigma::N, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+function olssvd(
+    y::AbstractVector{N},
+    a::AbstractMatrix{N},
+    sigma::N,
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
     f = svd(a)
-    mins = tol*maximum(f.S)
-    fs = [s > mins ? one(N)/s : zero(N) for s in f.S]
+    mins = tol * maximum(f.S)
+    fs = [s > mins ? one(N) / s : zero(N) for s in f.S]
     # Note: w*a = f.U * Diagonal(f.S) * f.Vt
-    genInv = f.V*Diagonal(fs)*transpose(f.U)
+    genInv = f.V * Diagonal(fs) * transpose(f.U)
     #cov = sigma^2*f.V*(Diagonal(fs)*Diagonal(fs))*Transpose(f.V)
-    cov = sigma^2*genInv*transpose(genInv)
-    return uvs(xLabels, genInv*y, cov)
+    cov = sigma^2 * genInv * transpose(genInv)
+    return uvs(xLabels, genInv * y, cov)
 end
 
 """
@@ -22,9 +28,15 @@ end
 
 Solves the ordinary least squares problem a⋅x = y for x using the pseudo-inverse for AbstractFloat-based types.
 """
-function olspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, sigma::N, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    genInv = pinv(a, rtol=1.0e-6)
-    return uvs(xLabels, genInv*y, sigma*genInv*transpose(genInv))
+function olspinv(
+    y::AbstractVector{N},
+    a::AbstractMatrix{N},
+    sigma::N,
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    genInv = pinv(a, rtol = 1.0e-6)
+    return uvs(xLabels, genInv * y, sigma * genInv * transpose(genInv))
 end
 
 """
@@ -36,10 +48,16 @@ Solve the generalized least squares problem y = x β + ϵ for β where ϵ ~ v σ
 
 cov[β] = (xᵀv⁻¹x)⁻¹
 """
-function glspinv(y::AbstractVector{N}, x::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    txiv=transpose(x)*pinv(v)
+function glspinv(
+    y::AbstractVector{N},
+    x::AbstractMatrix{N},
+    v::AbstractMatrix{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    txiv = transpose(x) * pinv(v)
     yp, ixp = txiv * y, pinv(txiv * x)
-    return uvs(xLabels, ixp*yp, ixp)
+    return uvs(xLabels, ixp * yp, ixp)
 end
 
 """
@@ -47,10 +65,16 @@ end
 
 Solve the generalized least squares problem y = x β + ϵ for β where ϵ ~ v σ using the inverse.
 """
-function glsinv(y::AbstractVector{N}, x::AbstractMatrix{N}, v::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    txiv=transpose(x)*inv(v)
+function glsinv(
+    y::AbstractVector{N},
+    x::AbstractMatrix{N},
+    v::AbstractMatrix{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    txiv = transpose(x) * inv(v)
     yp, ixp = txiv * y, inv(txiv * x)
-    return uvs(xLabels, ixp*yp, ixp)
+    return uvs(xLabels, ixp * yp, ixp)
 end
 
 
@@ -59,11 +83,17 @@ end
 
 Solves the generalized least squares problem y = x β + ϵ for β using covariance whitening and the ordinary least squares pseudo-inverse.
 """
-function glssvd(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+function glssvd(
+    y::AbstractVector{N},
+    x::AbstractMatrix{N},
+    cov::AbstractMatrix{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = cov_whitening(Matrix(cov))
     #olssvd(w*y, w*a, 1.0, xLabels, tol)
-    return olspinv(w*y, w*x, 1.0, xLabels, tol)
+    return olspinv(w * y, w * x, 1.0, xLabels, tol)
 end
 
 """
@@ -71,10 +101,16 @@ end
 
 Solves the generalized least squares problem y = x β + ϵ for β using covariance whitening and the ordinary least squares pseudo-inverse.
 """
-function glschol(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractMatrix{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
+function glschol(
+    y::AbstractVector{N},
+    x::AbstractMatrix{N},
+    cov::AbstractMatrix{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = inv(cholesky(cov).L)
-    return olspinv(w*y, w*x, 1.0, xLabels, tol)
+    return olspinv(w * y, w * x, 1.0, xLabels, tol)
 end
 
 
@@ -83,9 +119,15 @@ end
 
 Solves the weighted least squares problem y = x β + ϵ  for β using singular value decomposition for AbstractFloat-based types.
 """
-function wlssvd(y::AbstractVector{N}, x::AbstractMatrix{N}, cov::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    return olssvd(w*y, w*x, 1.0, xLabels, tol)
+function wlssvd(
+    y::AbstractVector{N},
+    x::AbstractMatrix{N},
+    cov::AbstractVector{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
+    return olssvd(w * y, w * x, 1.0, xLabels, tol)
 end
 
 """
@@ -93,9 +135,15 @@ end
 
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.
 """
-function wlspinv(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    return olspinv(w*y, w*a, 1.0, xLabels, tol)
+function wlspinv(
+    y::AbstractVector{N},
+    a::AbstractMatrix{N},
+    cov::AbstractVector{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
+    return olspinv(w * y, w * a, 1.0, xLabels, tol)
 end
 
 """
@@ -104,16 +152,26 @@ end
 Solves the weighted least squares problem a⋅x = y for x using singular value decomposition for AbstractFloat-based types.  Rescales the rescaleCovariances
 according to `covscales`.
 """
-function wlspinv2(y::AbstractVector{N}, a::AbstractMatrix{N}, cov::AbstractVector{N}, covscales::AbstractVector{N}, xLabels::Vector{<:Label}, tol::N=convert(N,1.0e-10))::UncertainValues where N <: AbstractFloat
-    function rescaleCovariances(uvs::UncertainValues, covscales::AbstractVector{N})::UncertainValues
+function wlspinv2(
+    y::AbstractVector{N},
+    a::AbstractMatrix{N},
+    cov::AbstractVector{N},
+    covscales::AbstractVector{N},
+    xLabels::Vector{<:Label},
+    tol::N = convert(N, 1.0e-10),
+)::UncertainValues where {N<:AbstractFloat}
+    function rescaleCovariances(
+        uvs::UncertainValues,
+        covscales::AbstractVector{N},
+    )::UncertainValues
         cov = copy(uvs.covariance)
         # rwgts = map(sqrt,wgts)
         a = Base.axes(cov)
         for r in a[1], c in a[2]
-            cov[r,c]*=covscales[r]*covscales[c]
+            cov[r, c] *= covscales[r] * covscales[c]
         end
         return UncertainValues(uvs.labels, uvs.values, cov)
     end
-    w = Diagonal([sqrt(1.0/cv) for cv in cov])
-    return rescaleCovariances(olspinv(w*y, w*a, 1.0, xLabels, tol),covscales)
+    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
+    return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
 end
