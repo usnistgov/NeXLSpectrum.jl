@@ -124,7 +124,7 @@ function continuumrois(
     # Average channel width between minE and maxE.
     avgwidth = let 
         minC, maxC = channel(minE, det), channel(maxE, det)
-        return (energy(maxC, det) - energy(minC, det)) / (maxC - minC)
+        (energy(maxC, det) - energy(minC, det)) / (maxC - minC)
     end
     extra = round(Int, (2.0 * resolution(enx"Mn K-L3", det)) / avgwidth)
     rois = mapreduce(elm -> extend.(extents(elm, det, 1.0e-3), extra), append!, elms)
@@ -139,7 +139,7 @@ function continuumrois(
                 push!(res, roi)
             end
         end
-        return res
+        res
     end
     return invert(ascontiguous, channel(minE, det):channel(maxE, det))
 end

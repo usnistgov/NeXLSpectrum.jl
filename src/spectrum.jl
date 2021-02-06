@@ -173,7 +173,7 @@ sameproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) =
     specs[1][prop] : #
     error("The property $prop is not equal for all these spectra.")
 
-function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum)
+function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{<:Real})
     comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
     e0 =
         haskey(spec, :BeamEnergy) ? "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3)) keV" :
@@ -183,12 +183,6 @@ function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum)
         io,
         "\nSpectrum{$(eltype(spec.counts))}[$(spec[:Name]), $(spec.energy), $(length(spec.counts)) ch, $e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]",
     )
-end
-
-function Base.show(io::IO, m::MIME"text/html", spec::Spectrum)
-    #print(io, "<p>")
-    show(io, MIME"text/plain", spec)
-    #print(io, "</p>")
 end
 
 function textplot(io::IO, spec::Spectrum; size = (16, 80))
