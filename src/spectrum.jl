@@ -290,9 +290,11 @@ function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
     res = Set{Element}()
     if haskey(spec, :Elements)
         append!(res, spec[:Elements])
-    elseif haskey(spec, :Composition)
+    end
+    if haskey(spec, :Composition)
         union!(res, keys(spec[:Composition]))
-    elseif haskey(spec, :Signature)
+    end
+    if haskey(spec, :Signature)
         union!(res, keys(spec[:Signature]))
     end
     if withcoating && haskey(spec, :Coating)
