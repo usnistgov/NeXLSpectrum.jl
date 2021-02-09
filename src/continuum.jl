@@ -94,13 +94,13 @@ end
 
 
 """
-    continuumrois(elms, det::EDSDetector, minE::Float64, maxE::Float64)
+    continuumrois(elems, det::EDSDetector, minE::Float64, maxE::Float64)
 
-Compute the ROIs for the contiguous continuum regions for the specified elements `elms` on an
+Compute the ROIs for the contiguous continuum regions for the specified elements `elems` on an
 `EDSDetector` for the specified range of energies.
 """
 function continuumrois(
-    elms,
+    elems,
     det::EDSDetector,
     minE::Float64,
     maxE::Float64,
@@ -127,7 +127,7 @@ function continuumrois(
         (energy(maxC, det) - energy(minC, det)) / (maxC - minC)
     end
     extra = round(Int, (2.0 * resolution(enx"Mn K-L3", det)) / avgwidth)
-    rois = mapreduce(elm -> extend.(extents(elm, det, 1.0e-3), extra), append!, elms)
+    rois = mapreduce(elm -> extend.(extents(elm, det, 1.0e-3), extra), append!, elems)
     # Join rois into contiguous rois
     ascontiguous = let
         srois = sort(rois)
@@ -199,7 +199,7 @@ function fitcontinuum(
     minEmod = max(50.0, energy(lld(spec), spec))
     model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
     prevroi, brem = missing, counts(spec, Float64)
-    for roi in continuumrois(elms(spec), det, minE, maxE)
+    for roi in continuumrois(elms(spec, true), det, minE, maxE)
         currrois = ismissing(prevroi) ? (roi,) : (prevroi, roi)
         k =
             sum(sum(counts(spec, roi, Float64)) for roi in currrois) /
@@ -233,7 +233,7 @@ function fittedcontinuum(
     globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum = fitcontinuum(
         spec,
         resp,
-        continuumrois(elms(spec), det, minE, maxE),
+        continuumrois(elms(spec, true), det, minE, maxE),
         brem = brem,
         mc = mc,
     )
