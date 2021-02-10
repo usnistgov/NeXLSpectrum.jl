@@ -229,6 +229,7 @@ export SavitzkyGolayFilter
 include("multidet.jl") # Multi-detector support
 export loadmultispec # Loads multiple related spectra.
 export multiscore # Scores spectra relative to one another. 
+export multirank # A single number value that scores the spectra
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
