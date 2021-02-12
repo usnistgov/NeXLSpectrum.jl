@@ -176,14 +176,21 @@ sameproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) =
 function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{<:Real})
     comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
     e0 =
-        haskey(spec, :BeamEnergy) ? "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3)) keV" :
-        "Unknown keV"
-    textplot(io, spec, size = (12, 80))
+        haskey(spec, :BeamEnergy) ? #
+        "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3))" :  #
+        "Unknown"
+    cnts = "$(round(sum(spec.counts),sigdigits=3))"
+    if !(get(io, :compact, false) || haskey(io, :SHOWN_SET))
+        textplot(io, spec, size = (12, 100))
+        print(io, "\n")
+    end
     print(
         io,
-        "\nSpectrum{$(eltype(spec.counts))}[$(spec[:Name]), $(spec.energy), $(length(spec.counts)) ch, $e0, $comp, $(round(sum(spec.counts),sigdigits=3)) counts]",
+        "Spectrum{$(eltype(spec.counts))}[$(spec[:Name]), $(spec.energy), $(length(spec.counts)) ch, $e0 keV, $comp, $cnts counts]",
     )
 end
+
+Base.show(io::IO, spec::Spectrum) = show(io, "text/plain", spec)
 
 function textplot(io::IO, spec::Spectrum; size = (16, 80))
     (rows, cols) = size
@@ -191,8 +198,8 @@ function textplot(io::IO, spec::Spectrum; size = (16, 80))
     e0_eV = haskey(spec, :BeamEnergy) ? spec[:BeamEnergy] : energy(length(spec), spec)
     maxCh = min(channel(convert(Float64, e0_eV), spec), length(spec))
     step, max = maxCh ÷ cols, maximum(spec.counts)
-    maxes = [rows * (maximum(spec.counts[(i-1)*step+1:i*step]) / max) for i = 1:cols]
-    for r = 1:rows
+    maxes = [rows * (maximum(spec.counts[(i-1)*step+1:i*step]) / max) for i in 1:cols]
+    for r in 1:rows
         print(io, join(map(i -> r ≥ rows - maxes[i] ? '*' : ' ', 1:cols)))
         if r == 1
             println(io, " $(round(max,digits=0))")
@@ -513,6 +520,7 @@ kratio(
 Returns an array with the bin-by-bin energies
 """
 energyscale(spec::Spectrum) = energyscale(spec.energy, eachindex(spec))
+energyscale(spec::Spectrum, chs::AbstractRange{<:Integer}) = energyscale(spec.energy, chs)
 
 """
     simpleEDS(spec::Spectrum, fwhmatmnka::Float64)
@@ -533,7 +541,7 @@ function subsample(spec::Spectrum, frac::Float64)::Spectrum
     @assert frac > 0.0 "frac must be larger than zero."
     @assert frac <= 1.0 "frac must be less than or equal to 1.0."
     @assert haskey(spec, :LiveTime) "Please specify a :LiveTime in subsample"
-    ss(n, f) = n > 0 ? sum(rand() <= f ? 1 : 0 for _ = 1:n) : 0
+    ss(n, f) = n > 0 ? sum(rand() <= f ? 1 : 0 for _ in 1:n) : 0
     frac = max(0.0, min(frac, 1.0))
     if frac < 1.0
         props = deepcopy(spec.properties)
@@ -561,12 +569,12 @@ function subdivide(spec::Spectrum, n::Int)::Vector{Spectrum}
     for ch in eachindex(spec.counts)
         # Assign each event to one and only one detector
         si = rand(1:n, floor(Int, spec[ch]))
-        for i = 1:n
+        for i in 1:n
             res[i, ch] = count(e -> e == i, si)
         end
     end
     specs = Spectrum[]
-    for i = 1:n
+    for i in 1:n
         props = deepcopy(spec.properties)
         props[:Name] = "Sub[$(spec[:Name]),$(i) of $(n)]"
         props[:LiveTime] = spec[:LiveTime] / n # Must have
@@ -642,10 +650,10 @@ function modelBackground(
        (bl(ec - first(chs)) > bh(ec - last(chs))) &&
        (energy(ash) < 2.0e3)
         res = zeros(Float64, length(chs))
-        res[1:ec-first(chs)] .= (bl(y - 1) for y = 1:ec-first(chs))
+        res[1:ec-first(chs)] .= (bl(y - 1) for y in 1:ec-first(chs))
         res[ec-first(chs)+1] = 0.5 * (bl(ec - first(chs) + 1) + bh(ec - last(chs)))
         res[ec-first(chs)+2:last(chs)-first(chs)+1] .=
-            (bh(y - last(chs)) for y = ec+1:last(chs))
+            (bh(y - last(chs)) for y in ec+1:last(chs))
     else
         s = (bh(0) - bl(0)) / length(chs)
         back = ImmutablePolynomial([bl(0), s])
@@ -966,7 +974,7 @@ end
 
 function χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
     χ2s = zeros(Float64, (length(specs), length(specs)))
-    for i in eachindex(specs), j = i+1:length(specs)
+    for i in eachindex(specs), j in i+1:length(specs)
         χ2s[i, j] = χ²(specs[i], specs[j], chs)
         χ2s[j, i] = χ2s[i, j]
     end
@@ -1062,4 +1070,33 @@ function findsimilar(
         end
     end
     return specs
+end
+
+"""
+    duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
+
+Estimates the Duane-Hunt limit (the energy at which the continuum goes to effectively zero.)
+"""
+function duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
+    if channel(spec[:BeamEnergy], spec) < length(spec)
+        este0 = let # Sometimes the D-H can be much below `spec[:BeamEnergy]`
+            ed, cd = energyscale(spec), counts(spec)
+            lim = min(10.0, max(1.0, 1.0e-5 * maximum(cd)))
+            len = min(10, max(5, length(spec) ÷ 400))
+            # this handles pulse pile-up above the D-H
+            ed[findlast(map(i -> mean(cd[i:i+len]), eachindex(cd[1:end-len])) .> lim)]
+        end
+        xdata, ydata = let
+            chs = let # Range of channels above/below `este0`
+                ch0 = channel(este0, spec)
+                (19*ch0)÷20:(21*ch0)÷20
+            end
+            energyscale(spec)[chs], counts(spec, chs)
+        end
+        esti0 = mean(ydata[1:10]) * xdata[1] / (este0 - xdata[1])
+        model(xs, p) = map(x -> p[1] * bremsstrahlung(Kramers1923, x, p[2], n"H"), xs)
+        curve_fit(model, xdata, ydata, [esti0, este0]).param[2]
+    else
+        def
+    end
 end

@@ -88,7 +88,6 @@ function multiscore(specs::AbstractArray{<:Spectrum}, e0 = specs[1][:BeamEnergy]
     return [mean(sr[rr]) / mean(sr[ss]) - 1.0 for sr in srs]
 end
 
-
 """
     multirank(specs::AbstractArray{<:Spectrum})::Float64
 
@@ -97,5 +96,6 @@ of zero means all the spectra are very similar and a large number means very dif
 one or more of the spectra may suffer from additional low energy absorption due to surface roughness, an obstruction,
 sample tilt or other.
 """
-multirank(specs::AbstractArray{<:Spectrum})::Float64 = #
+function multirank(specs::AbstractArray{<:Spectrum})::Float64
     -(-)(extrema(multiscore(specs))...)
+end

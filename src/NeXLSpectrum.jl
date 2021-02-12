@@ -19,6 +19,7 @@ using CSV
 using ZipFile
 using DataFrames
 using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
+using LsqFit: curve_fit
 
 @reexport using NeXLCore
 @reexport using NeXLMatrixCorrection
@@ -99,6 +100,7 @@ export sameproperty # Returns the property value if all the spectra share the sa
 export textplot # A quick way to visualize a spectrum
 export findsimilar # Find the spectra that are most similar to each other
 export χ² # Compare spectra
+export duane_hunt # Estimate the Duane-Hunt limit
 
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum

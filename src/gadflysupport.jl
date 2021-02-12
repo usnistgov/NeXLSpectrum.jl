@@ -114,6 +114,7 @@ function Gadfly.plot(
     style = NeXLSpectrumStyle,
     palette = NeXLPalette,
     customlayers = Gadfly.Layer[],
+    duanehunt = false,
 )::Plot
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
         d = Dict{Any,Vector{CharXRay}}()
@@ -246,6 +247,14 @@ function Gadfly.plot(
             Theme(default_color = palette[i]),
         )
         append!(layers, ly)
+    end
+    if duanehunt 
+        dhx, dhy = Float64[], Float64[] 
+        for (i,spec) in enumerate(specs)
+            append!(dhx, duane_hunt(spec))
+            append!(dhy, 0.1*maxI*yscale)
+        end
+        append!(layers, layer(x=dhx, y=dhy, color=palette[eachindex(specs)], Geom.hair(orientation=:vertical), Geom.point))
     end
     append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), union!, specs) : [])
     if length(klms) > 0

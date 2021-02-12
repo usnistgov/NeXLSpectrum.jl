@@ -131,4 +131,9 @@ using NeXLCore
         ) # can fail occasionally...
 
     end
+    @testset "Duane-Hunt" begin
+        fns = ( "Al2O3 std", "CaF2 std", "Fe std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...)
+        specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
+        @test all(isapprox.(NeXLSpectrum.duane_hunt.(specs), 20.0e3, atol=100.0))
+    end
 end
