@@ -164,12 +164,16 @@ regardless of how the data is organized on disk.
 """
 function readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
     if rpl.recordedBy == :vector
-        size = (rpl.depth, rpl.width, rpl.height)
+        size = ( rpl.depth, rpl.height, rpl.width )
     else
-        size = (rpl.width, rpl.height, rpl.depth)
+        size = ( rpl.height, rpl.width, rpl.depth )
     end
     seek(ios, rpl.offset)
-    data = read!(ios, Array{rpl.dataType}(undef, size...))
+    data = Array{rpl.dataType}(undef, size...)
+    # Data in a RPL file is organized ch -> row -> col
+    for r in Base.OneTo(rpl.height), c in Base.OneTo(rpl.width) 
+        read!(ios, @view data[:, r, c])
+    end
     nativeendian = (ENDIAN_BOM == 0x04030201 ? :littleendian : :bigendian)
     if rpl.byteOrder != nativeendian
         if nativeendian == :littleendian
@@ -182,8 +186,8 @@ function readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
     if rpl.recordedBy == :image
         # Reorder as :vector
         res = Array{rpl.dataType}(undef, rpl.depth, rpl.width, rpl.height)
-        for d = 1:rpl.depth, w = 1:rpl.width, h = 1:rpl.height
-            res[d, w, h] = data[w, h, d]
+        for d in 1:rpl.depth, h in 1:rpl.height, w in 1:rpl.width 
+            res[d, h, w] = data[h, w, d]
         end
     end
     return res

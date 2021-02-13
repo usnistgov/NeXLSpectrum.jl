@@ -84,8 +84,9 @@ function fit_spectrum(
     data = counts(hs)
     # @threads seems to slow this (maybe cache misses??)
     for ci in CartesianIndices(hs)
-        @avx krs[:, ci] = (vecs * data[:, ci]) ./ scales
+        @inbounds @avx krs[:, ci] = (vecs * data[:, ci]) ./ scales
     end
+    # ensure positive...
     map!(zero, krs, krs)
     res = KRatios[]
     for i in filter(ii -> vq.references[ii][1] isa CharXRayLabel, eachindex(vq.references))

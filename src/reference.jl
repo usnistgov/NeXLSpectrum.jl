@@ -118,6 +118,7 @@ function fit_spectrum(
     ffp::FilterFitPacket;
     mode::Symbol = :Fast,
     zero = x -> max(0.0, x),
+    sigma = 0.0
 )::Array{KRatios}
     _tophatfilterhs =
         (hs, data, thf, scale) -> begin
@@ -192,11 +193,14 @@ function fit_spectrum(
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
-            uvs = _filterfit(unk, ffp.references)
-            krs[:, ci] = map(
-                id -> convert(Float32, value(id, uvs)),
-                (ref.label for ref in ffp.references),
-            )
+            uvs = _filterfit(unk, ffp.references, true)
+            krs[:, ci] = map(ref.label for ref in ffp.references) do id
+                if !(isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)))
+                    convert(Float32, value(id, uvs))
+                else
+                    0.0f0
+                end
+            end
         end
         res = KRatios[]
         for i in filter(

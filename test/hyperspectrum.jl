@@ -42,8 +42,11 @@ rrpath = artifact_path(rplraw_hash)
 
     @test size(raw) == (2048, 128, 128)
     @test eltype(raw) == UInt16
-    @test raw[640, 64, 64] == 0x0007
-
+    @test raw[640, 64, 63] == 0x0006
+    @test raw[25,21,45] == 0x000A
+    @test raw[29, 121, 115] == 0x000F
+    @test raw[27, 123, 45] == 0x000C
+    
     les = LinearEnergyScale(0.0, 10.0)
     props = Dict{Symbol,Any}(
         :LiveTime => 0.004,
@@ -69,7 +72,7 @@ rrpath = artifact_path(rplraw_hash)
     mp = maxpixel(hs)
     @test mp isa Spectrum{UInt16}
     @test mp[640] == 0x0013
-    @test indexofmaxpixel(hs, 640) == CartesianIndex(64, 51)
+    @test indexofmaxpixel(hs, 640) == CartesianIndex(51, 64)
     @test hs[indexofmaxpixel(hs, 640)][640] == 0x0013
     @test hs[:BeamEnergy] == 20.0e3
     @test hs[:LiveTime] == 0.004
@@ -111,7 +114,11 @@ rrpath = artifact_path(rplraw_hash)
     hs1000 = hs[1:1000]
     @test length(hs1000) == 1000
     @test hs1000[1000] == hs[(1000-1)%128+1, (1000-1)÷128+1]
-    @test hs[33, 78][110] == counts(hs, CartesianIndex(33, 78), 100)
+    @test hs[33, 78][110] == counts(hs, CartesianIndex(33, 78), 110)
+    @test hs[64, 63][640] == 0x0006
+    @test hs[21, 45][25] == 0x000A
+    @test hs[121, 115][29] == 0x000F
+    @test hs[123, 45][27] == 0x000C
     raw = nothing
     GC.gc()
 end

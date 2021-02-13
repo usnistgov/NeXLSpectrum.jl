@@ -21,12 +21,12 @@ CartesianIndex.  For example, to iterate over every spectrum in a HyperSpectrum
     % Construct a 20 × 20 spectrum image with 2048 channels of [0,255].
     hs = HyperSpectrum{es, props, (20,20), 2048, UInt8}
     for idx in eachindex(hs)
-        spec = hs[idx]   % get a Spectrum representing the data at idx
+        spec = hs[idx]   % get a Spectrum representing the 2048 channels of data at idx
         spec[22] = 1     % Set the 22nd channel to 1
     end
 """
 struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
-    counts::Array{T}
+    counts::Array{T} # Organized as (ch, c, r)
     index::CartesianIndices # Spectrum indices
     energy::EnergyScale
     properties::Dict{Symbol,Any}
@@ -46,7 +46,7 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
         depth::Int,
         type::Type{Real},
     ) = new{type,length(dims)}(
-        zeros(type, dims...),
+        zeros(type, ( depth, dims...)),
         CartesianIndices(dims...),
         energy,
         props,
@@ -79,9 +79,9 @@ end
 
 Base.eltype(hss::HyperSpectrum{T,N}) where {T<:Real,N} = Spectrum{T}
 Base.length(hss::HyperSpectrum) = prod(size(hss))
-#Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
+Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
 Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
-Base.size(hss::HyperSpectrum, n) = size(hss.counts, n + 1)
+Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
 Base.axes(hss::HyperSpectrum) = Base.axes(hss.index)
 Base.axes(hss::HyperSpectrum, n) = Base.axes(hss.index, n)
 Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
