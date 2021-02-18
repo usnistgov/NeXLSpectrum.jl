@@ -22,22 +22,22 @@ An EnergyScale implementation parameterized by channel width and offset.
 struct LinearEnergyScale <: EnergyScale
     offset::Float64
     width::Float64
-"""
-    LinearEnergyScale(off::Float64, width::Float64)
-
-Construct a LinearEnergyScale from the zero offset (in eV) and channel width (in
-eV/channel).
-"""
+    """
+        LinearEnergyScale(off::Float64, width::Float64)
+    
+    Construct a LinearEnergyScale from the zero offset (in eV) and channel width (in
+    eV/channel).
+    """
     function LinearEnergyScale(off::Float64, width::Float64)
-        @assert width>0.0 "Channel width must be greater than 0 in LinearEnergyScale."
-        return new(off,width)
+        @assert width > 0.0 "Channel width must be greater than 0 in LinearEnergyScale."
+        return new(off, width)
     end
 end
 
 Base.show(io::IO, es::LinearEnergyScale) =
-    print(io, "E[ch] = ",es.offset," + ",es.width,"⋅ch")
+    print(io, "E[ch] = ", es.offset, " + ", es.width, "⋅ch")
 
-Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width,h))
+Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width, h))
 
 """
     channel(eV::AbstractFloat, sc::EnergyScale)
@@ -47,7 +47,7 @@ Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width,h
     Returns the integer index of the channel for the specified energy X-ray (in eV).
 """
 channel(eV::AbstractFloat, sc::LinearEnergyScale)::Int =
-    1 + floor(Int, (eV - sc.offset)/sc.width)
+    1 + floor(Int, (eV - sc.offset) / sc.width)
 
 
 """
@@ -67,8 +67,7 @@ Example:
     pes = PolyEnergyScale([ 3.0, 10.1, 0.001])
     energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
 """
-NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 =
-    (ch-1)*sc.width+sc.offset
+NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 = (ch - 1) * sc.width + sc.offset
 
 
 """
@@ -78,7 +77,8 @@ An energy scale based on a polynomial function of the channel index.
 """
 struct PolyEnergyScale <: EnergyScale
     poly::ImmutablePolynomial
-    PolyEnergyScale(vec::AbstractVector{<:AbstractFloat}) = new(ImmutablePolynomial(vec,:ch))
+    PolyEnergyScale(vec::AbstractVector{<:AbstractFloat}) =
+        new(ImmutablePolynomial(vec, :ch))
 end
 
 function Base.show(io::IO, pes::PolyEnergyScale)
@@ -87,20 +87,20 @@ function Base.show(io::IO, pes::PolyEnergyScale)
 end
 
 function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
-    cp=Vector(coeffs(sc.poly))
-    cp[1]-=eV
+    cp = Vector(coeffs(sc.poly))
+    cp[1] -= eV
     rts = roots(ImmutablePolynomial(cp))
     best = 100000
     for rt in rts
         if !(rt isa Complex)
-            best = (rt>=-1000.0) && (rt<best) ? 1+floor(rt) : best
+            best = (rt >= -1000.0) && (rt < best) ? 1 + floor(rt) : best
         end
     end
     return best
 end
 
 NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
-    sc.poly(convert(Float64,ch-1))
+    sc.poly(convert(Float64, ch - 1))
 
 
 """
@@ -110,8 +110,7 @@ NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
 Computes the energy associated with a range of channel indexes and returns
 it as an Array.
 """
-energyscale(es::EnergyScale, channels) =
-    collect(energy(ch, es) for ch in channels)
+energyscale(es::EnergyScale, channels) = collect(energy(ch, es) for ch in channels)
 
 """
     Resolution
@@ -155,8 +154,7 @@ resolution(eV::Float64, res::MnKaResolution) =
 
 Converts full-width half-max to Gaussian width.
 """
-gaussianwidth(fwhm::Float64) =
-    fwhm / 2.354820045030949382023138652918
+gaussianwidth(fwhm::Float64) = fwhm / 2.354820045030949382023138652918
 
 """"
     profile(energy::Float64, xrayE::Float64, res::Resolution)
@@ -166,7 +164,7 @@ with the specified resolution.  Maintains normalization to a sum of unity.
 """
 function profile(energy::Float64, xrayE::Float64, res::MnKaResolution)
     σ = gaussianwidth(resolution(xrayE, res))
-    return exp(-0.5*((energy-xrayE)/σ)^2)/(σ*sqrt(2.0π))
+    return exp(-0.5 * ((energy - xrayE) / σ)^2) / (σ * sqrt(2.0π))
 end
 
 """
@@ -176,33 +174,35 @@ Calculates the extent of the peak interval for an x-ray of the specified
 energy.
 """
 function extent(xrayE::Float64, res::MnKaResolution, ampl::Float64)
-    w=gaussianwidth(resolution(xrayE, res))*sqrt(-2.0*log(ampl))
-    return (xrayE-w, xrayE+w)
+    w = gaussianwidth(resolution(xrayE, res)) * sqrt(-2.0 * log(ampl))
+    return (xrayE - w, xrayE + w)
 end
 
 struct MnKaPlusICC <: Resolution
     fwhmatmnka::Float64
     icc::Float64
     iccmax::Float64
-    MnKaPlusICC(fwhm::Float64, icc::Float64=70.0, iccmax::Float64=1500.0) = new(fwhm, icc, iccmax)
+    MnKaPlusICC(fwhm::Float64, icc::Float64 = 70.0, iccmax::Float64 = 1500.0) =
+        new(fwhm, icc, iccmax)
 end
 
 resolution(eV::Float64, res::MnKaPlusICC) =
-    sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka)) + max(0.0, res.icc*(1.0-max(0.0,eV)/res.iccmax))
+    sqrt((2.45 * (eV - 5898.7)) + (res.fwhmatmnka * res.fwhmatmnka)) +
+    max(0.0, res.icc * (1.0 - max(0.0, eV) / res.iccmax))
 
 function profile(energy::Float64, xrayE::Float64, res::MnKaPlusICC)
     σ = gaussianwidth(resolution(xrayE, res))
-    return exp(-0.5*((energy-xrayE)/σ)^2)/(σ*sqrt(2.0π))
+    return exp(-0.5 * ((energy - xrayE) / σ)^2) / (σ * sqrt(2.0π))
 end
 
 function extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
-    w=gaussianwidth(resolution(xrayE, res))*sqrt(-2.0*log(ampl))
-    icc=gaussianwidth(res.icc*(1.0-max(0.0,xrayE)/res.iccmax))
-    return (xrayE-(w+max(0.0,icc)), xrayE+w)
+    w = gaussianwidth(resolution(xrayE, res)) * sqrt(-2.0 * log(ampl))
+    icc = gaussianwidth(res.icc * (1.0 - max(0.0, xrayE) / res.iccmax))
+    return (xrayE - (w + max(0.0, icc)), xrayE + w)
 end
 
 extent(cxr::CharXRay, res::Resolution, ampl::Float64) =
-    extent(energy(cxr), res, min(0.999,ampl/weight(cxr)))
+    extent(energy(cxr), res, min(0.999, ampl / weight(cxr)))
 
 """
     Detector
@@ -227,16 +227,16 @@ abstract type Detector end
 
 The extent of an escape artifact is determined by the resolution of the detector at the energy of the escape peak.
 """
-extent(esc::EscapeArtifact, res::Resolution, ampl::Float64=0.01) =
-    extent(energy(esc), res, min(0.999,ampl/weight(esc.xray)))
+extent(esc::EscapeArtifact, res::Resolution, ampl::Float64 = 0.01) =
+    extent(energy(esc), res, min(0.999, ampl / weight(esc.xray)))
 
 """
     extent(escape::ComptonArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
 
 The extent of a Compton artifact is determined by the resolution of the detector at the energy of the Compton peak.
 """
-extent(ca::ComptonArtifact, res::Resolution, ampl::Float64=1.0e-4) =
-    extent(energy(ca), res, min(0.999,ampl/weight(ca.xray)))
+extent(ca::ComptonArtifact, res::Resolution, ampl::Float64 = 1.0e-4) =
+    extent(energy(ca), res, min(0.999, ampl / weight(ca.xray)))
 
 """
     extent(sf::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
@@ -244,7 +244,7 @@ extent(ca::ComptonArtifact, res::Resolution, ampl::Float64=1.0e-4) =
 Computes the channel range encompassed by the specified set of x-ray transitions
 down to an intensity of ampl.  Relative line weights are taken into account.
 """
-extent(sf::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64} =
+extent(sf::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64,Float64} =
     extent(sf, det.resolution, ampl)
 
 """
@@ -264,8 +264,7 @@ abstract type EDSDetector <: Detector end
 
 Number of detector channels.
 """
-channelcount(det::EDSDetector) =
-    det.channelcount
+channelcount(det::EDSDetector) = det.channelcount
 
 Base.eachindex(det::EDSDetector) = Base.OneTo(det.channelcount)
 
@@ -274,11 +273,9 @@ Base.eachindex(det::EDSDetector) = Base.OneTo(det.channelcount)
 
 EnergyScale associated with this detector.
 """
-scale(det::EDSDetector)::EnergyScale =
-    det.scale
+scale(det::EDSDetector)::EnergyScale = det.scale
 
-energyscale(det::EDSDetector) =
-    energyscale(det.scale, eachindex(det))
+energyscale(det::EDSDetector) = energyscale(det.scale, eachindex(det))
 
 """
     lld(det::EDSDetector)
@@ -287,20 +284,15 @@ Low level detection limit in channels.  Channels at or below this value will be 
 """
 lld(det::EDSDetector) = det.lld
 
-resolution(eV::Float64, det::EDSDetector) =
-    resolution(eV, det.resolution)
+resolution(eV::Float64, det::EDSDetector) = resolution(eV, det.resolution)
 
 
-NeXLCore.energy(ch::Int, det::EDSDetector) =
-    energy(ch, det.scale)
+NeXLCore.energy(ch::Int, det::EDSDetector) = energy(ch, det.scale)
 
-channel(eV::Float64, det::EDSDetector) =
-    channel(eV, det.scale)
-channel(sf::SpectrumFeature, det::EDSDetector) =
-    channel(energy(sf), det.scale)
+channel(eV::Float64, det::EDSDetector) = channel(eV, det.scale)
+channel(sf::SpectrumFeature, det::EDSDetector) = channel(energy(sf), det.scale)
 
-channelwidth(ch::Int64, det::EDSDetector) =
-    energy(ch+1, det) - energy(ch, det)
+channelwidth(ch::Int64, det::EDSDetector) = energy(ch + 1, det) - energy(ch, det)
 
 
 """"
@@ -311,8 +303,10 @@ with the specified resolution.  Performs a crude integration to account for
 the channel width.
 """
 function profile(ch::Int, xrayE::Float64, det::EDSDetector)
-    eh, el = energy(ch+1, det), energy(ch,det)
-    return 0.5 * (profile(eh, xrayE, det.resolution) + profile(el, xrayE, det.resolution)) * (eh-el)
+    eh, el = energy(ch + 1, det), energy(ch, det)
+    return 0.5 *
+           (profile(eh, xrayE, det.resolution) + profile(el, xrayE, det.resolution)) *
+           (eh - el)
 end
 profile(nrg::Float64, xrayE::Float64, det::EDSDetector) =
     profile(channel(nrg, det), xrayE, det.resolution)
@@ -325,7 +319,7 @@ Returns the characteristic x-rays that are visible on the specified detector (ie
 channel).
 """
 isvisible(sfs::AbstractVector{<:SpectrumFeature}, det::Detector) =
-    filter(sf->isvisible(sf,det), sfs)
+    filter(sf -> isvisible(sf, det), sfs)
 
 """
     extents(cxrs::AbstractVector{<:SpectrumFeature},det::Detector,ampl::Float64)::Vector{UnitRange{Int}}
@@ -336,8 +330,8 @@ the specified detector.  The ampl determines the extent of each peak.
 function extents( #
     cxrs::AbstractVector{T},
     det::Detector, #
-    ampl::Float64
-)::Vector{UnitRange{Int}} where T <: SpectrumFeature
+    ampl::Float64,
+)::Vector{UnitRange{Int}} where {T<:SpectrumFeature}
     function ascontiguous(rois)
         join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
         srois = sort(rois)
@@ -353,12 +347,18 @@ function extents( #
     end
     inrange(x) = (x.start <= channelcount(det)) && (x.stop > lld(det))
     # Note: extent(cxr,...) takes line weight into account
-    es=map(cxr->extent(cxr, det, ampl), filter(cxr->weight(cxr)>ampl, isvisible(cxrs, det)))
-    return filter(inrange, ascontiguous(map(ee->channel(ee[1],det):channel(ee[2],det),es)))
+    es = map(
+        cxr -> extent(cxr, det, ampl),
+        filter(cxr -> weight(cxr) > ampl, isvisible(cxrs, det)),
+    )
+    return filter(
+        inrange,
+        ascontiguous(map(ee -> channel(ee[1], det):channel(ee[2], det), es)),
+    )
 end
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =
-    extents(isvisible(characteristic(elm,alltransitions),det),det,ampl)
+    extents(isvisible(characteristic(elm, alltransitions), det), det, ampl)
 
 """
     function labeledextents(
@@ -374,9 +374,9 @@ interfere with each other on the specified detector.
 function labeledextents(
     cxrs::AbstractVector{T},
     det::Detector,
-    ampl::Float64
-)::Vector{Tuple{Vector{T},UnitRange{Int}}} where T <: SpectrumFeature
-    fcxrs = filter(cxr-> weight(cxr)>ampl, isvisible(cxrs, det))
+    ampl::Float64,
+)::Vector{Tuple{Vector{T},UnitRange{Int}}} where {T<:SpectrumFeature}
+    fcxrs = filter(cxr -> weight(cxr) > ampl, isvisible(cxrs, det))
     es = map(xr -> extent(xr, det, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
@@ -415,10 +415,13 @@ function escapeextents(
     ampl::Float64,
     maxE::Float64,
     escape::CharXRay = n"Si K-L3",
-    minweight::Float64=0.5
-)::Vector{Tuple{Vector{EscapeArtifact},UnitRange{Int}}} where T <: SpectrumFeature
-    escs = map(tr -> EscapeArtifact(tr, escape), filter(c->exists(EscapeArtifact, c, escape), cxrs))
-    escs = filter(esc->isvisible(esc, det), escs)
+    minweight::Float64 = 0.5,
+)::Vector{Tuple{Vector{EscapeArtifact},UnitRange{Int}}} where {T<:SpectrumFeature}
+    escs = map(
+        tr -> EscapeArtifact(tr, escape),
+        filter(c -> exists(EscapeArtifact, c, escape), cxrs),
+    )
+    escs = filter(esc -> isvisible(esc, det), escs)
     es = map(esc -> extent(energy(esc), det.resolution, 0.01), escs) # EscapeFeature -> energy ranges
     le = collect(zip(escs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy
@@ -445,9 +448,15 @@ end
 
 Construct simple model of an EDS detector.
 """
-function simpleEDS(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
-    lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
-    BasicEDS(chCount, LinearEnergyScale(offset,width), MnKaResolution(fwhmatmnka), lld)
+function simpleEDS(
+    chCount::Integer,
+    width::Float64,
+    offset::Float64,
+    fwhmatmnka::Float64,
+    lld::Int = -1,
+)
+    lld = lld < 1 ? round(Int, (150.0 - offset) / width) : lld
+    BasicEDS(chCount, LinearEnergyScale(offset, width), MnKaResolution(fwhmatmnka), lld)
 end
 
 """
@@ -456,9 +465,20 @@ end
 Construct simple model of an EDS detector with incomplete charge collection at
 low X-ray energies.
 """
-function simpleEDSwICC(chCount::Integer, width::Float64, offset::Float64, fwhmatmnka::Float64, lld::Int=-1)
-    lld = lld<1 ? round(Int,(150.0-offset)/width) : lld
-    BasicEDS(chCount, LinearEnergyScale(offset,width), MnKaPlusICC(fwhmatmnka, 70.0, 1200.0), max(1,lld))
+function simpleEDSwICC(
+    chCount::Integer,
+    width::Float64,
+    offset::Float64,
+    fwhmatmnka::Float64,
+    lld::Int = -1,
+)
+    lld = lld < 1 ? round(Int, (150.0 - offset) / width) : lld
+    BasicEDS(
+        chCount,
+        LinearEnergyScale(offset, width),
+        MnKaPlusICC(fwhmatmnka, 70.0, 1200.0),
+        max(1, lld),
+    )
 end
 
 struct BasicEDS <: EDSDetector
@@ -475,13 +495,22 @@ struct BasicEDS <: EDSDetector
         lld::Int,
         minByShell::Dict{Shell,Element} = Dict{Shell,Element}(),
     )
-        mbs = merge(Dict{Shell,Element}(
-            KShell => n"Be",
-            LShell => n"Sc",
-            MShell => n"Ba",
-            NShell => n"Pu",
-        ), minByShell)
-        return new(channelcount, LinearEnergyScale(zero, gain), MnKaResolution(fwhm), lld, mbs)
+        mbs = merge(
+            Dict{Shell,Element}(
+                KShell => n"Be",
+                LShell => n"Sc",
+                MShell => n"Ba",
+                NShell => n"Pu",
+            ),
+            minByShell,
+        )
+        return new(
+            channelcount,
+            LinearEnergyScale(zero, gain),
+            MnKaResolution(fwhm),
+            lld,
+            mbs,
+        )
     end
     function BasicEDS(
         channelcount::Int,
@@ -490,19 +519,25 @@ struct BasicEDS <: EDSDetector
         lld::Int,
         minByShell::Dict{Shell,Element} = Dict{Shell,Element}(),
     )
-        mbs = merge(Dict{Shell,Element}(
-            KShell => n"Be",
-            LShell => n"Sc",
-            MShell => n"Ba",
-            NShell => n"Pu",
-        ), minByShell)
+        mbs = merge(
+            Dict{Shell,Element}(
+                KShell => n"Be",
+                LShell => n"Sc",
+                MShell => n"Ba",
+                NShell => n"Pu",
+            ),
+            minByShell,
+        )
         return new(channelcount, scale, resolution, lld, mbs)
     end
 end
 
 function Base.show(io::IO, beds::BasicEDS)
-    els=join(symbol.(map(klm->beds.minByShell[klm], Shell.(1:4))),",")
-    print(io,"BasicEDS[$(beds.channelcount) chs, $(beds.scale), $(beds.resolution), $(beds.lld) ch LLD, [$els]]")
+    els = join(symbol.(map(klm -> beds.minByShell[klm], Shell.(1:4))), ",")
+    print(
+        io,
+        "BasicEDS[$(beds.channelcount) chs, $(beds.scale), $(beds.resolution), $(beds.lld) ch LLD, [$els]]",
+    )
 end
 
 """
@@ -511,13 +546,13 @@ end
 Is `sf` visible on the specified Detector?
 """
 function isvisible(esc::EscapeArtifact, det::BasicEDS)
-    ass=AtomicSubShell(det.minByShell[KShell], n"K1")
-    return (energy(esc)>=energy(ass)) &&
-    (energy(esc)>energy(lld(det), det)) && #
-    (energy(esc)<energy(det.channelcount+1, det))
+    ass = AtomicSubShell(det.minByShell[KShell], n"K1")
+    return (energy(esc) >= energy(ass)) &&
+           (energy(esc) > energy(lld(det), det)) && #
+           (energy(esc) < energy(det.channelcount + 1, det))
 end
 
 isvisible(cxr::CharXRay, det::BasicEDS) =
-    (element(cxr)>=det.minByShell[shell(cxr)]) && #
-    (energy(cxr)>energy(lld(det), det)) && #
-    (energy(cxr)<energy(det.channelcount+1, det))
+    (element(cxr) >= det.minByShell[shell(cxr)]) && #
+    (energy(cxr) > energy(lld(det), det)) && #
+    (energy(cxr) < energy(det.channelcount + 1, det))

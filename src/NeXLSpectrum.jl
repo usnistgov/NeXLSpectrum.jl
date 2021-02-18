@@ -10,7 +10,7 @@ using Unitful: mm
 using FileIO
 using Mmap
 using EzXML: readxml
-import Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
+using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
 using LoopVectorization
 using Statistics
@@ -19,6 +19,7 @@ using CSV
 using ZipFile
 using DataFrames
 using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
+using LsqFit: curve_fit
 
 @reexport using NeXLCore
 @reexport using NeXLMatrixCorrection
@@ -99,9 +100,11 @@ export sameproperty # Returns the property value if all the spectra share the sa
 export textplot # A quick way to visualize a spectrum
 export findsimilar # Find the spectra that are most similar to each other
 export χ² # Compare spectra
+export duane_hunt # Estimate the Duane-Hunt limit
+export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
 
 include("hyperspectrum.jl")
-export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum
+export HyperSpectrum # The wrapper that makes an Array{<:Real,N} look like an Array{Spectrum,N-1}
 export plane # Sum planes in a HyperSpectrum
 export roiimage # Convert a range of data channels into a Gray-scale image
 export roiimages # Convert a vector of ranges-of-channels into Gray-scale images
@@ -113,6 +116,9 @@ export sumcounts # Array containing the total number of counts in at each pixel
 export depth # Number of spectral or result planes
 export region # Extract a region from within the HyperSpectrum as a HyperSpectrum
 export properties # The HyperSpectrum properties (mutable)
+export axisname # The name of the i-th axis
+export axisvalue # The calibrated coordinate value for the pixel coordinate
+export axisrange # range of coordinate values for the specified axis
 
 include("rplraw.jl")
 export RPLHeader
@@ -164,7 +170,7 @@ export FitResult
 export BasicFitResult
 export FilterFitResult
 export findlabel
-export fit
+export fit_spectrum
 export heterogeneity
 export peaktobackground
 export characteristiccounts
@@ -225,6 +231,13 @@ export quantify
 
 include("smoothing.jl")
 export SavitzkyGolayFilter
+
+include("multidet.jl") # Multi-detector support
+export loadmultispec # Loads multiple related spectra.
+export multiscore # Scores spectra relative to one another. 
+export multirank # A single number value that scores the spectra
+
+export plot_compare # Plots a statistical channel-by-channel comparison of spectra
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

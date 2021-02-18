@@ -118,34 +118,3 @@ function add_annotations(
         return compose(contexts...)
     end
 end
-
-if false
-    path = "C:\\Users\\nritchie\\Desktop\\Topsham Maine Uraninite Hex Crystal"
-
-    df = vcat(
-        (CSV.read(joinpath(path, "Edge $i", "spectra.txt")) |> DataFrame for i = 1:6)...,
-        (CSV.read(joinpath(path, "Traverse $i", "spectra.txt")) |> DataFrame for i = 1:3)...,
-    )
-
-    set_default_graphic_size(20cm, 20cm)
-
-    add_acquisition_points(
-        joinpath(path, "Manual", "Macro[0].png"),
-        "image/png",
-        -0.6720,
-        -0.02550,
-        7.0,
-        7.0,
-        df,
-    ) |> SVG(joinpath(path, "annot macro.svg"))
-    add_acquisition_points(
-        joinpath(path, "Manual", "Macro2[0].png"),
-        "image/png",
-        -0.5700,
-        -0.6950,
-        14.0,
-        14.0,
-        df,
-    ) |> SVG(joinpath(path, "annot macro2.svg"))
-    add_annotations(joinpath(path, "Edge 1", "Point 10[0].png"), :ScaleBar, :AcquisitionPoints)
-end

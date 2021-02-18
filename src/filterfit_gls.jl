@@ -22,7 +22,6 @@ function tophatfilter(::Type{FilteredUnknownG}, spec::Spectrum, thf::TopHatFilte
     filtered = [ filtereddatum(thf, data, i) for i in eachindex(data) ]
     dp = map(x->max(x, 1.0), data) # To ensure covariance isn't zero or infinite precision
     covar = [ filteredcovar(thf, dp, r, c) for r in eachindex(data), c in eachindex(data) ]
-    checkcovariance!(covar)
     return FilteredUnknownG(UnknownLabel(spec), scale, data, filtered, covar)
 end
 
@@ -41,12 +40,15 @@ NeXLUncertainties.covariance(fd::FilteredUnknownG, roi::UnitRange{Int})::Abstrac
 Filter fit the unknown against ffs, an array of FilteredReference and return the result as an FilterFitResult object.
 By default use the generalized LLSQ fitting (pseudo-inverse implementation).
 """
-function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
-    trimmed, refit, removed, retained = copy(ffs), true, UncertainValues[], nothing # start with all the FilteredReference
-    while refit
+function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, alg::Function = fitcontiguousp, forcezeros::Bool=true)::FilterFitResult
+    trimmed, removed = copy(ffs), UncertainValues[] # start with all the FilteredReference
+    while true
+        # Build a list of contiguous rois each of which is fit as a batch
         fitrois = ascontiguous(map(fd->fd.ffroi, trimmed))
         # @info "Fitting $(length(trimmed)) references in $(length(fitrois)) blocks - $fitrois"
-        retained = map(fr -> alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr), fitrois)
+        retained = map(fitrois) do fr
+            alg(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr)
+        end
         kr = cat(retained)
         refit = false
         for lbl in keys(kr)
@@ -56,10 +58,12 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
                 refit=true
             end
         end
+        if !refit
+            kr = cat(append!(retained, removed))
+            resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
+            return FilterFitResult(unk.label, kr, eachindex(unk.data), unk.data, resid, pb)        
+        end
     end
-    kr = cat(append!(retained, removed))
-    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.label, kr, eachindex(unk.data), unk.data, resid, pb)
 end
 
 """
@@ -87,6 +91,14 @@ function fitcontiguousi(unk::FilteredUnknownG, ffs::AbstractVector{FilteredRefer
 end
 
 """
+Generalized least squares (Cholesky)
+"""
+function fitcontiguousc(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
+    x, lbls, scale = _buildmodel(ffs,chs), _buildlabels(ffs), _buildscale(unk, ffs)
+    return scale * glschol(extract(unk, chs), x, unk.covariance[chs,chs], lbls)
+end
+
+"""
 Weighted least squares using the diagonal from the FilteredUnknownG covariance as a matrix fed into glspinv.
 """
 function fitcontiguousw(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}, chs::UnitRange{Int})::UncertainValues
@@ -102,12 +114,14 @@ function fitcontiguousw2(unk::FilteredUnknownG, ffs::AbstractVector{FilteredRefe
     return scale * wlssvd(extract(unk, chs), x, diag(unk.covariance[chs,chs]), lbls)
 end
 
-function fit(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+function fit_spectrum(ty::Type{FilteredUnknownG}, unk::Spectrum, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros::Bool = true)
     bestRefs = selectBestReferences(refs)
-    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros)
+    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousc, forcezeros)
 end
 
-function fit(ty::Type{FilteredUnknownG}, unks::AbstractVector{Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros = true)
+function fit_spectrum(ty::Type{FilteredUnknownG}, unks::AbstractVector{<:Spectrum}, filt::TopHatFilter, refs::AbstractVector{FilteredReference}, forcezeros::Bool = true)
     bestRefs = selectBestReferences(refs)
-    return map(unk->filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousww, forcezeros), unks)
+    return map(unk->filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, fitcontiguousc, forcezeros), unks)
 end
+
+

@@ -1,24 +1,24 @@
 # Model and fit the continuum
 
 struct ContinuumModel
-  material::Material
-  e0::Float64
-  takeoff::Float64
-  mc::Type{<:MatrixCorrection}
-  br::Type{<:NeXLBremsstrahlung}
-  """
-      ContinuumModel(mat::Material, e0::Float64, det::DetectorEfficiency, takeoff::Float64)
+    material::Material
+    e0::Float64
+    takeoff::Float64
+    mc::Type{<:MatrixCorrection}
+    br::Type{<:NeXLBremsstrahlung}
+    """
+        ContinuumModel(mat::Material, e0::Float64, det::DetectorEfficiency, takeoff::Float64)
 
-  Create a continuum model for the specified material, beam energy, detector and take-off angle.  Computes
-  the *detected* quantity of continuum generated in the sample.
-  """
-  ContinuumModel(
-    material::Material,
-    e0::Float64,
-    takeoff::Float64;
-    matrixcorrection::Type{<:MatrixCorrection} = Riveros1993,
-    bremsstrahlung::Type{<:NeXLBremsstrahlung} = Castellano2004b,
-  ) = new(material, e0, takeoff, matrixcorrection, bremsstrahlung)
+    Create a continuum model for the specified material, beam energy, detector and take-off angle.  Computes
+    the *detected* quantity of continuum generated in the sample.
+    """
+    ContinuumModel(
+        material::Material,
+        e0::Float64,
+        takeoff::Float64;
+        matrixcorrection::Type{<:MatrixCorrection} = Riveros1993,
+        bremsstrahlung::Type{<:NeXLBremsstrahlung} = Castellano2004b,
+    ) = new(material, e0, takeoff, matrixcorrection, bremsstrahlung)
 end
 
 """
@@ -28,8 +28,12 @@ Compute the intensity of the measured continuum emitted from the material and co
 model object at the specified measured energy `ea`.
 """
 function emitted(cm::ContinuumModel, ea::Float64) #
-  g = generated(cm, ea)
-  return g > 0.0 ? g * correctcontinuum(continuumcorrection(cm.mc, cm.material, ea, cm.e0), cm.takeoff) : 0.0
+    g = generated(cm, ea)
+    return g > 0.0 ?
+           g * correctcontinuum(
+        continuumcorrection(cm.mc, cm.material, ea, cm.e0),
+        cm.takeoff,
+    ) : 0.0
 end
 
 """
@@ -39,7 +43,7 @@ Compute the intensity of the measured continuum generated from the material and 
 model object at the specified measured energy `ea`.
 """
 generated(cm::ContinuumModel, ea::Float64) = #
-  ea <= cm.e0 ? bremsstrahlung(cm.br, ea, cm.e0, cm.material) : 0.0
+    ea <= cm.e0 ? bremsstrahlung(cm.br, ea, cm.e0, cm.material) : 0.0
 
 
 """
@@ -57,81 +61,87 @@ the detector response on a channel-by-channel basis.  It can be calculated from 
 the :Composition, :BeamEnergy and :TakeOffAngle properties defined.
 """
 function fitcontinuum(
-  spec::Spectrum,
-  resp::AbstractArray{<:Real,2},
-  rois::AbstractArray{<:UnitRange,1};
-  brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-  mc::Type{<:MatrixCorrection} = Riveros1993,
+    spec::Spectrum,
+    resp::AbstractArray{<:Real,2},
+    rois::AbstractArray{<:UnitRange,1};
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+    mc::Type{<:MatrixCorrection} = Riveros1993,
 )
-  @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
-  @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
-  @assert haskey(spec, :TakeOffAngle) "The fitcontinuum(...) function requires the spec[:TakeOffAngle] property."
-  cmod = ContinuumModel(
-    spec[:Composition],
-    spec[:BeamEnergy],
-    spec[:TakeOffAngle],
-    matrixcorrection = mc,
-    bremsstrahlung = brem,
-  )
-  minEmod = max(50.0, energy(lld(spec), spec)) # Ensures
-  model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
-  k = sum(sum(model[roi]) for roi in rois) / sum(sum(counts(spec, roi, Float64)) for roi in rois)
-  props = Dict{Symbol,Any}(
-    :TakeOffAngle => spec[:TakeOffAngle],
-    :BeamEnergy => spec[:BeamEnergy],
-    :Composition => spec[:Composition],
-    :K => k,
-    :Name => "Brem[Global][$(spec[:Name])]",
-  )
-  return Spectrum(spec.energy, model / k, props)
+    @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
+    @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
+    @assert haskey(spec, :TakeOffAngle) "The fitcontinuum(...) function requires the spec[:TakeOffAngle] property."
+    cmod = ContinuumModel(
+        spec[:Composition],
+        spec[:BeamEnergy],
+        spec[:TakeOffAngle],
+        matrixcorrection = mc,
+        bremsstrahlung = brem,
+    )
+    minEmod = max(50.0, energy(lld(spec), spec)) # Ensures
+    model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
+    k =
+        sum(sum(model[roi]) for roi in rois) /
+        sum(sum(counts(spec, roi, Float64)) for roi in rois)
+    props = Dict{Symbol,Any}(
+        :TakeOffAngle => spec[:TakeOffAngle],
+        :BeamEnergy => spec[:BeamEnergy],
+        :Composition => spec[:Composition],
+        :K => k,
+        :Name => "Brem[Global][$(spec[:Name])]",
+    )
+    return Spectrum(spec.energy, model / k, props)
 end
 
 
 """
-    continuumrois(elms, det::EDSDetector, minE::Float64, maxE::Float64)
+    continuumrois(elems, det::EDSDetector, minE::Float64, maxE::Float64)
 
-Compute the ROIs for the contiguous continuum regions for the specified elements `elms` on an
+Compute the ROIs for the contiguous continuum regions for the specified elements `elems` on an
 `EDSDetector` for the specified range of energies.
 """
-function continuumrois(elms, det::EDSDetector, minE::Float64, maxE::Float64)::Vector{UnitRange{Int}}
-  # Join contiguous rois
-  function ascontiguous(rois)
-    join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
-    srois = sort(rois)
-    res = [srois[1]]
-    for roi in srois[2:end]
-      if length(intersect(res[end], roi)) > 0
-        res[end] = join(roi, res[end])
-      else
-        push!(res, roi)
-      end
+function continuumrois(
+    elems,
+    det::EDSDetector,
+    minE::Float64,
+    maxE::Float64,
+)::Vector{UnitRange{Int}}
+    # Calculate the un-rois
+    function invert(rois, over)
+        st, res = over.start, []
+        for roi in rois
+            low, hgh = max(st, over.start), min(roi.start, over.stop)
+            if hgh > low
+                push!(res, low:hgh)
+            end
+            st = roi.stop
+        end
+        if st < over.stop
+            push!(res, st:over.stop)
+        end
+        return res
     end
-    return res
-  end
-  # Calculate the un-rois
-  function invert(rois, over)
-    st, res = over.start, []
-    for roi in rois
-      low, hgh = max(st, over.start), min(roi.start, over.stop)
-      if hgh > low
-        push!(res, low:hgh)
-      end
-      st = roi.stop
+    extend(roi, n) = roi.start-n:roi.stop+n
+    # Average channel width between minE and maxE.
+    avgwidth = let 
+        minC, maxC = channel(minE, det), channel(maxE, det)
+        (energy(maxC, det) - energy(minC, det)) / (maxC - minC)
     end
-    if st < over.stop
-      push!(res, st:over.stop)
+    extra = round(Int, (2.0 * resolution(enx"Mn K-L3", det)) / avgwidth)
+    rois = mapreduce(elm -> extend.(extents(elm, det, 1.0e-3), extra), append!, elems)
+    # Join rois into contiguous rois
+    ascontiguous = let
+        srois = sort(rois)
+        res = [srois[1]]
+        for roi in srois[2:end]
+            if length(intersect(res[end], roi)) > 0
+                res[end] = min(roi.start, res[end].start):max(roi.stop, res[end].stop)
+            else
+                push!(res, roi)
+            end
+        end
+        res
     end
-    return res
-  end
-  extend(roi, n) = roi.start-n:roi.stop+n
-  # Average channel width between minE and maxE.
-  function avgwidth(det, minE, maxE)
-    minC, maxC = channel(minE,det), channel(maxE,det)
-    return (energy(maxC,det) - energy(minC,det))/(maxC-minC)
-  end
-  extra = round(Int, (2.0 * resolution(enx"Mn K-L3", det)) / avgwidth(det,minE,maxE))
-  rois = mapreduce(elm -> extend.(extents(elm, det, 1.0e-3), extra), append!, elms)
-  return invert(ascontiguous(rois), channel(minE, det):channel(maxE, det))
+    return invert(ascontiguous, channel(minE, det):channel(maxE, det))
 end
 
 
@@ -167,62 +177,69 @@ fit using the continuum immediately higher in energy and the high energy peaks a
 sides.
 """
 function fitcontinuum(
-  spec::Spectrum,
-  det::EDSDetector,
-  resp::AbstractArray{<:Real,2}; #
-  minE::Float64 = 1.5e3,
-  maxE::Float64 = 0.95 * spec[:BeamEnergy],
-  brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-  mc::Type{<:MatrixCorrection} = Riveros1993,
+    spec::Spectrum,
+    det::EDSDetector,
+    resp::AbstractArray{<:Real,2}; #
+    minE::Float64 = 1.5e3,
+    maxE::Float64 = 0.95 * spec[:BeamEnergy],
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+    mc::Type{<:MatrixCorrection} = Riveros1993,
 )::Vector{Float64}
-  @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
-  @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
-  @assert haskey(spec, :TakeOffAngle) "The fitcontinuum(...) function requires the spec[:TakeOffAngle] property."
-  cmod = ContinuumModel(
-    spec[:Composition],
-    spec[:BeamEnergy],
-    spec[:TakeOffAngle],
-    matrixcorrection = mc,
-    bremsstrahlung = brem,
-  )
-  # meas is the raw continuum shape.  It needs to be scaled to the unknown.
-  minEmod = max(50.0, energy(lld(spec), spec))
-  model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
-  prevroi, brem = missing, counts(spec, Float64)
-  for roi in continuumrois(elms(spec), det, minE, maxE)
-    currrois = ismissing(prevroi) ? (roi,) : (prevroi, roi)
-    k = sum(sum(counts(spec, roi, Float64)) for roi in currrois) / sum(sum(model[roi]) for roi in currrois)
-    peak = (ismissing(prevroi) ? lld(det) : prevroi.stop):roi.start
-    brem[peak] = k * model[peak]
-    prevroi = roi
-  end
-  return brem
+    @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
+    @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
+    @assert haskey(spec, :TakeOffAngle) "The fitcontinuum(...) function requires the spec[:TakeOffAngle] property."
+    cmod = ContinuumModel(
+        spec[:Composition],
+        spec[:BeamEnergy],
+        spec[:TakeOffAngle],
+        matrixcorrection = mc,
+        bremsstrahlung = brem,
+    )
+    # meas is the raw continuum shape.  It needs to be scaled to the unknown.
+    minEmod = max(50.0, energy(lld(spec), spec))
+    model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
+    prevroi, brem = missing, counts(spec, Float64)
+    for roi in continuumrois(elms(spec, true), det, minE, maxE)
+        currrois = ismissing(prevroi) ? (roi,) : (prevroi, roi)
+        k =
+            sum(sum(counts(spec, roi, Float64)) for roi in currrois) /
+            sum(sum(model[roi]) for roi in currrois)
+        peak = (ismissing(prevroi) ? lld(det) : prevroi.stop):roi.start
+        brem[peak] = k * model[peak]
+        prevroi = roi
+    end
+    return brem
 end
 
 function fittedcontinuum(
-  spec::Spectrum,
-  det::EDSDetector,
-  resp::AbstractArray{<:Real,2}; #
-  mode::Symbol = :Global,
-  minE::Float64 = 1.5e3,
-  maxE::Float64 = 0.95 * spec[:BeamEnergy],
-  brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-  mc::Type{<:MatrixCorrection} = Riveros1993,
+    spec::Spectrum,
+    det::EDSDetector,
+    resp::AbstractArray{<:Real,2}; #
+    mode::Symbol = :Global,
+    minE::Float64 = 1.5e3,
+    maxE::Float64 = 0.95 * spec[:BeamEnergy],
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+    mc::Type{<:MatrixCorrection} = Riveros1993,
 )::Spectrum
-  function localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum
-    res = Spectrum(
-      spec.energy,
-      fitcontinuum(spec, det, resp, minE = minE, maxE = maxE, brem = brem, mc = mc),
-      copy(spec.properties),
+    function localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum
+        res = Spectrum(
+            spec.energy,
+            fitcontinuum(spec, det, resp, minE = minE, maxE = maxE, brem = brem, mc = mc),
+            copy(spec.properties),
+        )
+        res[:Name] = "Brem[Local][$(spec[:Name])]"
+        return res
+    end
+    globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum = fitcontinuum(
+        spec,
+        resp,
+        continuumrois(elms(spec, true), det, minE, maxE),
+        brem = brem,
+        mc = mc,
     )
-    res[:Name] = "Brem[Local][$(spec[:Name])]"
-    return res
-  end
-  globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum =
-    fitcontinuum(spec, resp, continuumrois(elms(spec), det, minE, maxE), brem=brem, mc=mc)
-  @assert (mode==:Global) || (mode==:Local) "mode must equal :Global | :Local in fitted continuum"
-  return mode == :Global ? globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc) : #
-    localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)
+    @assert (mode == :Global) || (mode == :Local) "mode must equal :Global | :Local in fitted continuum"
+    return mode == :Global ? globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc) : #
+           localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)
 end
 
 """
@@ -239,19 +256,20 @@ end
 Computes the characteristic-only spectrum by subtracting the .
 """
 function subtractcontinuum(
-  spec::Spectrum,
-  det::EDSDetector,
-  resp::AbstractArray{<:Real,2}; #
-  minE::Float64 = 1.5e3,
-  maxE::Float64 = 0.95 * spec[:BeamEnergy],
-  brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-  mc::Type{<:MatrixCorrection} = Riveros1993,
+    spec::Spectrum,
+    det::EDSDetector,
+    resp::AbstractArray{<:Real,2}; #
+    minE::Float64 = 1.5e3,
+    maxE::Float64 = 0.95 * spec[:BeamEnergy],
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+    mc::Type{<:MatrixCorrection} = Riveros1993,
 )::Spectrum
-  res = Spectrum(
-    spec.energy,
-    counts(spec, Float64) - fitcontinuum(spec, det, resp, minE = minE, maxE = maxE, brem = brem, mc = mc),
-    copy(spec.properties),
-  )
-  res[:Name] = "CharOnly[$(res[:Name])]"
-  return res
+    res = Spectrum(
+        spec.energy,
+        counts(spec, Float64) -
+        fitcontinuum(spec, det, resp, minE = minE, maxE = maxE, brem = brem, mc = mc),
+        copy(spec.properties),
+    )
+    res[:Name] = "CharOnly[$(res[:Name])]"
+    return res
 end

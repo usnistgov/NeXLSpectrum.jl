@@ -13,25 +13,30 @@ end
 function findlabel(ffr::FitResult, cxr::CharXRay)
     lbls = labels(ffr.kratios)
     fa = findall(lbl -> (lbl isa CharXRayLabel) && (cxr in lbl.xrays), lbls)
-    @assert length(fa)≠0 "No label found for $cxr."
-    @assert length(fa)==1 "Multiple labels found for $cxr."
+    @assert length(fa) ≠ 0 "No label found for $cxr."
+    @assert length(fa) == 1 "Multiple labels found for $cxr."
     return lbls[fa[1]]
 end
 
 Base.show(io::IO, ffr::FitResult) = print(io, "$(ffr.label)")
-NeXLUncertainties.NeXLUncertainties.value(label::ReferenceLabel, ffr::FitResult) = NeXLUncertainties.value(label, ffr.kratios)
+NeXLUncertainties.NeXLUncertainties.value(label::ReferenceLabel, ffr::FitResult) =
+    NeXLUncertainties.value(label, ffr.kratios)
 NeXLUncertainties.σ(label::ReferenceLabel, ffr::FitResult) = σ(label, ffr.kratios)
-NeXLUncertainties.uncertainty(label::ReferenceLabel, ffr::FitResult) = uncertainty(label, ffr.kratios)
-NeXLUncertainties.getindex(ffr::FitResult, label::ReferenceLabel) = getindex(ffr.kratios, label)
+NeXLUncertainties.uncertainty(label::ReferenceLabel, ffr::FitResult) =
+    uncertainty(label, ffr.kratios)
+NeXLUncertainties.getindex(ffr::FitResult, label::ReferenceLabel) =
+    getindex(ffr.kratios, label)
 Base.keys(ffr::FitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FitResult) = labels(ffr.kratios)
 function kratio(cxr::CharXRay, ffr::FitResult)
-    lbl=findlabel(ffr, cxr)
+    lbl = findlabel(ffr, cxr)
     return uv(NeXLUncertainties.value(lbl, ffr), σ(lbl, ffr))
 end
 unknown(ffr::FitResult)::Label = ffr.label
-Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [NeXLUncertainties.value(lbl, ffr.kratios, 0.0) for ffr in ffrs]
-σs(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [σ(lbl, ffr.kratios, 0.0) for ffr in ffrs]
+Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
+    [NeXLUncertainties.value(lbl, ffr.kratios, 0.0) for ffr in ffrs]
+σs(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
+    [σ(lbl, ffr.kratios, 0.0) for ffr in ffrs]
 
 """
     kratios(ffr::FitResult)::Vector{KRatio}
@@ -39,7 +44,10 @@ Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = [NeXLUncertainties
 The k-ratios associated with each `CharXRayLabel` as a vector 'KRatio' objects.
 """
 function kratios(ffr::FitResult)::Vector{KRatio}
-    lbls = filter(l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)), labels(ffr.kratios))
+    lbls = filter(
+        l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)),
+        labels(ffr.kratios),
+    )
     return KRatio[
         KRatio(
             lbl.xrays,
@@ -61,9 +69,14 @@ associated with a `Material`.
 """
 function extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
     @assert haskey(mat, elm)
-    lbls = filter( l-> (l isa CharXRayLabel) && (elm==element(l)) && #
-        haskey(l.spectrum, :Composition) && isequal(mat, l.spectrum[:Composition]), 
-        labels(ffr.kratios))
+    lbls = filter(
+        l ->
+            (l isa CharXRayLabel) &&
+                (elm == element(l)) && #
+                haskey(l.spectrum, :Composition) &&
+                isequal(mat, l.spectrum[:Composition]),
+        labels(ffr.kratios),
+    )
     krs = KRatio[
         KRatio(
             lbl.xrays,
@@ -71,8 +84,9 @@ function extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
             copy(lbl.spectrum.properties),
             lbl.spectrum[:Composition],
             ffr.kratios[lbl],
-        ) for lbl in lbls ]
-    @assert length(krs)>0 "There are no k-ratios associated with the $elm in $mat."
+        ) for lbl in lbls
+    ]
+    @assert length(krs) > 0 "There are no k-ratios associated with the $elm in $mat."
     return Standard(mat, krs)
 end
 
@@ -83,7 +97,8 @@ Computes the ratio of the standard deviation of the measured values over the mea
 from the fit.  A value near 1 means the sample appears homogeneous and a value greater than 1 means the sample
 appears heterogeneous.
 """
-heterogeneity(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) = std(values(lbl,ffrs))/mean(σs(lbl,ffrs))
+heterogeneity(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
+    std(values(lbl, ffrs)) / mean(σs(lbl, ffrs))
 
 """
     NeXLUncertainties.asa(::Type{DataFrame}, ffrs::AbstractVector{<:FitResult}; charOnly = true, withUnc = false, pivot = false)
@@ -95,10 +110,10 @@ function NeXLUncertainties.asa(
     ffrs::AbstractVector{<:FitResult};
     charOnly = true,
     withUnc = false,
-    pivot = false
+    pivot = false,
 )::DataFrame
     lbls = sort(collect(Set(mapreduce(labels, append!, ffrs))))
-    lbls = charOnly ? filter(lbl->lbl isa CharXRayLabel, lbls) : lbls
+    lbls = charOnly ? filter(lbl -> lbl isa CharXRayLabel, lbls) : lbls
     if pivot
         res = DataFrame(ROI = lbls)
         for ffr in ffrs
@@ -124,17 +139,27 @@ function NeXLUncertainties.asa(
     return res
 end
 
-function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc=false)
+function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
     withUnc ?
-        DataFrame(ROI=labels(fr), k=map(l->NeXLUncertainties.value(l, fr.kratios),labels(fr)), δk=map(l->σ(l, fr.kratios), labels(fr))) : #
-        DataFrame(ROI=labels(fr), k=map(l->NeXLUncertainties.value(l, fr.kratios),labels(fr)))
+    DataFrame(
+        ROI = labels(fr),
+        k = map(l -> NeXLUncertainties.value(l, fr.kratios), labels(fr)),
+        δk = map(l -> σ(l, fr.kratios), labels(fr)),
+    ) : #
+    DataFrame(
+        ROI = labels(fr),
+        k = map(l -> NeXLUncertainties.value(l, fr.kratios), labels(fr)),
+    )
 end
 
 function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
-    df=asa(DataFrame, ffrs)[:,2:end]
-    desc=describe(df, :mean, :std, :min, :q25, :median, :q75, :max)
-    lbls = filter(lbl->lbl isa CharXRayLabel, sort(collect(Set(mapreduce(labels, append!, ffrs)))))
-    insertcols!(desc, 4, :hetero => [ heterogeneity(lbl, ffrs) for lbl in lbls ])
+    df = asa(DataFrame, ffrs)[:, 2:end]
+    desc = describe(df, :mean, :std, :min, :q25, :median, :q75, :max)
+    lbls = filter(
+        lbl -> lbl isa CharXRayLabel,
+        sort(collect(Set(mapreduce(labels, append!, ffrs)))),
+    )
+    insertcols!(desc, 4, :hetero => [heterogeneity(lbl, ffrs) for lbl in lbls])
     return desc
 end
 
@@ -188,10 +213,15 @@ characteristiccounts(ffr::FilterFitResult, strip) =
 The peak-to-background ratio as determined from the raw and residual spectra integrated over
 the fit region-of-interest and scaled to `backwidth` eV of continuum (nominally 10 eV).
 """
-function peaktobackground(ffr::FilterFitResult, klabel::ReferenceLabel, backwidth::Float64 = 10.0)::Float64
+function peaktobackground(
+    ffr::FilterFitResult,
+    klabel::ReferenceLabel,
+    backwidth::Float64 = 10.0,
+)::Float64
     unk = spectrum(unknown(ffr))
     peak, back = ffr.peakback[klabel]
-    return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) / (backwidth * back)
+    return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) /
+           (backwidth * back)
 end
 
 
@@ -202,9 +232,22 @@ Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'Da
   * If charOnly then only display characteristic X-ray data (not escapes etc.)
   * If `material` is a Material then the computed k-ratio will also be tabulated along with kmeas/kcalc.
 """
-function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true, material=nothing)::DataFrame
-    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob =
-        UnknownLabel[], ReferenceLabel[], String[], Float64[], Float64[], Int[], Int[], Float64[], Float64[], Float64[]
+function NeXLUncertainties.asa(
+    ::Type{DataFrame},
+    ffr::FilterFitResult;
+    charOnly::Bool = true,
+    material = nothing,
+)::DataFrame
+    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
+    ReferenceLabel[],
+    String[],
+    Float64[],
+    Float64[],
+    Int[],
+    Int[],
+    Float64[],
+    Float64[],
+    Float64[]
     kcalc, ratio = Float64[], Float64[]
     for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
         if (!charOnly) || kl isa CharXRayLabel
@@ -224,19 +267,34 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly
                 kc = NaN64
                 if kl isa CharXRayLabel
                     try
-                        zcu = zafcorrection(XPP, ReedFluorescence, NullCoating, material, kl.xrays, unkspec[:BeamEnergy])
-                        zcs = zafcorrection(XPP, ReedFluorescence, NullCoating, stdspec[:Composition], kl.xrays, stdspec[:BeamEnergy])
+                        zcu = zafcorrection(
+                            XPP,
+                            ReedFluorescence,
+                            NullCoating,
+                            material,
+                            kl.xrays,
+                            unkspec[:BeamEnergy],
+                        )
+                        zcs = zafcorrection(
+                            XPP,
+                            ReedFluorescence,
+                            NullCoating,
+                            stdspec[:Composition],
+                            kl.xrays,
+                            stdspec[:BeamEnergy],
+                        )
                         kc = k(zcu, zcs, unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
                     catch
                         kc = NaN64
                     end
                 end
                 push!(kcalc, kc)
-                push!(ratio, NeXLUncertainties.value(kl, ffr.kratios)/kc)
+                push!(ratio, NeXLUncertainties.value(kl, ffr.kratios) / kc)
             end
         end
     end
-    return material isa Material ? DataFrame(
+    return material isa Material ?
+           DataFrame(
         Spectrum = lbl,
         Feature = klbl,
         Reference = std,
@@ -249,7 +307,8 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly
         PtoB = ptob,
         Kcalc = kcalc,
         Ratio = ratio,
-    ) : DataFrame(
+    ) :
+           DataFrame(
         Spectrum = lbl,
         Feature = klbl,
         Reference = std,
@@ -268,7 +327,13 @@ end
 
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
-function filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}
-    scaled(ff) = (NeXLUncertainties.value(ff.label, fit) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
+function filteredresidual(
+    fit::FilterFitResult,
+    unk::FilteredUnknown,
+    ffs::AbstractVector{FilteredReference},
+)::Vector{Float64}
+    scaled(ff) =
+        (NeXLUncertainties.value(ff.label, fit) * (ff.scale / unk.scale)) *
+        extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end

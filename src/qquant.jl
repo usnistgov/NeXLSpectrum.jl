@@ -15,23 +15,35 @@ struct VectorQuant
     collection of `FilteredReference`(s), and a `TopHatFilter`.
     """
     function VectorQuant(frefs::Vector{FilteredReference}, filt::TopHatFilter)
-        refs = [(fref.label, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for fref in frefs]
+        refs = [
+            (fref.label, fref.roi, fref.charonly, sum(fref.charonly), fref.scale) for
+            fref in frefs
+        ]
         x = zeros(Float64, (length(filt.filters), length(frefs)))
         for (c, fref) in enumerate(frefs)
             x[fref.ffroi, c] = fref.filtered
         end
         # ((ch × ne)T * (ch × ne))^(-1) * (ch × ne) * (ch × ch) => (ne × ch)
-        xTxIxf = pinv(transpose(x) * x) * transpose(x) * NeXLSpectrum.filterdata(filt, 1:length(filt.filters))
+        xTxIxf =
+            pinv(transpose(x) * x) *
+            transpose(x) *
+            NeXLSpectrum.filterdata(filt, 1:length(filt.filters))
         return new(refs, xTxIxf)
     end
 end
 
 NeXLCore.minproperties(::VectorQuant) = (:BeamEnergy, :TakeOffAngle, :)
 
-Base.show(io::IO, vq::VectorQuant) =
-    print(io, "VectorQuant[\n" * join(map(r -> "\t" * repr(r[1]), vq.references), ",\n") * "\n]")
+Base.show(io::IO, vq::VectorQuant) = print(
+    io,
+    "VectorQuant[\n" * join(map(r -> "\t" * repr(r[1]), vq.references), ",\n") * "\n]",
+)
 
-function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum, zero = x -> max(0.0, x))::FilterFitResult
+function fit_spectrum(
+    vq::VectorQuant,
+    spec::Spectrum,
+    zero = x -> max(0.0, x),
+)::FilterFitResult
     raw = counts(spec, Float64)
     krs = zero.(vq.vectors * raw)
     spsc = dose(spec)
@@ -51,24 +63,39 @@ function NeXLSpectrum.fit(vq::VectorQuant, spec::Spectrum, zero = x -> max(0.0, 
         map(i -> krs[i] / (vq.references[i][5] * spsc), eachindex(krs)), #
         map(i -> (dkrs[i] / (vq.references[i][5] * spsc))^2, eachindex(krs)),
     )
-    return FilterFitResult(UnknownLabel(spec), kratios, 1:length(raw), raw, residual, peakback)
+    return FilterFitResult(
+        UnknownLabel(spec),
+        kratios,
+        1:length(raw),
+        raw,
+        residual,
+        peakback,
+    )
 end
 
-function NeXLSpectrum.fit(vq::VectorQuant, hs::HyperSpectrum, zero = x -> max(0.0, x))::Array{KRatios}
+function fit_spectrum(
+    vq::VectorQuant,
+    hs::HyperSpectrum,
+    zero = x -> max(0.0, x),
+)::Array{KRatios}
     krs = zeros(Float32, length(vq.references), size(hs)...)
     vecs = vq.vectors[:, 1:depth(hs)]
-    scales = [ dose(hs)*vq.references[i][5] for i in eachindex(vq.references) ]
+    scales = [dose(hs) * vq.references[i][5] for i in eachindex(vq.references)]
     data = counts(hs)
     # @threads seems to slow this (maybe cache misses??)
     for ci in CartesianIndices(hs)
-        @avx krs[:, ci] = (vecs * data[:,ci])./scales
+        @inbounds @avx krs[:, ci] = (vecs * data[:, ci]) ./ scales
     end
+    # ensure positive...
     map!(zero, krs, krs)
     res = KRatios[]
-    for i in filter(ii->vq.references[ii][1] isa CharXRayLabel, eachindex(vq.references))
+    for i in filter(ii -> vq.references[ii][1] isa CharXRayLabel, eachindex(vq.references))
         k, lbl = krs[i], vq.references[i][1]
         rprops = properties(spectrum(lbl))
-        push!(res, KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i,:,:]))
+        push!(
+            res,
+            KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :]),
+        )
     end
     return res
 end
