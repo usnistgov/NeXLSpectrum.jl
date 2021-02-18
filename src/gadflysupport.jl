@@ -519,4 +519,36 @@ end
 Gadfly.plot(ffp::FilterFitPacket; kwargs...) =
     plot(unique(spectra(ffp))...; klms = collect(elms(ffp)), kwargs...)
 
+"""
+    plot_compare(specs::AbstractArray{<:Spectrum}, mode=:Plot; xmin=100.0, xmax=1.0, palette = NeXLPalette)
+   
+Plots a comparison of the channel-by-channel data from each individual spectrum relative to the dose-corrected
+mean of the other spectra.  Count statistics are taken into account so if the spectra agree to within count
+statistics we expect a mean of 0.0 and a standard deviation of 1.0 over all channels. Note: xmax is relative
+to the :BeamEnergy.
+"""
+function plot_compare(specs::AbstractArray{<:Spectrum}, mode=:Plot; xmin=100.0, xmax=1.0, palette = NeXLPalette)
+    channels(spec) = channel(100.0, spec):channel(xmax*get(spec,:BeamEnergy,20.0e3),spec)
+    if mode==:Plot
+        layers = [
+            layer(x=energyscale(specs[i],channels(specs[i])), y = sigma(specs[i], specs, channels(specs[i])),  
+                Theme(default_color = palette[i], alphas=[0.4]))
+                    for i in eachindex(specs)
+        ]
+        plot(layers..., Guide.xlabel("Energy (eV)"), Guide.ylabel("σ"),
+        Guide.manual_color_key("Spectra", [String(spec[:Name]) for spec in specs], palette[eachindex(specs)]),
+        Coord.cartesian(xmin=100.0, xmax=xmax*maximum(get(spec, :BeamEnergy, 20.0e3) for spec in specs))
+        )
+    elseif mode==:Histogram
+        layers = [
+            layer(x = sigma(specs[i], specs, channels(specs[i])), Geom.histogram(), 
+                Theme(default_color = palette[i], alphas=[0.2]))
+                    for i in eachindex(specs)
+        ]
+        plot(layers..., Guide.xlabel("σ"), Guide.manual_color_key("Spectra", [String(spec[:Name]) for spec in specs], palette[eachindex(specs)]))
+    else
+        error("Unknown mode in plot_compare(...):  Not :Plot or :Histogram.")
+    end
+end
+
 @info "Loading Gadfly support into NeXLSpectrum."

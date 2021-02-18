@@ -1100,3 +1100,34 @@ function duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
         def
     end
 end
+
+"""
+    uv(spec::Spectrum, chs::AbstractRange{<:Integer}=eachindex(spec))::Vector{UncertainValue}
+
+Converts the count's data in a spectrum into an Vector{UncertainValue} assuming
+count statistics can be approximated by C ± √C. 
+"""
+function NeXLUncertainties.uv(spec::Spectrum, chs::AbstractRange{<:Integer}=eachindex(spec))::Vector{UncertainValue}
+    c = counts(spec, chs)
+    return uv.(c, sqrt.(max.(c,1)))
+end
+
+"""
+    sigma(spec::Spectrum, specs::AbstractArray{<:Spectrum}, chs::AbstractRange{<:Integer})::Vector{Float64}
+
+Computes on a channel-by-channel basis how much `spec` spectrum deviates from the mean of the
+other spectra in `specs`.  The result is expressed in terms of the standard deviation expected
+from count statistics alone.   Assuming `spec` varies only by count statistics we expect
+the result values have a mean 0.0 and a standard deviation of 1.0. 
+"""
+function sigma(spec::Spectrum, specs::AbstractArray{<:Spectrum}, chs::AbstractRange{<:Integer})::Vector{Float64}
+    function doseaverage(specs, chs) 
+        t = [ uv(spec, chs)/dose(spec) for spec in specs ]
+        return map(j->mean(collect(t[i][j] for i in eachindex(t))), eachindex(t[1]))
+    end
+    function delta(spec, specs, chs)
+        minus(uv1,uv2) = uv(value(uv1)-value(uv2),sqrt(variance(uv1)+variance(uv2)))
+        return minus.(uv(spec, chs), dose(spec)*doseaverage(filter(s->s!=spec, specs), chs))
+    end
+    return map(v->value(v)/σ(v), delta(spec, specs, chs))
+end

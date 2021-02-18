@@ -101,6 +101,7 @@ export textplot # A quick way to visualize a spectrum
 export findsimilar # Find the spectra that are most similar to each other
 export χ² # Compare spectra
 export duane_hunt # Estimate the Duane-Hunt limit
+export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
 
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum
