@@ -1,7 +1,7 @@
 
 # Keeps track of the number of spectra in this session.
 
-let spectrumIndex = 1
+let spectrumIndex = 0
     global spectrumCounter() = (spectrumIndex += 1)
 end
 
@@ -153,6 +153,7 @@ Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, p
 Base.first(spec::Spectrum) = first(spec.counts)
 Base.last(spec::Spectrum) = last(spec.counts)
 properties(spec::Spectrum) = spec.properties
+NeXLCore.name(spec::Spectrum) = spec[:Name]
 
 """
     rangeofenergies(ch::Integer, spec::Spectrum)

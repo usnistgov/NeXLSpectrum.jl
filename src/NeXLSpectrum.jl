@@ -116,6 +116,9 @@ export sumcounts # Array containing the total number of counts in at each pixel
 export depth # Number of spectral or result planes
 export region # Extract a region from within the HyperSpectrum as a HyperSpectrum
 export properties # The HyperSpectrum properties (mutable)
+export axisname # The name of the i-th axis
+export axisvalue # The calibrated coordinate value for the pixel coordinate
+export axisrange # range of coordinate values for the specified axis
 
 include("rplraw.jl")
 export RPLHeader

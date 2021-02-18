@@ -1,3 +1,8 @@
+let hyperspectrumIndex = 0
+    global hyperspectrumCounter() = (hyperspectrumIndex += 1)
+end
+
+
 """
    HyperSpectrum(arr::Array{T<:Real}, energy::EnergyScale, props::Array{Symbol, Any})
 
@@ -6,7 +11,7 @@
    HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, dims::NTuple{<:Integer}, depth::Int, type::Type{Real}; axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 )
 
 The HyperSpectrum struct represents a multi-dimensional array of Spectrum objects.  The dimension of a HyperSpectrum
-may be 1 for a traverse or a line-scan, 2 for a spectrum image or higher for time-series of spectrum images or
+may be 1 for a traverse or a line-scan, 2 for a spectrum image or >2 for time-series of spectrum images or
 multi-slice spectrum images.
 
 The first constructor is used to create a HyperSpectrum from a raw Array of data.  The second to construct a HyperSpectrum
@@ -39,23 +44,30 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
     index::CartesianIndices # Spectrum indices
     energy::EnergyScale
     properties::Dict{Symbol,Any}
+    stagemap::Type{<:StageMapping} # maps pixel coordinates into stage coordinates
 
-    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ))
+    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
+        axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ),
+        stagemap::Type{<:StageMapping}=DefaultStageMapping)
         axes = [ Axis{:Channel}(1:size(arr,1)), #
                 ( Axis{Symbol(axisnames[i-1])}(fov[i-1]*(-0.5:1.0/(size(arr,i)-1):0.5)) for i in 2:ndims(arr) )... ]
+        haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         new{eltype(arr),ndims(arr) - 1}(
             AxisArray(arr, axes...),
             CartesianIndices(size(arr)[2:end]),
             energy,
             props,
+            stagemap,
         )
     end
-    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::AxisArray)
+    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::AxisArray, stagemap::Type{<:StageMapping}=DefaultStageMapping)
+        haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         new{eltype(arr),ndims(arr) - 1}(
             arr,
             CartesianIndices(size(arr)[2:end]),
             energy,
             props,
+            stagemap
         )
     end
     function HyperSpectrum(
@@ -65,15 +77,18 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
         depth::Int,
         type::Type{Real};
         axisnames = ( "X", "Y", "Z", "A", "B", "C" ), 
-        fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 )
+        fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ),
+        stagemap::Type{<:StageMapping}=DefaultStageMapping
     )
         axes = [ Axis{:Channel}(1:depth), #
             ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
+        haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         new{type,length(dims)}(
             AxisArray(zeros(type, ( depth, dims...)), axes),
             CartesianIndices(dims...),
             energy,
             props,
+            stagemap
         )
     end
 end
@@ -82,7 +97,7 @@ function Base.show(io::IO, m::MIME"text/plain", hss::HyperSpectrum)
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]",
+        "$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
     )
 end
 
@@ -90,7 +105,7 @@ function Base.show(io::IO, m::MIME"text/html", hss::HyperSpectrum)
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "<p>$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]</p>",
+        "<p>$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss))), $(hss.energy), $(depth(hss)) ch]</p>",
     )
 end
 
@@ -98,7 +113,7 @@ function Base.show(io::IO, hss::HyperSpectrum)
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "$sz HyperSpectrum{$(eltype(hss.counts)),$(ndims(hss))}[$(get(hss.properties,:Name,"Unnamed")), $(hss.energy), $(depth(hss)) ch]",
+        "$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
     )
 end
 
@@ -110,20 +125,30 @@ Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
 Base.axes(hss::HyperSpectrum) = Base.axes(hss.index)
 Base.axes(hss::HyperSpectrum, n) = Base.axes(hss.index, n)
 Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
-Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts, k + 1)
-Base.strides(hss::HyperSpectrum) = strides(hss.counts)[2:end]
+Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts.data, k + 1)
+Base.strides(hss::HyperSpectrum) = strides(hss.counts.data)[2:end]
 depth(hss::HyperSpectrum) = size(hss.counts, 1)
-name(hss::HyperSpectrum) = get(hss.properties, :Name, "HyperSpectrum")
+NeXLCore.name(hss::HyperSpectrum) = get(hss.properties, :Name, "HyperSpectrum")
+AxisArrays.axisnames(hss::HyperSpectrum) = AxisArrays.axisnames(hss.counts)[2:end]
+AxisArrays.axisvalues(hss::HyperSpectrum) = AxisArrays.axisvalues(hss.counts)[2:end]
+axisname(hss::HyperSpectrum, ax::Int) = AxisArrays.axisnames(hss.counts)[ax+1]
+axisvalue(hss::HyperSpectrum, ax::Int, j::Int) = AxisArrays.axisvalues(hss.counts)[ax+1][j]
+axisrange(hss::HyperSpectrum, ax::Int) = AxisArrays.axisvalues(hss.counts)[ax+1]
 
-function coordinate(hss::HyperSpectrum, idx::NTuple{N, <:Int}) where { N }
-    av = axisvalues(hss.counts)
-    pos = get(hss.properties, :StagePosition, Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
+"""
+    coordinate(hss::HyperSpectrum, idx::Tuple{<:Int})
+
+Computes the stage coordinate centering the pixel specified by `idx` using the `StageMapping` `hss.stagemap`.
+"""
+function coordinate(hss::HyperSpectrum, idx::Tuple) where { N }
+    av, an = axisvalues(hss.counts), axisnames(hss.counts)
+    img_coord = Dict{Symbol,Float64}(  an[i+1] => av[i+1][ii] for (i,ii) in enumerate(idx) )
+    stage_coord = get(hss.properties, :StagePosition, Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
     th = get(hss.properties, :ImageRotation, 0.0)
-    rot = [ cos(th) -sin(th) ; sin(th) cos(th) ]
-    xy = [ pos[:X], pos[:Y] ] + rot*[ av[i+1][ii] for (i,ii) in enumerate(idx) ]
-    return Dict{Symbol,Float64}(:X=>xy[1], :Y=>xy[2])
+    return image2stage(hss.stagemap, stage_coord, img_coord, th)
 end
-coordinate(hss::HyperSpectrum, ci::CartesianIndex) = coordinate(hss, ci.I)
+coordinate(hss::HyperSpectrum, ci::CartesianIndex) = #
+    coordinate(hss, ci.I)
 
 """
     dose(hss::HyperSpectrum)
@@ -132,20 +157,36 @@ Returns the product of the probe current and the live-time.
 """
 dose(hss::HyperSpectrum) = hss[:ProbeCurrent] * hss[:LiveTime]
 
-function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real,N}
+function Base.getindex(
+    hss::HyperSpectrum{T,N},
+    ci::CartesianIndex
+)::Spectrum{T} where { T<: Real, N} 
     props = copy(hss.properties)
-    props[:Cartesian] = hss.index[idx]
-    return Spectrum(hss.energy, counts(hss)[:, hss.index[idx]], props)
+    props[:Cartesian] = ci
+    props[:Name] = "$(name(hss))[$(join(["$i" for i in ci.I],","))]"
+    props[:StageCoordinate]=coordinate(hss, ci)
+    return Spectrum(hss.energy, counts(hss)[:, ci], props)
 end
 function Base.getindex(
     hss::HyperSpectrum{T,N},
     idx::Vararg{Int,N},
 )::Spectrum{T} where {T<:Real,N}
-    props = copy(hss.properties)
-    props[:Cartesian] = CartesianIndex(idx...)
-    props[:Name] = "$(name(hss))[$(props[:Cartesian])]"
-    props[:StageCoorinate]=coordinate(hss, (idx...))
-    return Spectrum(hss.energy, counts(hss)[:, idx...], props)
+    getindex(hss, CartesianIndex(idx...))
+end
+function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real,N}
+    getindex(hss, hss.index[idx])
+end
+function Base.getindex(
+    hss::HyperSpectrum{T,N},
+    vidx::Vector
+)::Vector{Spectrum{T}} where { T<: Real, N} 
+    return [ hss[i] for i in vidx ]
+end
+function Base.getindex(
+    hss::HyperSpectrum{T,N},
+    rng::AbstractRange{<:Integer},
+)::Vector{Spectrum{T}} where { T<: Real, N} 
+    return [ hss[i] for i in rng ]
 end
 function Base.getindex(
     hss::HyperSpectrum{T,N},

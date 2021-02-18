@@ -54,8 +54,9 @@ rrpath = artifact_path(rplraw_hash)
         :ProbeCurrent => 3.04,
         :Name => "Map[15]",
     )
-    hs = HyperSpectrum(les, props, raw)
+    hs = HyperSpectrum(les, props, raw, fov = (0.128, 0.128))
 
+    @test name(hs)=="Map[15]"
     @test size(hs) == (128, 128)
     @test eltype(hs) == Spectrum{UInt16}
     @test hs[64, 64] isa Spectrum
@@ -119,6 +120,21 @@ rrpath = artifact_path(rplraw_hash)
     @test hs[21, 45][25] == 0x000A
     @test hs[121, 115][29] == 0x000F
     @test hs[123, 45][27] == 0x000C
+
+    @test axisname(hs,1) == :X
+    @test axisname(hs,2) == :Y
+    @test axisvalue(hs, 1, 1) == -0.064
+    @test axisvalue(hs, 1, 128) == 0.064
+    @test isapprox(axisvalue(hs, 1, 28), -0.064 + (28-1)*0.128/(128-1), atol=1.0e-8)
+    @test axisvalue(hs, 2, 1) == -0.064
+    @test axisvalue(hs, 2, 128) == 0.064
+    @test isapprox(axisvalue(hs, 1, 73), -0.064 + (73-1)*0.128/(128-1), atol=1.0e-8)
+
+    @test first(axisrange(hs, 1))==-0.064
+    @test last(axisrange(hs, 1))==0.064
+    @test first(axisrange(hs, 2))==-0.064
+    @test last(axisrange(hs, 2))==0.064
+     
     raw = nothing
     GC.gc()
 end
@@ -133,6 +149,7 @@ end
             :Name => "Map[15]",
         ),
         readrplraw(joinpath(rrpath, "map[15]")),
+        fov = (0.128, 0.128)
     )
     ffp = references(
         [
