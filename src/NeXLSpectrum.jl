@@ -104,7 +104,7 @@ export duane_hunt # Estimate the Duane-Hunt limit
 export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
 
 include("hyperspectrum.jl")
-export HyperSpectrum # The wrapper that makes an Array look like an Array of Spectrum
+export HyperSpectrum # The wrapper that makes an Array{<:Real,N} look like an Array{Spectrum,N-1}
 export plane # Sum planes in a HyperSpectrum
 export roiimage # Convert a range of data channels into a Gray-scale image
 export roiimages # Convert a vector of ranges-of-channels into Gray-scale images
@@ -233,6 +233,8 @@ include("multidet.jl") # Multi-detector support
 export loadmultispec # Loads multiple related spectra.
 export multiscore # Scores spectra relative to one another. 
 export multirank # A single number value that scores the spectra
+
+export plot_compare # Plots a statistical channel-by-channel comparison of spectra
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

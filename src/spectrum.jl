@@ -57,12 +57,14 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
     :Comment       # A string
     :Composition   # A Material (known composition, not measured)
     :Elements      # A collection of elements in the material
-    :ReferenceROIS # A collection of reference ROIs (as Vector{ReferenceROI})
     :Detector      # A Detector like a BasicEDS or another EDSDetector
     :Filename      # Source filename
     :Coating       # A Film or Film[] (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (DateTime struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
+
+Spectrum Image items:
+    :ImageRotation # Rotation of the primary scan direction from the :X axis towards the :Y axis in radians
 
 Less common items:
 
@@ -330,6 +332,18 @@ function dose(spec::Spectrum)
 end
 
 NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
+
+"""
+    coordinate(spec::Spectrum)
+    coordinate(hss::Hyperspectrum, idx::NTuple{N, <Integer})
+    coordinate(hss::HyperSpectrum, ci::CartesianIndex)
+
+Returns the stage coordinate corresponding most closely to the :StagePosition (compensated
+for the image offset in a `HyperSpectrum`)
+"""
+function coordinate(spec::Spectrum)
+    return get(spec, :StagePosition,Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
+end
 
 """
     channelwidth(ch::Int, spec::Spectrum)::Float64

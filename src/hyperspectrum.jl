@@ -1,18 +1,27 @@
 """
    HyperSpectrum(arr::Array{T<:Real}, energy::EnergyScale, props::Array{Symbol, Any})
 
+   HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ))
+   HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::AxisArray)
+   HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, dims::NTuple{<:Integer}, depth::Int, type::Type{Real}; axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 )
 
 The HyperSpectrum struct represents a multi-dimensional array of Spectrum objects.  The dimension of a HyperSpectrum
 may be 1 for a traverse or a line-scan, 2 for a spectrum image or higher for time-series of spectrum images or
 multi-slice spectrum images.
 
-HyperSpectra differ from Array{Spectrum} in that the spectra in a HyperSpectrum must share properties like
-:LiveTime and :ProbeCurrent.
+The first constructor is used to create a HyperSpectrum from a raw Array of data.  The second to construct a HyperSpectrum
+from another HyperSpectrum or an AxisArray.  The third from a description of the intended contents.
 
+  * `axisnames`: A list of the names by which the axis can be referred
+  * `fov`: The full width of the dimension in mm.
+
+HyperSpectra differ from Array{Spectrum} in that the spectra in a HyperSpectrum must share properties like
+:LiveTime and :ProbeCurrent.  HyperSpectrum objects can refer to line-scans (1D), spectrum images (2D), slice-and-view
+(3D), time sequenced images (3D), or higher dimension spectrum images.
 
 Internally, HyperSpectrum reinterpretes an Array{T<:Real, N+1} as an Array{Spectrum{T<:Real},N-1}.
 
-Often HyperSpectrum objects are read from a RPL/RAW file (using `readrplraw(filenamebase::AbstractString)`) but
+HyperSpectrum objects can be read from a RPL/RAW file (using `readrplraw(filenamebase::AbstractString)`) but
 can be constructed from any Array{<:Real}.
 
 HyperSpectrum objects can be indexed using the standard Julia array idioms including a single integer index or a
@@ -26,31 +35,47 @@ CartesianIndex.  For example, to iterate over every spectrum in a HyperSpectrum
     end
 """
 struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
-    counts::Array{T} # Organized as (ch, c, r)
+    counts::AxisArray{T} # Organized as (ch, c, r) or (ch, x, y)
     index::CartesianIndices # Spectrum indices
     energy::EnergyScale
     properties::Dict{Symbol,Any}
 
-    HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}) =
+    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; axisnames = ( "X", "Y", "Z", "A", "B", "C" ), fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ))
+        axes = [ Axis{:Channel}(1:size(arr,1)), #
+                ( Axis{Symbol(axisnames[i-1])}(fov[i-1]*(-0.5:1.0/(size(arr,i)-1):0.5)) for i in 2:ndims(arr) )... ]
+        new{eltype(arr),ndims(arr) - 1}(
+            AxisArray(arr, axes...),
+            CartesianIndices(size(arr)[2:end]),
+            energy,
+            props,
+        )
+    end
+    function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::AxisArray)
         new{eltype(arr),ndims(arr) - 1}(
             arr,
             CartesianIndices(size(arr)[2:end]),
             energy,
             props,
         )
-
-    HyperSpectrum(
+    end
+    function HyperSpectrum(
         energy::EnergyScale,
         props::Dict{Symbol,Any},
         dims::NTuple,
         depth::Int,
-        type::Type{Real},
-    ) = new{type,length(dims)}(
-        zeros(type, ( depth, dims...)),
-        CartesianIndices(dims...),
-        energy,
-        props,
+        type::Type{Real};
+        axisnames = ( "X", "Y", "Z", "A", "B", "C" ), 
+        fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 )
     )
+        axes = [ Axis{:Channel}(1:depth), #
+            ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
+        new{type,length(dims)}(
+            AxisArray(zeros(type, ( depth, dims...)), axes),
+            CartesianIndices(dims...),
+            energy,
+            props,
+        )
+    end
 end
 
 function Base.show(io::IO, m::MIME"text/plain", hss::HyperSpectrum)
@@ -77,7 +102,7 @@ function Base.show(io::IO, hss::HyperSpectrum)
     )
 end
 
-Base.eltype(hss::HyperSpectrum{T,N}) where {T<:Real,N} = Spectrum{T}
+Base.eltype(::HyperSpectrum{T,N}) where {T<:Real,N} = Spectrum{T}
 Base.length(hss::HyperSpectrum) = prod(size(hss))
 Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
 Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
@@ -88,6 +113,17 @@ Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
 Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts, k + 1)
 Base.strides(hss::HyperSpectrum) = strides(hss.counts)[2:end]
 depth(hss::HyperSpectrum) = size(hss.counts, 1)
+name(hss::HyperSpectrum) = get(hss.properties, :Name, "HyperSpectrum")
+
+function coordinate(hss::HyperSpectrum, idx::NTuple{N, <:Int}) where { N }
+    av = axisvalues(hss.counts)
+    pos = get(hss.properties, :StagePosition, Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
+    th = get(hss.properties, :ImageRotation, 0.0)
+    rot = [ cos(th) -sin(th) ; sin(th) cos(th) ]
+    xy = [ pos[:X], pos[:Y] ] + rot*[ av[i+1][ii] for (i,ii) in enumerate(idx) ]
+    return Dict{Symbol,Float64}(:X=>xy[1], :Y=>xy[2])
+end
+coordinate(hss::HyperSpectrum, ci::CartesianIndex) = coordinate(hss, ci.I)
 
 """
     dose(hss::HyperSpectrum)
@@ -107,7 +143,17 @@ function Base.getindex(
 )::Spectrum{T} where {T<:Real,N}
     props = copy(hss.properties)
     props[:Cartesian] = CartesianIndex(idx...)
+    props[:Name] = "$(name(hss))[$(props[:Cartesian])]"
+    props[:StageCoorinate]=coordinate(hss, (idx...))
     return Spectrum(hss.energy, counts(hss)[:, idx...], props)
+end
+function Base.getindex(
+    hss::HyperSpectrum{T,N},
+    idx...
+)::HyperSpectrum{T,N} where {T<:Real, N}
+    props = copy(hss.properties)
+    props[:Name] = "$(name(hss))[$idx]"
+    return HyperSpectrum(hss.energy, props, hss.counts[:, idx...])
 end
 
 """
@@ -290,7 +336,7 @@ end
     indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
     indexofmaxpixel(hss::HyperSpectrum, cis::CartesianIndices)
 
-Find the coordinates producing the maximum value in data[ch] or data[:] within 'cis' or full
+Find the indices producing the maximum value in data[ch] or data[:] within 'cis' or full
 spatial dimensions.
 """
 function indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
