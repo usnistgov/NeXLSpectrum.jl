@@ -1124,7 +1124,7 @@ count statistics can be approximated by C ± √C.
 """
 function NeXLUncertainties.uv(spec::Spectrum, chs::AbstractRange{<:Integer}=eachindex(spec))::Vector{UncertainValue}
     c = counts(spec, chs)
-    return uv.(c, sqrt.(max.(c,1)))
+    return uv.(c, sqrt.(max.(c,one(eltype(spec)))))
 end
 
 """
