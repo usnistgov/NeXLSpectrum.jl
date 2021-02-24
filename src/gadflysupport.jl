@@ -350,7 +350,7 @@ function Gadfly.plot(
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
     # If the information is available,also model the continuum
-    comp = something(comp, get(spectrum(ffr), :Composition, nothing))
+    comp = isnothing(comp) ? get(spectrum(ffr), :Composition, nothing) : comp
     det = something(det, get(spectrum(ffr), :Detector, nothing))
     if !any(isnothing.((comp, resp, det)))
         cc = fitcontinuum(spectrum(ffr), det, resp)
