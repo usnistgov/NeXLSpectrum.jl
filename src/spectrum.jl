@@ -156,6 +156,16 @@ properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
 
 """
+    property!(spec::Spectrum, sym::Symbol, val::Any)
+
+Useful to broadcast properties over many spectra.
+"""
+function property!(spec::Spectrum, sym::Symbol, val::Any)
+    spec[sym]=val
+    spec
+end
+
+"""
     rangeofenergies(ch::Integer, spec::Spectrum)
 
 Returns the low and high energy extremes for the channels `ch`.
