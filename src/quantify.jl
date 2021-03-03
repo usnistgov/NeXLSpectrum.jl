@@ -16,11 +16,12 @@ function NeXLMatrixCorrection.quantify(
     standards::AbstractVector{Standard} = Standard[],
     strip::AbstractVector{Element} = Element[],
     mc::Type{<:MatrixCorrection} = XPP,
-    fl::Type{<:FluorescenceCorrection} = ReedFluorescence,
+    fc::Type{<:FluorescenceCorrection} = ReedFluorescence,
     cc::Type{<:CoatingCorrection} = Coating,
     kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
+    unmeasured::UnmeasuredElementRule = NullUnmeasuredRule()
 )::IterationResult
-    iter = Iteration(mc, fl, cc, updater = WegsteinUpdateRule())
+    iter = Iteration(mc, fc, cc, unmeasured = unmeasured)
     krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
     return quantify(iter, ffr.label, krs; standards = standards)
 end

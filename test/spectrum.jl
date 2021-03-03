@@ -1,6 +1,8 @@
 using Test
 using NeXLSpectrum
 using NeXLCore
+using Statistics
+using Distributions
 
 @testset "Spectrum" begin
     les = LinearEnergyScale(-495.0, 5.0)
@@ -135,5 +137,34 @@ using NeXLCore
         fns = ( "Al2O3 std", "CaF2 std", "Fe std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...)
         specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
         @test all(isapprox.(NeXLSpectrum.duane_hunt.(specs), 20.0e3, atol=100.0))
+    end
+
+    @testset "sigma" begin
+        specs = loadspectrum.(joinpath(@__DIR__,"K412 spectra","III-E K412[$i][4].msa") for i in 0:4)
+        ss = [ sigma(specs[i], specs, 1:2000) for i in eachindex(specs) ]
+        @test isapprox(mean(ss[1]), -0.05240393674216127, atol=1.0e-8)
+        @test isapprox(mean(ss[2]), -0.02711953072380802, atol=1.0e-8)
+        @test isapprox(mean(ss[3]), 0.00900794633309199, atol=1.0e-8)
+        @test isapprox(mean(ss[4]), 0.1068253967760764, atol=1.0e-8)
+        @test isapprox(mean(ss[5]), 0.11115156896689808, atol=1.0e-8)
+        @test isapprox(std(ss[1]), 1.00731886928230457, atol=1.0e-8)
+        @test isapprox(std(ss[2]), 1.0422450376085455, atol=1.0e-8)
+        @test isapprox(std(ss[3]), 1.0294978144777747, atol=1.0e-8)
+        @test isapprox(std(ss[4]), 0.9931443781679111, atol=1.0e-8)
+        @test isapprox(std(ss[5]), 0.9858796014395503, atol=1.0e-8)
+
+        n=fit(Normal, ss[1])
+        @test isapprox(n.μ, -0.05240393674216127, atol = 1.0e-8)
+        @test isapprox(n.σ, 1.007067008078397, atol = 1.0e-8)
+    end
+
+    @testset "uv" begin
+        spec = loadspectrum(joinpath(@__DIR__,"K412 spectra","III-E K412[0][4].msa"))
+        u = uv(spec)
+        @test eltype(u)==UncertainValue
+        @test length(u) == length(spec)
+        @test all(value(u[i]) == spec[i] for i in eachindex(spec))
+        @test all(value(u[i])==0.0 || σ(u[i]) == sqrt(spec[i]) for i in eachindex(spec))
+        @test all(value(u[i])!=0.0 || σ(u[i]) == 1.0 for i in eachindex(spec))
     end
 end

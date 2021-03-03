@@ -88,12 +88,12 @@ Read an ISO/EMSA format spectrum from a disk file at the specified path.
 T is the type of the channel data elements.
 """
 function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
-    energy, counts = LinearEnergyScale(0.0,10.0), T[]
+    energy, counts, eaxis = LinearEnergyScale(0.0,10.0), T[], Float64[]
     props = Dict{Symbol,Any}()
     props[:Filename]=filename
     inData, xpcscale = 0, 1.0
     stgpos = Dict{Symbol,Float64}()
-	date, time = missing, missing
+	date, time, datatype = missing, missing, :Y
     for (lx, line) in enumerate(eachline(f))
         if (lx ≤ 2)
             res = split_emsa_header_item(line)
@@ -107,15 +107,30 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
             if startswith(line, "#ENDOFDATA")
                 break
             else
-                for cc in filter(s->length(s)>0, strip.(split(line, ",")))
-					try
-                        append!(counts, parse(T, cc))
-					catch
-						# Ignore it...
+				if datatype == :Y
+					for cc in filter(s->length(s)>0, strip.(split(line, ",")))
+						try
+							append!(counts, parse(T, cc))
+						catch
+							@warn "Unparsable counts while reading in \"$cc\" from \"$line\"."
+						end
+						inData+=1
 					end
-                    inData=inData+1
-                end
-            end
+				else
+					@assert datatype==:XY
+					try 
+						items = filter(s->length(s)>0, strip.(split(line, ",")))
+						for i in 1:2:length(items)
+							append!(eaxis, parse(Float64, items[i]))
+							append!(counts, parse(T, items[i+1]))
+							inData+=1
+						end
+					catch
+						@warn "Unparsable counts while reading \"$line\"."
+					end
+
+				end
+			end
         elseif startswith(line,"#")
 			try
 	            res = split_emsa_header_item(line)
@@ -162,6 +177,8 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
 	                elseif key == "COMMENT"
 	                    prev = getindex(props,:Comment,missing)
 	                    props[:Comment] = prev ≠ missing ? prev*"\n"*value : value
+					elseif key == "DATATYPE"
+						datatype = uppercase(value)=="XY" ? :XY : :Y
 	                elseif key == "#D2STDCMP"
 	                    props[:Composition] = parsedtsa2comp(value)
 	                elseif key == "#CONDCOATING"

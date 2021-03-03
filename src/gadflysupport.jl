@@ -325,10 +325,13 @@ end
 
 function Gadfly.plot(
     ffr::FilterFitResult,
-    roi::Union{Missing,UnitRange{Int}} = missing;
+    roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
     palette = NeXLPalette,
     style = NeXLSpectrumStyle,
-    xmax = missing,
+    xmax::Union{AbstractFloat, Nothing} = nothing,
+    comp::Union{Material, Nothing} = nothing,
+    det::Union{EDSDetector, Nothing} = nothing,
+    resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
 )
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp =
@@ -341,11 +344,18 @@ function Gadfly.plot(
         ):min(tmp[end] + length(ffrr.roi) ÷ 10, ffrr.roi[end])
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
-    roi = ismissing(roi) ? defroi(ffr) : roi
+    roi = something(roi, defroi(ffr))
     layers = [
         layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
+    # If the information is available,also model the continuum
+    comp = isnothing(comp) ? get(spectrum(ffr), :Composition, nothing) : comp
+    det = isnothing(det) ? get(spectrum(ffr), :Detector, nothing) : det
+    if !any(isnothing.((comp, resp, det)))
+        cc = fitcontinuum(spectrum(ffr), det, resp)
+        push!(layers, layer(x=roi, y=cc[roi], Geom.line, Theme(default_color=palette[2])))
+    end
     miny, maxy, prev, i =
         minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
@@ -386,7 +396,7 @@ function Gadfly.plot(
             layers...,
             Coord.cartesian(
                 xmin = roi[1],
-                xmax = ismissing(xmax) ? roi[end] : xmax,
+                xmax = something(xmax, roi[end]),
                 ymin = min(1.1 * miny, 0.0),
                 ymax = maxy,
             ),

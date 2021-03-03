@@ -78,10 +78,12 @@ properties(cl::CharXRayLabel) = properties(cl.spectrum)
 
 NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 
-Base.show(io::IO, refLab::CharXRayLabel) = print(
-    io::IO,
-    "k[$(name(refLab.xrays)),$(get(refLab.spectrum,:Composition,"Unspecified"))]",
-)
+function Base.show(io::IO, refLab::CharXRayLabel) 
+    comp = get(refLab.spectrum, :Composition, nothing)
+    compname = isnothing(comp) ? "Unspecified" : name(comp)
+    print(io,"k[$(name(refLab.xrays)), $compname]")
+end
+
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) &&
     isequal(rl1.xrays, rl2.xrays) &&

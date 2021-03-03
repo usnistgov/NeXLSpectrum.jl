@@ -226,38 +226,40 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            imgs = missing # FileIO.load(Stream(format"TIFF", ios))
-            if haskey(res, :FieldOfView) && haskey(res, :ImageZoom)
-                if res[:ImageZoom] == 1.0
-                    pix = 0.001 * res[:FieldOfView] / size(imgs, 2)
-                    off =
-                        haskey(res, :StagePosition) ?
-                        (res[:StagePosition][:Y] * mm, res[:StagePosition][:X] * mm) :
-                        (0.0mm, 0.0mm)
-                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs, 1)-1)*mm)
-                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs, 2)-1)*mm)
-                    foreach(
-                        i -> res[Symbol("Image$i")] = AxisArray(imgs[:, :, i], ay, ax),
-                        1:size(imgs, 3),
-                    )
-                elseif size(imgs, 3) == 2
-                    pix = 0.001 * res[:FieldOfView] * res[:ImageZoom] / size(imgs, 2)
-                    ay = Axis{:y}(0.0:-pix*mm:-pix*(size(imgs, 1)-1)*mm)
-                    ax = Axis{:x}(0.0:pix*mm:pix*(size(imgs, 2)-1)*mm)
-                    res[Symbol("Image1")] = AxisArray(imgs[:, :, 1], ay, ax)
-                    pix = 0.001 * res[:FieldOfView] / size(imgs, 2)
-                    off =
-                        haskey(res, :StagePosition) ?
-                        (res[:StagePosition][:Y] * mm, res[:StagePosition][:X] * mm) :
-                        (0.0mm, 0.0mm)
-                    ay = Axis{:y}(off[1]:-pix*mm:off[1]-pix*(size(imgs, 1)-1)*mm)
-                    ax = Axis{:x}(off[2]:pix*mm:off[2]+pix*(size(imgs, 2)-1)*mm)
+            imgs = FileIO.load(Stream(format"TIFF", ios))
+            nimgs = ndims(imgs)>2 ? size(imgs,3) : 1
+            if haskey(res, :ImageMag) || haskey(res, :FieldOfView)
+                fov = haskey(res, :ImageMag) ? (3.5*25.4)/res[:ImageMag] : 1.0e3*res[:FieldOfView] # X field-of-view in mm
+                off = haskey(res, :StagePosition) ? (res[:StagePosition][:Y], res[:StagePosition][:X]) : (0.0, 0.0)
+                ratio, pix = size(imgs,1) / size(imgs,2), fov / (size(imgs, 2)-1)
+                ax = Axis{:x}((off[2]-0.5*fov)*mm:pix*mm:(off[2]-0.5*fov+pix*(size(imgs,2)-1))*mm)
+                ay = Axis{:y}((off[1]+0.5*fov)*ratio*mm:-pix*mm:(off[1]+0.5*fov-pix*(size(imgs,1)-1))*ratio*mm)
+                @assert length(ay)==size(imgs,1) && length(ax) == size(imgs,2)
+                if nimgs == 2
+                    # Macro image
                     res[Symbol("Image2")] = AxisArray(imgs[:, :, 2], ay, ax)
+                    # Micro image
+                    imgZoom = get(res, :ImageZoom, 1.0)  # >= 1.0
+                    rfov, rpix = fov / imgZoom, fov / (imgZoom * (size(imgs, 2)-1))
+                    ay = Axis{:y}(0.5*rfov*ratio*mm:-rpix*mm:(0.5*rfov-rpix*(size(imgs,1)-1))*ratio*mm)
+                    ax = Axis{:x}(-0.5*rfov*mm:rpix*mm:(-0.5*rfov+rpix*(size(imgs,2)-1))*mm)
+                    @assert length(ay)==size(imgs,1) && length(ax) == size(imgs,2)
+                    res[Symbol("Image1")] = AxisArray(imgs[:, :, 1], ay, ax)
                 else
-                    foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:size(imgs, 3))
+                    # All images same FOV
+                    if nimgs == 1
+                        res[Symbol("Image1")] = AxisArray(imgs, ay, ax)
+                    else
+                        foreach(i -> res[Symbol("Image$i")] = AxisArray(imgs[:, :, i], ay, ax), 1:nimgs)
+                    end
                 end
             else
-                foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:size(imgs, 3))
+                # No scale data
+                if nimgs == 1
+                    res[Symbol("Image1")] = imgs
+                else
+                    foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:nimgs)
+                end
             end
         catch err
             @info err
@@ -266,3 +268,13 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     end
     return res
 end
+
+"""
+    LinearAlgebra.norm(aa::AxisArray, pt1, pt2, p::Real=2)
+
+Returns the distance between `pt1` and `pt2` using the scaled axes in an AxisArray.
+"""
+LinearAlgebra.norm(aa::AxisArray, pt1, pt2, p::Real=2) = 
+    norm( ( AxisArrays.axes(aa,i)[pt1[i]] for i in eachindex(pt1)) .- (AxisArrays.axes(aa,i)[pt2[i]] for i in eachindex(pt2)), p)
+LinearAlgebra.norm(aa::AxisArray, pt1::CartesianIndex, pt2::CartesianIndex, p::Real=2) = 
+    norm( ( AxisArrays.axes(aa,i)[pt1[i]] for i in Base.OneTo(length(pt1))) .- (AxisArrays.axes(aa,i)[pt2[i]] for i in Base.OneTo(length(pt1))), p)

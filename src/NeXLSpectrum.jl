@@ -78,6 +78,7 @@ export rangeofenergies # range of energies for channel `ch`
 export channelwidth # width of channel ch
 #export NeXLCore.energy # energy for channel
 export dose # Spectrum probe dose
+export property! # Set a property (easily broadcastable...)
 export counts # Spectrum channel data
 export integrate # Integrate range of channels
 export kratio # Naive peak integration estimate of the k-ratio
