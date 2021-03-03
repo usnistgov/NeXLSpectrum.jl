@@ -351,7 +351,7 @@ function Gadfly.plot(
     ]
     # If the information is available,also model the continuum
     comp = isnothing(comp) ? get(spectrum(ffr), :Composition, nothing) : comp
-    det = something(det, get(spectrum(ffr), :Detector, nothing))
+    det = isnothing(det) ? get(spectrum(ffr), :Detector, nothing) : det
     if !any(isnothing.((comp, resp, det)))
         cc = fitcontinuum(spectrum(ffr), det, resp)
         push!(layers, layer(x=roi, y=cc[roi], Geom.line, Theme(default_color=palette[2])))
