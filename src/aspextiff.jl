@@ -1,9 +1,7 @@
 """
 Unfortunately, while the standard ImageMagick TIFF reader can read the image data from ASPEX TIFF files,
 it can't read the spectrum data.  So I've written a lean TIFF tag reader to access the tags and
-to read the spectral data into a Spectrum object.  This is then integrated into the FileIO mechanism
-to permit using functions like `load(File(format"ASPEX TIFF"),filename)` to return a Spectrum
-object loaded from the specified file.
+to read the spectral data into a Spectrum object.
 """
 
 struct _ATField
