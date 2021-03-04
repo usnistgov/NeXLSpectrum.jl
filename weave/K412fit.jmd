@@ -74,7 +74,7 @@ frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
 
 #### Fit the Pre-Filtered References to the Unknowns
 ```julia
-res= [ fit(unk,filt,frs,false) for unk in unks ]
+res= [ fit_spectrum(unk,filt,frs,false) for unk in unks ]
 ```
 ```julia; echo=false
 latexify(asa(DataFrame, res), env=:mdtable, latex=false, fmt="%0.4g")

@@ -72,13 +72,13 @@ plot(vq,1:800)
 Let's take a look at a residual spectrum by plotting one of the `FilterFitResult` objects.
 Perform the fit and look at the residual
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-res = map(unk->fit(vq, unk),unks)
+res = map(unk->fit_spectrum(vq, unk),unks)
 plot(res[1])
 ```
 
 #### Compare this with the weighted fit
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-resfull = map(unk->fit(unk,filt,frs,false), unks)
+resfull = map(unk->fit_spectrum(unk,filt,frs,false), unks)
 plot(resfull[1])
 ```
 
@@ -93,6 +93,6 @@ display(latexify(asa(DataFrame, resfull, withUnc=true), env=:mdtable, latex=fals
 Compare the timings (full then fast)
 ```julia
 using BenchmarkTools
-@btime map(unk->fit(unk,filt,frs,false), unks)
-@btime map(unk->fit(vq, unk),unks)
+@btime map(unk->fit_spectrum(unk,filt,frs,false), unks)
+@btime map(unk->fit_spectrum(vq, unk),unks)
 ```

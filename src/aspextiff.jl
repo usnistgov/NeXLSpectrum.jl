@@ -1,9 +1,7 @@
 """
 Unfortunately, while the standard ImageMagick TIFF reader can read the image data from ASPEX TIFF files,
 it can't read the spectrum data.  So I've written a lean TIFF tag reader to access the tags and
-to read the spectral data into a Spectrum object.  This is then integrated into the FileIO mechanism
-to permit using functions like `load(File(format"ASPEX TIFF"),filename)` to return a Spectrum
-object loaded from the specified file.
+to read the spectral data into a Spectrum object.
 """
 
 struct _ATField
@@ -27,18 +25,18 @@ struct _ATField
             Float32, # float
             Float64, # double
         )
-        tagId = read(ios, UInt16)
-        tagType = read(ios, UInt16)
-        tagCount = read(ios, UInt32)
+        tagId = order(read(ios, UInt16))
+        tagType = order(read(ios, UInt16))
+        tagCount = order(read(ios, UInt32))
         if tagCount * sizeof(_TIFF_TYPES[tagType]) <= 4
-            tagData = [read(ios, _TIFF_TYPES[tagType]) for _ = 1:tagCount]
+            tagData = [ order(read(ios, _TIFF_TYPES[tagType])) for _ in Base.OneTo(tagCount)]
             extra = 4 - sizeof(_TIFF_TYPES[tagType]) * tagCount
             seek(ios, position(ios) + extra) # make sure that we have read 4 bytes
         else
-            tagOffset = read(ios, UInt32)
+            tagOffset = order(read(ios, UInt32))
             ret = position(ios)
             seek(ios, tagOffset)
-            tagData = [read(ios, _TIFF_TYPES[tagType]) for _ = 1:tagCount]
+            tagData = [order(read(ios, _TIFF_TYPES[tagType])) for _ in Base.OneTo(tagCount)]
             seek(ios, ret)
         end
         return new(tagId, tagType, tagCount, tagData)
@@ -48,10 +46,10 @@ end
 struct _TIFFIFD
     ifdTags::Vector{_ATField}
     ifdNext::UInt
-    function _TIFFIFD(ios, order::Int)
-        sz = read(ios, UInt16)
-        ifdTags = [_ATField(ios, order) for _ = 1:sz]
-        ifdNext = read(ios, UInt32)
+    function _TIFFIFD(ios, order::Function)
+        sz = order(read(ios, UInt16))
+        ifdTags = [_ATField(ios, order) for _ in Base.OneTo(sz)]
+        ifdNext = order(read(ios, UInt32))
         return new(ifdTags, ifdNext)
     end
 end
@@ -64,17 +62,16 @@ end
 struct _TIFFInternals
     ifds::Vector{_TIFFIFD}
     function _TIFFInternals(ios)
-        LITTLE_ENDIAN, BIG_ENDIAN, NOT_TIFF = 1, 2, 3
         magic = read(ios, UInt16)
-        order = magic == 0x4D4D ? BIG_ENDIAN : (magic == 0x4949 ? LITTLE_ENDIAN : NOT_TIFF)
-        fortytwo = read(ios, UInt16)
-        if (order == NOT_TIFF) || (fortytwo ≠ 42)
+        order = magic == 0x4D4D ? ntoh : (magic == 0x4949 ? ltoh : nothing)
+        fortytwo = order(read(ios, UInt16))
+        if isnothing(order) || (fortytwo ≠ 42)
             @error "This file is not a valid TIFF file."
         end
-        if order ≠ LITTLE_ENDIAN
+        if order ≠ ltoh
             @error "ASPEX Spectrum TIFF files are always little-endian ordered."
         end
-        offset = read(ios, UInt32)
+        offset = order(read(ios, UInt32))
         ifds = _TIFFIFD[]
         while offset ≠ 0
             seek(ios, offset)

@@ -251,7 +251,7 @@ function NeXLUncertainties.asa(
     kcalc, ratio = Float64[], Float64[]
     for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
         if (!charOnly) || kl isa CharXRayLabel
-            stdspec, unkspec = spectrum(kl), ffr.label.spec
+            stdspec, unkspec = spectrum(kl), ffr.label.spectrum
             push!(lbl, ffr.label)
             push!(std, stdspec[:Name])
             push!(klbl, kl)
