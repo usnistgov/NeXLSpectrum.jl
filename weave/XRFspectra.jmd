@@ -59,7 +59,7 @@ for rd in refdata
 end
 # Merge the missing properties into the unknown too.
 merge!(steel, xtra)
-res = fit(steel, filt, refs, false)
+res = fit_spectrum(steel, filt, refs, false)
 # Tabulate the results
 ```
 ```julia; echo=false

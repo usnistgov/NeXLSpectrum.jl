@@ -72,7 +72,7 @@ plot(spectra(refs)..., klms=collect(elms(refs)), xmax=8.0e3)
 
 #### Fit the Pre-Filtered References to the Unknowns
 ```julia
-res= [ fit(u,refs) for u in unks ]
+res= [ fit_spectrum(u,refs) for u in unks ]
 ```
 ```julia; echo=false
 latexify(asa(DataFrame, res), env=:mdtable, latex=false, fmt="%0.4g")

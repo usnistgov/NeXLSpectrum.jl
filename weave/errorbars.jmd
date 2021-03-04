@@ -51,7 +51,7 @@ frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
 # frs is now a FilteredReference[] used to fit the unknowns.
 
 ss = subdivide(unks[1], 100)
-res= map(s->fit(s,filt,frs,false), ss)
+res= map(s->fit_spectrum(s,filt,frs,false), ss)
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res[1:10], withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -60,7 +60,7 @@ display(latexify(describe(res),env=:mdtable, latex=false, fmt="%0.4g"))
 
 Repeat the fit for the 4 measured unknowns.
 ```julia
-res= map(s->fit(s,filt,frs,false),unks)
+res= map(s->fit_spectrum(s,filt,frs,false),unks)
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -70,7 +70,7 @@ Summary statistics.
 display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 ```julia
-@btime fit(unks[1], filt, frs, false)
+@btime fit_spectrum(unks[1], filt, frs, false)
 ```
 
 ###### AMM-6005a
@@ -97,7 +97,7 @@ filt = buildfilter(det)
 frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
 # frs is now a FilteredReference[] used to fit the unknowns.
 ss = subdivide(unks[1], 100)
-res= map(s->fit(s,filt,frs,false), ss)
+res= map(s->fit_spectrum(s,filt,frs,false), ss)
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res[1:10], withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -109,7 +109,7 @@ display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 
 Repeat for the 15 measured spectra.
 ```julia
-res= map(s->fit(s,filt,frs,false),unks)
+res= map(s->fit_spectrum(s,filt,frs,false),unks)
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -119,5 +119,5 @@ Summary statistics.
 display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 ```julia;
-@btime fit(unks[1], filt, frs, false)
+@btime fit_spectrum(unks[1], filt, frs, false)
 ```
