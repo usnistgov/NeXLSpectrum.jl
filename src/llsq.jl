@@ -11,7 +11,7 @@ function olssvd(
     a::AbstractMatrix{N},
     sigma::N,
     xLabels::Vector{<:Label},
-    tol::N = convert(N, 1.0e-10),
+    tol::N = convert(N, 1.0e-10)
 )::UncertainValues where {N<:AbstractFloat}
     f = svd(a)
     mins = tol * maximum(f.S)
@@ -174,4 +174,13 @@ function wlspinv2(
     end
     w = Diagonal([sqrt(1.0 / cv) for cv in cov])
     return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
+end
+
+
+function simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})::Tuple{Real, Real}
+    n = length(x)
+    @assert length(y)==n
+    sx, sy, sxy, sxx = sum(x), sum(y), sum(x .* y), sum(x .* x)
+    slope = (sxy - sx*sy/n) / (sxx - sx*sx/n)
+    return ( slope, (sy - slope*sx)/n)
 end

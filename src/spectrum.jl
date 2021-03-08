@@ -1018,16 +1018,17 @@ The statistic returned is the χ² for each spectrum relative to the mean spectr
 a vector of 1's for spectra that differ only by count statistics.
 """
 function measure_dissimilarity(
-    specs::AbstractVector{Spectrum{T}},
+    specs::AbstractVector{<:Spectrum},
     chs,
-)::Vector{Float64} where {T<:Real}
+)::Vector{Float64}
     s = sum(specs)
     return [χ²(spec, s, chs) for spec in specs]
 end
+
 function measure_dissimilarity(
-    specs::AbstractVector{Spectrum{T}},
+    specs::AbstractVector{<:Spectrum,
     minE::Float64 = 100.0,
-)::Vector{Float64} where {T<:Real}
+)::Vector{Float64}
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
     chs =
         minimum(
@@ -1035,11 +1036,12 @@ function measure_dissimilarity(
         ):maximum(channel(e0, spec) for spec in specs)
     return measure_dissimilarity(specs, chs)
 end
+
 function measure_dissimilarity(
-    specs::AbstractVector{Spectrum{T}},
+    specs::AbstractVector{<:Spectrum},
     det::Detector,
     mat::Material,
-)::Vector{Float64} where {T<:Real}
+)::Vector{Float64}
     function mrg(inp::Vector{UnitRange{Int}})::Vector{UnitRange{Int}}
         simp = sort(inp)
         st, res = simp[1], UnitRange{Int}[]
