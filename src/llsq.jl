@@ -176,11 +176,14 @@ function wlspinv2(
     return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
 end
 
+"""
+    simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})::Tuple{Real, Real}
 
-function simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})::Tuple{Real, Real}
-    n = length(x)
-    @assert length(y)==n
-    sx, sy, sxy, sxx = sum(x), sum(y), sum(x .* y), sum(x .* x)
-    slope = (sxy - sx*sy/n) / (sxx - sx*sx/n)
-    return ( slope, (sy - slope*sx)/n)
+Peforms simple linear regression. Returns the `( slope, intercept )` of the unweighted best fit line through
+the data `x` and `y`.  ( y = slope*x + intercept ).
+"""
+function simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+    sx, sy, n = sum(x), sum(y), length(x)
+    slope = (dot(x, y) - sx*sy/n) / (dot(x, x) - sx*sx/n)
+    return ( slope, (sy - slope*sx)/n )
 end
