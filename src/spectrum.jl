@@ -1026,7 +1026,7 @@ function measure_dissimilarity(
 end
 
 function measure_dissimilarity(
-    specs::AbstractVector{<:Spectrum,
+    specs::AbstractVector{<:Spectrum},
     minE::Float64 = 100.0,
 )::Vector{Float64}
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
