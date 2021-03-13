@@ -11,7 +11,7 @@ function olssvd(
     a::AbstractMatrix{N},
     sigma::N,
     xLabels::Vector{<:Label},
-    tol::N = convert(N, 1.0e-10),
+    tol::N = convert(N, 1.0e-10)
 )::UncertainValues where {N<:AbstractFloat}
     f = svd(a)
     mins = tol * maximum(f.S)
@@ -174,4 +174,17 @@ function wlspinv2(
     end
     w = Diagonal([sqrt(1.0 / cv) for cv in cov])
     return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
+end
+
+"""
+    simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})::Tuple{Real, Real}
+
+Peforms simple linear regression. Returns the `( slope, intercept, r, t )` of the unweighted best fit line through
+the data `x` and `y`.  ( y = slope*x + intercept ), r is the correlation coefficient and t is the t-statistic.
+"""
+function simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+    sx, sy, n = sum(x), sum(y), length(x)
+    ssxy, ssxx, ssyy = (dot(x, y) - sx*sy/n), (dot(x, x) - sx*sx/n), (dot(y, y) - sy*sy/n)
+    slope, r = ssxy / ssxx, ssxy/sqrt(ssxx*ssyy)
+    return ( slope, (sy - slope*sx)/n, r, r/sqrt((1.0-r^2)/(n-2)) )
 end

@@ -133,6 +133,15 @@ using Distributions
         ) # can fail occasionally...
 
     end
+    @testset "SLR" begin
+        x = [ 5.7, 2.5, 3.8, 2.8, 4.6, 1.6, 1.6, 1.4 ]
+        y = [ 18, 19, 20, 19, 17, 32, 29, 30 ]
+        slr = NeXLSpectrum.simple_linear_regression(x, y)
+        @test isapprox(slr[1],-3.181, atol=1.0e-3)
+        @test isapprox(slr[2], 32.542, atol=1.0e-3)
+        @test isapprox(slr[3], -0.8072, atol=1.0e-4)
+        @test isapprox(slr[4], -3.3497, atol=1.0e-4)
+    end
     @testset "Duane-Hunt" begin
         fns = ( "Al2O3 std", "CaF2 std", "Fe std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...)
         specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
