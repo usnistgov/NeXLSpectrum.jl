@@ -139,6 +139,8 @@ using Distributions
         slr = NeXLSpectrum.simple_linear_regression(x, y)
         @test isapprox(slr[1],-3.181, atol=1.0e-3)
         @test isapprox(slr[2], 32.542, atol=1.0e-3)
+        @test isapprox(slr[3], -0.8072, atol=1.0e-4)
+        @test isapprox(slr[4], -3.3497, atol=1.0e-4)
     end
     @testset "Duane-Hunt" begin
         fns = ( "Al2O3 std", "CaF2 std", "Fe std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...)
