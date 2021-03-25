@@ -370,15 +370,20 @@ function charXRayLabels(#
     ampl::Float64 = 1.0e-5, #
 )::Vector{ReferenceLabel}
     @assert elm in allElms "$elm must be in $allElms."
-    intersects(urs, roi) = !isnothing(findfirst(ur -> length(intersect(ur, roi)) > 0, urs))
     # Find all the ROIs associated with other elements
-    urs = collect(
-        Iterators.flatten(extents(ae, det, ampl) for ae in filter(a -> a ≠ elm, allElms)),
-    )
-    # Find elm's ROIs that don't intersect another element's ROI
-    lxs = filter(lx -> !intersects(urs, lx[2]), labeledextents(elm, det, ampl, maxE))
-    #   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
-    return ReferenceLabel[CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs]
+    otherElms = filter(a -> a ≠ elm, allElms)
+    lxs = if length(otherElms) > 0
+        urs = mapreduce(ae -> extents(ae, det, ampl), append!, otherElms)
+        # Find elm's ROIs that don't intersect another element's ROI
+        filter(labeledextents(elm, det, ampl, maxE)) do lx 
+            furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
+            (length(furs)>0) && @warn "The spectrum \"$(name(spec))\" cannot be used as a reference for the ROI \"$(lx[1])\" due to $(length(furs)) peak interference."
+            isempty(furs)
+        end
+    else
+        labeledextents(elm, det, ampl, maxE)
+    end
+    return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs ]
 end
 
 escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) = escapeextents(
@@ -449,21 +454,21 @@ function tophatfilter(
     )
 end
 
-tophatfilter(
+function tophatfilter(
     labels::AbstractVector{ReferenceLabel},
     filt::TopHatFilter,
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
-)::Vector{FilteredReference} = map(
-    lbl -> tophatfilter(lbl, filt, scale, tol), #
-    filter(
-        lbl ->
-            (lbl.roi.start >= 1) &&
-                (lbl.roi.stop <= length(filt)) &&
-                (weight(brightest(lbl.xrays)) > 1.0e-3),
-        labels,
-    ),
-)
+)::Vector{FilteredReference} 
+    lbls = filter(labels) do lbl
+        res = (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) 
+        (!res) && @warn "The ROI $(lbl.roi) not fully contained on [1, $(length(filt))] for $lbl."
+        w = (weight(brightest(lbl.xrays)) > 1.0e-3)
+        (!w) && @warn "No sufficiently bright X-rays for $lbl."
+        res && w
+    end    
+    return [ tophatfilter(lbl, filt, scale, tol) for lbl in lbls ]
+end
 
 """
     tophatfilter(
@@ -635,9 +640,7 @@ function filterreference(
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
 )::Vector{FilteredReference}
-    if !haskey(spec, :Composition)
-        spec[:Composition] = comp
-    end
+    spec[:Composition] = get(spec, :Composition, comp)
     filterreference(filt, spec, elm, collect(keys(comp)), props = props, withEsc = withEsc)
 end
 

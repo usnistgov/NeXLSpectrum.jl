@@ -1,4 +1,7 @@
-
+"""
+Repfrefsents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
+A `FilterFitPacket` contains the data necessary to filter the unknown and to apply pre-filtered references.
+"""
 struct FilterFitPacket
     detector::Detector
     filter::TopHatFilter
@@ -10,7 +13,14 @@ function Base.show(io::IO, ffp::FilterFitPacket)
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
 end
 
+"""
+Returns a tuple containing the unfiltered spectra associated with the references.
+"""
 spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
+
+"""
+A list of elements for which there are filtered references.
+"""
 NeXLCore.elms(ffp::FilterFitPacket) = union((elms(spec, true) for spec in spectra(ffp))...)
 
 struct ReferencePacket
@@ -19,6 +29,21 @@ struct ReferencePacket
     material::Material
 end
 
+Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(rp.element), $(name(rp.material)), $specrum]")
+
+"""
+function reference(
+    elm::Element,
+    spec::Spectrum,
+    mat::Material;
+    pc = nothing,
+    lt = nothing,
+    e0 = nothing,
+    coating = nothing,
+)::ReferencePacket
+
+Construct a `ReferencePacket` from a `Spectrum` collected from the specified `Material` for the specified `Element`.
+"""
 function reference(
     elm::Element,
     spec::Spectrum,
@@ -70,11 +95,11 @@ function references(
     chcount = length(refs[1].spectrum)
     @assert all(length(r.spectrum) == chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
     ff = buildfilter(det)
-    frefs = mapreduce(
-        ref -> filterreference(ff, ref.spectrum, ref.element, ref.material),
-        append!,
-        refs,
-    )
+    frefs = mapreduce(append!, refs) do ref
+        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+        length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
+        frefs
+    end
     return FilterFitPacket(det, ff, frefs)
 end
 
@@ -95,7 +120,7 @@ Performs a filtered fit on a hyperspectrum returning an `Array{KRatios}`.
 
 Selecting a mode:
   :Fast is good for generating k-ratio maps or exploratory analysis of a k-ratio map. :Full is best when a
-  quantitative map of a high count hyperspectrum is desired.  Fit results for major elements are similar for
+  quantitative map of a high count hyperspectrum is desired.  Fit frefsults for major elements are similar for
   all three but differ for minor and trace elements.  Particularly when a k-ratio is slightly negative. This
   negative k-ratio can effect the other k-ratios.  :Fast also works less well when many elements (>>10) (particularly
   interfering elements) are included in the fit. Unfortunately, :Intermediate and :Full slow down when many elements
@@ -166,7 +191,7 @@ function fit_spectrum(
             unk = _tophatfilterhs(hs, data, ffp.filter, idose)
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
-        res = KRatios[]
+        frefs = KRatios[]
         for i in filter(
             ii -> ffp.references[ii].label isa CharXRayLabel,
             eachindex(ffp.references),
@@ -174,7 +199,7 @@ function fit_spectrum(
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(
-                res,
+                frefs,
                 KRatios(
                     xrays(lbl),
                     properties(hs),
@@ -184,7 +209,7 @@ function fit_spectrum(
                 ),
             )
         end
-        return res
+        return frefs
     elseif mode == :Full
         krs = zeros(Float32, length(ffp.references), size(hs)...)
         idose = 1.0 / dose(hs)
@@ -202,7 +227,7 @@ function fit_spectrum(
                 end
             end
         end
-        res = KRatios[]
+        frefs = KRatios[]
         for i in filter(
             ii -> ffp.references[ii].label isa CharXRayLabel,
             eachindex(ffp.references),
@@ -210,7 +235,7 @@ function fit_spectrum(
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
             push!(
-                res,
+                frefs,
                 KRatios(
                     xrays(lbl),
                     properties(hs),
@@ -220,7 +245,7 @@ function fit_spectrum(
                 ),
             )
         end
-        return res
+        return frefs
     else
         @assert false "The mode argument must be :Fast, :Intermediate or :Full."
     end
