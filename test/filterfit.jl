@@ -627,4 +627,51 @@ using LinearAlgebra
             atol = 0.0001,
         )
     end
+
+    @testset "Repeated refs" begin
+        path = joinpath(@__DIR__, "K412 spectra")
+        fe = mat"Fe"
+        efs = references(
+                   [
+                       reference(n"Ca", joinpath(path,"III-E K412[0][4].msa"), srm470_k412),
+                       reference(n"Fe", joinpath(path,"III-E K412[0][4].msa"), srm470_k412),
+                       reference(n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2"),
+                       reference(n"Al", joinpath(path, "Al2O3 std.msa"), mat"Al2O3"),
+                       reference(n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2"),
+                       reference(n"Fe", joinpath(path, "Fe std.msa"), fe),
+                       reference(n"Mg", joinpath(path, "MgO std.msa"), mat"MgO"),
+                       reference(n"Si", joinpath(path, "SiO2 std.msa"), mat"SiO2"),
+                   ],
+                   132.0,
+               )
+        @test efs.references[findfirst(r->n"Fe K-L3" in r.label.xrays, efs.references)].label.spectrum[:Composition] === srm470_k412
+        @test efs.references[findfirst(r->n"Fe K-M3" in r.label.xrays, efs.references)].label.spectrum[:Composition] === srm470_k412
+        @test efs.references[findfirst(r->n"Fe L3-M5" in r.label.xrays, efs.references)].label.spectrum[:Composition] === fe
+        @test efs.references[findfirst(r->n"Ca K-L3" in r.label.xrays, efs.references)].label.spectrum[:Composition] === srm470_k412
+    end
+
+    @testset "Warnings" begin
+        s = loadspectrum(joinpath(@__DIR__, "Other", "K411 simulated.msa"))
+        @test_logs ( :warn, "The spectrum \"Noisy[MC simulation of bulk K411] #1\" cannot be used as a reference for the ROI \"O K-L3 + 1 other\" due to 2 peak interferences.") 
+            charXRayLabels(s, n"O", [n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe"], simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
+        @test_logs ( :warn, "The spectrum \"Noisy[MC simulation of bulk K411] #1\" cannot be used as a reference for the ROI \"Fe L3-M5 + 11 others\" due to 1 peak interference.") 
+            charXRayLabels(s, n"Fe", [n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe"], simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
+    end
+
+    @testset "Example 2" begin
+        path = joinpath(@__DIR__, "Example 2")
+        refs = references( [
+            reference( [ n"Mg", n"Si", n"Ca", n"Fe" ], joinpath(path, "K411 std.msa"), srm470_k411)...,
+            reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
+            reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
+            reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
+        ], 135.0)
+        unk = loadspectrum(joinpath(path, "K412 unk.msa"))
+        fr = fit_spectrum(unk, refs)
+        qr = quantify(fr)
+        @test isapprox(value(qr.comp[n"Al"]), 0.0510, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"O"]), 0.4471, atol=0.0001)
+    end
 end

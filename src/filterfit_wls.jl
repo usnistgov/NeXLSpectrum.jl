@@ -192,11 +192,10 @@ function fit_spectrum(
     forcezeros = true,
 )
     bestRefs = selectBestReferences(refs)
-    return map(
-        unk ->
-            filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, forcezeros),
-        unks,
-    )
+    return map(unks) do unk
+        fu = tophatfilter(ty, unk, filt, 1.0 / dose(unk))
+        filterfit(fu, bestRefs, forcezeros)
+    end
 end
 
 fit_spectrum(

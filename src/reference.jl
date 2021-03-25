@@ -1,11 +1,33 @@
 """
-Repfrefsents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
+Represents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
 A `FilterFitPacket` contains the data necessary to filter the unknown and to apply pre-filtered references.
+If there are duplicate `FilteredReference` for an elemental ROI, the preference is for the first one.  This
+allows you to fill in unavailable "FilteredReference" elemental ROIs with more general ones.
 """
-struct FilterFitPacket
-    detector::Detector
+struct FilterFitPacket{T<:Detector}
+    detector::T
     filter::TopHatFilter
     references::Vector{FilteredReference}
+
+    function FilterFitPacket(det::T, filt::TopHatFilter, refs::Vector{FilteredReference}) where {T <: Detector}
+        # Only permit one FilteredReference for each type of label for a set of X-rays 
+        filtrefs = FilteredReference[]
+        for ref in refs
+            exists = false
+            for (i, fr) in enumerate(filtrefs)
+                # If a reference already exists of this type for these X-rays reassign it
+                if (typeof(fr.label) == typeof(ref.label))  && (fr.label.xrays==ref.label.xrays)
+                    # filtrefs[i] = ref
+                    exists = true
+                    break
+                end
+            end
+            if !exists
+                push!(filtrefs, ref)
+            end
+        end
+        new{T}(det, filt, filtrefs)
+    end
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
@@ -29,25 +51,22 @@ struct ReferencePacket
     material::Material
 end
 
-Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(rp.element), $(name(rp.material)), $specrum]")
+Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(symbol(rp.element)), $(name(rp.material)), $(name(rp.spectrum))]")
 
 """
-function reference(
-    elm::Element,
-    spec::Spectrum,
-    mat::Material;
-    pc = nothing,
-    lt = nothing,
-    e0 = nothing,
-    coating = nothing,
-)::ReferencePacket
-
+    reference( elm::Element, spec::Spectrum, mat::Material=spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::ReferencePacket
+    reference(els::AbstractVector{Element}, spec::Spectrum, mat::Material = spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::Vector{ReferencePacket}
+    
 Construct a `ReferencePacket` from a `Spectrum` collected from the specified `Material` for the specified `Element`.
+Often used with `references(...)` to build `FilterFitPacket`s.
+
+Optional named arguments `pc`, `lt`, `e0`, `coating` allow you to specify the probe current, live time, beam energy and
+sample coating.
 """
 function reference(
     elm::Element,
     spec::Spectrum,
-    mat::Material;
+    mat::Material = spec[:Composition];
     pc = nothing,
     lt = nothing,
     e0 = nothing,
@@ -76,18 +95,35 @@ function reference(
     return ReferencePacket(spec, elm, mat)
 end
 
-reference(elm::Element, spec::Spectrum; kwargs...) =
-    reference(elm, spec, spec[:Composition]; kwargs...)
-
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
     reference(elm, loadspectrum(filename), mat; kwargs...)
 
 reference(elm::Element, filename::AbstractString; kwargs...) =
     reference(elm, loadspectrum(filename); kwargs...)
 
-references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(refs[1].spectrum, fwhm))
+function reference(
+    els::AbstractVector{Element},
+    spec::Spectrum,
+    mat::Material = spec[:Composition];
+    kwargs...)
+    map(el->reference(el, spec, mat; kwargs...), els)
+end
+reference(elm::AbstractVector{Element}, filename::AbstractString, mat::Material; kwargs...) =
+    reference(elm, loadspectrum(filename), mat; kwargs...)
 
+
+"""
+    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector)::FilterFitPacket
+    references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket
+
+Constructs a FilterFitPacket from a vector of `ReferencePackets`.  Each `ReferencePacket` represents a 
+single ROI for an element.  It is possible more than one `ReferencePacket` might be defined for an 
+elemental ROI.  In this case, the `ReferencePacket` with the lower index will take preference over
+later ones.  This allows you to fill in only the missing elemental ROIs using spectra collected from 
+alternative materials.  For example, a spectrum from F₂Fe is suitable for the Fe K-lines but not the 
+Fe L-lines. So we might specify F₂Fe first to specify the references for the Fe K-lines and then fill 
+in the L-lines with a spectrum from pure Fe.
+"""
 function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector,
@@ -102,6 +138,8 @@ function references(
     end
     return FilterFitPacket(det, ff, frefs)
 end
+references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
+    references(refs, matching(refs[1].spectrum, fwhm))
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
     fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
