@@ -357,7 +357,7 @@ labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6
       ampl::Float64, #
       maxE::Float64=1.0e6)::Vector{SpectrumFeature}
 
-Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
+Creates a vector of CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
 interfere with 'elm' will not be included.
 """
@@ -375,6 +375,12 @@ function charXRayLabels(#
     return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
 end
 
+"""
+    suitablefor(elm::Element, allElms::AbstractVector{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
+
+Given a material containing `allElms` which ROIs for element `elm` is the material a suitable reference on the detector `det`?  
+This function provides informational, warning and error messages depending upon the suitability of the material. 
+"""
 function suitablefor( #
     elm::Element, #
     allElms::AbstractVector{Element}, #
@@ -390,15 +396,15 @@ function suitablefor( #
             # Find elm's ROIs that don't intersect another element's ROI
             filter(labeledextents(elm, det, ampl, maxE)) do lx 
                 furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
-                isempty(furs) || @info "The elements $(join(symbol.(allElms),", "," and ")) are not suitable as a reference for the ROI \"$(lx[1])\" due to $(length(furs)) peak interference$(length(furs)==1 ? "" : "s")."
+                isempty(furs) || @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
                 isempty(furs)
             end
         else
             labeledextents(elm, det, ampl, maxE)
         end
-        length(res) > 0 || @warn "A material containing the elements $(join(symbol.(allElms),", "," and ")) provides no suitable references for the element $(symbol(elm))."
+        length(res) > 0 || @warn "A material containing $(join(symbol.(allElms),", "," and ")) provides no references for $(symbol(elm))."
     else
-        @error "The element $(symbol(elm)) must be contained within the elements $(join(symbol.(allElms),", "," and "))."
+        @error "The element $(symbol(elm)) is not contained within the elements $(join(symbol.(allElms),", "," and "))."
         res = Tuple{Vector{CharXRay}, UnitRange{Int64}}[]
     end
     return res

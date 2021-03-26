@@ -96,6 +96,7 @@ export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 export commonproperties # Properties that a collection of spectra share in common
 export maxspectrum # Dave Bright's max spectra derived spectrum
 export suitablefor # Which ROIs is a set of elements suitable for as reference for the specified element?
+export missingReferences # A Vector with missing ROIs in a FilterFitPacket
 
 export maxproperty, minproperty # Min value of a property over a vector of spectra
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise

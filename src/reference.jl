@@ -35,6 +35,22 @@ function Base.show(io::IO, ffp::FilterFitPacket)
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
 end
 
+
+"""
+    missingReferences(ffp::FilterFitPacket, elms::Vector{Element}, e0::Float64, ampl=1.0e-5)
+
+Returns a `Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}` containing the ROIs for which a 
+`FilteredReference` is missing from the `FilterFitPacket`.
+"""
+function missingReferences(ffp::FilterFitPacket, elms::Vector{Element}, e0::Float64, ampl=1.0e-5)
+    # Find all collections of X-rays for which we'll need references
+    allXrays = mapreduce(elm->NeXLSpectrum.labeledextents(elm, ffp.detector, ampl, e0), append!, elms)
+    # Remove those for which there are references
+    filter(allXrays) do xr
+        isnothing(findfirst(ref->ref.label.xrays == xr[1], ffp.references))
+    end
+end
+
 """
 Returns a tuple containing the unfiltered spectra associated with the references.
 """
@@ -128,13 +144,18 @@ function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector,
 )::FilterFitPacket
-    chcount = length(refs[1].spectrum)
-    @assert all(length(r.spectrum) == chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
+    chcount = det.channelcount
+    @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     ff = buildfilter(det)
-    frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
-        length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
-        frefs
+    
+    frefs = if length(refs)>0
+        mapreduce(append!, refs) do ref
+            frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+            length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
+            frefs
+        end
+    else
+        FilteredReference[]
     end
     return FilterFitPacket(det, ff, frefs)
 end
