@@ -54,7 +54,7 @@ function readptx(
 
         open(joinpath(tmp_dir, "Data")) do data
             realtime, deadtime = zero(UInt64), zero(UInt64)
-            maxchannel, maxframeid, minframeid = zero(Int32), zero(Int32), typemax(Int32), typemax(UInt64)
+            maxchannel, maxframeid, minframeid = zero(Int32), zero(Int32), typemax(Int32)
             # elapsetime, prevelapse = zero(UInt64), typemax(UInt32)
             seen = Set{String}()
             images = Dict{Tuple{Int32,Int32},Array}()
@@ -69,7 +69,7 @@ function readptx(
                     usage = reinterpret(Float32, msg[9:12])[1]
                     encoding = reinterpret(UInt32, msg[13:16])[1]
                     ws = reinterpret(UInt32, msg[13:end])
-                    frame = zero(UInt32)
+                    frame = zero(eltype(ws))
                     for i = 1:length(ws)÷5
                         w0, w1, w2, w3, w4 = ws[5*(i-1)+1:5*i]
                         # println("$(ws[5*(i-1)+1:5*i])")
