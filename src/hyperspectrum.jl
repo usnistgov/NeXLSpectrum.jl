@@ -73,19 +73,19 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
     function HyperSpectrum(
         energy::EnergyScale,
         props::Dict{Symbol,Any},
-        dims::NTuple,
+        dims::Tuple,
         depth::Int,
-        type::Type{Real};
+        type::Type{<:Real};
         axisnames = ( "X", "Y", "Z", "A", "B", "C" ), 
         fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ),
         stagemap::Type{<:StageMapping}=DefaultStageMapping
     )
         axes = [ Axis{:Channel}(1:depth), #
-            ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
+                ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
-        new{type,length(dims)}(
-            AxisArray(zeros(type, ( depth, dims...)), axes),
-            CartesianIndices(dims...),
+        new{type, length(dims)}(
+            AxisArray(zeros(type, depth, dims...), axes...),
+            CartesianIndices(dims),
             energy,
             props,
             stagemap
@@ -327,7 +327,7 @@ function maxpixel(
     filt::Function = ci -> true,
 ) where {T<:Real,N}
     data, res = counts(hss), zeros(T, depth(hss))
-    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(size(res, 1))
+    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(depth(hss))
         res[ch] = max(res[ch], data[ch, ci])
     end
     return Spectrum(hss.energy, res, copy(hss.properties))
@@ -342,7 +342,7 @@ function minpixel(
     filt::Function = ci -> true,
 ) where {T<:Real,N}
     data, res = counts(hss), fill(typemax(T), (depth(hss),))
-    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(size(res, 1))
+    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(depth(hss))
         res[ch] = min(res[ch], data[ch, ci])
     end
     return Spectrum(hss.energy, res, copy(hss.properties))
@@ -358,7 +358,7 @@ function avgpixel(
 ) where {T<:Real,N}
     data, res, cx = counts(hss), zeros(Float64, depth(hss)), 0
     for ci in filter(ci -> filt(ci), cis)
-        for ch in Base.OneTo(size(res, 1))
+        for ch in Base.OneTo(depth(hss))
             res[ch] += data[ch, ci]
         end
         cx += 1
@@ -413,8 +413,9 @@ end
     Base.sum(hss::HyperSpectrum{T, N}, filt::Function) where {T<:Real, N}
 
 Compute a sum spectrum for all or a subset of the pixels in `hss`.
-"""
 
+`filt` is (hss, ci) -> ???? where ci is a `CartesianIndex`
+"""
 function Base.sum(
     hss::HyperSpectrum{T,N},
     mask::Union{BitArray,Array{Bool}},

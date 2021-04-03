@@ -16,7 +16,6 @@ using LoopVectorization
 using Statistics
 using DataAPI
 using CSV
-using ZipFile
 using DataFrames
 using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
 using LsqFit: curve_fit
@@ -134,6 +133,7 @@ include("aspextiff.jl")
 include("brukerpdz.jl")
 include("brukerspx.jl")
 include("fileiosupport.jl")
+include("semanticsptx.jl")
 
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format

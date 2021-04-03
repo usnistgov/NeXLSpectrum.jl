@@ -50,6 +50,7 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
 	:WorkingDistance # In cm
     :LiveTime      # In seconds
     :RealTime      # In seconds
+    :DeadFraction  # Fractional
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
