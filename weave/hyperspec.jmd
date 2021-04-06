@@ -1,0 +1,66 @@
+# Quantifying a Hyperspectrum
+
+This file can be used as a template for quantifying SEM/EDS hyperspectra.
+
+```julia
+using NeXLSpectrum              # Provides spectrum reading and fitting tools
+using NeXLMatrixCorrection      # Provides `quant` to convert k-ratios to mass fraction.
+using NeXLParticle              # Provides clustering
+using FileIO
+```
+Specify the RPL/RAW file containing the data and load it.  Define the detector and
+acquisition properties and use it to transform the RPL/RAW data into a hyper-spectrum.
+```julia
+basepath = raw"C:\Users\nritchie\Documents\FY2021\Fred's FAA Sample\Images 15-Mar-2021\Manual"
+sample = "S10"
+raw = readrplraw(joinpath(basepath, sample, "map[15]"))
+les = LinearEnergyScale(0.0, 10.0)
+props = Dict{Symbol,Any}(
+    :LiveTime => 0.004,
+    :BeamEnergy => 20.0e3,
+    :ProbeCurrent => 1.0,
+    :Name => "Map[15]",
+)
+hs = HyperSpectrum(les, props, raw, fov = (0.2, 0.2))
+```
+
+Specify and read in reference spectra.  These spectra will be fit to the 
+hyper-spectral data and k-ratios extracted.
+```julia
+stdspath = raw"C:\Users\nritchie\Documents\FY2021\EGOS Tescan Data\20 keV Standards"
+
+refs = references( [
+    reference(n"Ti", joinpath(stdspath, "Ti std.msa"), mat"Ti"),
+    reference(n"V", joinpath(stdspath, "V std.msa"), mat"V"),
+    reference(n"Al", joinpath(stdspath, "Al std.msa"), mat"Al"),
+    reference(n"Ti", joinpath(stdspath, "Ti std.msa"), mat"Ti"),
+    reference(n"N", joinpath(stdspath, "BN std.msa"), mat"BN"),
+    reference(n"C", joinpath(stdspath, "C std.msa"), mat"C"),
+    reference(n"O", joinpath(stdspath, "MgO std.msa"), mat"MgO") ], 132.0)
+
+res = fit_spectrum(hs, refs, mode = :Fast)
+```
+Select a sub-set of the k-ratios - one per element.  normalize
+the k-ratios.
+```julia
+bestks = optimizeks(SimpleKRatioOptimizer(2.0), res)
+best = NeXLCore.normalize(bestks);
+```
+
+Next, we will create images to represent the k-ratio data. We will both
+store images to disk and display the images in the report.
+```julia; fig_height=10; fig_width=10; fig_ext=".svg";
+foreach(bf->save(File(format"PNG", joinpath(basepath,sample,"$(bf[1].element)[Log3].png")), Log3Band.(bf[2])),best)
+foreach(bf->save(File(format"PNG", joinpath(basepath,sample,"$(bf[1].element)[Linear].png")), LinearScale.(bf[2])),best)
+display(labeledimages([symbol(bf[1].element) for bf in best],[Log3Band.(bf[2]) for bf in best], ncols=3))
+```
+This displays the legend for the Bright's Log-3-Band palette.
+```julia; fig_height=1; fig_width=4; fig_ext=".png";
+loadlegend("Log3BandBright.png")
+```
+
+Cluster the data and display the result.
+```julia; fig_height=10; fig_width=10; fig_ext=".svg";
+@time dv = DiluvianCluster(map(t->element(t[1]), best),map(t->t[2], best), bin=x->floor(Integer, min(1.0, max(0.0, x)) * 10.0))
+display(labeledimage("Clustered Map Data", asimage(dv)))
+```
