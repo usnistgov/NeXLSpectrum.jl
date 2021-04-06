@@ -1,16 +1,54 @@
 """
-Repfrefsents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
+Represents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
 A `FilterFitPacket` contains the data necessary to filter the unknown and to apply pre-filtered references.
+If there are duplicate `FilteredReference` for an elemental ROI, the preference is for the first one.  This
+allows you to fill in unavailable "FilteredReference" elemental ROIs with more general ones.
 """
-struct FilterFitPacket
-    detector::Detector
+struct FilterFitPacket{T<:Detector}
+    detector::T
     filter::TopHatFilter
     references::Vector{FilteredReference}
+
+    function FilterFitPacket(det::T, filt::TopHatFilter, refs::Vector{FilteredReference}) where {T <: Detector}
+        # Only permit one FilteredReference for each type of label for a set of X-rays 
+        filtrefs = FilteredReference[]
+        for ref in refs
+            exists = false
+            for (i, fr) in enumerate(filtrefs)
+                # If a reference already exists of this type for these X-rays reassign it
+                if (typeof(fr.label) == typeof(ref.label))  && (fr.label.xrays==ref.label.xrays)
+                    # filtrefs[i] = ref
+                    exists = true
+                    break
+                end
+            end
+            if !exists
+                push!(filtrefs, ref)
+            end
+        end
+        new{T}(det, filt, filtrefs)
+    end
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
     lines = join(map(r -> "\t$(r.label),", ffp.references), "\n")
     print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
+end
+
+
+"""
+    missingReferences(ffp::FilterFitPacket, elms::Vector{Element}, e0::Float64, ampl=1.0e-5)
+
+Returns a `Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}` containing the ROIs for which a 
+`FilteredReference` is missing from the `FilterFitPacket`.
+"""
+function missingReferences(ffp::FilterFitPacket, elms::Vector{Element}, e0::Float64, ampl=1.0e-5)
+    # Find all collections of X-rays for which we'll need references
+    allXrays = mapreduce(elm->NeXLSpectrum.labeledextents(elm, ffp.detector, ampl, e0), append!, elms)
+    # Remove those for which there are references
+    filter(allXrays) do xr
+        isnothing(findfirst(ref->ref.label.xrays == xr[1], ffp.references))
+    end
 end
 
 """
@@ -29,25 +67,22 @@ struct ReferencePacket
     material::Material
 end
 
-Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(rp.element), $(name(rp.material)), $specrum]")
+Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(symbol(rp.element)), $(name(rp.material)), $(name(rp.spectrum))]")
 
 """
-function reference(
-    elm::Element,
-    spec::Spectrum,
-    mat::Material;
-    pc = nothing,
-    lt = nothing,
-    e0 = nothing,
-    coating = nothing,
-)::ReferencePacket
-
+    reference( elm::Element, spec::Spectrum, mat::Material=spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::ReferencePacket
+    reference(els::AbstractVector{Element}, spec::Spectrum, mat::Material = spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::Vector{ReferencePacket}
+    
 Construct a `ReferencePacket` from a `Spectrum` collected from the specified `Material` for the specified `Element`.
+Often used with `references(...)` to build `FilterFitPacket`s.
+
+Optional named arguments `pc`, `lt`, `e0`, `coating` allow you to specify the probe current, live time, beam energy and
+sample coating.
 """
 function reference(
     elm::Element,
     spec::Spectrum,
-    mat::Material;
+    mat::Material = spec[:Composition];
     pc = nothing,
     lt = nothing,
     e0 = nothing,
@@ -76,32 +111,56 @@ function reference(
     return ReferencePacket(spec, elm, mat)
 end
 
-reference(elm::Element, spec::Spectrum; kwargs...) =
-    reference(elm, spec, spec[:Composition]; kwargs...)
-
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
     reference(elm, loadspectrum(filename), mat; kwargs...)
 
 reference(elm::Element, filename::AbstractString; kwargs...) =
     reference(elm, loadspectrum(filename); kwargs...)
 
-references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(refs[1].spectrum, fwhm))
+function reference(
+    els::AbstractVector{Element},
+    spec::Spectrum,
+    mat::Material = spec[:Composition];
+    kwargs...)
+    map(el->reference(el, spec, mat; kwargs...), els)
+end
+reference(elm::AbstractVector{Element}, filename::AbstractString, mat::Material; kwargs...) =
+    reference(elm, loadspectrum(filename), mat; kwargs...)
 
+
+"""
+    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector)::FilterFitPacket
+    references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket
+
+Constructs a FilterFitPacket from a vector of `ReferencePackets`.  Each `ReferencePacket` represents a 
+single ROI for an element.  It is possible more than one `ReferencePacket` might be defined for an 
+elemental ROI.  In this case, the `ReferencePacket` with the lower index will take preference over
+later ones.  This allows you to fill in only the missing elemental ROIs using spectra collected from 
+alternative materials.  For example, a spectrum from F₂Fe is suitable for the Fe K-lines but not the 
+Fe L-lines. So we might specify F₂Fe first to specify the references for the Fe K-lines and then fill 
+in the L-lines with a spectrum from pure Fe.
+"""
 function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector,
 )::FilterFitPacket
-    chcount = length(refs[1].spectrum)
-    @assert all(length(r.spectrum) == chcount for r in refs[2:end]) "The number of channels must match in all the spectra."
+    chcount = det.channelcount
+    @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     ff = buildfilter(det)
-    frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
-        length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
-        frefs
+    
+    frefs = if length(refs)>0
+        mapreduce(append!, refs) do ref
+            frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+            length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
+            frefs
+        end
+    else
+        FilteredReference[]
     end
     return FilterFitPacket(det, ff, frefs)
 end
+references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
+    references(refs, matching(refs[1].spectrum, fwhm))
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
     fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
@@ -182,13 +241,12 @@ function fit_spectrum(
         return fit_spectrum(vq, hs, zero)
     elseif mode == :Intermediate
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, idose)
+            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         frefs = KRatios[]
@@ -212,12 +270,11 @@ function fit_spectrum(
         return frefs
     elseif mode == :Full
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, idose)
+            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
                 if !(isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)))

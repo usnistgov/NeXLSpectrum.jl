@@ -50,6 +50,7 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
 	:WorkingDistance # In cm
     :LiveTime      # In seconds
     :RealTime      # In seconds
+    :DeadFraction  # Fractional
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
@@ -105,7 +106,7 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     counts::Vector{T}
     properties::Dict{Symbol,Any}
     hash::UInt  # random number (stays fixed as underlying data changes)
-    function Spectrum(energy::EnergyScale, data::Vector{<:Real}, props::Dict{Symbol,Any})
+    function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,Any})
         props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
         return new{typeof(data[1])}(
             energy,
@@ -177,11 +178,11 @@ NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.prop
 NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum) =
     requiredbutmissing(ty, spec.properties)
 
-maxproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) =
+maxproperty(specs::AbstractArray{<:Spectrum}, prop::Symbol) =
     maximum(spec -> spec[prop], specs)
-minproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) =
+minproperty(specs::AbstractArray{<:Spectrum}, prop::Symbol) =
     minimum(spec -> spec[prop], specs)
-sameproperty(specs::AbstractVector{<:Spectrum}, prop::Symbol) =
+sameproperty(specs::AbstractArray{<:Spectrum}, prop::Symbol) =
     all(spec -> spec[prop] == specs[1][prop], specs) ? #
     specs[1][prop] : #
     error("The property $prop is not equal for all these spectra.")
@@ -752,13 +753,13 @@ estkratio(unk::Spectrum, std::Spectrum, chs::AbstractUnitRange{<:Integer}) =
 
 
 """
-    NeXLUncertainties.asa(::Type{DataFrame}, spec::AbstractVector{Spectrum})::DataFrame
+    NeXLUncertainties.asa(::Type{DataFrame}, spec::AbstractArray{Spectrum})::DataFrame
 
 Returns a DataFrame that summarizes the list of spectra.
 """
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
-    specs::AbstractVector{Spectrum},
+    specs::AbstractArray{Spectrum},
 )::DataFrame
     _asname(comp) = ismissing(comp) ? missing : name(comp)
     unf, unl, uns = Union{Float64,Missing}, Union{Film,Nothing}, Union{String,Missing}
@@ -955,15 +956,15 @@ end
 
 
 """
-    Base.sum(specs::AbstractVector{Spectrum{T}}; restype::Type{<:Real}=T, applylld=false, name=Nothing|String)::Spectrum{T}
+    Base.sum(specs::AbstractArray{Spectrum{T}}; restype::Type{<:Real}=T, applylld=false, name=Nothing|String)::Spectrum{T}
 
-Computes the sum spectrum over an `AbstractVector{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
+Computes the sum spectrum over an `AbstractArray{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
 :ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
 """
 function Base.sum(
-    specs::AbstractVector{Spectrum{T}},
+    specs::AbstractArray{Spectrum{T}},
     restype::Type{<:Real} = T;
     applylld = false,
     name = nothing,
@@ -1007,9 +1008,9 @@ function χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
 end
 
 """
-    measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, chs)::Vector{Float64}
-    measure_dissimilarity(specs::AbstractVector{Spectrum}, minE::Float64=100.0)::Vector{Float64}
-    measure_dissimilarity(specs::AbstractVector{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, chs)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractArray{Spectrum}, minE::Float64=100.0)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
 
 Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
 The first version covers all the channels between minE and the nominal beam energy. The second version
@@ -1018,7 +1019,7 @@ The statistic returned is the χ² for each spectrum relative to the mean spectr
 a vector of 1's for spectra that differ only by count statistics.
 """
 function measure_dissimilarity(
-    specs::AbstractVector{<:Spectrum},
+    specs::AbstractArray{<:Spectrum},
     chs,
 )::Vector{Float64}
     s = sum(specs)
@@ -1026,7 +1027,7 @@ function measure_dissimilarity(
 end
 
 function measure_dissimilarity(
-    specs::AbstractVector{<:Spectrum},
+    specs::AbstractArray{<:Spectrum},
     minE::Float64 = 100.0,
 )::Vector{Float64}
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
@@ -1038,7 +1039,7 @@ function measure_dissimilarity(
 end
 
 function measure_dissimilarity(
-    specs::AbstractVector{<:Spectrum},
+    specs::AbstractArray{<:Spectrum},
     det::Detector,
     mat::Material,
 )::Vector{Float64}
@@ -1071,7 +1072,7 @@ end
 
 
 """
-    findsimilar(specs::AbstractVector{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}}
+    findsimilar(specs::AbstractArray{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}}
 
 Filters a collection of spectra for the ones most similar to the average by
 removing the least similar spectrum sequentially until all the remaining spectra are within
@@ -1079,7 +1080,7 @@ tol times the mean(χ²).  This is useful for finding which of a set of replicat
 sufficiently similar to each other.
 """
 function findsimilar(
-    specs::AbstractVector{Spectrum{T}};
+    specs::AbstractArray{Spectrum{T}};
     tol = 1.8,
     minspecs = 3,
 )::Vector{Spectrum{T}} where {T<:Real}
@@ -1116,11 +1117,11 @@ function duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
         xdata, ydata = let
             chs = let # Range of channels above/below `este0`
                 ch0 = channel(este0, spec)
-                (19*ch0)÷20:(21*ch0)÷20
+                max(1,(19*ch0)÷20):min((21*ch0)÷20,length(spec))
             end
             energyscale(spec)[chs], counts(spec, chs)
         end
-        esti0 = mean(ydata[1:10]) * xdata[1] / (este0 - xdata[1])
+        esti0 = mean(ydata[1:min(10,length(ydata))]) * xdata[1] / (este0 - xdata[1])
         model(xs, p) = map(x -> p[1] * bremsstrahlung(Kramers1923, x, p[2], n"H"), xs)
         curve_fit(model, xdata, ydata, [esti0, este0]).param[2]
     else

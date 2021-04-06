@@ -16,7 +16,6 @@ using LoopVectorization
 using Statistics
 using DataAPI
 using CSV
-using ZipFile
 using DataFrames
 using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
 using LsqFit: curve_fit
@@ -95,6 +94,8 @@ export estkratio # Estimate the k-ratio from two spectra for a ROI
 export normalizedosewidth # Normalize intensity data to 1 nA⋅s⋅eV
 export commonproperties # Properties that a collection of spectra share in common
 export maxspectrum # Dave Bright's max spectra derived spectrum
+export suitablefor # Which ROIs is a set of elements suitable for as reference for the specified element?
+export missingReferences # A Vector with missing ROIs in a FilterFitPacket
 
 export maxproperty, minproperty # Min value of a property over a vector of spectra
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
@@ -120,6 +121,7 @@ export properties # The HyperSpectrum properties (mutable)
 export axisname # The name of the i-th axis
 export axisvalue # The calibrated coordinate value for the pixel coordinate
 export axisrange # range of coordinate values for the specified axis
+export livetime, livetime! # Get/Set livetime on a per-pixel basis
 
 include("rplraw.jl")
 export RPLHeader
@@ -132,10 +134,12 @@ include("aspextiff.jl")
 include("brukerpdz.jl")
 include("brukerspx.jl")
 include("fileiosupport.jl")
+include("semanticsptx.jl")
 
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format
 export sniffspectrum # Determine spectrum file type
+export readptx # Read a SEMantics PTX file
 
 # SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
 export BrukerSPX # Read only, SEM/EDS & XRF format

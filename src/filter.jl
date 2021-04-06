@@ -357,7 +357,7 @@ labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6
       ampl::Float64, #
       maxE::Float64=1.0e6)::Vector{SpectrumFeature}
 
-Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
+Creates a vector of CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
 interfere with 'elm' will not be included.
 """
@@ -369,29 +369,61 @@ function charXRayLabels(#
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
 )::Vector{ReferenceLabel}
-    @assert elm in allElms "$elm must be in $allElms."
+    suitable = suitablefor(elm, allElms, det, maxE, ampl)
+    length(suitable) > 0 || @error "The spectrum $(name(spec)) provides no suitable ROIs for the element $(symbol(elm))."
     # Find all the ROIs associated with other elements
-    otherElms = filter(a -> a ≠ elm, allElms)
-    lxs = if length(otherElms) > 0
-        urs = mapreduce(ae -> extents(ae, det, ampl), append!, otherElms)
-        # Find elm's ROIs that don't intersect another element's ROI
-        filter(labeledextents(elm, det, ampl, maxE)) do lx 
-            furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
-            (length(furs)>0) && @warn "The spectrum \"$(name(spec))\" cannot be used as a reference for the ROI \"$(lx[1])\" due to $(length(furs)) peak interference."
-            isempty(furs)
-        end
-    else
-        labeledextents(elm, det, ampl, maxE)
-    end
-    return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in lxs ]
+    return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
 end
 
-escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64) = escapeextents(
-    isvisible(characteristic(elm, alltransitions, ampl, maxE), det),
-    det,
-    ampl,
-    maxE,
+"""
+    suitablefor(elm::Element, allElms::AbstractVector{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
+
+Given a material containing `allElms` which ROIs for element `elm` is the material a suitable reference on the detector `det`?  
+This function provides informational, warning and error messages depending upon the suitability of the material. 
+"""
+function suitablefor( #
+    elm::Element, #
+    allElms::AbstractVector{Element}, #
+    det::Detector, #
+    maxE::Float64 = 1.0e6,
+    ampl::Float64 = 1.0e-5 #
+)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
+    # Find all the ROIs associated with other elements
+    if elm in allElms 
+        otherElms = filter(a -> a ≠ elm, allElms)
+        res = if length(otherElms) > 0
+            urs = mapreduce(ae -> extents(ae, det, ampl), append!, otherElms)
+            # Find elm's ROIs that don't intersect another element's ROI
+            filter(labeledextents(elm, det, ampl, maxE)) do lx 
+                furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
+                isempty(furs) || @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
+                isempty(furs)
+            end
+        else
+            labeledextents(elm, det, ampl, maxE)
+        end
+        length(res) > 0 || @warn "A material containing $(join(symbol.(allElms),", "," and ")) provides no references for $(symbol(elm))."
+    else
+        @error "The element $(symbol(elm)) is not contained within the elements $(join(symbol.(allElms),", "," and "))."
+        res = Tuple{Vector{CharXRay}, UnitRange{Int64}}[]
+    end
+    return res
+end
+function suitablefor( #
+    elm::Element, #
+    mat::Material, #
+    det::Detector, #
+    maxE::Float64 = 1.0e6,
+    ampl::Float64 = 1.0e-5 #
 )
+    suitablefor(elm, collect(keys(mat)), det, maxE, ampl)
+end
+
+
+function escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64)
+    vis = isvisible(characteristic(elm, alltransitions, ampl, maxE), det)
+    escapeextents(vis, det, ampl, maxE)
+end
 
 
 """
@@ -421,7 +453,7 @@ function escapeLabels(#
     urs = collect(Iterators.flatten(extents(ae, det, ampl) for ae in allElms))
     # Find elm's ROIs that don't intersect an element's primary ROI
     lxs = filter(lx -> !intersects(urs, lx[2]), escapeextents(elm, det, ampl, maxE))
-    #   @assert length(lxs) > 0 "There are no lines available for $elm that don't interfere with one or more of $allElms."
+    isempty(lxs) || @warn "There are no escape peaks for $elm that don't interfere with one or more of $allElms."
     return ReferenceLabel[EscapeLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 

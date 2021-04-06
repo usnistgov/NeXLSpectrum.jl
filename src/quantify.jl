@@ -28,7 +28,7 @@ end
 
 """
     NeXLMatrixCorrection.quantify(
-        spec::Spectrum,
+        spec::Union{Spectrum,AbstractVector{<:Spectrum}},
         ffp::FilterFitPacket;
         kwargs...
     )::IterationResult
@@ -42,4 +42,10 @@ function NeXLMatrixCorrection.quantify(
 )::IterationResult
     return quantify(fit_spectrum(spec, ffp); kwargs...)
 end
-
+function NeXLMatrixCorrection.quantify(
+    specs::AbstractVector{<:Spectrum},
+    ffp::FilterFitPacket;
+    kwargs...,
+)::Vector{IterationResult}
+    return map(spec->quantify(fit_spectrum(spec, ffp); kwargs...), specs)
+end

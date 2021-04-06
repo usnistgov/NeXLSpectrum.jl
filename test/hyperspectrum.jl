@@ -76,8 +76,8 @@ rrpath = artifact_path(rplraw_hash)
     @test indexofmaxpixel(hs, 640) == CartesianIndex(51, 64)
     @test hs[indexofmaxpixel(hs, 640)][640] == 0x0013
     @test hs[:BeamEnergy] == 20.0e3
-    @test hs[:LiveTime] == 0.004
-    @test all(sum(hs, (sig, i) -> counts(hs, i, 640) > 3) .<= sum(hs))
+    @test livetime(hs,(1,1)) == 0.004
+    @test all(sum(hs, (hs, i) -> counts(hs, i, 640) > 3) .<= sum(hs))
 
     @test length(hs) == 128 * 128
     @test ndims(hs) == 2
@@ -92,7 +92,8 @@ rrpath = artifact_path(rplraw_hash)
     @test stride(hs, 1) == 2048
     @test strides(hs) == (2048, 2048 * 128)
     @test depth(hs) == 2048
-    @test dose(hs) == 3.04 * 0.004
+    @test dose(hs) == hs[:ProbeCurrent] * mean(hs.livetime)
+    @test isapprox(dose(hs), 3.04 * 0.004, atol=1.0e-6)
 
     @test counts(hs[22, 34]) == hs.counts[:, 22, 34]
     ci = CartesianIndex(22, 34)
