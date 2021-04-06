@@ -241,13 +241,12 @@ function fit_spectrum(
         return fit_spectrum(vq, hs, zero)
     elseif mode == :Intermediate
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, idose)
+            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         frefs = KRatios[]
@@ -271,12 +270,11 @@ function fit_spectrum(
         return frefs
     elseif mode == :Full
         krs = zeros(Float32, length(ffp.references), size(hs)...)
-        idose = 1.0 / dose(hs)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         for ci in CartesianIndices(hs)
             data[len] = hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, idose)
+            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
                 if !(isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)))

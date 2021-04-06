@@ -121,6 +121,7 @@ export properties # The HyperSpectrum properties (mutable)
 export axisname # The name of the i-th axis
 export axisvalue # The calibrated coordinate value for the pixel coordinate
 export axisrange # range of coordinate values for the specified axis
+export livetime, livetime! # Get/Set livetime on a per-pixel basis
 
 include("rplraw.jl")
 export RPLHeader
@@ -138,6 +139,7 @@ include("semanticsptx.jl")
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format
 export sniffspectrum # Determine spectrum file type
+export readptx # Read a SEMantics PTX file
 
 # SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
 export BrukerSPX # Read only, SEM/EDS & XRF format

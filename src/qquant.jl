@@ -80,11 +80,11 @@ function fit_spectrum(
 )::Array{KRatios}
     krs = zeros(Float32, length(vq.references), size(hs)...)
     vecs = vq.vectors[:, 1:depth(hs)]
-    scales = [dose(hs) * vq.references[i][5] for i in eachindex(vq.references)]
+    scales = [ vq.references[i][5] for i in eachindex(vq.references) ]
     data = counts(hs)
     # @threads seems to slow this (maybe cache misses??)
     for ci in CartesianIndices(hs)
-        @inbounds @avx krs[:, ci] = (vecs * data[:, ci]) ./ scales
+        @inbounds @avx krs[:, ci] = (vecs * data[:, ci]) ./ (dose(hs,ci) * scales)
     end
     # ensure positive...
     map!(zero, krs, krs)

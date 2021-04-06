@@ -157,7 +157,7 @@ function readptx(
             # Elapse time is broken!!!
             # hss[:Elapse] = 1.0e-8 * elapsetime # second
             hss[:RealTime] = (1.0e-8 * blocksize^2 / ((rh - ry) * (rw - rx))) * realtime  # seconds
-            hss[:LiveTime] = (1.0e-8 * blocksize^2 / ((rh - ry) * (rw - rx))) * (realtime - deadtime)  # seconds
+            hss.livetime .= (1.0e-8 * blocksize^2 / ((rh - ry) * (rw - rx))) * (realtime - deadtime)  # seconds
             hss[:DeadFraction] = deadtime / realtime
             return hss
         end
