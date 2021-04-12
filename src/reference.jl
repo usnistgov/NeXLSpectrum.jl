@@ -171,9 +171,9 @@ fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
 """
 fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
 
-  * mode = :Fast - Uses precomputed, filtered "vector" fit method
-  * mode = :Intermediate - Uses an optimized full fit without refits for k(s) < 0.0
-  * mode = :Full - Uses the full single spectrum fit algorithm including refitting when one or more k < 0.0
+  * mode = :Fast - Uses precomputed, filtered "vector" fit method.  No uncertainties are available.
+  * mode = :Intermediate - Uses an optimized full fit without refits for negative k-ratios.
+  * mode = :Full - Uses the full single spectrum fit algorithm including refitting when one or more k-ratio is less than zero.
 
 Performs a filtered fit on a hyperspectrum returning an `Array{KRatios}`.
 
@@ -204,37 +204,25 @@ function fit_spectrum(
     zero = x -> max(0.0, x),
     sigma = 0.0
 )::Array{KRatios}
-    _tophatfilterhs =
-        (hs, data, thf, scale) -> begin
-            @assert length(data) <= length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
-            filtered = Float64[filtereddatum(thf, data, i) for i in eachindex(data)]
-            dp = Float64[max(x, 1.0) for x in data] # To ensure covariance isn't zero or infinite precision
-            covar = Float64[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
-            return FilteredUnknownW(
-                UnknownLabel(hs),
-                scale,
-                eachindex(data),
-                data,
-                filtered,
-                covar,
+     function _tophatfilterhs(hs, data, thf, scale) 
+        @assert length(data) <= length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
+        filtered = Float64[filtereddatum(thf, data, i) for i in eachindex(data)]
+        dp = Float64[max(x, 1.0) for x in data] # To ensure covariance isn't zero or infinite precision
+        covar = Float64[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+        FilteredUnknownW(UnknownLabel(hs), scale, eachindex(data), data, filtered, covar)
+    end
+    function fitcontiguousx(unk, ffs, chs)
+        _buildscale(unk, ffs) * pinv(_buildmodel(ffs, chs), rtol = 1.0e-6) * extract(unk, chs)
+    end
+    function _filterfitx(unk, ffs, fitrois) 
+        mapreduce(append!, fitrois) do fr
+            fitcontiguousx(
+                unk,
+                filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs),
+                fr,
             )
         end
-    fitcontiguousx =
-        (unk, ffs, chs) ->
-            _buildscale(unk, ffs) *
-            pinv(_buildmodel(ffs, chs), rtol = 1.0e-6) *
-            extract(unk, chs)
-    _filterfitx =
-        (unk, ffs, fitrois) -> Iterators.flatten(
-            map(
-                fr -> fitcontiguousx(
-                    unk,
-                    filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs),
-                    fr,
-                ),
-                fitrois,
-            ),
-        )
+    end
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
     if mode == :Fast
         vq = VectorQuant(ffp.references, ffp.filter)
@@ -244,65 +232,33 @@ function fit_spectrum(
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
-        for ci in CartesianIndices(hs)
-            data[len] = hs.counts[len, ci]
+        ThreadsX.foreach(CartesianIndices(hs)) do ci
+            data[len] .= hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
-        frefs = KRatios[]
-        for i in filter(
-            ii -> ffp.references[ii].label isa CharXRayLabel,
-            eachindex(ffp.references),
-        )
+        return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
-            push!(
-                frefs,
-                KRatios(
-                    xrays(lbl),
-                    properties(hs),
-                    rprops,
-                    rprops[:Composition],
-                    krs[i, :, :],
-                ),
-            )
+            KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
         end
-        return frefs
     elseif mode == :Full
         krs = zeros(Float32, length(ffp.references), size(hs)...)
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
-        for ci in CartesianIndices(hs)
-            data[len] = hs.counts[len, ci]
+        ThreadsX.foreach(CartesianIndices(hs)) do ci
+            data[len] .= hs.counts[len, ci]
             unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
-                if !(isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)))
-                    convert(Float32, value(id, uvs))
-                else
-                    0.0f0
-                end
+                isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)) ? zero(eltype(krs)) : convert(eltype(krs), value(id, uvs))
             end
         end
-        frefs = KRatios[]
-        for i in filter(
-            ii -> ffp.references[ii].label isa CharXRayLabel,
-            eachindex(ffp.references),
-        )
+        return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
             k, lbl = krs[i], ffp.references[i].label
             rprops = properties(spectrum(lbl))
-            push!(
-                frefs,
-                KRatios(
-                    xrays(lbl),
-                    properties(hs),
-                    rprops,
-                    rprops[:Composition],
-                    krs[i, :, :],
-                ),
-            )
+            KRatios( xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
         end
-        return frefs
     else
         @assert false "The mode argument must be :Fast, :Intermediate or :Full."
     end

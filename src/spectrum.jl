@@ -139,13 +139,15 @@ Base.strides(spec::Spectrum) = strides(spec.counts)
 # Integer indices
 Base.getindex(spec::Spectrum, idx::Integer) = spec.counts[idx]
 Base.getindex(spec::Spectrum, ur::AbstractRange{<:Integer}) = spec.counts[ur]
+Base.get(spec::Spectrum, idx::Int, def = convert(eltype(spec.counts), 0)) =
+    get(spec.counts, idx, def)
 # AbstractFloat indices
 Base.getindex(spec::Spectrum, energy::AbstractFloat) = spec.counts[channel(energy, spec)]
 Base.getindex(spec::Spectrum, sr::StepRangeLen{<:AbstractFloat}) =
     spec.counts[channel(sr[1], spec):channel(sr[end], spec)]
+# CharXRay indices
+Base.getindex(spec::Spectrum, cxr::CharXRay) = spec.counts[channel(energy(cxr), spec)]
 
-Base.get(spec::Spectrum, idx::Int, def = convert(eltype(spec.counts), 0)) =
-    get(spec.counts, idx, def)
 Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
     spec.counts[idx] = convert(eltype(spec.counts), val)
 Base.setindex!(spec::Spectrum, vals, ur::AbstractRange{<:Integer}) = spec.counts[ur] = vals

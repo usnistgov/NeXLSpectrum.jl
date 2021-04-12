@@ -193,7 +193,7 @@ function readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
     return res
 end
 
-function writerplraw(rplbasefile::String, arr::Array{<:Real})
+function writerplraw(rplbasefile::String, arr::AbstractArray{<:Real})
     open(rplbasefile * ".rpl", write = true) do rplio
         println(rplio, "key\tvalue")
         println(rplio, "width\t$(size(arr,2))")

@@ -19,6 +19,7 @@ using CSV
 using DataFrames
 using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
 using LsqFit: curve_fit
+using ThreadsX
 
 @reexport using NeXLCore
 @reexport using NeXLMatrixCorrection

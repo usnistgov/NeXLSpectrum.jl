@@ -49,7 +49,7 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
     stagemap::Type{<:StageMapping} # maps pixel coordinates into stage coordinates
 
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
-        axisnames = ( "X", "Y", "Z", "A", "B", "C" ), #
+        axisnames = ( "Y", "X", "Z", "A", "B", "C" ), #
         fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ), #
         stagemap::Type{<:StageMapping}=DefaultStageMapping,
         livetime=get(props, :LiveTime, 1.0) * ones(Float64, size(arr)[2:end]...)
@@ -233,6 +233,19 @@ function Base.getindex(
     return HyperSpectrum(hss.energy, props, hss.counts[:, idx...], livetime=hss.livetime[idx...])
 end
 
+function Base.getindex(
+    hss::HyperSpectrum,
+    cxr::CharXRay
+) 
+    return roiimage(hss, cxr)
+end
+function Base.getindex(
+    hss::HyperSpectrum,
+    cxrs::Vector{CharXRay}
+) 
+    return roiimages(hss, cxrs)
+end
+
 """
     region(hss::HyperSpectrum{T, N}, ranges::AbstractRange...)::HyperSpectrum where {T<:Real,N}
 
@@ -359,12 +372,34 @@ function maxpixel(
     hss::HyperSpectrum{T,N},
     cis::CartesianIndices,
     filt::Function = ci -> true,
-) where {T<:Real,N}
+)::Spectrum{T} where {T<:Real,N}
     data, res = hss.counts, zeros(T, depth(hss))
-    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(depth(hss))
-        res[ch] = max(res[ch], data[ch, ci])
+    for ci in filter(ci -> filt(ci), cis)
+        res .= max.(res, data[:, ci])
     end
-    return Spectrum(hss.energy, res, copy(hss.properties))
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res, props)
+end
+function maxpixel(
+    hss::HyperSpectrum{T,N},
+)::Spectrum{T} where {T<:Real,N}
+    res = map(Base.OneTo(size(hss.counts, 1))) do ch
+        maximum(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    end
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res, props)
+end
+function minpixel(
+    hss::HyperSpectrum{T,N},
+)::Spectrum{T} where {T<:Real,N}
+    res = map(Base.OneTo(size(hss.counts, 1))) do ch
+        minimum(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    end
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res, props)
 end
 minpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
     minpixel(hss, CartesianIndices(hss), filt)
@@ -379,7 +414,9 @@ function minpixel(
     for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(depth(hss))
         res[ch] = min(res[ch], data[ch, ci])
     end
-    return Spectrum(hss.energy, res, copy(hss.properties))
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res, props)
 end
 avgpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
     avgpixel(hss, CartesianIndices(hss), filt)
@@ -397,7 +434,19 @@ function avgpixel(
         end
         cx += 1
     end
-    return Spectrum(hss.energy, res ./ max(1.0, cx), copy(hss.properties))
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res ./ max(1.0, cx), props)
+end
+function avgpixel(
+    hss::HyperSpectrum{T,N}
+) where {T<:Real,N}
+    res = map(Base.OneTo(size(hss.counts, 1))) do ch
+        mean(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    end
+    props = copy(hss.properties)
+    props[:LiveTime] = mean(hss.livetime)
+    return Spectrum(hss.energy, res, props)
 end
 
 function sumcounts(hss::HyperSpectrum, cis::CartesianIndices = CartesianIndices(hss))
@@ -452,9 +501,10 @@ Compute a sum spectrum for all or a subset of the pixels in `hss`.
 """
 function Base.sum(
     hss::HyperSpectrum{T,N},
-    mask::Union{BitArray,Array{Bool}},
+    mask::Union{BitArray,Array{Bool}};
+    name = nothing
 ) where {T<:Real,N}
-    @assert size(mask) == size(hss) "$(size(mask)) ≠ $(size(hss))"
+    @assert size(mask) == size(hss) "Mask size[$(size(mask))] ≠ Hyperspectrum size[$(size(hss))]"
     RT = T isa Int ? Int64 : Float64
     data = hss.counts
     vals = mapreduce(
@@ -465,6 +515,7 @@ function Base.sum(
     )
     props = copy(hss.properties)
     props[:LiveTime] = sum(ci->hss.livetime[ci], filter(ci -> mask[ci], hss.index))
+    props[:Name] = something(name, props[:Name])
     return Spectrum(hss.energy, vals, props)
 end
 
