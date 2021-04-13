@@ -364,8 +364,6 @@ end
 
 Compute Bright's Max-Pixel derived signal for the entire HyperSpectrum or a rectanglar sub-region.
 """
-maxpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
-    maxpixel(hss, CartesianIndices(hss), filt)
 maxpixel(hss::HyperSpectrum, mask::BitArray) =
     maxpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function maxpixel(
@@ -391,6 +389,7 @@ function maxpixel(
     props[:LiveTime] = mean(hss.livetime)
     return Spectrum(hss.energy, res, props)
 end
+
 function minpixel(
     hss::HyperSpectrum{T,N},
 )::Spectrum{T} where {T<:Real,N}
@@ -401,8 +400,6 @@ function minpixel(
     props[:LiveTime] = mean(hss.livetime)
     return Spectrum(hss.energy, res, props)
 end
-minpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
-    minpixel(hss, CartesianIndices(hss), filt)
 minpixel(hss::HyperSpectrum, mask::BitArray) =
     minpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function minpixel(
@@ -418,8 +415,6 @@ function minpixel(
     props[:LiveTime] = mean(hss.livetime)
     return Spectrum(hss.energy, res, props)
 end
-avgpixel(hss::HyperSpectrum, filt::Function = ci -> true) =
-    avgpixel(hss, CartesianIndices(hss), filt)
 avgpixel(hss::HyperSpectrum, mask::BitArray) =
     avgpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function avgpixel(
