@@ -223,6 +223,7 @@ export FilterFitPacket
 export reference
 export references
 export spectra
+export suitability # Tabulates material suitability for use as a fitting reference
 
 include("labeled.jl")
 export labeledimage # Displays an image and caption.

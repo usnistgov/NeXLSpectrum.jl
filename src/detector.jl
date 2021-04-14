@@ -351,10 +351,10 @@ function extents( #
         cxr -> extent(cxr, det, ampl),
         filter(cxr -> weight(cxr) > ampl, isvisible(cxrs, det)),
     )
-    return filter(
+    return length(es) > 0 ? filter(
         inrange,
         ascontiguous(map(ee -> channel(ee[1], det):channel(ee[2], det), es)),
-    )
+    ) : Vector{UnitRange{Int}}[]
 end
 
 extents(elm::Element, det::Detector, ampl::Float64)::Vector{UnitRange{Int}} =

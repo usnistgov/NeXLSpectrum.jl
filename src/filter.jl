@@ -386,7 +386,8 @@ function suitablefor( #
     allElms::AbstractVector{Element}, #
     det::Detector, #
     maxE::Float64 = 1.0e6,
-    ampl::Float64 = 1.0e-5 #
+    ampl::Float64 = 1.0e-5, #
+    warnme::Bool = true #
 )::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
     # Find all the ROIs associated with other elements
     if elm in allElms 
@@ -396,13 +397,13 @@ function suitablefor( #
             # Find elm's ROIs that don't intersect another element's ROI
             filter(labeledextents(elm, det, ampl, maxE)) do lx 
                 furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
-                isempty(furs) || @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
+                warnme && isempty(furs) && @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
                 isempty(furs)
             end
         else
             labeledextents(elm, det, ampl, maxE)
         end
-        length(res) > 0 || @warn "A material containing $(join(symbol.(allElms),", "," and ")) provides no references for $(symbol(elm))."
+        length(res) == 0 && warnme && @warn "A material containing $(join(symbol.(allElms),", "," and ")) provides no references for $(symbol(elm))."
     else
         @error "The element $(symbol(elm)) is not contained within the elements $(join(symbol.(allElms),", "," and "))."
         res = Tuple{Vector{CharXRay}, UnitRange{Int64}}[]
@@ -414,11 +415,52 @@ function suitablefor( #
     mat::Material, #
     det::Detector, #
     maxE::Float64 = 1.0e6,
-    ampl::Float64 = 1.0e-5 #
+    ampl::Float64 = 1.0e-5, #
+    warnme::Bool = true #
 )
-    suitablefor(elm, collect(keys(mat)), det, maxE, ampl)
+    suitablefor(elm, collect(keys(mat)), det, maxE, ampl, warnme)
 end
 
+"""
+    suitability(elm::Element, mats::Set{<:Material}, det::Detector; maxE=30.0e3)
+    suitability(elm::Element, det::Detector; maxE=30.0e3, minC=0.1)
+
+Tabulates the characteristic X-ray peaks for the `Element` for which there are suitable materials 
+in `mats` for the specified detector.  The second form uses a default set of Materials in the
+file NeXLCore "standards.txt".
+
+This function is helpful for determining which `Material`s are suitable to act as 
+fitting standards for the specified Element.  It shows how NeXLSpectrum will break up the 
+characteristic peaks associated with `elm` into contiguous regions each of which will be 
+fit independently. NeXLSpectrum attempts to break each element into as many independent 
+regions as possible dependent on the resolution of the specified `EDSDetector`.  If there
+is an interference between one of the other elements in the `Material` and `elm` then
+this peak will not be suitable as a fitting standard.  However, it can be used as a 
+similar standard.
+"""
+function suitability(elm::Element, mats::Set{<:Material}, det::EDSDetector; maxE=30.0e3)
+    mats = filter(m->m[elm]>0.0, mats)
+    # Find all elemental ROIs
+    rois = Dict{Vector{CharXRay}, Vector{Material}}()
+    for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, pure(elm), det, maxE, 1.0e-5, false)
+      rois[cxrs] = Material[]
+    end
+    for m in mats
+      for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, m, det, maxE, 1.0e-5, false)
+        push!(rois[cxrs],m) 
+      end
+    end
+    cxrss = collect(keys(rois))
+    sort!(cxrss, lt = (a,b) -> energy(brightest(a))<energy(brightest(b)))
+    res = DataFrame(:Material=>Material[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
+    for m in mats
+      push!(res, [m, (m in rois[cxrs] ? "✓" : "✗" for cxrs in cxrss)...])
+    end
+    res
+end
+function suitability(elm::Element, det::EDSDetector; maxE=30.0e3, minC=0.1)
+    suitability(elm, getstandards(elm, minC), det, maxE=maxE, minC=minC)
+end
 
 function escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64)
     vis = isvisible(characteristic(elm, alltransitions, ampl, maxE), det)
