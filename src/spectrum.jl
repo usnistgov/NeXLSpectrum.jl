@@ -676,7 +676,7 @@ function modelBackground(
     # bh = ch-> mean(cnts[last(chs):min(length(cnts),last(chs)+5)])
     if (ec < last(chs)) &&
        (bl(ec - first(chs)) > bh(ec - last(chs))) &&
-       (energy(ash) < 2.0e3)
+       (energy(ash) < 2.0e3)  && ( shell(ash.subshell)==KShell )
         res = zeros(Float64, length(chs))
         res[1:ec-first(chs)] .= (bl(y - 1) for y in 1:ec-first(chs))
         res[ec-first(chs)+1] = 0.5 * (bl(ec - first(chs) + 1) + bh(ec - last(chs)))
