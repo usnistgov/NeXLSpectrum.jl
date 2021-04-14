@@ -36,6 +36,16 @@ function Base.show(io::IO, ffp::FilterFitPacket)
 end
 
 
+function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
+    DataFrame(
+        Lines = [ fr.label.xrays for fr in ffp.references],
+        Material = [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
+        ROI = [ fr.roi for fr in ffp.references],
+        FullROI = [ fr.ffroi for fr in ffp.references],
+    )
+end
+
+
 """
     missingReferences(ffp::FilterFitPacket, elms::Vector{Element}, e0::Float64, ampl=1.0e-5)
 
