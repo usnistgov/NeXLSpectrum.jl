@@ -438,8 +438,10 @@ is an interference between one of the other elements in the `Material` and `elm`
 this peak will not be suitable as a fitting standard.  However, it can be used as a 
 similar standard.
 """
-function suitability(elm::Element, mats::Set{<:Material}, det::EDSDetector; maxE=30.0e3)
-    mats = filter(m->m[elm]>0.0, mats)
+function suitability(elm::Element, mats::Set{Material}, det::EDSDetector; maxE=30.0e3, latex=false)
+    wrap(matname, ltx) = ltx ? "\\ce{$matname}" : matname
+    ex, chk = latex ? ( "\\xmark", "\\checkmark" ) : ("✗", "✓")
+    mats = filter(m->value(m[elm])>0.0, mats)
     # Find all elemental ROIs
     rois = Dict{Vector{CharXRay}, Vector{Material}}()
     for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, pure(elm), det, maxE, 1.0e-5, false)
@@ -447,19 +449,19 @@ function suitability(elm::Element, mats::Set{<:Material}, det::EDSDetector; maxE
     end
     for m in mats
       for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, m, det, maxE, 1.0e-5, false)
-        push!(rois[cxrs],m) 
+        push!(rois[cxrs], m) 
       end
     end
     cxrss = collect(keys(rois))
     sort!(cxrss, lt = (a,b) -> energy(brightest(a))<energy(brightest(b)))
-    res = DataFrame(:Material=>Material[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
+    res = DataFrame(:Material=>String[], :Count=>Int[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
     for m in mats
-      push!(res, [m, (m in rois[cxrs] ? "✓" : "✗" for cxrs in cxrss)...])
+      push!(res, [wrap(name(m), latex), count(cxrs->m in rois[cxrs], cxrss), (m in rois[cxrs] ? chk : ex for cxrs in cxrss)...])
     end
-    res
+    sort!(res, :Count, rev=true)
 end
-function suitability(elm::Element, det::EDSDetector; maxE=30.0e3, minC=0.1)
-    suitability(elm, getstandards(elm, minC), det, maxE=maxE, minC=minC)
+function suitability(elm::Element, det::EDSDetector; maxE=30.0e3, minC=0.1, latex=false)
+    suitability(elm, getstandards(elm, minC), det, maxE=maxE, latex=latex)
 end
 
 function escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64)
@@ -475,7 +477,8 @@ end
       allElms::AbstractVector{Element}, #
       det::Detector, #
       ampl::Float64, #
-      maxE::Float64=1.0e6)::Vector{CharXRayLabel}
+      maxE::Float64=1.0e6
+    )::Vector{CharXRayLabel}
 
 Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
