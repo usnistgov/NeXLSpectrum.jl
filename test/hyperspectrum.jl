@@ -122,8 +122,8 @@ rrpath = artifact_path(rplraw_hash)
     @test hs[121, 115][29] == 0x000F
     @test hs[123, 45][27] == 0x000C
 
-    @test axisname(hs,1) == :X
-    @test axisname(hs,2) == :Y
+    @test axisname(hs,1) == :Y
+    @test axisname(hs,2) == :X
     @test axisvalue(hs, 1, 1) == -0.064
     @test axisvalue(hs, 1, 128) == 0.064
     @test isapprox(axisvalue(hs, 1, 28), -0.064 + (28-1)*0.128/(128-1), atol=1.0e-8)

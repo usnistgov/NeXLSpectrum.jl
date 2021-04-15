@@ -397,7 +397,7 @@ function suitablefor( #
             # Find elm's ROIs that don't intersect another element's ROI
             filter(labeledextents(elm, det, ampl, maxE)) do lx 
                 furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
-                warnme && isempty(furs) && @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
+                warnme && (!isempty(furs)) && @info "A material containing $(join(symbol.(allElms),", "," and ")) is not a suitable reference for \"$(lx[1])\" due to $(length(furs)==1 ? "a peak interference." : "$(length(furs)) peak interferences.")"
                 isempty(furs)
             end
         else
