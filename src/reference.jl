@@ -37,11 +37,21 @@ end
 
 
 function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
+    function p2b(fref)
+        croi = first(fref.roi)-first(fref.ffroi):last(fref.roi)-first(fref.ffroi)
+        sum(fref.charonly) / (sum(fref.data[croi])-sum(fref.charonly))
+    end 
+    function s2n(fref)
+        croi = first(fref.roi)-first(fref.ffroi):last(fref.roi)-first(fref.ffroi)
+        sum(fref.charonly) / sqrt(sum(fref.data[croi])-sum(fref.charonly))
+    end 
     DataFrame(
-        Lines = [ fr.label.xrays for fr in ffp.references],
-        Material = [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
-        ROI = [ fr.roi for fr in ffp.references],
-        FullROI = [ fr.ffroi for fr in ffp.references],
+        :Lines => [ fr.label.xrays for fr in ffp.references],
+        :Material => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
+        :ROI => [ fr.roi for fr in ffp.references],
+        # :FullROI => [ fr.ffroi for fr in ffp.references],
+        Symbol("P-to-B") => p2b.(ffp.references), 
+        Symbol("S-to-N") => s2n.(ffp.references) 
     )
 end
 
