@@ -151,7 +151,7 @@ export ASPEXTIFF # Read only, Vendor SEM/EDS format
 include("fitlabels.jl")
 export ReferenceLabel
 export UnknownLabel#(spec) <: ReferenceLabel
-export CharXRayLabel#(spec,roi,xrays) <: ReferenceLabel
+export CharXRayLabel#(spec|props,roi,xrays) <: QuantifiableLabel
 export EscapeLabel#(spec,roi,xrays) <: ReferenceLabel
 export charXRayLabels # Constructs CharXRayLabel(s) <: ReferenceLabel
 
@@ -185,6 +185,7 @@ export spectrum
 export unknown
 export kratios
 export kratio
+export extractStandards
 
 include("qquant.jl")
 export VectorQuant

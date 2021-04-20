@@ -61,13 +61,13 @@ end
 
 
 """
-    extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
+    extractStandards(elm::Element, ffr::FitResult, mat::Material)::Vector{Standard}
 
 Extract a `Standard` for the `Element` from a `FilterFitResult` associated with
 the `Material`.  The standard will consist of one or more `KRatio` objects
 associated with a `Material`. 
 """
-function extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
+function extractStandards(elm::Element, ffr::FitResult, mat::Material)::Vector{Standard}
     @assert haskey(mat, elm)
     lbls = filter(
         l ->
@@ -86,8 +86,8 @@ function extractStandard(elm::Element, mat::Material, ffr::FitResult)::Standard
             ffr.kratios[lbl],
         ) for lbl in lbls
     ]
-    @assert length(krs) > 0 "There are no k-ratios associated with the $elm in $mat."
-    return Standard(mat, krs)
+    length(krs) == 0 || @info  "There are no k-ratios associated with the $elm in $mat."
+    return [ Standard(mat, kr) for kr in krs ]
 end
 
 """
@@ -249,30 +249,30 @@ function NeXLUncertainties.asa(
     Float64[],
     Float64[]
     kcalc, ratio = Float64[], Float64[]
-    for kl in NeXLUncertainties.sortedlabels(ffr.kratios)
-        if (!charOnly) || kl isa CharXRayLabel
-            stdspec, unkspec = spectrum(kl), ffr.label.spectrum
+    for lbl in NeXLUncertainties.sortedlabels(ffr.kratios)
+        if (!charOnly) || (lbl isa CharXRayLabel)
+            stdspec, unkspec = properties(lbl), ffr.label.spectrum
             push!(lbl, ffr.label)
             push!(std, stdspec[:Name])
-            push!(klbl, kl)
-            push!(roi1, kl.roi.start)
-            push!(roi2, kl.roi.stop)
-            push!(kr, NeXLUncertainties.value(kl, ffr.kratios))
-            push!(dkr, σ(kl, ffr.kratios))
-            pb = ffr.peakback[kl]
+            push!(klbl, lbl)
+            push!(roi1, lbl.roi.start)
+            push!(roi2, lbl.roi.stop)
+            push!(kr, NeXLUncertainties.value(lbl, ffr.kratios))
+            push!(dkr, σ(lbl, ffr.kratios))
+            pb = ffr.peakback[lbl]
             push!(peak, pb[1])
             push!(back, pb[2])
-            push!(ptob, peaktobackground(ffr, kl))
+            push!(ptob, peaktobackground(ffr, lbl))
             if material isa Material
                 kc = NaN64
-                if kl isa CharXRayLabel
+                if lbl isa CharXRayLabel
                     try
                         zcu = zafcorrection(
                             XPP,
                             ReedFluorescence,
                             NullCoating,
                             material,
-                            kl.xrays,
+                            lbl.xrays,
                             unkspec[:BeamEnergy],
                         )
                         zcs = zafcorrection(
@@ -280,7 +280,7 @@ function NeXLUncertainties.asa(
                             ReedFluorescence,
                             NullCoating,
                             stdspec[:Composition],
-                            kl.xrays,
+                            lbl.xrays,
                             stdspec[:BeamEnergy],
                         )
                         kc = k(zcu, zcs, unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
@@ -289,7 +289,7 @@ function NeXLUncertainties.asa(
                     end
                 end
                 push!(kcalc, kc)
-                push!(ratio, NeXLUncertainties.value(kl, ffr.kratios) / kc)
+                push!(ratio, NeXLUncertainties.value(lbl, ffr.kratios) / kc)
             end
         end
     end
@@ -337,3 +337,4 @@ function filteredresidual(
         extract(ff, unk.ffroi)
     return unk.filtered - mapreduce(scaled, +, ffs)
 end
+

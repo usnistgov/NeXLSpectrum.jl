@@ -41,31 +41,44 @@ channels(rl::ReferenceLabel) = rl.roi
 Base.show(io::IO, refLab::ReferenceLabel) =
     print(io::IO, "$(refLab.spectrum[:Name])[$(refLab.roi)]")
 
-_hashrl(spec, roi, xrays) = xor(xor(hash(spec), hash(roi)), hash(xrays))
-
 Base.isequal(c1::ReferenceLabel, c2::ReferenceLabel) =
     (hash(c1) == hash(c2)) &&
     isequal(c1.roi, c2.roi) &&
     isequal(c1.xrays, c2.xrays) &&
     isequal(c1.spectrum, c2.spectrum)
 
+
+const SpectrumOrProperties = Union{Spectrum, Dict{Symbol, Any}}
+function spectrum(sop::SpectrumOrProperties)::Spectrum 
+    @assert sop isa Spectrum "Not a spectrum"
+    sop # Fails fast
+end
+function properties(sop::SpectrumOrProperties)::Dict{Symbol, Any}
+    prop(s::Spectrum) = properties(s)
+    prop(p::Dict{Symbol,Any}) = p
+    return prop(sop)
+end
+
 """
     CharXRayLabel
 
-A ReferenceLabel<:FilteredLabel  that Represents a reference spectrum associated with a set of characteristic x-rays
-(CharXRay) objects over a contiguous range of spectrum channels.
+A ReferenceLabel that represents a reference spectrum or reference properties associated with a set of 
+characteristic x-rays (CharXRay) objects over a contiguous range of spectrum channels.
 """
 struct CharXRayLabel <: ReferenceLabel
-    spectrum::Spectrum
+    spectrum::SpectrumOrProperties
     roi::UnitRange{Int}
     xrays::Vector{CharXRay}
     hash::UInt
     function CharXRayLabel(spec::Spectrum, roi::UnitRange{Int}, xrays::Vector{CharXRay})
         @assert all(xr -> element(xr) == element(xrays[1]), xrays)
-        new(spec, roi, xrays, _hashrl(spec, roi, xrays))
+        new(spec, roi, xrays, hash(spec, hash(roi, hash(xrays, UInt(0x111)))))
+    end
+    function CharXRayLabel(props::Dict{Symbol, Any}, roi::UnitRange{Int}, xrays::Vector{CharXRay})
+        @assert all(xr -> element(xr) == element(xrays[1]), xrays)
+        new(props, roi, xrays, hash(props, hash(roi, hash(xrays, UInt(0x110)))))
     end
 end
-
 
 """
    xrays(cl::CharXRayLabel)
@@ -73,17 +86,17 @@ end
 A list of the X-rays associated with this CharXRayLabel.
 """
 xrays(cl::CharXRayLabel) = cl.xrays
-spectrum(cl::CharXRayLabel) = cl.spectrum
+spectrum(cl::CharXRayLabel)::Spectrum = spectrum(cl.spectrum)
+hasspectrum(cl::CharXRayLabel) = cl.spectrum isa Spectrum
+composition(cl::CharXRayLabel) = get(properties(cl), :Composition, nothing)
 properties(cl::CharXRayLabel) = properties(cl.spectrum)
-
 NeXLCore.element(cl::CharXRayLabel) = element(cl.xrays[1])
 
-function Base.show(io::IO, refLab::CharXRayLabel) 
-    comp = get(refLab.spectrum, :Composition, nothing)
+function Base.show(io::IO, cl::CharXRayLabel) 
+    comp = composition(cl)
     compname = isnothing(comp) ? "Unspecified" : name(comp)
-    print(io,"k[$(name(refLab.xrays)), $compname]")
+    print(io,"k[$(name(cl.xrays)), $compname]")
 end
-
 Base.isequal(rl1::CharXRayLabel, rl2::CharXRayLabel) =
     isequal(rl1.roi, rl2.roi) &&
     isequal(rl1.xrays, rl2.xrays) &&
@@ -102,7 +115,7 @@ struct EscapeLabel <: ReferenceLabel
     hash::UInt
 
     EscapeLabel(spc::Spectrum, roi::UnitRange{Int}, escs::AbstractVector{EscapeArtifact}) =
-        new(spc, roi, convert(Vector{EscapeArtifact}, escs), _hashrl(spc, roi, escs))
+        new(spc, roi, convert(Vector{EscapeArtifact}, escs), hash(spc, hash(roi, hash(escs))))
 end
 
 Base.show(io::IO, escl::EscapeLabel) = print(io, name(escl))

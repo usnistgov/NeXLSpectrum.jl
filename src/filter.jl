@@ -422,7 +422,7 @@ function suitablefor( #
 end
 
 """
-    suitability(elm::Element, mats::Set{<:Material}, det::Detector; maxE=30.0e3)
+    suitability(elm::Element, mats::AbstractSet{<:Material}, det::Detector; maxE=30.0e3)
     suitability(elm::Element, det::Detector; maxE=30.0e3, minC=0.1)
 
 Tabulates the characteristic X-ray peaks for the `Element` for which there are suitable materials 
@@ -438,7 +438,7 @@ is an interference between one of the other elements in the `Material` and `elm`
 this peak will not be suitable as a fitting standard.  However, it can be used as a 
 similar standard.
 """
-function suitability(elm::Element, mats::Set{Material}, det::EDSDetector; maxE=30.0e3, latex=false)
+function suitability(elm::Element, mats::AbstractSet{<:Material}, det::EDSDetector; maxE=30.0e3, latex=false)
     wrap(matname, ltx) = ltx ? "\\ce{$matname}" : matname
     ex, chk = latex ? ( "\\xmark", "\\checkmark" ) : ("✗", "✓")
     mats = filter(m->value(m[elm])>0.0, mats)
@@ -478,9 +478,9 @@ end
       det::Detector, #
       ampl::Float64, #
       maxE::Float64=1.0e6
-    )::Vector{CharXRayLabel}
+    )::Vector{EscapeLabel}
 
-Creates a vector CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
+Creates a vector EscapeLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
 interfere with 'elm' will not be included.
 """
