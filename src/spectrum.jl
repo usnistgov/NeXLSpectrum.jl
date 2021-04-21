@@ -119,10 +119,11 @@ end
 
 Base.hash(spec::Spectrum, h::UInt) = hash(spec.hash, h)
 Base.isequal(spec1::Spectrum, spec2::Spectrum) =
-    (hash(spec1) == hash(spec2)) &&
+    (spec1===spec2) || (
+    (spec1.hash == spec2.hash) &&
     isequal(spec1.energy, spec2.energy) &&
-    isequal(spec1.properies, spec2.properties) &&
-    isequal(spec1.counts, spec2.counts)
+    isequal(spec1.properties, spec2.properties) &&
+    isequal(spec1.counts, spec2.counts))
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
 # Make it act like an AbstractVector

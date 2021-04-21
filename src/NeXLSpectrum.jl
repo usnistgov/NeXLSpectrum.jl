@@ -187,6 +187,9 @@ export kratios
 export kratio
 export extractStandards
 
+include("standardize.jl")
+# export NeXLCore.standardize
+
 include("qquant.jl")
 export VectorQuant
 

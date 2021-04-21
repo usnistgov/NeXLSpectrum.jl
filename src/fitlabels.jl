@@ -18,10 +18,14 @@ spectrum(fl::FilteredLabel) = fl.spectrum
     ReferenceLabel
 
 A label associated with reference spectra.  The label encapsulates the original spectrum and the range of channels
-represented by this reference object.  structs that extend ReferenceLabel should have `.roi` and
-`.spectrum` members.
+represented by this reference object.  structs that extend ReferenceLabel should have `.roi`, `.spectrum` and ".hash" 
+fields.
 """
-abstract type ReferenceLabel <: FilteredLabel end
+abstract type ReferenceLabel <: FilteredLabel
+
+
+
+end
 
 Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
     return isequal(rl1.roi, rl2.roi) ? isless(rl1.spectrum[:Name], rl2.spectrum[:Name]) :
@@ -40,9 +44,9 @@ channels(rl::ReferenceLabel) = rl.roi
 
 Base.show(io::IO, refLab::ReferenceLabel) =
     print(io::IO, "$(refLab.spectrum[:Name])[$(refLab.roi)]")
-
+Base.hash(rl::ReferenceLabel, h::UInt) = hash(rl.hash, h)
 Base.isequal(c1::ReferenceLabel, c2::ReferenceLabel) =
-    (hash(c1) == hash(c2)) &&
+    (c1.hash == c2.hash) &&
     isequal(c1.roi, c2.roi) &&
     isequal(c1.xrays, c2.xrays) &&
     isequal(c1.spectrum, c2.spectrum)
@@ -72,11 +76,11 @@ struct CharXRayLabel <: ReferenceLabel
     hash::UInt
     function CharXRayLabel(spec::Spectrum, roi::UnitRange{Int}, xrays::Vector{CharXRay})
         @assert all(xr -> element(xr) == element(xrays[1]), xrays)
-        new(spec, roi, xrays, hash(spec, hash(roi, hash(xrays, UInt(0x111)))))
+        new(spec, roi, xrays, hash(spec, hash(roi, hash(xrays))))
     end
     function CharXRayLabel(props::Dict{Symbol, Any}, roi::UnitRange{Int}, xrays::Vector{CharXRay})
         @assert all(xr -> element(xr) == element(xrays[1]), xrays)
-        new(props, roi, xrays, hash(props, hash(roi, hash(xrays, UInt(0x110)))))
+        new(props, roi, xrays, hash(props, hash(roi, hash(xrays))))
     end
 end
 
@@ -135,6 +139,9 @@ A FilteredLabel that represents the unknown spectrum.
 """
 struct UnknownLabel <: FilteredLabel
     spectrum::Union{HyperSpectrum,Spectrum}
+    hash::UInt
+
+    UnknownLabel(spec::Union{HyperSpectrum,Spectrum}) = new(spec, hash(spec))
 end
 
 Base.show(io::IO, unk::UnknownLabel) = print(io, unk.spectrum[:Name])

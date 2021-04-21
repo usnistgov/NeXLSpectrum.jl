@@ -51,9 +51,9 @@ function kratios(ffr::FitResult)::Vector{KRatio}
     return KRatio[
         KRatio(
             lbl.xrays,
-            copy(unknown(ffr).spectrum.properties),
-            copy(lbl.spectrum.properties),
-            lbl.spectrum[:Composition],
+            copy(properties(unknown(ffr).spectrum)),
+            copy(properties(lbl.spectrum)),
+            properties(lbl.spectrum)[:Composition],
             ffr.kratios[lbl],
         ) for lbl in lbls
     ]
@@ -80,9 +80,9 @@ function extractStandards(elm::Element, ffr::FitResult, mat::Material)::Vector{S
     krs = KRatio[
         KRatio(
             lbl.xrays,
-            copy(unknown(ffr).spectrum.properties),
-            copy(lbl.spectrum.properties),
-            lbl.spectrum[:Composition],
+            copy(properties(unknown(ffr).spectrum)),
+            copy(properties(lbl.spectrum)),
+            properties(lbl.spectrum)[:Composition],
             ffr.kratios[lbl],
         ) for lbl in lbls
     ]
@@ -182,7 +182,7 @@ struct FilterFitResult <: FitResult
     roi::UnitRange{Int}
     raw::Vector{Float64}
     residual::Vector{Float64}
-    peakback::Dict{<:ReferenceLabel,NTuple{2,Float64}}
+    peakback::Dict{ReferenceLabel,NTuple{2,Float64}}
 end
 
 """
@@ -192,8 +192,8 @@ A Spectrum containing the histogram representing the unknown spectrum
 minus the fitted characteristic peaks shapes times the best fit coefficient.
 """
 function residual(ffr::FilterFitResult)::Spectrum
-    props = copy(ffr.label.spectrum.properties)
-    props[:Name] = "Residual[$(ffr.label.spectrum.properties[:Name])]"
+    props = copy(properties(ffr.label.spectrum))
+    props[:Name] = "Residual[$(props[:Name])]"
     return Spectrum(ffr.label.spectrum.energy, ffr.residual, props)
 end
 
@@ -238,7 +238,7 @@ function NeXLUncertainties.asa(
     charOnly::Bool = true,
     material = nothing,
 )::DataFrame
-    lbl, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
+    lbls, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
     ReferenceLabel[],
     String[],
     Float64[],
@@ -252,7 +252,7 @@ function NeXLUncertainties.asa(
     for lbl in NeXLUncertainties.sortedlabels(ffr.kratios)
         if (!charOnly) || (lbl isa CharXRayLabel)
             stdspec, unkspec = properties(lbl), ffr.label.spectrum
-            push!(lbl, ffr.label)
+            push!(lbls, ffr.label)
             push!(std, stdspec[:Name])
             push!(klbl, lbl)
             push!(roi1, lbl.roi.start)
@@ -295,7 +295,7 @@ function NeXLUncertainties.asa(
     end
     return material isa Material ?
            DataFrame(
-        Spectrum = lbl,
+        Spectrum = lbls,
         Feature = klbl,
         Reference = std,
         Start = roi1,
@@ -309,7 +309,7 @@ function NeXLUncertainties.asa(
         Ratio = ratio,
     ) :
            DataFrame(
-        Spectrum = lbl,
+        Spectrum = lbls,
         Feature = klbl,
         Reference = std,
         Start = roi1,
