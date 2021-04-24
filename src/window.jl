@@ -106,7 +106,7 @@ function AP33Tabulation()
     data = CSV.read(
         joinpath(dirname(pathof(@__MODULE__)), "AP3_3_mod.csv"),
         DataFrame,
-        skipto = 3,
+        comment = "//"
     )
     inter = LinearInterpolation(data[:, 1], data[:, 2])
     extra = AP33Model()
