@@ -30,13 +30,11 @@ using Test
     tik = findfirst(l->n"Ti K-L3" in l.xrays, kl)
     @test isapprox( value(kl[tik], fs_stds.kratios), 0.0222705, atol=1.0e-6) 
     @test isapprox( σ(kl[tik], fs_stds.kratios), 0.000265, atol=1.0e-6) 
-    @show fs_stds.kratios
     q=material(quantify(fs_stds))
     @test isapprox(value(q[n"O"]), 0.307589, atol=1.0e-6)
     @test isapprox(value(q[n"Si"]), 0.221913, atol=1.0e-6)
     @test isapprox(value(q[n"Ti"]), 0.022855, atol=1.0e-6)
     @test isapprox(value(q[n"Ba"]), 0.423982, atol=1.0e-6)
-    @show kratios(sanbornite_std)
 
     stdks = mapreduce(append!,[n"Si",n"Ba",n"O"]) do elm
         extractStandards(sanbornite_std, elm, mat"BaSi2O5")
