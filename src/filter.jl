@@ -316,7 +316,7 @@ function tophatfilter(
     scale::Float64,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
-    spec, roi = escLabel.spectrum, escLabel.roi
+    spec, roi = spectrum(escLabel), escLabel.roi
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, thf, tol)
     return FilteredReference(
@@ -520,7 +520,7 @@ function tophatfilter(
     tol::Float64 = 1.0e-6,
 )::FilteredReference
     ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
-    spec, roi, ashell = charLabel.spectrum, charLabel.roi, ashellof(charLabel.xrays)
+    spec, roi, ashell = spectrum(charLabel), charLabel.roi, ashellof(charLabel.xrays)
     return FilteredReference(
         charLabel,
         scale,
@@ -565,7 +565,7 @@ function tophatfilter(
     scale::Float64 = 1.0,
     tol::Float64 = 1.0e-6,
 )::FilteredReference
-    spec, roi = reflabel.spectrum, reflabel.roi
+    spec, roi = spectrum(reflabel), reflabel.roi
     return FilteredReference(
         reflabel,
         scale,
@@ -676,7 +676,7 @@ function selectBestReferences(
     elms = unique(element(ref.label) for ref in refs)
     for elm in elms
         for ref in filter(ref -> element(ref.label) == elm, refs)
-            comp = get(ref.label.spectrum, :Composition, missing)
+            comp = composition(ref.label)
             # Pick the reference with the largest charonly value but prefer pure elements over compounds
             mrf = maximum(ref.charonly) * (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])

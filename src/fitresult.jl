@@ -3,7 +3,7 @@ using DataAPI
 
 abstract type FitResult end
 """
-The result of a spectrum fit.
+A measured set of correlated k-ratios.
 """
 struct BasicFitResult <: FitResult
     label::Label
@@ -44,50 +44,66 @@ Base.values(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
 The k-ratios associated with each `CharXRayLabel` as a vector 'KRatio' objects.
 """
 function kratios(ffr::FitResult)::Vector{KRatio}
-    lbls = filter(
-        l -> (l isa CharXRayLabel) && haskey(l.spectrum[:Composition], element(l)),
-        labels(ffr.kratios),
-    )
-    return KRatio[
-        KRatio(
-            lbl.xrays,
-            copy(properties(unknown(ffr).spectrum)),
-            copy(properties(lbl.spectrum)),
-            properties(lbl.spectrum)[:Composition],
-            ffr.kratios[lbl],
-        ) for lbl in lbls
-    ]
+    lbls = filter(labels(ffr.kratios)) do l
+        (l isa CharXRayLabel) && haskey(properties(l)[:Composition], element(l))
+    end
+    return map(lbls) do lbl
+        props = properties(lbl)
+        KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+    end
 end
 
+"""
+    kratio(ffr::FitResult, cxr::CharXRay)::KRatio
+
+Extract the k-ratio associated with the specified CharXRay (zero if not measured)
+"""
+function kratio(ffr::FitResult, cxr::CharXRay)
+    lbls = labels(ffr.kratios)
+    i = findfirst(lbl->(lbl isa CharXRayLabel) && (cxr in lbl.xrays), lbls)
+    @assert !isnothing(i) "There is no k-ratio associated with $cxr."
+    lbl, props = lbls[i], properties(lbls[i])
+    KRatio(lbl.xrays, unknown(ffr).spectrum.properties, props, props[:Composition], ffr.kratios[lbl])
+  end
 
 """
-    extractStandards(elm::Element, ffr::FitResult, mat::Material)::Vector{Standard}
+    extractStandards(ffr::FitResult, elm::Element, mat::Material)::Vector{KRatio}
 
-Extract a `Standard` for the `Element` from a `FilterFitResult` associated with
-the `Material`.  The standard will consist of one or more `KRatio` objects
-associated with a `Material`. 
+Extract a `Vector{KRatio}` for `elm::Element` from a `ffr::FilterFitResult` measured from `mat::Material`. 
 """
-function extractStandards(elm::Element, ffr::FitResult, mat::Material)::Vector{Standard}
-    @assert haskey(mat, elm)
-    lbls = filter(
-        l ->
-            (l isa CharXRayLabel) &&
-                (elm == element(l)) && #
-                haskey(l.spectrum, :Composition) &&
-                isequal(mat, l.spectrum[:Composition]),
-        labels(ffr.kratios),
-    )
-    krs = KRatio[
-        KRatio(
-            lbl.xrays,
-            copy(properties(unknown(ffr).spectrum)),
-            copy(properties(lbl.spectrum)),
-            properties(lbl.spectrum)[:Composition],
-            ffr.kratios[lbl],
-        ) for lbl in lbls
-    ]
-    length(krs) == 0 || @info  "There are no k-ratios associated with the $elm in $mat."
-    return [ Standard(mat, kr) for kr in krs ]
+function extractStandards(ffr::FitResult, elm::Element, mat::Material)::Vector{KRatio}
+    @assert haskey(mat, elm) "The element $elm is not contained within $mat."
+    lbls = filter(labels(ffr.kratios)) do l
+        (l isa CharXRayLabel) && (elm == element(l))
+    end
+    krs = map(lbls) do lbl
+        props = properties(lbl)
+        kr = KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+        kr.unkProps[:Composition] = mat
+        kr
+    end
+    length(krs) == 0 && @info  "There are no k-ratios associated with the $elm in $ffr."
+    return krs
+end
+
+"""
+    extractStandard(ffr::FitResult, cxrs::AbstractVector{CharXRay}, mat::Material)::Vector{KRatio}
+
+Extract a `KRatio` for the `CharXRay` from a `FilterFitResult` associated with
+the `Material`.
+"""
+function extractStandards(ffr::FitResult, cxrs::AbstractVector{CharXRay}, mat::Material)::Vector{KRatio}
+    lbls = filter(labels(ffr.kratios)) do lbl
+        (lbl isa CharXRayLabel) && any(cxr->cxr in xrays(lbl), cxrs)
+    end
+    krs = map(lbls) do lbl
+        props = properties(lbl)
+        kr = KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+        kr.unkProps[:Composition] = mat
+        kr
+    end
+    length(krs) == 0 && @info "There are no k-ratios associated with any of $cxrs in $ffr."
+    return krs
 end
 
 """
