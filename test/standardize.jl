@@ -39,7 +39,9 @@ using Test
     stdks = mapreduce(append!,[n"Si",n"Ba",n"O"]) do elm
         extractStandards(sanbornite_std, elm, mat"BaSi2O5")
     end
+    @assert all(isstandard, stdks)
     si_stds = extractStandards(sanbornite_std, n"Si", mat"BaSi2O5")
+
     @test all(isstandard, si_stds)
     @test length(si_stds)==1
     si_std = si_stds[1]
@@ -47,7 +49,16 @@ using Test
     @test isequal(si_std.standard, mat"Si")
     @test isequal(si_std.unkProps[:Composition], mat"BaSi2O5")
     @test isequal(si_std.stdProps[:Composition], mat"Si")
-    
+
+    # Standardize using k-ratios rather than a FitResult
+    fs_stds2 = standardize(fs, stdks)
+    @test isapprox( value(kl[ok], fs_stds2.kratios), 0.977767, atol=1.0e-6) 
+    @test isapprox( σ(kl[ok], fs_stds2.kratios), 0.000818949, atol=1.0e-6) 
+    @test isapprox( value(kl[bal], fs_stds2.kratios), 0.8215698, atol=1.0e-6) 
+    @test isapprox( σ(kl[bal], fs_stds2.kratios), 0.00142848, atol=1.0e-6) 
+    @test isapprox( value(kl[tik], fs_stds2.kratios), 0.0222705, atol=1.0e-6) 
+    @test isapprox( σ(kl[tik], fs_stds2.kratios), 0.000265, atol=1.0e-6) 
+
     ba_stds = extractStandards(sanbornite_std, [ n"Ba M5-N3", n"Ba L3-M5"], mat"BaSi2O5")
     @test all(isstandard, ba_stds)
     @test length(ba_stds)==2

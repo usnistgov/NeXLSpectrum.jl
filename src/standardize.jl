@@ -9,13 +9,17 @@ used as a standard.
 """
 struct StandardLabel <: ReferenceLabel
     spectrum::SpectrumOrProperties # The spectrum used as the reference for fitting...
-    roi::UnitRange{Int}
+    # roi::UnitRange{Int} # Not available in k-ratios
     xrays::Vector{CharXRay}
     standard::Material
     hash::UInt
     function StandardLabel(cxrl::CharXRayLabel, stdMat::Material)
-        new(cxrl.spectrum, cxrl.roi, cxrl.xrays, stdMat, hash(cxrl.spectrum, hash(cxrl.roi, hash(cxrl.xrays, hash(stdMat, UInt(0xBADF00D))))))
+        new(cxrl.spectrum, cxrl.xrays, stdMat, hash(cxrl.spectrum, hash(cxrl.xrays, hash(stdMat, UInt(0xBADF00D5)))))
     end
+    function StandardLabel(props::Dict{Symbol,Any}, xrays::Vector{CharXRay}, stdMat::Material)
+        new(props, xrays, stdMat, hash(props, hash(xrays, hash(stdMat, UInt(0xBADF00D5)))))
+    end
+
 end
 
 """
@@ -42,7 +46,7 @@ end
 function Base.show(io::IO, cl::StandardLabel) 
     comp = composition(cl)
     compname = isnothing(comp) ? "Unspecified" : name(comp)
-    print(io,"k_std[$(name(cl.xrays)), $(cl.standard) using $compname]")
+    print(io,"k_std[$(name(cl.xrays)), $(name(cl.standard)) fit by $compname]")
 end
 
 """
@@ -145,22 +149,22 @@ function NeXLCore.standardize(ffr::FilterFitResult, standards::Pair{<:Material,F
 end
 
 function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRatio})::FilterFitResult
-    @assert all(std->suitable_as_standard(std), standards) "One or more required property is missing from a standard (for details, see the above warnings.)" 
+    @assert all(std->isstandard(std), standards) "One or more required property is missing from a standard (for details, see the above warnings.)" 
     stdis = map(cxrl->findfirst(std->matches(cxrl, std), standards), labels(ffr.kratios))
-    stds = map(filter(i->!isnothing(i), stdis)) do i
-        CharXRayLabel(std.unkProps, cxrl.roi, cxrl.xrays)=>uv(std.kratio)
-    end
+    stds = uvs(map(filter(i->!isnothing(i), stdis)) do i
+        std = standards[i]
+        StandardLabel(std.stdProps, std.lines, std.unkProps[:Composition])=>uv(std.kratio)
+    end...)
     return if length(stds)>0
-        meas = labels(ffr.kratios)
-        stdize = StandardizeModel(meas, stds)
-        inp = cat(ffr.kratios, uvs( stds... ))
+        stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(stds)))
+        inp = cat(ffr.kratios, stds)
         FilterFitResult(
             ffr.label,
             stdize(inp),
             ffr.roi,
             ffr.raw,
             ffr.residual,
-            __remap_peaktoback(ffr.peakback, sm)
+            __remap_peaktoback(ffr.peakback, stdize)
         )
     else
         @warn "No suitable standards were provided to standardize this measurement."
