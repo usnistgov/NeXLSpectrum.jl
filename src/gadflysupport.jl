@@ -359,7 +359,7 @@ function Gadfly.plot(
     miny, maxy, prev, i =
         minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
-        if NeXLUncertainties.value(lbl, ffr) > 0.0
+        if NeXLUncertainties.value(ffr, lbl) > 0.0
             # This logic keeps the labels on different lines (mostly...)
             i, prev =
                 (lbl.roi[1] > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi[end]) :
@@ -384,7 +384,7 @@ function Gadfly.plot(
                 layer(
                     x = [0.5 * (lbl.roi[1] + lbl.roi[end])],
                     y = maxy * [0.4 + 0.1 * i],
-                    label = [@sprintf("%1.4f", NeXLUncertainties.value(lbl, ffr))],
+                    label = [@sprintf("%1.4f", NeXLUncertainties.value(ffr, lbl))],
                     Geom.label(position = :above),
                     Theme(default_color = "gray"),
                 ),

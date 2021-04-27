@@ -271,7 +271,7 @@ function fit_spectrum(
             unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
-                isnan(id, uvs) || (value(id, uvs) < sigma*σ(id, uvs)) ? zero(eltype(krs)) : convert(eltype(krs), value(id, uvs))
+                isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? zero(eltype(krs)) : convert(eltype(krs), value(uvs, id))
             end
         end
         return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i

@@ -116,9 +116,9 @@ function _filterfit(
         kr = cat(retained)
         if forcezeros
             for lbl in keys(kr)
-                if NeXLUncertainties.value(lbl, kr) < 0.0
+                if NeXLUncertainties.value(kr, lbl) < 0.0
                     splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
-                    push!(removed, uvs([lbl], [0.0], reshape([σ(lbl, kr)], (1, 1))))
+                    push!(removed, uvs([lbl], [0.0], reshape([σ(kr, lbl)], (1, 1))))
                     refit = true
                 end
             end

@@ -95,23 +95,23 @@ using LinearAlgebra
 
         ## The comparison is against the k-ratios from DTSA-II.
         # The results won't be identical because the filters and other assumptions are different.
-        @test isapprox(NeXLUncertainties.value(ok.label, ff), 0.6529, atol = 0.0016)
-        @test isapprox(NeXLUncertainties.value(fekb.label, ff), 0.0665, atol = 0.0002)
-        @test isapprox(NeXLUncertainties.value(mgk.label, ff), 0.1473, atol = 0.0004)
-        @test isapprox(NeXLUncertainties.value(alk.label, ff), 0.0668, atol = 0.0005)
-        @test isapprox(NeXLUncertainties.value(sik.label, ff), 0.3506, atol = 0.0008)
-        @test isapprox(NeXLUncertainties.value(cak.label, ff), 0.1921, atol = 0.0001)
-        @test isapprox(NeXLUncertainties.value(fel.label, ff), 0.0418, atol = 0.0002)
-        @test isapprox(NeXLUncertainties.value(feka.label, ff), 0.0669, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(ff, ok.label), 0.6529, atol = 0.0016)
+        @test isapprox(NeXLUncertainties.value(ff, fekb.label), 0.0665, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(ff, mgk.label), 0.1473, atol = 0.0004)
+        @test isapprox(NeXLUncertainties.value(ff, alk.label), 0.0668, atol = 0.0005)
+        @test isapprox(NeXLUncertainties.value(ff, sik.label), 0.3506, atol = 0.0008)
+        @test isapprox(NeXLUncertainties.value(ff, cak.label), 0.1921, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(ff, fel.label), 0.0418, atol = 0.0002)
+        @test isapprox(NeXLUncertainties.value(ff, feka.label), 0.0669, atol = 0.0001)
 
-        @test isapprox(σ(ok.label, ff), 0.00081, atol = 0.0001)
-        @test isapprox(σ(mgk.label, ff), 0.00018, atol = 0.00005)
-        @test isapprox(σ(alk.label, ff), 0.00012, atol = 0.00005)
-        @test isapprox(σ(sik.label, ff), 0.00024, atol = 0.00005)
-        @test isapprox(σ(cak.label, ff), 0.00022, atol = 0.00005)
-        @test isapprox(σ(fel.label, ff), 0.00043, atol = 0.00006)
-        @test isapprox(σ(feka.label, ff), 0.00019, atol = 0.00005)
-        @test isapprox(σ(fekb.label, ff), 0.00078, atol = 0.0002)
+        @test isapprox(σ(ff, ok.label), 0.00081, atol = 0.0001)
+        @test isapprox(σ(ff, mgk.label), 0.00018, atol = 0.00005)
+        @test isapprox(σ(ff, alk.label), 0.00012, atol = 0.00005)
+        @test isapprox(σ(ff, sik.label), 0.00024, atol = 0.00005)
+        @test isapprox(σ(ff, cak.label), 0.00022, atol = 0.00005)
+        @test isapprox(σ(ff, fel.label), 0.00043, atol = 0.00006)
+        @test isapprox(σ(ff, feka.label), 0.00019, atol = 0.00005)
+        @test isapprox(σ(ff, fekb.label), 0.00078, atol = 0.0002)
     end
 
     @testset "LLSQ_K412_2" begin
@@ -166,40 +166,40 @@ using LinearAlgebra
         #println("Performing the weighted fit takes:")
         #@btime filterfit(unk, fds, fitcontiguousw)
 
-        @test isapprox(NeXLUncertainties.value(oroi[1], ff), 0.6624, atol = 0.0006)
-        @test isapprox(NeXLUncertainties.value(mgroi[1], ff), 0.14728, atol = 0.0007)
-        @test isapprox(NeXLUncertainties.value(alroi[1], ff), 0.06679, atol = 0.0006)
-        @test isapprox(NeXLUncertainties.value(siroi[1], ff), 0.35063, atol = 0.0009)
-        @test isapprox(NeXLUncertainties.value(caroi[1], ff), 0.19213, atol = 0.0003)
-        @test isapprox(NeXLUncertainties.value(feroi[1], ff), 0.04185, atol = 0.0004)
-        @test isapprox(NeXLUncertainties.value(feroi[2], ff), 0.06693, atol = 0.0001)
-        @test isapprox(NeXLUncertainties.value(feroi[3], ff), 0.06652, atol = 0.0007)
+        @test isapprox(NeXLUncertainties.value(ff, oroi[1]), 0.6624, atol = 0.0006)
+        @test isapprox(NeXLUncertainties.value(ff, mgroi[1]), 0.14728, atol = 0.0007)
+        @test isapprox(NeXLUncertainties.value(ff, alroi[1]), 0.06679, atol = 0.0006)
+        @test isapprox(NeXLUncertainties.value(ff, siroi[1]), 0.35063, atol = 0.0009)
+        @test isapprox(NeXLUncertainties.value(ff, caroi[1]), 0.19213, atol = 0.0003)
+        @test isapprox(NeXLUncertainties.value(ff, feroi[1]), 0.04185, atol = 0.0004)
+        @test isapprox(NeXLUncertainties.value(ff, feroi[2]), 0.06693, atol = 0.0001)
+        @test isapprox(NeXLUncertainties.value(ff, feroi[3]), 0.06652, atol = 0.0007)
 
-        @test isapprox(σ(oroi[1], ff), 0.00082, atol = 0.0001)
-        @test isapprox(σ(mgroi[1], ff), 0.00018, atol = 0.00004)
-        @test isapprox(σ(alroi[1], ff), 0.00016, atol = 0.00003)
-        @test isapprox(σ(siroi[1], ff), 0.00029, atol = 0.00003)
-        @test isapprox(σ(caroi[1], ff), 0.00023, atol = 0.00001)
-        @test isapprox(σ(feroi[1], ff), 0.00044, atol = 0.0001)
-        @test isapprox(σ(feroi[2], ff), 0.00016, atol = 0.00001)
-        @test isapprox(σ(feroi[3], ff), 0.00078, atol = 0.0002)
+        @test isapprox(σ(ff, oroi[1]), 0.00082, atol = 0.0001)
+        @test isapprox(σ(ff, mgroi[1]), 0.00018, atol = 0.00004)
+        @test isapprox(σ(ff, alroi[1]), 0.00016, atol = 0.00003)
+        @test isapprox(σ(ff, siroi[1]), 0.00029, atol = 0.00003)
+        @test isapprox(σ(ff, caroi[1]), 0.00023, atol = 0.00001)
+        @test isapprox(σ(ff, feroi[1]), 0.00044, atol = 0.0001)
+        @test isapprox(σ(ff, feroi[2]), 0.00016, atol = 0.00001)
+        @test isapprox(σ(ff, feroi[3]), 0.00078, atol = 0.0002)
 
         # Compare to naive peak integration
         fekkr = kratio(unks[1], fe, 593:613, 636:647, 669:690)
         @test isapprox(
-            NeXLUncertainties.value(feroi[2], ff),
+            NeXLUncertainties.value(ff, feroi[2]),
             NeXLUncertainties.value(fekkr),
             atol = 0.0005,
         )
-        @test isapprox(σ(feroi[2], ff), σ(fekkr), atol = 0.00004)
+        @test isapprox(σ(ff, feroi[2]), σ(fekkr), atol = 0.00004)
 
         cakkr = kratio(unks[1], caf2, 334:347, 365:375, 422:439)
         @test isapprox(
-            NeXLUncertainties.value(caroi[1], ff),
+            NeXLUncertainties.value(ff, caroi[1]),
             NeXLUncertainties.value(cakkr),
             atol = 0.0008,
         )
-        @test isapprox(σ(caroi[1], ff), σ(cakkr), atol = 0.00007)
+        @test isapprox(σ(ff, caroi[1]), σ(cakkr), atol = 0.00007)
     end
 
     @testset "ADM6005a" begin
@@ -256,22 +256,22 @@ using LinearAlgebra
         end
 
         # Compare against DTSA-II values
-        @test isapprox(mean(values(oroi[1], res)), 0.4923, rtol = 0.003)
-        @test isapprox(mean(values(siroi[1], res)), 0.0214, atol = 0.013)
-        @test isapprox(mean(values(alroi[1], res)), 0.0281, rtol = 0.004)
-        @test isapprox(mean(values(caroi[1], res)), 0.1211, rtol = 0.0025)
-        @test isapprox(mean(values(znroi[1], res)), 0.0700, rtol = 0.05)
-        @test isapprox(mean(values(znroi[2], res)), 0.1115, atol = 0.0005)
-        @test isapprox(mean(values(znroi[3], res)), 0.1231, rtol = 0.01)
-        @test isapprox(mean(values(tiroi[1], res)), 0.0541, rtol = 0.26)
-        @test isapprox(mean(values(tiroi[2], res)), 0.064, rtol = 0.0002)
-        @test isapprox(mean(values(tiroi[3], res)), 0.064, rtol = 0.06)
-        @test isapprox(mean(values(feroi[1], res)), 0.0, atol = 0.001)
-        @test isapprox(mean(values(feroi[2], res)), 0.0, atol = 0.0004)
-        @test isapprox(mean(values(feroi[3], res)), 0.0, atol = 0.001)
-        @test isapprox(mean(values(geroi[1], res)), 0.1789, rtol = 0.01)
-        @test isapprox(mean(values(geroi[2], res)), 0.2628, atol = 0.001)
-        @test isapprox(mean(values(geroi[3], res)), 0.279, atol = 0.011)
+        @test isapprox(mean(values(res, oroi[1])), 0.4923, rtol = 0.003)
+        @test isapprox(mean(values(res, siroi[1])), 0.0214, atol = 0.013)
+        @test isapprox(mean(values(res, alroi[1])), 0.0281, rtol = 0.004)
+        @test isapprox(mean(values(res, caroi[1])), 0.1211, rtol = 0.0025)
+        @test isapprox(mean(values(res, znroi[1])), 0.0700, rtol = 0.05)
+        @test isapprox(mean(values(res, znroi[2])), 0.1115, atol = 0.0005)
+        @test isapprox(mean(values(res, znroi[3])), 0.1231, rtol = 0.01)
+        @test isapprox(mean(values(res, tiroi[1])), 0.0541, rtol = 0.26)
+        @test isapprox(mean(values(res, tiroi[2])), 0.064, rtol = 0.0002)
+        @test isapprox(mean(values(res, tiroi[3])), 0.064, rtol = 0.06)
+        @test isapprox(mean(values(res, feroi[1])), 0.0, atol = 0.001)
+        @test isapprox(mean(values(res, feroi[2])), 0.0, atol = 0.0004)
+        @test isapprox(mean(values(res, feroi[3])), 0.0, atol = 0.001)
+        @test isapprox(mean(values(res, geroi[1])), 0.1789, rtol = 0.01)
+        @test isapprox(mean(values(res, geroi[2])), 0.2628, atol = 0.001)
+        @test isapprox(mean(values(res, geroi[3])), 0.279, atol = 0.011)
     end
     @testset "ADM6005a - GenW" begin
         # same as above but using the FilteredUnknownG code with the weighed algorithm
@@ -328,22 +328,22 @@ using LinearAlgebra
         end
 
         # Compare against DTSA-II values
-        @test isapprox(mean(values(oroi[1], res)), 0.4923, rtol = 0.003)
-        @test isapprox(mean(values(siroi[1], res)), 0.0214, atol = 0.013)
-        @test isapprox(mean(values(alroi[1], res)), 0.0281, rtol = 0.004)
-        @test isapprox(mean(values(caroi[1], res)), 0.1211, rtol = 0.0025)
-        @test isapprox(mean(values(znroi[1], res)), 0.0700, rtol = 0.05)
-        @test isapprox(mean(values(znroi[2], res)), 0.1115, atol = 0.0005)
-        @test isapprox(mean(values(znroi[3], res)), 0.1231, rtol = 0.01)
-        @test isapprox(mean(values(tiroi[1], res)), 0.0541, rtol = 0.26)
-        @test isapprox(mean(values(tiroi[2], res)), 0.064, rtol = 0.0002)
-        @test isapprox(mean(values(tiroi[3], res)), 0.064, rtol = 0.06)
-        @test isapprox(mean(values(feroi[1], res)), 0.0, atol = 0.001)
-        @test isapprox(mean(values(feroi[2], res)), 0.0, atol = 0.0004)
-        @test isapprox(mean(values(feroi[3], res)), 0.0, atol = 0.001)
-        @test isapprox(mean(values(geroi[1], res)), 0.1789, rtol = 0.01)
-        @test isapprox(mean(values(geroi[2], res)), 0.2628, atol = 0.001)
-        @test isapprox(mean(values(geroi[3], res)), 0.279, atol = 0.011)
+        @test isapprox(mean(values(res, oroi[1])), 0.4923, rtol = 0.003)
+        @test isapprox(mean(values(res, siroi[1])), 0.0214, atol = 0.013)
+        @test isapprox(mean(values(res, alroi[1])), 0.0281, rtol = 0.004)
+        @test isapprox(mean(values(res, caroi[1])), 0.1211, rtol = 0.0025)
+        @test isapprox(mean(values(res, znroi[1])), 0.0700, rtol = 0.05)
+        @test isapprox(mean(values(res, znroi[2])), 0.1115, atol = 0.0005)
+        @test isapprox(mean(values(res, znroi[3])), 0.1231, rtol = 0.01)
+        @test isapprox(mean(values(res, tiroi[1])), 0.0541, rtol = 0.26)
+        @test isapprox(mean(values(res, tiroi[2])), 0.064, rtol = 0.0002)
+        @test isapprox(mean(values(res, tiroi[3])), 0.064, rtol = 0.06)
+        @test isapprox(mean(values(res, feroi[1])), 0.0, atol = 0.001)
+        @test isapprox(mean(values(res, feroi[2])), 0.0, atol = 0.0004)
+        @test isapprox(mean(values(res, feroi[3])), 0.0, atol = 0.001)
+        @test isapprox(mean(values(res, geroi[1])), 0.1789, rtol = 0.01)
+        @test isapprox(mean(values(res, geroi[2])), 0.2628, atol = 0.001)
+        @test isapprox(mean(values(res, geroi[3])), 0.279, atol = 0.011)
     end
 
     @testset "ADM6005a - Refs" begin
@@ -375,32 +375,32 @@ using LinearAlgebra
         )
         res = fit_spectrum(unks, ffp)
         @test isapprox(
-            mean(values(findlabel(res[1], n"Al K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Al K-L3"))),
             0.0279,
             atol = 0.0001,
         )
         @test isapprox(
-            mean(values(findlabel(res[1], n"Ti K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Ti K-L3"))),
             0.0641,
             atol = 0.0001,
         )
         @test isapprox(
-            mean(values(findlabel(res[1], n"Ge K-M3"), res)),
+            mean(values(res, findlabel(res[1], n"Ge K-M3"))),
             0.2737,
             atol = 0.0001,
         )
         @test isapprox(
-            mean(values(findlabel(res[1], n"Zn K-M3"), res)),
+            mean(values(res, findlabel(res[1], n"Zn K-M3"))),
             0.1209,
             atol = 0.0001,
         )
         @test isapprox(
-            mean(values(findlabel(res[1], n"Fe L3-M5"), res)),
+            mean(values(res, findlabel(res[1], n"Fe L3-M5"))),
             0.00033,
             atol = 0.00001,
         )
         @test isapprox(
-            mean(values(findlabel(res[1], n"Fe K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Fe K-L3"))),
             0.0003026,
             atol = 0.00001,
         )
@@ -489,22 +489,22 @@ using LinearAlgebra
         end
 
         # Compare against DTSA-II values
-        @test_broken isapprox(mean(values(oroi[1], res)), 0.4923, rtol = 0.003)
-        @test isapprox(mean(values(siroi[1], res)), 0.0214, atol = 0.013)
-        @test_broken isapprox(mean(values(alroi[1], res)), 0.0281, rtol = 0.004)
-        @test_broken isapprox(mean(values(caroi[1], res)), 0.1211, rtol = 0.0025)
-        @test_broken isapprox(mean(values(znroi[1], res)), 0.0700, rtol = 0.05)
-        @test_broken isapprox(mean(values(znroi[2], res)), 0.1115, atol = 0.0005)
-        @test_broken isapprox(mean(values(znroi[3], res)), 0.1231, rtol = 0.01)
-        @test_broken isapprox(mean(values(tiroi[1], res)), 0.0541, rtol = 0.26)
-        @test_broken isapprox(mean(values(tiroi[2], res)), 0.064, rtol = 0.0002)
-        @test_broken isapprox(mean(values(tiroi[3], res)), 0.064, rtol = 0.06)
-        @test isapprox(mean(values(feroi[1], res)), 0.0, atol = 0.001)
-        @test isapprox(mean(values(feroi[2], res)), 0.0, atol = 0.0004)
-        @test isapprox(mean(values(feroi[3], res)), 0.0, atol = 0.001)
-        @test_broken isapprox(mean(values(geroi[1], res)), 0.1789, rtol = 0.01)
-        @test_broken isapprox(mean(values(geroi[2], res)), 0.2628, atol = 0.001)
-        @test_broken isapprox(mean(values(geroi[3], res)), 0.279, atol = 0.011)
+        @test_broken isapprox(mean(values(res, oroi[1])), 0.4923, rtol = 0.003)
+        @test isapprox(mean(values(res, siroi[1])), 0.0214, atol = 0.013)
+        @test_broken isapprox(mean(values(res, alroi[1])), 0.0281, rtol = 0.004)
+        @test_broken isapprox(mean(values(res, caroi[1])), 0.1211, rtol = 0.0025)
+        @test_broken isapprox(mean(values(res, znroi[1])), 0.0700, rtol = 0.05)
+        @test_broken isapprox(mean(values(res, znroi[2])), 0.1115, atol = 0.0005)
+        @test_broken isapprox(mean(values(res, znroi[3])), 0.1231, rtol = 0.01)
+        @test_broken isapprox(mean(values(res, tiroi[1])), 0.0541, rtol = 0.26)
+        @test_broken isapprox(mean(values(res, tiroi[2])), 0.064, rtol = 0.0002)
+        @test_broken isapprox(mean(values(res, tiroi[3])), 0.064, rtol = 0.06)
+        @test isapprox(mean(values(res, feroi[1])), 0.0, atol = 0.001)
+        @test isapprox(mean(values(res, feroi[2])), 0.0, atol = 0.0004)
+        @test isapprox(mean(values(res, feroi[3])), 0.0, atol = 0.001)
+        @test_broken isapprox(mean(values(res, geroi[1])), 0.1789, rtol = 0.01)
+        @test_broken isapprox(mean(values(res, geroi[2])), 0.2628, atol = 0.001)
+        @test_broken isapprox(mean(values(res, geroi[3])), 0.279, atol = 0.011)
     end
 
     @testset "ADM6005a - GLS" begin
@@ -536,32 +536,32 @@ using LinearAlgebra
         )
         res = fit_spectrum(FilteredUnknownG, unks, ffp)
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Al K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Al K-L3"))),
             0.0279,
             atol = 0.0001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Ti K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Ti K-L3"))),
             0.0641,
             atol = 0.0001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Ge K-M3"), res)),
+            mean(values(res, findlabel(res[1], n"Ge K-M3"))),
             0.2737,
             atol = 0.0001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Zn K-M3"), res)),
+            mean(values(res, findlabel(res[1], n"Zn K-M3"))),
             0.1209,
             atol = 0.0001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Fe L3-M5"), res)),
+            mean(values(res, findlabel(res[1], n"Fe L3-M5"))),
             0.00033,
             atol = 0.00001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Fe K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Fe K-L3"))),
             0.0003026,
             atol = 0.00001,
         )
@@ -587,42 +587,42 @@ using LinearAlgebra
         ## The comparison is against the k-ratios from DTSA-II.
         # The results won't be identical because the filters and other assumptions are different.
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"O K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"O K-L3"))),
             0.6529,
             atol = 0.0016,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Fe K-M3"), res)),
+            mean(values(res, findlabel(res[1], n"Fe K-M3"))),
             0.0665,
             atol = 0.0002,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Mg K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Mg K-L3"))),
             0.1473,
             atol = 0.0004,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Al K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Al K-L3"))),
             0.0668,
             atol = 0.0005,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Si K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Si K-L3"))),
             0.3506,
             atol = 0.0008,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Ca K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Ca K-L3"))),
             0.1921,
             atol = 0.0001,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Fe L3-M5"), res)),
+            mean(values(res, findlabel(res[1], n"Fe L3-M5"))),
             0.0418,
             atol = 0.0002,
         )
         @test_broken isapprox(
-            mean(values(findlabel(res[1], n"Fe K-L3"), res)),
+            mean(values(res, findlabel(res[1], n"Fe K-L3"))),
             0.0669,
             atol = 0.0001,
         )

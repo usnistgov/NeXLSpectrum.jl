@@ -52,9 +52,9 @@ function filterfit(unk::FilteredUnknownG, ffs::AbstractVector{FilteredReference}
         kr = cat(retained)
         refit = false
         for lbl in keys(kr)
-            if NeXLUncertainties.value(lbl, kr) <= 0.0
+            if NeXLUncertainties.value(kr, lbl) <= 0.0
                 splice!(trimmed, findfirst(ff->ff.label==lbl, trimmed))
-                push!(removed, uvs([lbl],[forcezeros ? 0.0 : NeXLUncertainties.value(lbl, kr)], reshape([σ(lbl, kr)], (1,1))))
+                push!(removed, uvs([lbl],[forcezeros ? 0.0 : NeXLUncertainties.value(kr, lbl)], reshape([σ(kr, lbl)], (1,1))))
                 refit=true
             end
         end

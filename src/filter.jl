@@ -626,7 +626,7 @@ function _computeResidual(
     res = copy(unk.data)
     for ff in ffs
         res[ff.roi] -=
-            (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) * ff.charonly
+            (NeXLUncertainties.value(kr, ff.label) * ff.scale / unk.scale) * ff.charonly
     end
     return res
 end
@@ -643,7 +643,7 @@ function _computecounts( #
         res[ff.label] = (
             su,
             su - sum(
-                (NeXLUncertainties.value(ff.label, kr) * ff.scale / unk.scale) *
+                (NeXLUncertainties.value(kr, ff.label) * ff.scale / unk.scale) *
                 ff.charonly,
             ),
         )
