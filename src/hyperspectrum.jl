@@ -290,7 +290,7 @@ Access the counts data at the pixel represented by `ci` and the channel represen
 """
 counts(hss::HyperSpectrum{T,N}) where {T<:Real,N} = convert(Array{T,N + 1}, hss.counts)
 counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = hss.counts[ch, ci]
-counts(hss::HyperSpectrum, ci::CartesianIndex) = hss.counts[:, ci]
+counts(hss::HyperSpectrum, ci::CartesianIndex) = view(hss.counts[:, ci])
 
 """
     compress(hss::HyperSpectrum)
@@ -487,7 +487,6 @@ end
 """
     Base.sum(hss::HyperSpectrum{T, N}) where {T<:Real, N}
     Base.sum(hss::HyperSpectrum{T, N}, mask::Union{BitArray, Array{Bool}}) where {T<:Real, N}
-    Base.sum(hss::HyperSpectrum{T, N}, filt::Function) where {T<:Real, N}
     Base.sum(hss::HyperSpectrum{T, N}, cis::CartesianIndices) where {T<:Real, N}
 
 Compute a sum spectrum for all or a subset of the pixels in `hss`.
@@ -523,15 +522,6 @@ function Base.sum(hss::HyperSpectrum{T,N}) where {T<:Real,N}
     return Spectrum(hss.energy, vals, props)
 end
 
-function Base.sum(hss::HyperSpectrum{T,N}, filt::Function) where {T<:Real,N}
-    fci = filter(ci -> filt(hss, ci), hss.index)
-    vals = mapreduce((a, b) -> a .+= b, fci, init = zeros(T isa Int ? Int64 : Float64, depth(hss))) do ci 
-        hss.counts[:, ci]
-    end
-    props = copy(hss.properties)
-    props[:LiveTime] = sum(ci->hss.livetime[ci], fci)
-    return Spectrum(hss.energy, vals, props)
-end
 
 function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real,N}
     vals = mapreduce((a, b) -> a .+= b, cis, init = zeros(T isa Int ? Int64 : Float64, depth(hss))) do ci

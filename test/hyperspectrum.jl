@@ -4,6 +4,7 @@ using Pkg.Artifacts
 using NeXLSpectrum
 using DataFrames
 using Downloads: download
+using Statistics
 
 # This is the path to the Artifacts.toml we will manipulate
 artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
@@ -77,7 +78,7 @@ rrpath = artifact_path(rplraw_hash)
     @test hs[indexofmaxpixel(hs, 640)][640] == 0x0013
     @test hs[:BeamEnergy] == 20.0e3
     @test livetime(hs,(1,1)) == 0.004
-    @test all(sum(hs, (hs, i) -> counts(hs, i, 640) > 3) .<= sum(hs))
+    @test all(sum(hs, map(ci->counts(hs,ci,640) .> 3, CartesianIndices(hs))) .<= sum(hs))
 
     @test length(hs) == 128 * 128
     @test ndims(hs) == 2
