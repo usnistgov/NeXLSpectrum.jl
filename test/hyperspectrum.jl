@@ -169,7 +169,7 @@ end
     res12_23 = fit_spectrum(hs[12, 23], ffp)
 
     matches(kr1::KRatio, kr2::KRatio) =
-        kr1.element == kr2.element && brightest(kr1.lines) == brightest(kr2.lines)
+        kr1.element == kr2.element && brightest(kr1.xrays) == brightest(kr2.xrays)
 
     for krs in res
         kr1 = krs[12, 23]

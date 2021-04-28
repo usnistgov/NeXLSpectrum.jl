@@ -30,7 +30,7 @@ Does the measured `CharXRayLabel` match the standard?
 """
 function matches(cxrl::CharXRayLabel, std::KRatio)::Bool
     cp, sp = properties(cxrl), std.stdProps
-    return issetequal(cxrl.xrays, std.lines) && # Same X-rays
+    return issetequal(cxrl.xrays, std.xrays) && # Same X-rays
         isequal(cp[:Composition], sp[:Composition]) && # Same reference material
         isapprox(cp[:BeamEnergy], sp[:BeamEnergy], rtol=0.001) && # Same beam energy
         isapprox(cp[:TakeOffAngle], sp[:TakeOffAngle], atol=deg2rad(0.1)) # Same take-off-angle
@@ -153,7 +153,7 @@ function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRa
     stdis = map(cxrl->findfirst(std->matches(cxrl, std), standards), labels(ffr.kratios))
     stds = uvs(map(filter(i->!isnothing(i), stdis)) do i
         std = standards[i]
-        StandardLabel(std.stdProps, std.lines, std.unkProps[:Composition])=>uv(std.kratio)
+        StandardLabel(std.stdProps, std.xrays, std.unkProps[:Composition])=>uv(std.kratio)
     end...)
     return if length(stds)>0
         stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(stds)))

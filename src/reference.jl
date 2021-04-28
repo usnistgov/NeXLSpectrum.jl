@@ -31,8 +31,8 @@ struct FilterFitPacket{T<:Detector}
 end # struct
 
 function Base.show(io::IO, ffp::FilterFitPacket)
-    lines = join(map(r -> "\t$(r.label),", ffp.references), "\n")
-    print(io, "References[\n\t$(ffp.detector), \n$lines\n]")
+    xrays = join(map(r -> "\t$(r.label),", ffp.references), "\n")
+    print(io, "References[\n\t$(ffp.detector), \n$xrays\n]")
 end
 
 
