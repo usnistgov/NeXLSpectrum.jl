@@ -86,10 +86,10 @@ function NeXLUncertainties.compute(
             j = findfirst(std->matches(meas, std), sm.standards)
             if (!isnothing(j)) &&  (inputs[sm.standards[j]] > 0.0) # Re-standardized
                 std = sm.standards[j]
-                jac[i, indexin(meas, inputs)] = 1.0 / inputs[std]
-                jac[i, indexin(std, inputs)] = -inputs[meas]/(inputs[std]^2)
+                jac[i, indexin(inputs, meas)] = 1.0 / inputs[std]
+                jac[i, indexin(inputs, std)] = -inputs[meas]/(inputs[std]^2)
             else
-                jac[i, indexin(meas, inputs)] = 1.0
+                jac[i, indexin(inputs, meas)] = 1.0
             end
         end
     end
@@ -125,7 +125,7 @@ function NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, m
     stds = filter(labels(standard.kratios)) do lbl
         (lbl isa CharXRayLabel) && (element(lbl) in els)
     end
-    ext = extract(stds, standard.kratios)
+    ext = extract(standard.kratios, stds)
     rext = uvs([ StandardLabel(l, material) for l in labels(ext)], ext.values, ext.covariance)
     # Problem here with equivalent CharXRayLabel(s) for unknown and standard...
     inp = cat(ffr.kratios, rext)
