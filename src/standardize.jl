@@ -116,8 +116,9 @@ end
 
 """
     NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, material::Material, els=elms(material))::FilterFitResult
-    NeXLCore.standardize(ffr::FilterFitResult, standards::Pair{<:Material,FilterFitResult}...)::FilterFitResult
+    NeXLCore.standardize(ffrs::Vector{FilterFitResult}, standard::FilterFitResult, material::Material, els=elms(material))::Vector{FilterFitResult}
     NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRatio})::FilterFitResult
+    NeXLCore.standardize(ffrs::Vector{FilterFitResult}, standards::AbstractArray{KRatio})::FilterFitResult
 
 Apply the standard `KRatio`s to the `FilterFitResult` producing a re-standardized `FilterFitResult`.
 """
@@ -140,12 +141,10 @@ function NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, m
         )
 end
 
-function NeXLCore.standardize(ffr::FilterFitResult, standards::Pair{<:Material,FilterFitResult}...)::FilterFitResult
-    res = ffr
-    for (std_mat, std_ffr) in standards
-        res = standardize(res, std_ffr, std_mat)
+function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult}, standard::FilterFitResult, material::Material, els=elms(material))::Vector{FilterFitResult}
+    map(ffrs) do ffr
+        standardize(ffr, standard, material, els)
     end
-    return res
 end
 
 function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRatio})::FilterFitResult
@@ -172,4 +171,8 @@ function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRa
     end
 end
 
-
+function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult}, standards::AbstractArray{KRatio})::Vector{FilterFitResult}
+    map(ffrs) do ffr
+        standardize(ffr, standards)
+    end
+end
