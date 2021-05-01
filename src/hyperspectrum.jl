@@ -487,11 +487,12 @@ end
 """
     Base.sum(hss::HyperSpectrum{T, N}) where {T<:Real, N}
     Base.sum(hss::HyperSpectrum{T, N}, mask::Union{BitArray, Array{Bool}}) where {T<:Real, N}
+    Base.sum(hss::HyperSpectrum{T, N}, func::Function) where {T<:Real, N}
     Base.sum(hss::HyperSpectrum{T, N}, cis::CartesianIndices) where {T<:Real, N}
 
 Compute a sum spectrum for all or a subset of the pixels in `hss`.
 
-`filt` is (hss, ci) -> ???? where ci is a `CartesianIndex`
+Where func(hss::HyperSpectrum, ci::CartesianIndex)::Bool
 """
 function Base.sum(
     hss::HyperSpectrum{T,N},
@@ -499,38 +500,56 @@ function Base.sum(
     name = nothing
 ) where {T<:Real,N}
     @assert size(mask) == size(hss) "Mask size[$(size(mask))] ≠ Hyperspectrum size[$(size(hss))]"
-    RT = T isa Int ? Int64 : Float64
     data = hss.counts
-    vals = mapreduce(
-        ci -> data[:, ci],
-        (a, b) -> a .+= b,
-        filter(ci -> mask[ci], hss.index),
-        init = zeros(RT, depth(hss)),
-    )
+    res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
+    for ci in hss.index
+        if mask[ci]
+            res .+= data[:, ci]
+            lt += hss.livetime[ci]
+        end
+    end
     props = copy(hss.properties)
-    props[:LiveTime] = sum(ci->hss.livetime[ci], filter(ci -> mask[ci], hss.index))
     props[:Name] = something(name, props[:Name])
-    return Spectrum(hss.energy, vals, props)
+    return Spectrum(hss.energy, res, props)
 end
-
+function Base.sum(
+    hss::HyperSpectrum{T,N},
+    filt::Function;
+    name = nothing
+) where {T<:Real,N}
+    data = hss.counts
+    res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
+    for ci in hss.index
+        if filt(hss,ci)
+            res .+= data[:, ci]
+            lt += hss.livetime[ci]
+        end
+    end
+    props = copy(hss.properties)
+    props[:Name] = something(name, props[:Name])
+    return Spectrum(hss.energy, res, props)
+end
 function Base.sum(hss::HyperSpectrum{T,N}) where {T<:Real,N}
-    vals = mapreduce((a, b) -> a .+= b, hss.index, init = zeros(T isa Int ? Int64 : Float64, depth(hss))) do ci
-        hss.counts[:, ci]
+    data = hss.counts
+    res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
+    for ci in hss.index
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
-    props[:LiveTime] = sum(hss.livetime)
-    return Spectrum(hss.energy, vals, props)
+    props[:Name] = "Sum[$hss]"
+    return Spectrum(hss.energy, res, props)
 end
-
-
 function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real,N}
-    vals = mapreduce((a, b) -> a .+= b, cis, init = zeros(T isa Int ? Int64 : Float64, depth(hss))) do ci
-        hss.counts[:, ci]
+    data = hss.counts
+    res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
+    for ci in cis
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
-    props[:LiveTime] = sum(ci->hss.livetime[ci], cis)
-    props[:Name]="Sum[$(prod(size(cis))) spectra from $(name(hss))]"
-    return Spectrum(hss.energy, vals, props)
+    props[:Name] = "Sum[$hss, $cis]"
+    return Spectrum(hss.energy, res, props)
 end
 
 using Images
