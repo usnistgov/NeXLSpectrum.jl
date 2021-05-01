@@ -256,7 +256,7 @@ function Gadfly.plot(
         end
         append!(layers, layer(x=dhx, y=dhy, color=palette[eachindex(specs)], Geom.hair(orientation=:vertical), Geom.point))
     end
-    append!(klms, autoklms ? mapreduce(s -> elms(s, true, []), union!, specs) : [])
+    autoklms && append!(klms, mapreduce(s -> elms(s, true, []), union!, specs))
     if length(klms) > 0
         tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE0)
         tr(cxr::CharXRay) = [cxr]

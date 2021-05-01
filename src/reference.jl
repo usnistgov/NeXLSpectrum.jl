@@ -79,7 +79,7 @@ spectra(ffp::FilterFitPacket) = (ref.label.spectrum for ref in ffp.references)
 """
 A list of elements for which there are filtered references.
 """
-NeXLCore.elms(ffp::FilterFitPacket) = union((elms(spec, true) for spec in spectra(ffp))...)
+NeXLCore.elms(ffp::FilterFitPacket) = union( [ element(ref.label) for ref in filter(r->r.label isa CharXRayLabel, ffp.references) ] )
 
 struct ReferencePacket
     spectrum::Spectrum
