@@ -245,6 +245,17 @@ function Base.getindex(
 ) 
     return roiimages(hss, cxrs)
 end
+function Base.getindex(
+    hss::HyperSpectrum,
+    cxrs::NTuple{3,CharXRay}
+) 
+    colorview(RGB, roiimages(hss, collect(cxrs))...)
+end
+
+function Base.get(hss::HyperSpectrum, sym::Symbol, def) 
+    get(hss.properties, sym, def)
+end
+
 
 """
     region(hss::HyperSpectrum{T, N}, ranges::AbstractRange...)::HyperSpectrum where {T<:Real,N}
@@ -273,6 +284,22 @@ channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
 rangeofenergies(ch::Integer, hss::HyperSpectrum) =
     (energy(ch, hss.energy), energy(ch + 1, hss.energy))
 properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
+
+"""
+	matching(spec::HyperSpectrum, resMnKa::Float64, lld::Int=1)::BasicEDS
+
+Build an EDSDetector to match the channel count and energy scale in this spectrum.
+"""
+matching(spec::HyperSpectrum, resMnKa::Float64, lld::Int = 1)::BasicEDS =
+    BasicEDS(depth(spec), spec.energy, MnKaResolution(resMnKa), lld)
+
+matching(
+    spec::HyperSpectrum,
+    resMnKa::Float64,
+    lld::Int,
+    minByFam::Dict{Shell,Element},
+)::BasicEDS = BasicEDS(depth(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
+
 
 """
     counts(hss::HyperSpectrum{T,N})::Array{T,N+1}
@@ -377,6 +404,7 @@ function maxpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "MaxPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res, props)
 end
 function maxpixel(
@@ -387,6 +415,7 @@ function maxpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "MaxPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res, props)
 end
 
@@ -398,6 +427,7 @@ function minpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "MaxPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res, props)
 end
 minpixel(hss::HyperSpectrum, mask::BitArray) =
@@ -413,6 +443,7 @@ function minpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "MaxPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res, props)
 end
 avgpixel(hss::HyperSpectrum, mask::BitArray) =
@@ -431,6 +462,7 @@ function avgpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "AvgPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res ./ max(1.0, cx), props)
 end
 function avgpixel(
@@ -441,6 +473,7 @@ function avgpixel(
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
+    props[:Name] = "AvgPixel[$(props[:Name])]"
     return Spectrum(hss.energy, res, props)
 end
 
@@ -509,7 +542,7 @@ function Base.sum(
         end
     end
     props = copy(hss.properties)
-    props[:Name] = something(name, props[:Name])
+    props[:Name] = something(name, "MaskedSum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
 function Base.sum(
@@ -526,10 +559,10 @@ function Base.sum(
         end
     end
     props = copy(hss.properties)
-    props[:Name] = something(name, props[:Name])
+    props[:Name] = something(name, "FilteredSum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
-function Base.sum(hss::HyperSpectrum{T,N}) where {T<:Real,N}
+function Base.sum(hss::HyperSpectrum{T,N}; name = nothing) where {T<:Real,N}
     data = hss.counts
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
     for ci in hss.index
@@ -537,10 +570,10 @@ function Base.sum(hss::HyperSpectrum{T,N}) where {T<:Real,N}
         lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
-    props[:Name] = "Sum[$hss]"
+    props[:Name] = something(name, "Sum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
-function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real,N}
+function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices; name = nothing) where {T<:Real,N}
     data = hss.counts
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
     for ci in cis
@@ -548,7 +581,7 @@ function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real
         lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
-    props[:Name] = "Sum[$hss, $cis]"
+    props[:Name] = something(name, "IndexedSum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
 
@@ -575,25 +608,37 @@ roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
     Gray.(convert.(N0f8, plane(hss, chs, true)))
 
 """
-    roiimage(hss::HyperSpectrum, cxr::CharXRay, n=5)
+    roiimage(hss::HyperSpectrum, cxr::CharXRay)
 
-Create a count map for the specified characteristic X-ray.
+Create a count map for the specified characteristic X-ray.  By default, integrates
+for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetector`, the FWHM is taken from it.
+Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
-function roiimage(hss::HyperSpectrum, cxr::CharXRay, n = 5)
-    center = channel(energy(cxr), hss.energy)
-    return roiimage(hss, center-n:center+n)
+function roiimage(hss::HyperSpectrum, cxr::CharXRay)
+    res(ecxr, nodet) = resolution(ecxr, MnKaResolution(130.0))
+    res(ecxr, det::EDSDetector) = resolution(ecxr, det)
+    ecxr = energy(cxr)
+    r = res(ecxr, get(hss, :Detector, missing))
+    return roiimage(hss, channel(ecxr-0.5*r, hss.energy):channel(ecxr+0.5*r, hss.energy))
 end
 
+
+
 """
-    roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n=5)
+    roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
 
 Create an array of Gray images representing the intensity in each of the CharXRay lines
 in `cxrs`.  They are normalized such the the most intense pixel in any of them defines white.
+By default, integrates for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetector`, the FWHM 
+is taken from it.   Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
-function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, n = 5)
-    achs = map(
-        cxr -> channel(energy(cxr), hss.energy)-n:channel(energy(cxr), hss.energy)+n,
-        cxrs,
-    )
+function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
+    res(ecxr, nodet) = resolution(ecxr, MnKaResolution(130.0))
+    res(ecxr, det::EDSDetector) = resolution(ecxr, det)
+    achs = map(cxrs) do cxr
+        ecxr = energy(cxr)
+        r = res(ecxr, get(hss, :Detector, missing))
+        channel(ecxr-0.5*r, hss.energy):channel(ecxr+0.5*r, hss.energy)
+    end
     return roiimages(hss, achs)
 end
