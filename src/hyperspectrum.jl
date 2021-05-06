@@ -40,13 +40,13 @@ CartesianIndex.  For example, to iterate over every spectrum in a HyperSpectrum
     end
     % Indices into a HyperSpectrum are (row, column)
 """
-struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
-    counts::AxisArray{T} # Organized as (ch, r, c) or (ch, y, x)
-    index::CartesianIndices # Spectrum indices
+struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
+    counts::AxisArray{T, NP, Array{T,NP}} # Organized as (ch, r, c) or (ch, y, x)
     energy::EnergyScale
-    livetime::AbstractArray{Float64} # A matrix containing the pixel-by-pixel livetime
+    livetime::Array{Float64, N} # A matrix containing the pixel-by-pixel livetime
     properties::Dict{Symbol,Any}
     stagemap::Type{<:StageMapping} # maps pixel coordinates into stage coordinates
+    hash::UInt
 
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
         axisnames = ( "Y", "X", "Z", "A", "B", "C" ), #
@@ -57,24 +57,25 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
         axes = [ Axis{:Channel}(1:size(arr,1)), #
                 ( Axis{Symbol(axisnames[i-1])}(fov[i-1]*(-0.5:1.0/(size(arr,i)-1):0.5)) for i in 2:ndims(arr) )... ]
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
-        new{eltype(arr),ndims(arr) - 1}(
-            AxisArray(arr, axes...),
-            CartesianIndices(size(arr)[2:end]),
+        counts = AxisArray(arr, axes...)
+        new{eltype(arr), ndims(arr) - 1, ndims(arr)}(
+            counts,
             energy,
             livetime,
             props,
             stagemap,
+            hash(counts, hash(energy, hash(livetime, hash(props, hash(stagemap)))))
         )
     end
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::AxisArray; stagemap::Type{<:StageMapping}=DefaultStageMapping, livetime=get(props, :LiveTime, 1.0)  * ones(Float64, size(arr[2:end])...))
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
-        new{eltype(arr),ndims(arr) - 1}(
+        new{eltype(arr), ndims(arr) - 1, ndims(arr)}(
             arr,
-            CartesianIndices(size(arr)[2:end]),
             energy,
             livetime,
             props,
-            stagemap
+            stagemap,
+            hash(arr, hash(energy, hash(livetime, hash(props, hash(stagemap)))))
         )
     end
     function HyperSpectrum(
@@ -90,58 +91,63 @@ struct HyperSpectrum{T<:Real,N} <: AbstractArray{Spectrum{T},N}
         axes = [ Axis{:Channel}(1:depth), #
                 ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
-        new{type, length(dims)}(
-            AxisArray(zeros(type, depth, dims...), axes...),
-            CartesianIndices(dims),
+        counts = AxisArray(zeros(type, depth, dims...), axes...)
+        livetime = fill(Float64(get(props,:LiveTime,1.0)), dims...)
+        new{type, length(dims), length(dims)+1}(
+            counts,
             energy,
-            get(props,:LiveTime,1.0) * ones(Float64, dims...),
+            livetime,
             props,
-            stagemap
+            stagemap,
+            hash(counts, hash(energy, hash(livetime, hash(props, hash(stagemap)))))
         )
     end
 end
 
-function Base.show(io::IO, ::MIME"text/plain", hss::HyperSpectrum)
+Base.hash(hs::HyperSpectrum, h::UInt) = hash(hs.hash, h)
+
+function Base.show(io::IO, ::MIME"text/plain", hss::HyperSpectrum{T,N,NP}) where {T<:Real, N, NP}
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
+        "$sz HyperSpectrum{$T,$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
     )
 end
 
-function Base.show(io::IO, ::MIME"text/html", hss::HyperSpectrum)
+function Base.show(io::IO, ::MIME"text/html", hss::HyperSpectrum{T,N,NP}) where {T<:Real, N, NP}
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "<p>$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss))), $(hss.energy), $(depth(hss)) ch]</p>",
+        "<p>$sz HyperSpectrum{$T,$(axisnames(hss))}[$(name(hss))), $(hss.energy), $(depth(hss)) ch]</p>",
     )
 end
 
-function Base.show(io::IO, hss::HyperSpectrum)
+function Base.show(io::IO, hss::HyperSpectrum{T,N,NP}) where {T<:Real, N, NP}
     sz = join(repr.(size(hss)), " × ")
     print(
         io,
-        "$sz HyperSpectrum{$(eltype(hss.counts)),$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
+        "$sz HyperSpectrum{$T,$(axisnames(hss))}[$(name(hss)), $(hss.energy), $(depth(hss)) ch]",
     )
 end
 
-Base.eltype(::HyperSpectrum{T,N}) where {T<:Real,N} = Spectrum{T}
+Base.eltype(::HyperSpectrum{T,N,NP}) where {T<:Real,N,NP} = Spectrum{T}
 Base.length(hss::HyperSpectrum) = prod(size(hss))
-Base.ndims(hss::HyperSpectrum) = ndims(hss.index)
+Base.ndims(::HyperSpectrum{T,N,NP}) where {T<:Real,N,NP} = N
 Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
-Base.size(hss::HyperSpectrum, n) = size(hss.index, n)
-Base.axes(hss::HyperSpectrum) = Base.axes(hss.index)
-Base.axes(hss::HyperSpectrum, n) = Base.axes(hss.index, n)
+Base.size(hss::HyperSpectrum, n) = size(counts(hss), n+1)
+Base.axes(hss::HyperSpectrum) = Base.axes(counts(hss))[2:end]
+Base.axes(hss::HyperSpectrum, n) = Base.axes(counts(hss), n+1)
 Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
-Base.stride(hss::HyperSpectrum, k::Int) = stride(hss.counts.data, k + 1)
-Base.strides(hss::HyperSpectrum) = strides(hss.counts.data)[2:end]
-depth(hss::HyperSpectrum) = size(hss.counts, 1)
+Base.stride(hss::HyperSpectrum, k::Int) = stride(counts(hss), k + 1)
+Base.strides(hss::HyperSpectrum) = strides(counts(hss))[2:end]
+depth(hss::HyperSpectrum) = size(counts(hss), 1)
 NeXLCore.name(hss::HyperSpectrum) = get(hss.properties, :Name, "HyperSpectrum")
 AxisArrays.axisnames(hss::HyperSpectrum) = AxisArrays.axisnames(hss.counts)[2:end]
 AxisArrays.axisvalues(hss::HyperSpectrum) = AxisArrays.axisvalues(hss.counts)[2:end]
 axisname(hss::HyperSpectrum, ax::Int) = AxisArrays.axisnames(hss.counts)[ax+1]
 axisvalue(hss::HyperSpectrum, ax::Int, j::Int) = AxisArrays.axisvalues(hss.counts)[ax+1][j]
 axisrange(hss::HyperSpectrum, ax::Int) = AxisArrays.axisvalues(hss.counts)[ax+1]
+Base.CartesianIndices(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP} = CartesianIndices(size(hss))
 
 """
     coordinate(hss::HyperSpectrum, idx::Tuple{<:Int})
@@ -193,44 +199,44 @@ livetime(hss::HyperSpectrum, idx::Int...) = hss.livetime[idx...]
 
 
 function Base.getindex(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T,N,NP},
     ci::CartesianIndex
-)::Spectrum{T} where { T<: Real, N} 
+)::Spectrum{T} where { T<: Real, N, NP} 
     props = copy(hss.properties)
     props[:Cartesian] = ci
     props[:Name] = "$(name(hss))[$(join(["$i" for i in ci.I],","))]"
     props[:StageCoordinate]=coordinate(hss, ci)
     props[:LiveTime] = hss.livetime[ci]
-    return Spectrum(hss.energy, hss.counts[:, ci], props)
+    return Spectrum(hss.energy, counts(hss)[:, ci], props)
 end
 function Base.getindex(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     idx::Vararg{Int,N},
-)::Spectrum{T} where {T<:Real,N}
+)::Spectrum{T} where {T<:Real, N, NP}
     getindex(hss, CartesianIndex(idx...))
 end
-function Base.getindex(hss::HyperSpectrum{T,N}, idx::Int)::Spectrum{T} where {T<:Real,N}
-    getindex(hss, hss.index[idx])
+function Base.getindex(hss::HyperSpectrum{T, N, NP}, idx::Int)::Spectrum{T} where {T<:Real, N, NP}
+    getindex(hss, CartesianIndices(hss)[idx])
 end
 function Base.getindex(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     vidx::Vector
-)::Vector{Spectrum{T}} where { T<: Real, N} 
+)::Vector{Spectrum{T}} where { T<: Real, N, NP} 
     return [ hss[i] for i in vidx ]
 end
 function Base.getindex(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     rng::AbstractRange{<:Integer},
-)::Vector{Spectrum{T}} where { T<: Real, N} 
+)::Vector{Spectrum{T}} where { T<: Real, N, NP} 
     return [ hss[i] for i in rng ]
 end
 function Base.getindex(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     idx...
-)::HyperSpectrum{T,N} where {T<:Real, N}
+)::HyperSpectrum{T, N, NP} where {T<:Real, N, NP}
     props = copy(hss.properties)
     props[:Name] = "$(name(hss))[$idx]"
-    return HyperSpectrum(hss.energy, props, hss.counts[:, idx...], livetime=hss.livetime[idx...])
+    return HyperSpectrum(hss.energy, props, counts(hss)[:, idx...], livetime=hss.livetime[idx...])
 end
 
 function Base.getindex(
@@ -249,7 +255,14 @@ function Base.getindex(
     hss::HyperSpectrum,
     cxrs::NTuple{3,CharXRay}
 ) 
-    colorview(RGB, roiimages(hss, collect(cxrs))...)
+    colorize(hss, collect(cxrs), :All)
+end
+
+function Base.getindex(
+    hss::HyperSpectrum,
+    cxrs::NTuple{2,CharXRay}
+) 
+    colorize(hss, collect(cxrs), :All)
 end
 
 function Base.get(hss::HyperSpectrum, sym::Symbol, def) 
@@ -264,10 +277,10 @@ Creates a view of a HyperSpectrum to represent the range of pixels within the `h
 not copy the data or properties so any modifications to the region are also made to `hss`.
 """
 function region(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     ranges::AbstractRange...,
-)::HyperSpectrum{T,N} where {T<:Real,N}
-    HyperSpectrum(hss.energy, hss.properties, hss.counts[:, ranges...], livetime=hss.livetime[ranges...])
+)::HyperSpectrum{T, N, NP} where {T<:Real, N, NP}
+    HyperSpectrum(hss.energy, hss.properties, counts(hss)[:, ranges...], livetime=hss.livetime[ranges...])
 end
 
 function Base.getindex(hss::HyperSpectrum, sy::Symbol)
@@ -276,6 +289,7 @@ function Base.getindex(hss::HyperSpectrum, sy::Symbol)
 end
 function Base.setindex!(hss::HyperSpectrum, val::Any, sy::Symbol)
     @assert sy!=:LiveTime "Use the livetime!(...) function to set the :LiveTime property for hyperspectra."
+    isequal(sy, :Detector) && @assert isequal(hss.energy, val.scale) "The energy calibration in $val must match the HyperSpectrum's: $(hss.energy)."
     setindex!(hss.properties, val, sy)
 end
 
@@ -302,22 +316,22 @@ matching(
 
 
 """
-    counts(hss::HyperSpectrum{T,N})::Array{T,N+1}
+    counts(hss::HyperSpectrum{T, N, NP})::Array{T,NP}
 
 Creates type-friendly view of the counts data array.  Use of this function helps to avoid performance
 penalties associated with boxing/unboxing the counts data.
 
-    counts(hss::HyperSpectrum{T,N}, ci::CartesianIndex)::Vector{T}
+    counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex)::Vector{T}
 
 Access the counts data associated with the pixel `ci`.
 
-    counts(hss::HyperSpectrum{T,N}, ci::CartesianIndex, ch::Int)::T
+    counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex, ch::Int)::T
 
 Access the counts data at the pixel represented by `ci` and the channel represented by `ch`.
 """
-counts(hss::HyperSpectrum{T,N}) where {T<:Real,N} = convert(Array{T,N + 1}, hss.counts)
-counts(hss::HyperSpectrum, ci::CartesianIndex, ch::Int) = hss.counts[ch, ci]
-counts(hss::HyperSpectrum, ci::CartesianIndex) = view(hss.counts[:, ci])
+counts(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP} = parent(hss.counts)
+counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex, ch::Int) where {T<:Real, N, NP} = counts(hss)[ch, ci]
+counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex) where {T<:Real, N, NP} = view(counts(hss)[:, ci])
 
 """
     compress(hss::HyperSpectrum)
@@ -326,20 +340,20 @@ Returns a HyperSpectrum with smaller or equal storage space to `hss` without los
 (note: AbstractFloat compresses to Float32 with loss of precision).  Can change the storage type and/or 
 reduce the depth of hss.
 """
-function compress(hss::HyperSpectrum{T,N}) where {T<:Real,N}
-    data = hss.counts
+function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP}
+    data = counts(hss)
     (minval, maxval) = extrema(data)
     maxi = mapreduce(max, CartesianIndices(hss)) do ci
         something(findlast(c -> c != 0.0, data[:, ci]), 0)
     end
-    data = maxi < depth(hss) ? data[1:maxi, axes(hss.counts)[2:end]...] : data
-    if eltype(T) in (Int16, Int32, Int64)
+    data = maxi < depth(hss) ? data[1:maxi, axes(data)[2:end]...] : data
+    if T isa Int16 || T isa Int32 || T isa Int64
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
             if minval >= typemin(newtype) && maxval <= typemax(newtype)
                 return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
             end
         end
-    elseif T in (UInt16, UInt32, UInt64)
+    elseif T isa UInt16 || T isa UInt32 || T isa UInt64
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (UInt8, UInt16, UInt32))
             if maxval <= typemax(newtype)
                 return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
@@ -358,15 +372,20 @@ end
 """
    plane(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}, normalize=false)
 
-Sums a contiguous range of data planes into an Array. The dimension of the result is
+Sums a contiguous range of data channels into an Array. The dimension of the result is
 one less than the dimension of the HyperSpectrum and is stored as a Float64 to ensure that not information is lost.
 """
 function plane(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     chs::AbstractUnitRange{<:Integer},
     normalize = false,
-) where {T<:Real,N}
-    res = map(ci -> sum(Float64.(hss.counts[chs, ci])), hss.index)
+) where {T<:Real, N, NP}
+    # This uses fewer allocations and time than the map(...) solution.
+    data = counts(hss)
+    res = zeros(Float64, size(data)[2:end])
+    for ci in CartesianIndices(res)
+        res[ci] = sum(view(data, chs, ci), init=zero(Float64))
+    end
     return normalize ? res / maximum(res) : res
 end
 
@@ -377,7 +396,7 @@ Extracts a single plane from a HyperSpectrum. The dimension of the result is
 one less than the dimension of the HyperSpectrum.
 """
 function plane(hss::HyperSpectrum, ch::Int, normalize = false)
-    res = hss.counts[ch, hss.index]
+    res = counts(hss)[ch, CartesianIndices(hss)]
     return normalize ? res / maximum(res) : res
 end
 
@@ -394,13 +413,13 @@ Compute Bright's Max-Pixel derived signal for the entire HyperSpectrum or a rect
 maxpixel(hss::HyperSpectrum, mask::BitArray) =
     maxpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function maxpixel(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     cis::CartesianIndices,
     filt::Function = ci -> true,
-)::Spectrum{T} where {T<:Real,N}
-    data, res = hss.counts, zeros(T, depth(hss))
-    for ci in filter(ci -> filt(ci), cis)
-        res .= max.(res, data[:, ci])
+)::Spectrum{T} where {T<:Real, N, NP}
+    data, res = counts(hss), zeros(T, depth(hss))
+    for ci in filter(ci -> filt(ci), cis), ch in eachindex(res)
+        res[ch] = max(res[ch], data[ch, ci])
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
@@ -408,10 +427,11 @@ function maxpixel(
     return Spectrum(hss.energy, res, props)
 end
 function maxpixel(
-    hss::HyperSpectrum{T,N},
-)::Spectrum{T} where {T<:Real,N}
-    res = map(Base.OneTo(size(hss.counts, 1))) do ch
-        maximum(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    hss::HyperSpectrum{T, N, NP},
+)::Spectrum{T} where {T<:Real, N, NP}
+    data, res  = counts(hss), fill(zero(T), depth(hss))
+    for ci in CartesianIndices(hss), ch in eachindex(res)
+        res[ch] = max(res[ch], data[ch, ci])
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
@@ -420,10 +440,11 @@ function maxpixel(
 end
 
 function minpixel(
-    hss::HyperSpectrum{T,N},
-)::Spectrum{T} where {T<:Real,N}
-    res = map(Base.OneTo(size(hss.counts, 1))) do ch
-        minimum(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    hss::HyperSpectrum{T, N, NP},
+)::Spectrum{T} where {T<:Real, N, NP}
+    data, res  = counts(hss), fill(typemax(T), depth(hss))
+    for ci in CartesianIndices(hss), ch in eachindex(res)
+        res[ch] = min(res[ch], data[ch, ci])
     end
     props = copy(hss.properties)
     props[:LiveTime] = mean(hss.livetime)
@@ -433,12 +454,12 @@ end
 minpixel(hss::HyperSpectrum, mask::BitArray) =
     minpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function minpixel(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     cis::CartesianIndices,
     filt::Function = ci -> true,
-) where {T<:Real,N}
-    data, res = hss.counts, fill(typemax(T), (depth(hss),))
-    for ci in filter(ci -> filt(ci), cis), ch in Base.OneTo(depth(hss))
+) where {T<:Real, N, NP}
+    data, res  = counts(hss), fill(typemax(T), depth(hss))
+    for ci in filter(ci -> filt(ci), cis), ch in eachindex(res)
         res[ch] = min(res[ch], data[ch, ci])
     end
     props = copy(hss.properties)
@@ -449,36 +470,46 @@ end
 avgpixel(hss::HyperSpectrum, mask::BitArray) =
     avgpixel(hss, CartesianIndices(hss), ci -> mask[ci])
 function avgpixel(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     cis::CartesianIndices,
     filt::Function = ci -> true,
-) where {T<:Real,N}
-    data, res, cx = hss.counts, zeros(Float64, depth(hss)), 0
+) where {T<:Real, N, NP}
+    data = counts(hss)
+    res = zeros(T isa Int ? Int64 : Float64, depth(hss))
     for ci in filter(ci -> filt(ci), cis)
-        for ch in Base.OneTo(depth(hss))
-            res[ch] += data[ch, ci]
-        end
-        cx += 1
+        res .+= @view data[:, ci]
     end
+    res /= prod(size(hss))
+    lt = mean(hss.livetime)
     props = copy(hss.properties)
-    props[:LiveTime] = mean(hss.livetime)
-    props[:Name] = "AvgPixel[$(props[:Name])]"
-    return Spectrum(hss.energy, res ./ max(1.0, cx), props)
+    props[:Name] = something(name, "Average[$(props[:Name])]")
+    return Spectrum(hss.energy, res, props)
 end
 function avgpixel(
-    hss::HyperSpectrum{T,N}
-) where {T<:Real,N}
-    res = map(Base.OneTo(size(hss.counts, 1))) do ch
-        mean(view(hss.counts, ch:size(hss.counts, 1):prod(size(hss.counts))))
+    hss::HyperSpectrum{T, N, NP}
+) where {T<:Real, N, NP}
+    data = counts(hss)
+    res = zeros(T isa Int ? Int64 : Float64, depth(hss))
+    for ci in CartesianIndices(hss)
+        res .+= @view data[:, ci]
     end
+    res /= prod(size(hss))
+    lt = mean(hss.livetime)
     props = copy(hss.properties)
-    props[:LiveTime] = mean(hss.livetime)
-    props[:Name] = "AvgPixel[$(props[:Name])]"
+    props[:Name] = something(name, "Average[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
 
+"""
+    sumcounts(hss::HyperSpectrum, cis::CartesianIndices = CartesianIndices(hss))
+
+An array containing the number of counts at each pixel.
+"""
 function sumcounts(hss::HyperSpectrum, cis::CartesianIndices = CartesianIndices(hss))
-    return [sum(Int.(hss.counts[:, ci])) for ci in cis]
+    data = counts(hss)
+    map(cis) do ci
+        sum(view(data, :, ci), init=zero(Float64))
+    end
 end
 
 """
@@ -491,7 +522,7 @@ Find the indices producing the maximum value in data[ch] or data[:] within 'cis'
 spatial dimensions.
 """
 function indexofmaxpixel(hss::HyperSpectrum, ch::Int, cis::CartesianIndices)
-    data = hss.counts
+    data = counts(hss)
     maxidx, max = cis[1], data[ch, cis[1]]
     for idx in cis
         if data[ch, idx] > max
@@ -507,9 +538,9 @@ indexofmaxpixel(hss::HyperSpectrum, ch::Int) =
 
 indexofmaxpixel(hss::HyperSpectrum) = indexofmaxpixel(hss, CartesianIndices(hss))
 
-function indexofmaxpixel(hss::HyperSpectrum{T,N}, cis::CartesianIndices) where {T<:Real,N}
-    res, cix = zeros(T, depth(hss)), CartesianIndex[hss.index[1] for _ = 1:depth(hss)]
-    data = hss.counts
+function indexofmaxpixel(hss::HyperSpectrum{T, N, NP}, cis::CartesianIndices) where {T<:Real, N, NP}
+    res, cix = zeros(T, depth(hss)), CartesianIndex[CartesianIndices(hss)[1] for _ = 1:depth(hss)]
+    data = counts(hss)
     for ci in cis, i in filter(i -> data[i, ci] > res[i], eachindex(res))
         res[i] = data[i, ci]
         cix[i] = ci
@@ -528,14 +559,14 @@ Compute a sum spectrum for all or a subset of the pixels in `hss`.
 Where func(hss::HyperSpectrum, ci::CartesianIndex)::Bool
 """
 function Base.sum(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     mask::Union{BitArray,Array{Bool}};
     name = nothing
-) where {T<:Real,N}
+) where {T<:Real, N, NP}
     @assert size(mask) == size(hss) "Mask size[$(size(mask))] ≠ Hyperspectrum size[$(size(hss))]"
-    data = hss.counts
+    data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in hss.index
+    for ci in CartesianIndices(hss)
         if mask[ci]
             res .+= data[:, ci]
             lt += hss.livetime[ci]
@@ -546,13 +577,13 @@ function Base.sum(
     return Spectrum(hss.energy, res, props)
 end
 function Base.sum(
-    hss::HyperSpectrum{T,N},
+    hss::HyperSpectrum{T, N, NP},
     filt::Function;
     name = nothing
-) where {T<:Real,N}
-    data = hss.counts
+) where {T<:Real, N, NP}
+    data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in hss.index
+    for ci in CartesianIndices(hss)
         if filt(hss,ci)
             res .+= data[:, ci]
             lt += hss.livetime[ci]
@@ -562,19 +593,19 @@ function Base.sum(
     props[:Name] = something(name, "FilteredSum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
-function Base.sum(hss::HyperSpectrum{T,N}; name = nothing) where {T<:Real,N}
-    data = hss.counts
-    res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in hss.index
-        res .+= data[:, ci]
-        lt += hss.livetime[ci]
+function Base.sum(hss::HyperSpectrum{T, N, NP}; name = nothing) where {T<:Real, N, NP}
+    data = counts(hss)
+    res = zeros(T isa Int ? Int64 : Float64, depth(hss))
+    for ci in CartesianIndices(hss)
+        res .+= @view data[:, ci]
     end
+    lt = sum(hss.livetime)
     props = copy(hss.properties)
     props[:Name] = something(name, "Sum[$(props[:Name])]")
     return Spectrum(hss.energy, res, props)
 end
-function Base.sum(hss::HyperSpectrum{T,N}, cis::CartesianIndices; name = nothing) where {T<:Real,N}
-    data = hss.counts
+function Base.sum(hss::HyperSpectrum{T, N, NP}, cis::CartesianIndices; name = nothing) where {T<:Real, N, NP}
+    data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
     for ci in cis
         res .+= data[:, ci]
@@ -607,6 +638,14 @@ Create a count map from the specified contiguous range of channels.
 roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
     Gray.(convert.(N0f8, plane(hss, chs, true)))
 
+function fwhmroi(det::Union{Missing,EDSDetector}, cxr::CharXRay)
+    res(ecxr, nodet) = resolution(ecxr, MnKaResolution(130.0))
+    res(ecxr, det::EDSDetector) = resolution(ecxr, det)
+    ecxr = energy(cxr)
+    r = res(ecxr, det)
+    return channel(ecxr-0.5*r, det.scale):channel(ecxr+0.5*r, det.scale)
+end
+
 """
     roiimage(hss::HyperSpectrum, cxr::CharXRay)
 
@@ -615,14 +654,8 @@ for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetector`, the FWHM is taken
 Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
 function roiimage(hss::HyperSpectrum, cxr::CharXRay)
-    res(ecxr, nodet) = resolution(ecxr, MnKaResolution(130.0))
-    res(ecxr, det::EDSDetector) = resolution(ecxr, det)
-    ecxr = energy(cxr)
-    r = res(ecxr, get(hss, :Detector, missing))
-    return roiimage(hss, channel(ecxr-0.5*r, hss.energy):channel(ecxr+0.5*r, hss.energy))
+    return roiimage(hss, fwhmroi(get(hss, :Detector, missing), cxr))
 end
-
-
 
 """
     roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
@@ -633,12 +666,41 @@ By default, integrates for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetec
 is taken from it.   Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
 function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
-    res(ecxr, nodet) = resolution(ecxr, MnKaResolution(130.0))
-    res(ecxr, det::EDSDetector) = resolution(ecxr, det)
-    achs = map(cxrs) do cxr
-        ecxr = energy(cxr)
-        r = res(ecxr, get(hss, :Detector, missing))
-        channel(ecxr-0.5*r, hss.energy):channel(ecxr+0.5*r, hss.energy)
-    end
+    det = get(hss, :Detector, missing)
+    achs = map(cxr->fwhmroi(det, cxr), cxrs)
     return roiimages(hss, achs)
+end
+
+"""
+    colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All[|:Each])
+
+Create RGB colorized images from three `KRatios` or from three `Element`s.  The elements
+are normalized relative to all `KRatios` in `krs`. The resulting images are scaled by the factor
+`scale` to allow visualization of trace elements.
+"""
+function colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All)
+    idx  = collect( findfirst(kr->isequal(kr.element, elm), krs) for elm in (red, green, blue) )
+    if normalize==:All
+        # Normalize relative to sum of KRatios at each point
+        s = map(CartesianIndices(krs[1])) do ci
+            ss = sum( max(0.0, kr.kratios[ci]) for kr in krs)
+            ss<=0.0 ? 1.0 : ss
+        end
+        clip(skr) = min(skr, 1.0)
+        norm(kr) = clip.(kr.kratios ./ s)
+        colorview(RGB, norm(krs[idx[1]]), norm(krs[idx[2]]), norm(krs[idx[3]]))
+    else
+        # Normalize relative to max of each KRatios independently
+        each(kr) = kr.kratios / maximum(kr.kratios)
+        colorview(RGB, each(krs[idx[1]]), each(krs[idx[2]]), each(krs[idx[3]]))
+    end
+end
+function colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
+    if normalize==:All
+        imgs = roiimages(hss, cxrs)
+        colorview(RGB, imgs[1], length(imgs) > 1 ? imgs[2] : zeroarray, length(imgs) > 2 ? imgs[3] : zeroarray )
+    else
+        # Normalize relative to max of each KRatios independently
+        colorview(RGB, roiimage(hss,cxrs[1]), length(cxrs)>1 ? roiimage(hss,cxrs[2]) : zeroarray, length(cxrs) > 2 ? roiimage(hss, cxrs[3]) : zeroarray)
+    end
 end

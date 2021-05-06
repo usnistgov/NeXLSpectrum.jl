@@ -123,6 +123,7 @@ export axisname # The name of the i-th axis
 export axisvalue # The calibrated coordinate value for the pixel coordinate
 export axisrange # range of coordinate values for the specified axis
 export livetime, livetime! # Get/Set livetime on a per-pixel basis
+export colorize # Extract a three-element RGB colorized image from KRatios
 
 include("rplraw.jl")
 export RPLHeader

@@ -14,7 +14,7 @@ artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
 rplraw_hash = artifact_hash("rplraw", artifacts_toml)
 
 # If the name was not bound, or the hash it was bound to does not exist, create it!
-if rplraw_hash == nothing || !artifact_exists(rplraw_hash)
+if isnothing(rplraw_hash) || !artifact_exists(rplraw_hash)
     # create_artifact() returns the content-hash of the artifact directory once we're finished creating it
     rplraw_hash = create_artifact() do artifact_dir
         println("Artifact dir: $artifact_dir")

@@ -224,12 +224,13 @@ function fit_spectrum(
     zero = x -> max(0.0, x),
     sigma = 0.0
 )::Array{KRatios}
-     function _tophatfilterhs(hs, data, thf, scale) 
+    unklabel = UnknownLabel(hs)
+     function _tophatfilterhs(unklabel, data, thf, scale) 
         @assert length(data) <= length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
         filtered = Float64[filtereddatum(thf, data, i) for i in eachindex(data)]
         dp = Float64[max(x, 1.0) for x in data] # To ensure covariance isn't zero or infinite precision
         covar = Float64[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
-        FilteredUnknownW(UnknownLabel(hs), scale, eachindex(data), data, filtered, covar)
+        FilteredUnknownW(unklabel, scale, eachindex(data), data, filtered, covar)
     end
     function fitcontiguousx(unk, ffs, chs)
         _buildscale(unk, ffs) * pinv(_buildmodel(ffs, chs), rtol = 1.0e-6) * extract(unk, chs)
@@ -253,8 +254,8 @@ function fit_spectrum(
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
         ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
+            data[len] .= counts(hs)[len, ci]
+            unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
         return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
@@ -267,8 +268,8 @@ function fit_spectrum(
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= hs.counts[len, ci]
-            unk = _tophatfilterhs(hs, data, ffp.filter, 1.0/dose(hs,ci))
+            data[len] .= counts(hs)[len, ci]
+            unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
                 isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? zero(eltype(krs)) : convert(eltype(krs), value(uvs, id))

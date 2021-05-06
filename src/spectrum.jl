@@ -105,7 +105,7 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     energy::EnergyScale
     counts::Vector{T}
     properties::Dict{Symbol,Any}
-    hash::UInt  # random number (stays fixed as underlying data changes)
+    hash::UInt  # Stays fixed as underlying data changes
     function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,Any})
         props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
         return new{typeof(data[1])}(

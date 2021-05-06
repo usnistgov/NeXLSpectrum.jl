@@ -97,10 +97,10 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
     for (lx, line) in enumerate(eachline(f))
         if (lx ≤ 2)
             res = split_emsa_header_item(line)
-            if (res==nothing) || ((lx==1) && (res[1]!="FORMAT" || uppercase(res[2])!="EMSA/MAS SPECTRAL DATA FILE"))
+            if isnothing(res) || ((lx==1) && (res[1]!="FORMAT" || uppercase(res[2])!="EMSA/MAS SPECTRAL DATA FILE"))
                 error("This file does not have the correct header to be an EMSA/MAS spectrum file.")
             end
-            if (res==nothing) || ((lx==2) && (res[1]!="VERSION" || res[2]!="1.0"))
+            if isnothing(res) || ((lx==2) && (res[1]!="VERSION" || res[2]!="1.0"))
                 error("This file is not a VERSION=1.0 EMSA/MAS spectrum file.")
             end
         elseif inData>0
