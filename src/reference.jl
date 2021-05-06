@@ -254,7 +254,7 @@ function fit_spectrum(
         data = zeros(Float64, length(ffp.filter))
         fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
         ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= counts(hs)[len, ci]
+            data[len] .= view(counts(hs), len, ci)
             unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
             krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
         end
@@ -268,7 +268,7 @@ function fit_spectrum(
         len = 1:depth(hs)
         data = zeros(Float64, length(ffp.filter))
         ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= counts(hs)[len, ci]
+            data[len] .= view(counts(hs), len, ci)
             unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
             uvs = _filterfit(unk, ffp.references, true)
             krs[:, ci] = map(ref.label for ref in ffp.references) do id
