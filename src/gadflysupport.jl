@@ -126,7 +126,7 @@ function Gadfly.plot(
         for cs in values(d)
             br = brightest(cs)
             ich = maximum(
-                specdata[i][channel(energy(br), spec)] for (i, spec) in enumerate(specs)
+                get(specdata[i], channel(energy(br), spec), -1.0) for (i, spec) in enumerate(specs)
             )
             if ich > 0
                 for c in cs
