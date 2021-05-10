@@ -51,13 +51,15 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
         axisnames = ( "Y", "X", "Z", "A", "B", "C" ), #
         fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ), #
-        stagemap::Type{<:StageMapping}=DefaultStageMapping,
-        livetime=get(props, :LiveTime, 1.0) * ones(Float64, size(arr)[2:end]...)
+        offset = ( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), #
+        stagemap::Type{<:StageMapping}=DefaultStageMapping, #
+        livetime=fill(get(props, :LiveTime, 1.0), size(arr)[2:end]...)
     )
         axes = [ Axis{:Channel}(1:size(arr,1)), #
-                ( Axis{Symbol(axisnames[i-1])}(fov[i-1]*(-0.5:1.0/(size(arr,i)-1):0.5)) for i in 2:ndims(arr) )... ]
+                ( Axis{Symbol(axisnames[i-1])}(offset[i-1]:fov[i-1]/(size(arr,i)-1):offset[i-1]+fov[i-1]) for i in 2:ndims(arr) )... ]
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(arr, axes...)
+        # @show AxisArrays.axes(counts)
         new{eltype(arr), ndims(arr) - 1, ndims(arr)}(
             counts,
             energy,
@@ -84,12 +86,13 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
         dims::Tuple,
         depth::Int,
         type::Type{<:Real};
-        axisnames = ( "X", "Y", "Z", "A", "B", "C" ), 
+        axisnames = ( "Y", "X", "Z", "A", "B", "C" ), 
         fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ),
+        offset = ( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), #
         stagemap::Type{<:StageMapping}=DefaultStageMapping
     )
-        axes = [ Axis{:Channel}(1:depth), #
-                ( Axis{Symbol(axisnames[i])}(fov[i]*(-0.5:1.0/(dims[i]-1):0.5)) for i in eachindex(dims) )... ]
+        axes = [ Axis{:Channel}(1:size(arr,1)), #
+            ( Axis{Symbol(axisnames[i-1])}(offset[i-1]:fov[i-1]/(size(arr,i)-1):offset[i-1]+fov[i-1]) for i in 2:ndims(arr) )... ]
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(zeros(type, depth, dims...), axes...)
         livetime = fill(Float64(get(props,:LiveTime,1.0)), dims...)
@@ -388,6 +391,14 @@ function plane(
     end
     return normalize ? res / maximum(res) : res
 end
+function plane(
+    hss::HyperSpectrum{T, N, NP},
+    cxr::CharXRay,
+    normalize = false,
+) where {T<:Real, N, NP}
+    plane(hss, fwhmroi(get(hss, :Detector, missing), cxr), normalize)
+end
+
 
 """
    plane(hss::HyperSpectrum, ch::Int, normalize=false)

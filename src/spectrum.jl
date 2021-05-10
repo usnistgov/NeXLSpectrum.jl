@@ -54,6 +54,7 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
     :ProbeCurrent  # In nano-amps
     :Name          # A string
     :Owner         # A string
+    :Sample        # Description of the sample
     :StagePosition # A Dict{Symbol,Real} with entries :X, :Y, :Z, :R, :T, B: in cm and degrees
     :Comment       # A string
     :Composition   # A Material (known composition, not measured)
@@ -212,7 +213,7 @@ Base.show(io::IO, spec::Spectrum) = show(io, "text/plain", spec)
 function textplot(io::IO, spec::Spectrum; size = (16, 80))
     (rows, cols) = size
     # how much to plot
-    e0_eV = haskey(spec, :BeamEnergy) ? spec[:BeamEnergy] : energy(length(spec), spec)
+    e0_eV = haskey(spec, :BeamEnergy) ? min(spec[:BeamEnergy], energy(length(spec), spec)) : energy(length(spec), spec)
     maxCh = min(channel(convert(Float64, e0_eV), spec), length(spec))
     step, max = maxCh ÷ cols, maximum(spec.counts)
     maxes = [rows * (maximum(spec.counts[(i-1)*step+1:i*step]) / max) for i in 1:cols]

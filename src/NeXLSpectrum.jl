@@ -251,6 +251,10 @@ export multirank # A single number value that scores the spectra
 
 export plot_compare # Plots a statistical channel-by-channel comparison of spectra
 
+include("hspy.jl")
+export read_hspy
+export ishspy
+
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
     @require Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9" include("weavesupport.jl")
