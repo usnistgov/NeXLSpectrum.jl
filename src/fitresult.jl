@@ -348,8 +348,21 @@ function filteredresidual(
     unk::FilteredUnknown,
     ffs::AbstractVector{FilteredReference},
 )::Vector{Float64}
-    scaled(ff) =
-        (NeXLUncertainties.value(fit, ff.label) * (ff.scale / unk.scale)) *
-        extract(ff, unk.ffroi)
-    return unk.filtered - mapreduce(scaled, +, ffs)
+    return unk.filtered - mapreduce(+, ffs) do ff
+        (value(fit, ff.label) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
+    end
+end
+
+
+"""
+    NeXLMatrixCorrection.estimatecoating(fr::FitResult, substrate::Material, coating::Material, cxr::CharXRay, mc::Type{<:MatrixCorrection}=XPP)::Film
+
+Estimate the mass-thickness of `coating` on bulk `substrate` using the X-ray `cxr` for which there is KRatio in `fr`.  The result is
+assigned to the properties of `fr` so that it can be account for in the matrix correction process.
+
+This method is intended for use on standards where the substrate composition is known a priori.
+"""
+function NeXLMatrixCorrection.estimatecoating(fr::FitResult, substrate::Material, coating::Material, cxr::CharXRay, mc::Type{<:MatrixCorrection}=XPP)::Film
+    coating[:Density] = get(coating, :Density, 1.0)
+    properties(fr.label.spectrum)[:Coating] = estimatecoating(substrate, coating, kratio(fr, cxr), mc)
 end

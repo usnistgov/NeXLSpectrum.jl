@@ -17,11 +17,12 @@ function NeXLMatrixCorrection.quantify(
     fc::Type{<:FluorescenceCorrection} = ReedFluorescence,
     cc::Type{<:CoatingCorrection} = Coating,
     kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
-    unmeasured::UnmeasuredElementRule = NullUnmeasuredRule()
+    unmeasured::UnmeasuredElementRule = NullUnmeasuredRule(),
+    coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
 )::IterationResult
     iter = Iteration(mc, fc, cc, unmeasured = unmeasured)
     krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
-    return quantify(iter, ffr.label, krs)
+    return quantify(iter, ffr.label, krs, coating=coating)
 end
 
 """

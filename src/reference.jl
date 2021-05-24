@@ -166,16 +166,14 @@ function references(
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
+    @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
+    # Build the top-hat filter for det
     ff = buildfilter(det)
-    
-    frefs = if length(refs)>0
-        mapreduce(append!, refs) do ref
-            frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
-            length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
-            frefs
-        end
-    else
-        FilteredReference[]
+    # Apply the top-hat filter to all refs
+    frefs = mapreduce(append!, refs) do ref
+        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+        length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
+        frefs
     end
     return FilterFitPacket(det, ff, frefs)
 end
