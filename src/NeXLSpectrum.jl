@@ -5,7 +5,7 @@ using Requires
 
 using Dates
 using Images
-using AxisArrays
+using AxisArrays: AxisArrays, AxisArray, axes, axisnames, axisvalues
 using Unitful: mm
 using FileIO
 using Mmap
