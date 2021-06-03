@@ -1,7 +1,7 @@
 ## Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection
 
 This document demonstrates the high-level API for filter fitting spectra.  This API is less flexible than
-the low-level API discussed [here](K412fit.html).
+the low-level API discussed [here](K412fit.md).
 
 #### Libraries
 Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.
@@ -41,10 +41,13 @@ refs = references(
 
 #### Load the Unknowns
 ```julia
-# Now load all the spectra using the same detector as constructed by `references(...)`
-unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),refs.detector)).(0:4)
-# Add carbon coating
-map(s->s[:Coating]=Film(pure(n"C"), 30.0e-7), unks)
+# Now load all the unknown spectra and assign a carbon coating`
+unks = map(0:4) do i 
+    s = loadspectrum(joinpath(path, "III-E K412[$i][4].msa"))
+    # assign a carbon coating
+    s[:Coating] = Film(pure(n"C"), 30.0e-7)
+    s
+end
 ```
 
 Table: The spectra
@@ -57,7 +60,7 @@ Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`
 are necessary for extracting the k-ratios and estimating the composition.
 ```julia
 u=unks[1]
-u[:LiveTime], u[:ProbeCurrent], u[:TakeOffAngle], u[:BeamEnergy], u[:Detector]
+u[:LiveTime], u[:ProbeCurrent], u[:TakeOffAngle], u[:BeamEnergy], u[:Coating]
 ```
 
 #### The Unknowns

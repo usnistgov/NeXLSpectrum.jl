@@ -35,7 +35,7 @@ end
 unknown(ffr::FitResult)::Label = ffr.label
 Base.values(ffrs::Vector{<:FitResult}, lbl::ReferenceLabel) =
     [NeXLUncertainties.value(ffr.kratios, lbl, 0.0) for ffr in ffrs]
-σs(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
+σs(ffrs::Vector{<:FitResult}, lbl::ReferenceLabel) =
     [σ(ffr.kratios, lbl, 0.0) for ffr in ffrs]
 
 """
@@ -107,14 +107,14 @@ function extractStandards(ffr::FitResult, cxrs::AbstractVector{CharXRay}, mat::M
 end
 
 """
-    heterogeneity(lbl::ReferenceLabel, ffrs::Vector{FilterFitResult})
+    heterogeneity(ffrs::Vector{FilterFitResult}, lbl::ReferenceLabel)
 
 Computes the ratio of the standard deviation of the measured values over the mean calculated uncertainty
 from the fit.  A value near 1 means the sample appears homogeneous and a value greater than 1 means the sample
 appears heterogeneous.
 """
-heterogeneity(lbl::ReferenceLabel, ffrs::Vector{<:FitResult}) =
-    std(values(lbl, ffrs)) / mean(σs(lbl, ffrs))
+heterogeneity(ffrs::Vector{<:FitResult}, lbl::ReferenceLabel) =
+    std(values(ffrs, lbl)) / mean(σs(ffrs, lbl))
 
 """
     NeXLUncertainties.asa(::Type{DataFrame}, ffrs::AbstractVector{<:FitResult}; charOnly = true, withUnc = false, pivot = false)
@@ -133,7 +133,7 @@ function NeXLUncertainties.asa(
     if pivot
         res = DataFrame(ROI = lbls)
         for ffr in ffrs
-            vals = [NeXLUncertainties.value(ffr.kratios, lbl, missing) for lbl in lbls]
+            vals = [value(ffr.kratios, lbl, missing) for lbl in lbls]
             insertcols!(res, ncol(res) + 1, Symbol(repr(ffr.label)) => vals)
             if withUnc
                 unc = [σ(ffr.kratios, lbl, missing) for lbl in lbls]
@@ -144,7 +144,7 @@ function NeXLUncertainties.asa(
         rowLbls = [repr(ffr.label) for ffr in ffrs]
         res = DataFrame(Symbol("Spectra") => rowLbls)
         for lbl in lbls
-            vals = [NeXLUncertainties.value(ffr.kratios, lbl, missing) for ffr in ffrs]
+            vals = [value(ffr.kratios, lbl, missing) for ffr in ffrs]
             insertcols!(res, ncol(res) + 1, Symbol(repr(lbl)) => vals)
             if withUnc
                 unc = [σ(ffr.kratios, lbl, missing) for ffr in ffrs]
@@ -156,16 +156,15 @@ function NeXLUncertainties.asa(
 end
 
 function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
-    withUnc ?
-    DataFrame(
-        ROI = labels(fr),
-        k = map(l -> NeXLUncertainties.value(fr.kratios, l), labels(fr)),
-        δk = map(l -> σ(fr.kratios, l), labels(fr)),
-    ) : #
-    DataFrame(
-        ROI = labels(fr),
-        k = map(l -> NeXLUncertainties.value(fr.kratios, l), labels(fr)),
+    rois = labels(fr)
+    res =  DataFrame(
+        ROI = rois,
+        k = map(l -> value(fr.kratios, l), rois),
     )
+    if withUnc
+        res[:, "σ(k)"] = map(l -> σ(fr.kratios, l), rois)
+    end
+    return res
 end
 
 function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
@@ -175,7 +174,7 @@ function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
         lbl -> lbl isa CharXRayLabel,
         sort(collect(Set(mapreduce(labels, append!, ffrs)))),
     )
-    insertcols!(desc, 4, :hetero => [heterogeneity(lbl, ffrs) for lbl in lbls])
+    insertcols!(desc, 4, :hetero => heterogeneity.(Ref(ffrs), lbls))
     return desc
 end
 
@@ -213,6 +212,11 @@ function residual(ffr::FilterFitResult)::Spectrum
     return Spectrum(ffr.label.spectrum.energy, ffr.residual, props)
 end
 
+"""
+    spectrum(ffr::FilterFitResult)::Spectrum
+
+Returns the original unknown spectrum.
+"""
 spectrum(ffr::FilterFitResult)::Spectrum = ffr.label.spectrum
 
 """

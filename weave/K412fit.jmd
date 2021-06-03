@@ -1,7 +1,7 @@
 ## Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection
 
 This document demonstrates the low-level API for filter fitting spectra.  It is more flexible than the higher-
-level API but much more complex.  In most situations, the high level API discussed [here]() is more appropriate.
+level API but much more complex.  In most situations, the high level API discussed [here](K412refs.md) is more appropriate.
 
 Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.
 
@@ -30,8 +30,8 @@ fe = loadspectrum(joinpath(path, "Fe std.msa"),det)
 mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
 sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
 # Add carbon coating
-map(s->s[:Coating]=Film(pure(n"C"), 30.0e-7), unks)
-map(s->s[:Coating]=Film(pure(n"C"), 10.0e-7), (al2o3, caf2, mgo, sio2));
+foreach(s->s[:Coating]=Film(pure(n"C"), 30.0e-7), unks)
+foreach(s->s[:Coating]=Film(pure(n"C"), 10.0e-7), (al2o3, caf2, mgo, sio2));
 ```
 
 Table: The spectra

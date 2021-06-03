@@ -763,7 +763,7 @@ Returns a DataFrame that summarizes the list of spectra.
 """
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
-    specs::AbstractArray{Spectrum},
+    specs::AbstractArray{<:Spectrum},
 )::DataFrame
     _asname(comp) = ismissing(comp) ? missing : name(comp)
     unf, unl, uns = Union{Float64,Missing}, Union{Film,Nothing}, Union{String,Missing}

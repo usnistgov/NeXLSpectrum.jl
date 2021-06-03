@@ -137,11 +137,14 @@ include("brukerpdz.jl")
 include("brukerspx.jl")
 include("fileiosupport.jl")
 include("semanticsptx.jl")
+include("hspy.jl")
 
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format
 export sniffspectrum # Determine spectrum file type
 export readptx # Read a SEMantics PTX file
+export readhspy # Read a HyperSpy-style HDF5 file
+export ishspy # Is the file a HyperSpy-style HDF5 file
 
 # SpectrumFileType structs for `loadspectrum()` and `savespectrum()` support
 export BrukerSPX # Read only, SEM/EDS & XRF format

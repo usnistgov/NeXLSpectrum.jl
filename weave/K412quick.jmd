@@ -18,26 +18,21 @@ using DataFrames, Latexify      # Tables
 #### Read in the Spectra
 ```julia
 path = joinpath(@__DIR__, "K412 spectra")
-# Load a single spectrum
-fe = loadspectrum(joinpath(path, "Fe std.msa"))
-# Create a detector model to match it
-det = matching(fe, 132.0, 10)
-# Now load all the spectra using this detector
-unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),det)).(0:4)
-al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"),det)
-caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"),det)
-fe = loadspectrum(joinpath(path, "Fe std.msa"),det)
-mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
-sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
+# Load the unknowns 
+unks = map(0:4) do i
+  loadspectrum(joinpath(path, "III-E K412[$i][4].msa"))
+end
+# Create a detector model to match the unknown spectra
+det = matching(unks[1], 132.0, 10)
 ```
 ```julia; echo=false
-latexify(asa(DataFrame, Spectrum[unks..., al2o3, caf2, fe, mgo, sio2]), env=:mdtable, latex=false, fmt="%0.4g")
+latexify(asa(DataFrame, unks), env=:mdtable, latex=false, fmt="%0.4g")
 ```
 Notice that the spectra all have 1) live-time (`:LiveTime`); 2) probe-current (`:ProbeCurrent`); 3) take-off angle
 (`:TakeOffAngle`); 4) beam energy (`:BeamEnergy`); and detector (`:Detector`) properties defined.  These properties
 are necessary for extracting the k-ratios and estimating the composition.
 ```julia
-sio2[:LiveTime], sio2[:ProbeCurrent], sio2[:TakeOffAngle], sio2[:BeamEnergy], sio2[:Detector]
+unks[1][:LiveTime], unks[1][:ProbeCurrent], unks[1][:TakeOffAngle], unks[1][:BeamEnergy]
 ```
 #### The Unknowns
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
@@ -47,38 +42,37 @@ display(plot(unks..., klms=[n"O",n"Mg",n"Al",n"Si",n"Ca",n"Fe"], xmax=8.0e3))
 Build a convenient structure so it is easy to appreciate the necessary information and to splat it into
 `filteredReference`.
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-refs = (
-  # spectrum, element, composition
-  ( al2o3, n"Al", mat"Al2O3" ), #
-  ( mgo,   n"Mg", mat"MgO" ),   #
-  ( fe,    n"Fe", mat"Fe" ),    #
-  ( sio2,  n"Si", mat"SiO2" ),  #
-  ( sio2,  n"O",  mat"SiO2" ),  #
-  ( caf2,  n"Ca", mat"CaF2" ), )
-display(plot(al2o3, caf2, fe, mgo, sio2, klms=collect( ref[2] for ref in refs), xmax=8.0e3))
+ffrs = references( [
+  reference(n"Al", joinpath(path, "Al2O3 std.msa"), mat"Al2O3" ), #
+  reference(n"Mg", joinpath(path, "MgO std.msa"), mat"MgO" ),   #
+  reference(n"Fe", joinpath(path, "Fe std.msa"), mat"Fe" ),    #
+  reference(n"Si", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),  #
+  reference(n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2" ),  #
+  reference(n"Ca", joinpath(path, "CaF2 std.msa"), mat"CaF2" ) 
+], det)
+display(plot( spectra(ffrs)..., klms= [n"O",n"Mg",n"Al",n"Si",n"Ca",n"Fe"], xmax=8.0e3))
 ```
 
 #### Filter the Reference Spectra and Compute the VectorQuant Structure
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-# Build a top-hat filter
-filt = buildfilter(det)
-# Filter all the reference spectra
-frs = mapreduce(ref->filterreference(filt, ref..., withEsc=false), append!, refs)
-# Build the VectorQuant structure from the fitered references and the filter
-vq = VectorQuant(frs, filt)
-plot(vq,1:800)
+vq = VectorQuant(ffrs)
+plot(vq, 1:800)
 ```
 
 Let's take a look at a residual spectrum by plotting one of the `FilterFitResult` objects.
 Perform the fit and look at the residual
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-res = map(unk->fit_spectrum(vq, unk),unks)
+res = map(unks) do unk
+  fit_spectrum(vq, unk)
+end
 plot(res[1])
 ```
 
 #### Compare this with the weighted fit
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
-resfull = map(unk->fit_spectrum(unk,filt,frs,false), unks)
+resfull = map(unks) do unk
+  fit_spectrum(unk, ffrs)
+end
 plot(resfull[1])
 ```
 
@@ -93,6 +87,6 @@ display(latexify(asa(DataFrame, resfull, withUnc=true), env=:mdtable, latex=fals
 Compare the timings (full then fast)
 ```julia
 using BenchmarkTools
-@btime map(unk->fit_spectrum(unk,filt,frs,false), unks)
-@btime map(unk->fit_spectrum(vq, unk),unks)
+@btime map(unk->fit_spectrum(unk, ffrs), unks)
+@btime map(unk->fit_spectrum(vq, unk), unks)
 ```

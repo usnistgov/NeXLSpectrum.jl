@@ -30,6 +30,8 @@ struct VectorQuant
             NeXLSpectrum.filterdata(filt, 1:length(filt.filters))
         return new(refs, xTxIxf)
     end
+
+    VectorQuant(ffrs::FilterFitPacket) = VectorQuant(ffrs.references, ffrs.filter)
 end
 
 NeXLCore.minproperties(::VectorQuant) = (:BeamEnergy, :TakeOffAngle, :)

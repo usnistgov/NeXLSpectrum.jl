@@ -256,16 +256,18 @@ function Base.getindex(
 end
 function Base.getindex(
     hss::HyperSpectrum,
-    cxrs::NTuple{3,CharXRay}
+    cxr1::CharXRay,
+    cxr2::CharXRay
 ) 
-    colorize(hss, collect(cxrs), :All)
+    colorize(hss, [cxr1, cxr2], :All)
 end
-
 function Base.getindex(
     hss::HyperSpectrum,
-    cxrs::NTuple{2,CharXRay}
+    cxr1::CharXRay,
+    cxr2::CharXRay,
+    cxr3::CharXRay
 ) 
-    colorize(hss, collect(cxrs), :All)
+    colorize(hss, [cxr1, cxr2, cxr3], :All)
 end
 
 function Base.get(hss::HyperSpectrum, sym::Symbol, def) 

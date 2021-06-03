@@ -1,6 +1,7 @@
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
+/tmp_dir
 /docs/build/
 /docs/src/figures/*
 /docs/Manifest.toml
@@ -17,3 +18,4 @@ weave/*.html
 weave/jl_*
 staging.jl
 test/Artifacts.toml
+/notebook/.ipynb_checkpoints/*

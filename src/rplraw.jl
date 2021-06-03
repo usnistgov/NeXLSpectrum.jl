@@ -61,6 +61,12 @@ reorganized into 'vector' format when returned as a Array.
     ** `:image` => Each channel of data organized in image planes
     * Data types: signed/unsigned 8/16/32-bit integers or 16-bit/32-bit/64-bit floats
 
+    readrplraw(filenamebase::AbstractString)::Array{<:Real}
+
+Read the files filenamebase*".rpl" and filenamebase*".raw" into an Array.  Maintains the data type
+of the values in the RAW file.
+
+
 #### Standard LISPIX Parameters in .rpl File
 
 .rpl files consist of 9 lines.  Each line consists of a 'key'<tab>'value' where there is one and only one tab and

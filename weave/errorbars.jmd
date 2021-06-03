@@ -28,39 +28,37 @@ using BenchmarkTools
 Load the spectra, define the fit model and apply it.
 ```julia
 path = joinpath(@__DIR__,"K412 spectra")
-fe = loadspectrum(joinpath(path, "Fe std.msa"))
-det = matching(fe, 132.0, 10)
-unks = (i->loadspectrum(joinpath(path, "III-E K412[$i][4].msa"),det)).(0:4)
-al2o3 = loadspectrum(joinpath(path, "Al2O3 std.msa"),det)
-caf2 = loadspectrum(joinpath(path, "CaF2 std.msa"),det)
-fe = loadspectrum(joinpath(path, "Fe std.msa"),det)
-mgo = loadspectrum(joinpath(path, "MgO std.msa"),det)
-sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"),det)
-
-refs = (
-  # spectrum, element, composition
-  ( al2o3, n"Al", mat"Al2O3" ), #
-  ( mgo,   n"Mg", mat"MgO" ),   #
-  ( fe,    n"Fe", mat"Fe" ),    #
-  ( sio2,  n"Si", mat"SiO2" ),  #
-  ( sio2,  n"O",  mat"SiO2" ),  #
-  ( caf2,  n"Ca", mat"CaF2" ), )
-
-filt = buildfilter(det)
-frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
+unks = map(0:4) do i 
+  loadspectrum(joinpath(path, "III-E K412[$i][4].msa"))
+end
+det = matching(unks[1], 132.0, 10)
+frs = references( [
+  reference(n"Al", joinpath(path, "Al2O3 std.msa"), mat"Al2O3"),
+  reference(n"Mg", joinpath(path, "MgO std.msa"), mat"MgO"),
+  reference(n"Fe", joinpath(path, "Fe std.msa"), mat"Fe"),
+  reference(n"Si", joinpath(path, "SiO2 std.msa"), mat"SiO2"),
+  reference(n"O", joinpath(path, "SiO2 std.msa"), mat"SiO2"),
+  reference(n"Ca", joinpath(path, "CaF2 std.msa") ,mat"CaF2")
+], det)
 # frs is now a FilteredReference[] used to fit the unknowns.
 
-ss = subdivide(unks[1], 100)
-res= map(s->fit_spectrum(s,filt,frs,false), ss)
+# Split the counts in unks[1] into 100 randomized spectra which will sum to unks[1] then fit them
+res = map(subdivide(unks[1], 100)) do s
+  fit_spectrum(s, frs)
+end
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res[1:10], withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
+```
+```julia; echo=false
 display(latexify(describe(res),env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 
 Repeat the fit for the 4 measured unknowns.
 ```julia
-res= map(s->fit_spectrum(s,filt,frs,false),unks)
+res= map(unks) do s
+  fit_spectrum(s, frs)
+end
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -70,7 +68,7 @@ Summary statistics.
 display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 ```julia
-@btime fit_spectrum(unks[1], filt, frs, false)
+@btime fit_spectrum(unks[1], frs)
 ```
 
 ###### AMM-6005a
@@ -80,24 +78,23 @@ path = normpath(joinpath(@__DIR__, "..","test","ADM6005a spectra"))
 unks = map(i->loadspectrum(joinpath(path,"ADM-6005a_$i.msa")),1:15)
 al, caf2, fe, ge, si, sio2, ti, zn = map(f->loadspectrum(joinpath(path,"$f.msa")), ("Al std", "CaF2 std", "Fe std", "Ge std", "Si std", "SiO2 std", "Ti trimmed","Zn std"))
 
-refs = (
-  # spectrum, element, composition
-  ( al,   n"Al", mat"Al" ), #
-  ( caf2, n"Ca", mat"CaF2" ),   #
-  ( fe,   n"Fe", mat"Fe" ),    #
-  ( ge,   n"Ge", mat"Ge" ),    #
-  ( si,   n"Si", mat"Si" ),  #
-  ( sio2, n"O",  mat"SiO2" ),  #
-  ( ti,   n"Ti", mat"Ti" ),
-  ( zn,   n"Zn", mat"Zn" ),
-)
-
 det = matching(unks[1], 132.0, 10)
-filt = buildfilter(det)
-frs = mapreduce(ref->filterreference(filt, ref..., withEsc=true), append!, refs)
-# frs is now a FilteredReference[] used to fit the unknowns.
-ss = subdivide(unks[1], 100)
-res= map(s->fit_spectrum(s,filt,frs,false), ss)
+
+frs = references( [
+  reference(n"Al", al, mat"Al" ), #
+  reference(n"Ca", caf2, mat"CaF2" ),   #
+  reference(n"Fe", fe, mat"Fe" ),    #
+  reference(n"Ge", ge, mat"Ge" ),    #
+  reference(n"Si", si, mat"Si" ),  #
+  reference(n"O", sio2, mat"SiO2" ),  #
+  reference(n"Ti", ti, mat"Ti" ),
+  reference(n"Zn", zn, mat"Zn" ) 
+], det)
+
+ss = 
+res= map(subdivide(unks[1], 100)) do s
+  fit_spectrum(s, frs)
+end
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res[1:10], withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -109,7 +106,9 @@ display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 
 Repeat for the 15 measured spectra.
 ```julia
-res= map(s->fit_spectrum(s,filt,frs,false),unks)
+res= map(unks) do s
+  fit_spectrum(s, frs)
+end
 ```
 ```julia; echo=false
 display(latexify(asa(DataFrame, res, withUnc=true), env=:mdtable, latex=false, fmt="%0.4g"))
@@ -119,5 +118,5 @@ Summary statistics.
 display(latexify(describe(res), env=:mdtable, latex=false, fmt="%0.4g"))
 ```
 ```julia;
-@btime fit_spectrum(unks[1], filt, frs, false)
+@btime fit_spectrum(unks[1], frs)
 ```
