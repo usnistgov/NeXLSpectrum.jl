@@ -10,6 +10,19 @@
 [travis-img]: https://travis-ci.com/usnistgov/NeXLSpectrum.jl.svg?branch=master
 [travis-url]: https://travis-ci.com/usnistgov/NeXLSpectrum.jl
 
+#### Installation
+Install NeXLSpectrum using the Julia package manager
+```julia
+> ]add NeXLSpectrum
+```
+or
+
+```julia
+> using Pkg
+> Pkg.add("NeXLSpectrum")
+```
+
+#### Notes
 `NeXLSpectrum` is a library of tools for manipulating EDS spectrum within the
 NeXL framework. `NeXLSpectrum` depends on `NeXLUncertainties`, `NeXLCore` and
 `NeXLMatrixCorrection` and loading `NeXLSpectrum` will also make these
