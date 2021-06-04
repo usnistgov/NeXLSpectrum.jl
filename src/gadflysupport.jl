@@ -332,6 +332,7 @@ function Gadfly.plot(
     comp::Union{Material, Nothing} = nothing,
     det::Union{EDSDetector, Nothing} = nothing,
     resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
+    yscale = 1.0
 )
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp =
@@ -357,7 +358,7 @@ function Gadfly.plot(
         push!(layers, layer(x=roi, y=cc[roi], Geom.line, Theme(default_color=palette[2])))
     end
     miny, maxy, prev, i =
-        minimum(ffr.residual[roi]), 3.0 * maximum(ffr.residual[roi]), -1000, -1
+        minimum(ffr.residual[roi]), 3.0 * yscale * maximum(ffr.residual[roi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
         if NeXLUncertainties.value(ffr, lbl) > 0.0
             # This logic keeps the labels on different lines (mostly...)

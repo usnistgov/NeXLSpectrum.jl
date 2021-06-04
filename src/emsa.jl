@@ -202,6 +202,12 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
 						catch
 							# Just ignore it
 						end
+					elseif key== "#OXINSTELEMS"
+						try
+							props[:Elements] = map(v->parse(Element, v), strip.(split(value,",")))
+						catch
+							# Just ignore it
+						end
 					end
 	            end
 			catch

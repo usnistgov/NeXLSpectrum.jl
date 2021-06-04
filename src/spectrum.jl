@@ -314,7 +314,7 @@ elements are also added.
 function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
     res = Set{Element}()
     if haskey(spec, :Elements)
-        append!(res, spec[:Elements])
+        union!(res, spec[:Elements])
     end
     if haskey(spec, :Composition)
         union!(res, keys(spec[:Composition]))
