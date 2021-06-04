@@ -194,9 +194,6 @@ export extractStandards
 include("standardize.jl")
 # export NeXLCore.standardize
 
-include("qquant.jl")
-export VectorQuant
-
 include("llsq.jl")
 # The implementation for weighted filter-fit.
 include("filterfit_wls.jl")
@@ -233,6 +230,9 @@ export references
 export spectra
 export suitability # Tabulates material suitability for use as a fitting reference
 
+include("qquant.jl")
+export VectorQuant
+
 include("labeled.jl")
 export labeledimage # Displays an image and caption.
 export labeledimages # Displays a grid of images and captions.
@@ -253,10 +253,6 @@ export multiscore # Scores spectra relative to one another.
 export multirank # A single number value that scores the spectra
 
 export plot_compare # Plots a statistical channel-by-channel comparison of spectra
-
-include("hspy.jl")
-export read_hspy
-export ishspy
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
