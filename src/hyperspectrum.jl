@@ -691,29 +691,12 @@ Create RGB colorized images from three `KRatios` or from three `Element`s.  The 
 are normalized relative to all `KRatios` in `krs`. The resulting images are scaled by the factor
 `scale` to allow visualization of trace elements.
 """
-function colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All)
-    idx  = collect( findfirst(kr->isequal(kr.element, elm), krs) for elm in (red, green, blue) )
-    if normalize==:All
-        # Normalize relative to sum of KRatios at each point
-        s = map(CartesianIndices(krs[1])) do ci
-            ss = sum( max(0.0, kr.kratios[ci]) for kr in krs)
-            ss<=0.0 ? 1.0 : ss
-        end
-        clip(skr) = min(skr, 1.0)
-        norm(kr) = clip.(kr.kratios ./ s)
-        colorview(RGB, norm(krs[idx[1]]), norm(krs[idx[2]]), norm(krs[idx[3]]))
-    else
-        # Normalize relative to max of each KRatios independently
-        each(kr) = kr.kratios / maximum(kr.kratios)
-        colorview(RGB, each(krs[idx[1]]), each(krs[idx[2]]), each(krs[idx[3]]))
-    end
-end
-function colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
+function NeXLCore.colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
     if normalize==:All
         imgs = roiimages(hss, cxrs)
         colorview(RGB, imgs[1], length(imgs) > 1 ? imgs[2] : zeroarray, length(imgs) > 2 ? imgs[3] : zeroarray )
     else
-        # Normalize relative to max of each KRatios independently
+        # Normalize relative to max of each ROIs independently
         colorview(RGB, roiimage(hss,cxrs[1]), length(cxrs)>1 ? roiimage(hss,cxrs[2]) : zeroarray, length(cxrs) > 2 ? roiimage(hss, cxrs[3]) : zeroarray)
     end
 end
