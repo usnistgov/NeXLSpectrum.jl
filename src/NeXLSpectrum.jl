@@ -1,5 +1,7 @@
 module NeXLSpectrum
 
+using Images: AxisArrays
+using Base: UInt16, UInt64
 using Reexport
 using Requires
 
@@ -123,6 +125,7 @@ export axisname # The name of the i-th axis
 export axisvalue # The calibrated coordinate value for the pixel coordinate
 export axisrange # range of coordinate values for the specified axis
 export livetime, livetime! # Get/Set livetime on a per-pixel basis
+export block # Reduce the size of a HyperSpectrum by summing together blocks of adjacent pixels
 
 include("rplraw.jl")
 export RPLHeader
@@ -239,6 +242,7 @@ export plotandimage # Display an image the right of a Gadfly plot
 
 include("line.jl")
 export drawline
+export drawray
 
 include("quantify.jl")
 export quantify
