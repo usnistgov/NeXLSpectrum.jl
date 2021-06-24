@@ -50,13 +50,16 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
 
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
         axisnames = ( "Y", "X", "Z", "A", "B", "C" ), #
-        fov = ( 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ), #
-        offset = ( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), #
+        fov = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ], #
+        offset = 0.0 * collect(fov), #
         stagemap::Type{<:StageMapping}=DefaultStageMapping, #
         livetime=fill(get(props, :LiveTime, 1.0), size(arr)[2:end]...)
     )
-        axes = [ Axis{:Channel}(1:size(arr,1)), #
-                ( Axis{Symbol(axisnames[i-1])}(offset[i-1]:fov[i-1]/(size(arr,i)-1):offset[i-1]+fov[i-1]) for i in 2:ndims(arr) )... ]
+        axes = Axis[ Axis{:Channel}(1:size(arr,1)) ]
+        for i in 1:ndims(arr)-1
+            left = offset[i]-fov[i]/2.0
+            push!(axes, Axis{Symbol(axisnames[i])}(left:fov[i]/(size(arr,i+1)-1):(left+fov[i]))) 
+        end
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(arr, axes...)
         # @show AxisArrays.axes(counts)
@@ -91,8 +94,11 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
         offset = ( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), #
         stagemap::Type{<:StageMapping}=DefaultStageMapping
     )
-        axes = [ Axis{:Channel}(1:depth), #
-            ( Axis{Symbol(axisnames[i])}(offset[i]:fov[i]/(dims[i]-1):offset[i]+fov[i]) for i in 1:length(dims) )... ]
+        axes = Axis[ Axis{:Channel}(1:depth) ]
+        for i in 1:length(dims)
+            left = offset[i]-fov[i]/2.0
+            push!(axes, Axis{Symbol(axisnames[i])}(left:fov[i]/(dims[i]-1):(left+fov[i]))) 
+        end
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(zeros(type, depth, dims...), axes...)
         livetime = fill(Float64(get(props,:LiveTime,1.0)), dims...)
@@ -242,7 +248,15 @@ function Base.getindex(
 )::HyperSpectrum{T, N, NP} where {T<:Real, N, NP}
     props = copy(hss.properties)
     props[:Name] = "$(name(hss))[$idx]"
-    return HyperSpectrum(hss.energy, props, counts(hss)[:, idx...], livetime=hss.livetime[idx...])
+    fov = map(1:length(idx)) do i 
+        ax = AxisArrays.axes(hss,i)
+        ax[last(idx[i])]-ax[first(idx[i])]
+    end
+    offset = map(1:length(idx)) do i
+        ax = AxisArrays.axes(hss,i)
+        0.5*(ax[last(idx[i])]+ax[first(idx[i])])
+    end 
+    return HyperSpectrum(hss.energy, props, counts(hss)[:, idx...], livetime=hss.livetime[idx...], fov = fov, offset = offset)
 end
 
 function Base.getindex(
@@ -406,7 +420,7 @@ end
 """
    plane(hss::HyperSpectrum, ch::Int, normalize=false)
 
-Extracts a single plane from a HyperSpectrum. The dimension of the result is
+Extracts a single channel plane from a HyperSpectrum. The dimension of the result is
 one less than the dimension of the HyperSpectrum.
 """
 function plane(hss::HyperSpectrum, ch::Int, normalize = false)
@@ -637,9 +651,15 @@ using Images
 
 Create an array of Gray images representing the intensity in each range of channels in
 in `achs`.  They are normalized such the the most intense pixel in any of them defines white.
+(Accounts for differences in :LiveTime between pixels.)
 """
 function roiimages(hss::HyperSpectrum, achs::AbstractVector{<:AbstractUnitRange{<:Integer}})
-    ps = map(chs -> plane(hss, chs, false), achs)
+    data = counts(hss)
+    ps = map(achs) do chs
+        map(CartesianIndices(hss)) do ci
+            sum(view(data, chs, ci), init=zero(Float64)) / hss.livetime[ci]
+        end
+    end
     maxval = maximum(map(p -> maximum(p), ps))
     return map(p -> Gray.(convert.(N0f8, p / maxval)), ps)
 end
@@ -648,9 +668,15 @@ end
     roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer})
 
 Create a count map from the specified contiguous range of channels.
+(Accounts for differences in :LiveTime between pixels.)
 """
-roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer}) =
-    Gray.(N0f8.(plane(hss, chs, true)))
+function roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer})
+    data = counts(hss)
+    tmp = map(CartesianIndices(hss)) do ci
+        sum(view(data, chs, ci), init=zero(Float64)) / hss.livetime[ci]
+    end
+    Gray.(N0f8.(tmp ./= maximum(tmp)))
+end
 
 function fwhmroi(hss::HyperSpectrum, cxr::CharXRay)
     ecxr = energy(cxr)
@@ -665,9 +691,7 @@ Create a count map for the specified characteristic X-ray.  By default, integrat
 for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetector`, the FWHM is taken from it.
 Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
-function roiimage(hss::HyperSpectrum, cxr::CharXRay)
-    return roiimage(hss, fwhmroi(hss, cxr))
-end
+roiimage(hss::HyperSpectrum, cxr::CharXRay) = roiimage(hss, fwhmroi(hss, cxr))
 
 """
     roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
@@ -677,10 +701,7 @@ in `cxrs`.  They are normalized such the the most intense pixel in any of them d
 By default, integrates for one FWHM at `cxr`.  If hss[:Detector] is an `EDSDetector`, the FWHM 
 is taken from it.   Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 """
-function roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay})
-    achs = map(cxr->fwhmroi(hss, cxr), cxrs)
-    return roiimages(hss, achs)
-end
+roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}) = roiimages(hss, map(cxr->fwhmroi(hss, cxr), cxrs))
 
 """
     colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All[|:Each])
@@ -734,22 +755,67 @@ function block(hss::HyperSpectrum{T,N,NP}, steps::NTuple{N, Int})::HyperSpectrum
 end
 
 """
-    linescan(hss::HyperSpectrum{T,2,3}, ci1::CartesianIndex{2}, ci2::CartesianIndex{2})
+    linescan(hss::HyperSpectrum{T,2,3}, ci1::CartesianIndex{2}, ci2::CartesianIndex{2}, width::Int=1) 
 
-Extract pixels from `hss` along the line from `ci1` to `ci2` as a 1D HyperSpectrum.  Only works on 2D SpectrumImages.
+Extract pixels from `hss` along the line from `ci1` to `ci2` as a 1D HyperSpectrum.  The `width` argument integrates
+the linescan along a line perpendicular to the primary axis. Only works on 2D SpectrumImages and for odd values of `width`.  
+The algorithm does double count the occasional pixel but the length of each perpendicular is maintained at `width`.
+The `AxisArrays.axes(...)` scaling is maintained so lengths on the linescan can be compared to lengths on the original map.
 """
-function linescan(hss::HyperSpectrum{T,2,3}, ci1::CartesianIndex{2}, ci2::CartesianIndex{2}) where {T<:Real}
+function linescan(hss::HyperSpectrum{T,2,3}, ci1::CartesianIndex{2}, ci2::CartesianIndex{2}, width::Int=1) where {T<:Real}
+    @assert width >= 1 "Only positive widths are supported in linescan."
+    @assert ci1 in CartesianIndices(hss) "$ci1 is not inside $(CartesianIndices(hss))"
+    @assert ci2 in CartesianIndices(hss) "$ci2 is not inside $(CartesianIndices(hss))"
+    function perpray(c1, c2, w) # Computes a list of CI's starting at c1 towards c2 of length w skipping c1
+        i, res = 0, CartesianIndex[]
+        drawray(c1, c2) do ci
+            if (i>0) && (i<=w)
+                push!(res, CartesianIndex(ci))
+            end
+            (i+=1)<=w
+        end
+        return res
+    end
+    width % 2 == 0 && @info "Even widths are rounded down to the nearest odd width."
     fov = [ sqrt(sum(map(1:2) do ii
         a = AxisArrays.axes(hss, ii)
         (a[ci2.I[ii]]-a[ci1.I[ii]])^2
     end)) ]
     len = sum(abs.(ci2.I .- ci1.I)) + 1
-    res = HyperSpectrum(hss.energy, copy(hss.properties), (len, ), depth(hss), T, 
-        axisnames=[ "Linescan[$(ci1.I), $(ci2.I)]" ], fov = fov, offset = 0.0*fov)
-    cxh, cxr, idx = counts(hss), counts(res), 0
+    hs2 = HyperSpectrum(hss.energy, copy(hss.properties), (len, ), depth(hss), T, 
+        axisnames=[ "Linescan[$(ci1.I), $(ci2.I), $width]" ], fov = fov, offset = 0.0*fov)
+    cxh, cxr, idx = counts(hss), counts(hs2), 0
     drawline(ci1, ci2, true) do ci
         idx+=1
         cxr[:, idx] .= @view cxh[:, ci...]
+        hs2.livetime[idx] = hss.livetime[ci...]
     end
-    return res
+    if (width-1) ÷ 2 > 0
+        bounds = CartesianIndices(hss)
+        for rot in ( [ 0 -1; 1 0 ], [ 0 1; -1 0 ])
+            perp = rot * collect(ci2.I .- ci1.I)
+            r1 = perpray(ci1, CartesianIndex((perp  .+ ci1.I)...), (width-1) ÷ 2)
+            r2 = perpray(ci2, CartesianIndex((perp  .+ ci2.I)...), (width-1) ÷ 2)
+            for (ci1r, ci2r) in zip(r1, r2)
+                idx = 0
+                drawline(ci1r, ci2r, true) do ci
+                    idx+=1
+                    if all(i->ci[i] in bounds.indices[i], 1:2)
+                        cxr[:, idx] .+= @view cxh[:, ci...]
+                        hs2.livetime[idx] += hss.livetime[ci...]
+                    end
+                end
+            end
+        end
+    end
+    return hs2
+end
+
+function gridize(img,step=16)
+    for ci in CartesianIndices(img)
+        if any(i->i%step==0, ci.I)
+            img[ci] = 1-img[ci]
+        end
+    end
+    return img 
 end

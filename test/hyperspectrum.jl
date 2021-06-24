@@ -55,7 +55,7 @@ rrpath = artifact_path(rplraw_hash)
         :ProbeCurrent => 3.04,
         :Name => "Map[15]",
     )
-    hs = HyperSpectrum(les, props, raw, fov = (0.128, 0.128))
+    hs = HyperSpectrum(les, props, raw, fov = ( 0.128, 0.128 ))
 
     @test name(hs)=="Map[15]"
     @test size(hs) == (128, 128)
@@ -125,17 +125,17 @@ rrpath = artifact_path(rplraw_hash)
 
     @test axisname(hs,1) == :Y
     @test axisname(hs,2) == :X
-    @test axisvalue(hs, 1, 1) == 0.0
-    @test axisvalue(hs, 1, 128) == 0.128
-    @test isapprox(axisvalue(hs, 1, 28), (28-1)*0.128/(128-1), atol=1.0e-8)
-    @test axisvalue(hs, 2, 1) == 0.0
-    @test axisvalue(hs, 2, 128) == 0.128
-    @test isapprox(axisvalue(hs, 1, 73), (73-1)*0.128/(128-1), atol=1.0e-8)
+    @test axisvalue(hs, 1, 1) == -0.064
+    @test axisvalue(hs, 1, 128) == 0.064
+    @test isapprox(axisvalue(hs, 1, 28), (28-64.5)*0.128/(128-1), atol=1.0e-8)
+    @test axisvalue(hs, 2, 1) == -0.064
+    @test axisvalue(hs, 2, 128) == 0.064
+    @test isapprox(axisvalue(hs, 1, 73), (73-64.5)*0.128/(128-1), atol=1.0e-8)
 
-    @test first(axisrange(hs, 1))==0.0
-    @test last(axisrange(hs, 1))==0.128
-    @test first(axisrange(hs, 2))==0.0
-    @test last(axisrange(hs, 2))==0.128
+    @test first(axisrange(hs, 1))==-0.064
+    @test last(axisrange(hs, 1))==0.064
+    @test first(axisrange(hs, 2))==-0.064
+    @test last(axisrange(hs, 2))==0.064
      
     raw = nothing
     GC.gc()
