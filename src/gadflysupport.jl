@@ -176,7 +176,7 @@ function Gadfly.plot(
             eesc = energy(xrs) - energy(n"Si K-L3")
             if eesc > 0.0
                 ich = maximum(
-                    get(specdata[i], channel(eesc, specs[i]), 0.0) for in in eachindex(specs)
+                    get(specdata[i], channel(eesc, specs[i]), 0.0) for i in eachindex(specs)
                 )
                 push!(x, eesc)
                 push!(y, ytransform(ich))
