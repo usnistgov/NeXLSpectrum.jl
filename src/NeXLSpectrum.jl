@@ -1,13 +1,14 @@
 module NeXLSpectrum
 
-using Images: AxisArrays
+using ThreadsX: maximum
+using NeXLCore: isinside
 using Base: UInt16, UInt64
 using Reexport
 using Requires
 
 using Dates
 using Images
-using AxisArrays: AxisArrays, AxisArray, axes, axisnames, axisvalues
+using ImageAxes: AxisArrays, AxisArray, axes, axisnames, axisvalues
 using Unitful: mm
 using FileIO
 using Mmap
@@ -126,6 +127,7 @@ export axisvalue # The calibrated coordinate value for the pixel coordinate
 export axisrange # range of coordinate values for the specified axis
 export livetime, livetime! # Get/Set livetime on a per-pixel basis
 export block # Reduce the size of a HyperSpectrum by summing together blocks of adjacent pixels
+export linescan # Extract the data in a 2D HyperSpectrum along a line (with width) as a 1D HyperSpectrum. 
 
 include("rplraw.jl")
 export RPLHeader

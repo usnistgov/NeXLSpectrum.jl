@@ -306,12 +306,12 @@ Is the specified key defined?
 Base.haskey(spec::Spectrum, sym::Symbol) = haskey(spec.properties, sym)
 
 """
-    elms(spec::Spectrum, withcoating = false, def=missing)
+    elms(spec::Spectrum, withcoating = false)::Set{Element}
 
-Returns a list of the elements associated with this spectrum. `withcoating` determines whether the coating
+Returns a set of the elements associated with this spectrum. `withcoating` determines whether the coating
 elements are also added.
 """
-function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
+function NeXLCore.elms(spec::Spectrum, withcoating = false)::Set{Element}
     res = Set{Element}()
     if haskey(spec, :Elements)
         union!(res, spec[:Elements])
@@ -325,7 +325,7 @@ function NeXLCore.elms(spec::Spectrum, withcoating = false, def = missing)
     if withcoating && haskey(spec, :Coating)
         union!(res, keys(material(spec[:Coating])))
     end
-    return length(res) == 0 ? def : res
+    return res
 end
 
 """

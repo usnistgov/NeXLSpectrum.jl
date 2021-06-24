@@ -70,10 +70,10 @@ Plot a filtered reference spectrum.
 """
 Gadfly.plot( #
     specs::AbstractVector{Spectrum{<:Real}};
-    klms = [],
-    edges = [],
-    escapes = [],
-    coincidences = [],
+    klms = Union{Element,CharXRay}[],
+    edges = AtomicSubShell[],
+    escapes = CharXRay[],
+    coincidences = CharXRay[],
     autoklms = false,
     xmin = 0.0,
     xmax = missing,
@@ -93,17 +93,17 @@ Gadfly.plot( #
     xmax = xmax,
     norm = norm,
     yscale = yscale,
-    ytransform = identity,
+    ytransform = ytransform,
     style = style,
     palette = palette,
 )
 
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
-    klms = [],
-    edges = [],
-    escapes = [],
-    coincidences = [],
+    klms = Union{Element,CharXRay}[],
+    edges = AtomicSubShell[],
+    escapes = CharXRay[],
+    coincidences = CharXRay[],
     autoklms = false,
     xmin = 0.0,
     xmax = missing,
@@ -126,7 +126,7 @@ function Gadfly.plot(
         for cs in values(d)
             br = brightest(cs)
             ich = maximum(
-                get(specdata[i], channel(energy(br), spec), -1.0) for (i, spec) in enumerate(specs)
+                get(specdata[i], channel(energy(br), specs[i]), -1.0) for i in eachindex(specs)
             )
             if ich > 0
                 for c in cs
@@ -176,8 +176,7 @@ function Gadfly.plot(
             eesc = energy(xrs) - energy(n"Si K-L3")
             if eesc > 0.0
                 ich = maximum(
-                    get(specdata[i], channel(eesc, spec), 0.0) for
-                    (i, spec) in enumerate(specs)
+                    get(specdata[i], channel(eesc, specs[i]), 0.0) for in in eachindex(specs)
                 )
                 push!(x, eesc)
                 push!(y, ytransform(ich))
@@ -199,8 +198,7 @@ function Gadfly.plot(
             for xrs2 in cxrs[i:end] # place each pair once...
                 eesc = energy(xrs1) + energy(xrs2)
                 ich = maximum(
-                    get(specdata[i], channel(eesc, spec), 0.0) for
-                    (i, spec) in enumerate(specs)
+                    get(specdata[i], channel(eesc, specs[1]), 0.0) for i in eachindex(specs)
                 )
                 if ich > 0.0
                     push!(x, eesc)
@@ -250,13 +248,13 @@ function Gadfly.plot(
     end
     if duanehunt 
         dhx, dhy = Float64[], Float64[] 
-        for (i,spec) in enumerate(specs)
-            append!(dhx, duane_hunt(spec))
+        for i in eachindex(specs)
+            append!(dhx, duane_hunt(specs[i]))
             append!(dhy, 0.1*maxI*yscale)
         end
         append!(layers, layer(x=dhx, y=dhy, color=palette[eachindex(specs)], Geom.hair(orientation=:vertical), Geom.point))
     end
-    autoklms && append!(klms, mapreduce(s -> elms(s, true, []), union!, specs))
+    autoklms && append!(klms, mapreduce(s -> elms(s, true), union!, specs))
     if length(klms) > 0
         tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE0)
         tr(cxr::CharXRay) = [cxr]
