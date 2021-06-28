@@ -1163,3 +1163,17 @@ function sigma(spec::Spectrum, specs::AbstractArray{<:Spectrum}, chs::AbstractRa
     end
     return map(v->value(v)/σ(v), delta(spec, specs, chs))
 end
+
+"""
+    normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
+
+Compute a spectrum which is `spectrum` rescaled to a live time times probe current equal to `dose`.
+Useful for setting spectra on an equivalent acquisition duration scale.
+"""
+function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
+    res = copy(spectrum)
+    scale = dose / NeXLSpectrum.dose(res)
+    res.counts .*= scale
+    res[:LiveTime] *= scale
+    return res
+end

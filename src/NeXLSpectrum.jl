@@ -88,6 +88,7 @@ export kratio # Naive peak integration estimate of the k-ratio
 export energyscale # Energy scale function
 export subsample # Sub-sample a spectrum
 export subdivide # Divide the counts among n spectra
+export normalize # Normalize to equivalent dose
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
