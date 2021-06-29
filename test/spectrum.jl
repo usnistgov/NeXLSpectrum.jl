@@ -31,10 +31,10 @@ using Distributions
         s1 = Spectrum(
             LinearEnergyScale(0.0, 10.0),
             collect(1:2048),
-            Dict{Symbol,Any}([(:BeamEnergy, 20.0e3), (:LiveTime, 60.0)]),
+            Dict( :BeamEnergy => 20.0e3, :LiveTime => 72.0, :ProbeCurrent => 1.2 ),
         )
 
-        @test s1[:LiveTime] == 60.0
+        @test s1[:LiveTime] == 72.0
         @test s1[100] == 100
         @test s1[1000] == 1000
 
@@ -51,6 +51,11 @@ using Distributions
 
         s1[:RealTime] = 90.0
         @test s1[:RealTime] == 90.0
+
+        s1n = normalize(s1)
+        @test isapprox(dose(s1n), 60.0, rtol = 1.0e-10)
+        @test isapprox(s1[100]/dose(s1), s1n[100]/dose(s1n),rtol = 1.0e-8)
+        @test isapprox(s1[200]/dose(s1), s1n[200]/dose(s1n),rtol = 1.0e-8)
     end
 
     @testset "SimpleEDS" begin
@@ -165,12 +170,28 @@ using Distributions
         n=fit(Normal, ss[1])
         @test isapprox(n.μ, -0.05240393674216127, atol = 1.0e-8)
         @test isapprox(n.σ, 1.007067008078397, atol = 1.0e-8)
+
+        
+        s1 = convert(Spectrum{Float64}, specs[1])
+        @test s1 isa Spectrum{Float64}
+        @test eltype(s1) == Float64
+        ns1 = normalize(s1, 10.0)
+        @test isapprox(dose(ns1), 10.0, atol=1.0e-6)
+        @test isapprox(ns1[100], s1[100]*10.0/dose(s1), rtol = 1.0e-6)
+        @test isapprox(ns1[20], s1[20]*10.0/dose(s1), rtol = 1.0e-6)
+
+        ss1 = similar(s1, Int)
+        @test ss1 isa Spectrum{Int}
+        @test eltype(ss1) == Int
+        @test length(ss1) == length(s1)
+        @test ss1.energy === s1.energy
+        @test isequal(ss1.properties, s1.properties)
     end
 
     @testset "uv" begin
         spec = loadspectrum(joinpath(@__DIR__,"K412 spectra","III-E K412[0][4].msa"))
         u = uv(spec)
-        @test eltype(u)==UncertainValue
+        @test eltype(u) == UncertainValue
         @test length(u) == length(spec)
         @test all(value(u[i]) == spec[i] for i in eachindex(spec))
         @test all(value(u[i])==0.0 || σ(u[i]) == sqrt(spec[i]) for i in eachindex(spec))

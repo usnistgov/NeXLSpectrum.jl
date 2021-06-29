@@ -107,14 +107,15 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     counts::Vector{T}
     properties::Dict{Symbol,Any}
     hash::UInt  # Stays fixed as underlying data changes
-    function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,Any})
-        props[:Name] = get(props, :Name, "Spectrum[$(spectrumCounter())]")
-        return new{typeof(data[1])}(
+    function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,<:Any})
+        res = new{typeof(data[1])}(
             energy,
             data,
-            props,
+            convert(Dict{Symbol, Any}, props),
             hash(energy, hash(data, hash(props))),
         )
+        res.properties[:Name] = get(res.properties, :Name, "Spectrum[$(spectrumCounter())]")
+        res
     end
 end
 
@@ -128,7 +129,7 @@ Base.isequal(spec1::Spectrum, spec2::Spectrum) =
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
 # Make it act like an AbstractVector
-Base.eltype(spec::Spectrum) = eltype(spec.counts)
+Base.eltype(::Spectrum{T}) where { T<: Real } = T
 Base.length(spec::Spectrum) = length(spec.counts)
 Base.ndims(spec::Spectrum) = 1
 Base.size(spec::Spectrum) = size(spec.counts)
@@ -159,6 +160,13 @@ Base.first(spec::Spectrum) = first(spec.counts)
 Base.last(spec::Spectrum) = last(spec.counts)
 properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
+Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Real } = spec
+function Base.convert(::Type{Spectrum{T}}, spec::Spectrum{U})::Spectrum{T} where {T <: Real, U <: Real }
+    return Spectrum{T}(spec.energy, T.(spec.counts), copy(spec.properties))
+end
+function Base.similar(spec::Spectrum{T}, ::Type{U}) where { T <: Real, U <: Real }
+    return Spectrum(spec.energy, similar(spec.counts, U), copy(spec.properties))
+end
 
 """
     property!(spec::Spectrum, sym::Symbol, val::Any)
@@ -1166,14 +1174,23 @@ end
 
 """
     normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
+    normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
 
 Compute a spectrum which is `spectrum` rescaled to a live time times probe current equal to `dose`.
 Useful for setting spectra on an equivalent acquisition duration scale.
 """
-function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
+function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: AbstractFloat }
     res = copy(spectrum)
     scale = dose / NeXLSpectrum.dose(res)
     res.counts .*= scale
     res[:LiveTime] *= scale
+    res[:Name] = "N[$(spectrum[:Name]), $dose nA⋅s]"
     return res
+end
+function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
+    scale = dose / NeXLSpectrum.dose(spectrum)
+    newProps = copy(spectrum.properties)
+    newProps[:LiveTime] *= scale
+    newProps[:Name] = "N[$(spectrum[:Name]), $dose nA⋅s]"
+    return Spectrum(spectrum.energy, Float64.(spectrum.counts) * scale, newProps)
 end
