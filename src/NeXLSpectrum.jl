@@ -88,7 +88,6 @@ export kratio # Naive peak integration estimate of the k-ratio
 export energyscale # Energy scale function
 export subsample # Sub-sample a spectrum
 export subdivide # Divide the counts among n spectra
-export normalize # Normalize to equivalent dose
 export modelbackground # Model a background region
 export modelBackground
 export extractcharacteristic # Extract the characteristic intensity
@@ -101,6 +100,7 @@ export commonproperties # Properties that a collection of spectra share in commo
 export maxspectrum # Dave Bright's max spectra derived spectrum
 export suitablefor # Which ROIs is a set of elements suitable for as reference for the specified element?
 export missingReferences # A Vector with missing ROIs in a FilterFitPacket
+export dosenormalize # Rescale the channel data to correspond to a different electron dose.
 
 export maxproperty, minproperty # Min value of a property over a vector of spectra
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise

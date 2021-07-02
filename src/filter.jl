@@ -352,7 +352,7 @@ labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6
     charXRayLabels(#
       spec::Spectrum, #
       elm::Element, #
-      allElms::AbstractVector{Element}, #
+      allElms::AbstractSet{Element}, #
       det::Detector, #
       ampl::Float64, #
       maxE::Float64=1.0e6)::Vector{SpectrumFeature}
@@ -364,7 +364,7 @@ interfere with 'elm' will not be included.
 function charXRayLabels(#
     spec::Spectrum, #
     elm::Element, #
-    allElms::AbstractVector{Element}, #
+    allElms::AbstractSet{Element}, #
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
@@ -374,6 +374,14 @@ function charXRayLabels(#
     # Find all the ROIs associated with other elements
     return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
 end
+function charXRayLabels(#
+    spec::Spectrum, #
+    elm::Element, #
+    allElms::AbstractVector{Element}, #
+    det::Detector, #
+    maxE::Float64 = 1.0e6;
+    ampl::Float64 = 1.0e-5, #
+)::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set(allElms), det, maxE, ampl)
 
 """
     suitablefor(elm::Element, allElms::AbstractVector{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
@@ -383,17 +391,18 @@ This function provides informational, warning and error messages depending upon 
 """
 function suitablefor( #
     elm::Element, #
-    allElms::AbstractVector{Element}, #
+    allElms::AbstractSet{Element}, #
     det::Detector, #
     maxE::Float64 = 1.0e6,
     ampl::Float64 = 1.0e-5, #
     warnme::Bool = true #
 )::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
     # Find all the ROIs associated with other elements
+    otherElms = Set(allElms)
     if elm in allElms 
-        otherElms = filter(a -> a ≠ elm, allElms)
+        delete!(otherElms, elm)
         res = if length(otherElms) > 0
-            urs = mapreduce(ae -> extents(ae, det, ampl), append!, otherElms)
+            urs = mapreduce(ae -> extents(ae, det, ampl), append!, collect(otherElms))
             # Find elm's ROIs that don't intersect another element's ROI
             filter(labeledextents(elm, det, ampl, maxE)) do lx 
                 furs = filter(ur -> length(intersect(ur, lx[2])) > 0, urs)
@@ -418,7 +427,7 @@ function suitablefor( #
     ampl::Float64 = 1.0e-5, #
     warnme::Bool = true #
 )
-    suitablefor(elm, collect(keys(mat)), det, maxE, ampl, warnme)
+    suitablefor(elm, keys(mat), det, maxE, ampl, warnme)
 end
 
 """
@@ -444,12 +453,12 @@ function suitability(elm::Element, mats::AbstractSet{<:Material}, det::EDSDetect
     mats = filter(m->value(m[elm])>0.0, mats)
     # Find all elemental ROIs
     rois = Dict{Vector{CharXRay}, Vector{Material}}()
-    for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, pure(elm), det, maxE, 1.0e-5, false)
+    for (cxrs, _) in NeXLSpectrum.suitablefor(elm, Set( (elm, ) ), det, maxE, 1.0e-5, false)
       rois[cxrs] = Material[]
     end
-    for m in mats
-      for (cxrs, ur) in NeXLSpectrum.suitablefor(elm, m, det, maxE, 1.0e-5, false)
-        push!(rois[cxrs], m) 
+    for mat in mats
+      for (cxrs, _) in NeXLSpectrum.suitablefor(elm, mat, det, maxE, 1.0e-5, false)
+        push!(rois[cxrs], mat) 
       end
     end
     cxrss = collect(keys(rois))
@@ -687,19 +696,19 @@ function filterreference(
     filt::TopHatFilter,
     spec::Spectrum,
     elm::Element,
-    elms::AbstractArray{Element};
+    allElms::AbstractSet{Element};
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
 )::Vector{FilteredReference}
-    @assert elm in elms
+    @assert elm in allElms "$elm not in $allElms"
     cprops = merge(spec.properties, props)
     if !haskey(cprops, :Detector)
         cprops[:Detector] = filt.detector
     end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
-    lbls = charXRayLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy])
+    lbls = charXRayLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy])
     if withEsc
-        append!(lbls, escapeLabels(spec, elm, elms, cprops[:Detector], cprops[:BeamEnergy]))
+        append!(lbls, escapeLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]))
     end
     # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
     return tophatfilter(lbls, filt, 1.0 / (cprops[:ProbeCurrent] * cprops[:LiveTime]))
@@ -714,7 +723,7 @@ function filterreference(
     withEsc::Bool = false,
 )::Vector{FilteredReference}
     spec[:Composition] = get(spec, :Composition, comp)
-    filterreference(filt, spec, elm, collect(keys(comp)), props = props, withEsc = withEsc)
+    filterreference(filt, spec, elm, keys(comp), props = props, withEsc = withEsc)
 end
 
 filterreferences(

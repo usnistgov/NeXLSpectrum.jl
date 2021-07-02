@@ -52,7 +52,7 @@ using Distributions
         s1[:RealTime] = 90.0
         @test s1[:RealTime] == 90.0
 
-        s1n = normalize(s1)
+        s1n = dosenormalize(s1)
         @test isapprox(dose(s1n), 60.0, rtol = 1.0e-10)
         @test isapprox(s1[100]/dose(s1), s1n[100]/dose(s1n),rtol = 1.0e-8)
         @test isapprox(s1[200]/dose(s1), s1n[200]/dose(s1n),rtol = 1.0e-8)
@@ -175,7 +175,7 @@ using Distributions
         s1 = convert(Spectrum{Float64}, specs[1])
         @test s1 isa Spectrum{Float64}
         @test eltype(s1) == Float64
-        ns1 = normalize(s1, 10.0)
+        ns1 = dosenormalize(s1, 10.0)
         @test isapprox(dose(ns1), 10.0, atol=1.0e-6)
         @test isapprox(ns1[100], s1[100]*10.0/dose(s1), rtol = 1.0e-6)
         @test isapprox(ns1[20], s1[20]*10.0/dose(s1), rtol = 1.0e-6)

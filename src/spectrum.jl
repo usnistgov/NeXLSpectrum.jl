@@ -1173,13 +1173,13 @@ function sigma(spec::Spectrum, specs::AbstractArray{<:Spectrum}, chs::AbstractRa
 end
 
 """
-    normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
-    normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
+    dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: Real }
+    dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
 
 Compute a spectrum which is `spectrum` rescaled to a live time times probe current equal to `dose`.
 Useful for setting spectra on an equivalent acquisition duration scale.
 """
-function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: AbstractFloat }
+function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: AbstractFloat }
     res = copy(spectrum)
     scale = dose / NeXLSpectrum.dose(res)
     res.counts .*= scale
@@ -1187,7 +1187,7 @@ function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: A
     res[:Name] = "N[$(spectrum[:Name]), $dose nA⋅s]"
     return res
 end
-function normalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
+function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
     scale = dose / NeXLSpectrum.dose(spectrum)
     newProps = copy(spectrum.properties)
     newProps[:LiveTime] *= scale
