@@ -64,7 +64,7 @@ struct TopHatFilter
     detector::Detector
     offsets::Vector{Int}  # offset to start of filter in row
     filters::Vector{Vector{Float64}} # Filter data
-    weights::AbstractVector{Float64} # Correlation compensation weights
+    weights::Vector{Float64} # Correlation compensation weights
 
     function TopHatFilter(
         ty::Type{<:TopHatFilterType},
@@ -374,17 +374,17 @@ function charXRayLabels(#
     # Find all the ROIs associated with other elements
     return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
 end
-function charXRayLabels(#
+charXRayLabels(#
     spec::Spectrum, #
     elm::Element, #
     allElms::AbstractVector{Element}, #
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
-)::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set(allElms), det, maxE, ampl)
+)::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set{Element}(allElms), det, maxE, ampl=ampl)
 
 """
-    suitablefor(elm::Element, allElms::AbstractVector{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
+    suitablefor(elm::Element, allElms::AbstractSet{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
 
 Given a material containing `allElms` which ROIs for element `elm` is the material a suitable reference on the detector `det`?  
 This function provides informational, warning and error messages depending upon the suitability of the material. 
@@ -483,7 +483,7 @@ end
     escapeLabels(#
       spec::Spectrum, #
       elm::Element, #
-      allElms::AbstractVector{Element}, #
+      allElms::AbstractSet{Element}, #
       det::Detector, #
       ampl::Float64, #
       maxE::Float64=1.0e6
@@ -496,7 +496,7 @@ interfere with 'elm' will not be included.
 function escapeLabels(#
     spec::Spectrum, #
     elm::Element, #
-    allElms::AbstractVector{Element}, #
+    allElms::AbstractSet{Element}, #
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #

@@ -230,13 +230,13 @@ using LinearAlgebra
         ampl = 1e-4
         e0 = sameproperty(unks, :BeamEnergy)
         alroi = charXRayLabels(al, n"Al", Set( ( n"Al", )), det, e0, ampl = ampl)
-        caroi = charXRayLabels(caf2, n"Ca", Set( ( n"Ca", n"F")), det, e0, ampl = ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [ n"Ca", n"F" ], det, e0, ampl = ampl)
         feroi = charXRayLabels(fe, n"Fe", Set( ( n"Fe", )), det, e0, ampl = ampl)
         geroi = charXRayLabels(ge, n"Ge", Set( ( n"Ge", )), det, e0, ampl = ampl)
         oroi = charXRayLabels(sio2, n"O", Set( ( n"Si", n"O", )), det, e0, ampl = ampl)
         siroi = charXRayLabels(si, n"Si", Set( ( n"Si", )), det, e0, ampl = ampl)
         tiroi = charXRayLabels(ti, n"Ti", Set( ( n"Ti", )), det, e0, ampl = ampl)
-        znroi = charXRayLabels(zn, n"Zn", Set( ( n"Zn", )), det, e0, ampl = ampl)
+        znroi = charXRayLabels(zn, n"Zn", [ n"Zn" ], det, e0, ampl = ampl)
 
         alk = tophatfilter(alroi, ff, 1.0 / dose(al))
         cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
