@@ -128,6 +128,7 @@ function reference(
     @assert haskey(spec, :LiveTime) "The :LiveTime property must be defined for $(spec[:Name]).  (Use the `lt` keyword argument)"
     @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
     @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
+    @assert haskey(mat, elm) "$(Symbol(elm)) is not present in $mat."
     return ReferencePacket(spec, elm, mat)
 end
 

@@ -140,13 +140,13 @@ using LinearAlgebra
         e0 = sameproperty(unks, :BeamEnergy)
 
         ampl = 0.00005
-        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, e0, ampl = ampl)
-        siroi = charXRayLabels(sio2, n"Si", [n"Si", n"O"], det, e0, ampl = ampl)
-        mgroi = charXRayLabels(mgo, n"Mg", [n"Mg", n"O"], det, e0, ampl = ampl)
-        alroi = charXRayLabels(al2o3, n"Al", [n"Al", n"O"], det, e0, ampl = ampl)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, e0, ampl = ampl)
+        oroi = charXRayLabels(sio2, n"O", Set( ( n"Si", n"O" ) ), det, e0, ampl = ampl)
+        siroi = charXRayLabels(sio2, n"Si", Set( (n"Si", n"O") ), det, e0, ampl = ampl)
+        mgroi = charXRayLabels(mgo, n"Mg", Set( (n"Mg", n"O") ), det, e0, ampl = ampl)
+        alroi = charXRayLabels(al2o3, n"Al", Set( (n"Al", n"O") ), det, e0, ampl = ampl)
+        caroi = charXRayLabels(caf2, n"Ca", Set( (n"Ca", n"F") ), det, e0, ampl = ampl)
         @test length(caroi) == 1
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl = ampl)
+        feroi = charXRayLabels(fe, n"Fe", Set( (n"Fe", ) ), det, e0, ampl = ampl)
         @test length(feroi) == 3
 
         ok = tophatfilter(oroi, ff, 1.0 / dose(sio2))
@@ -229,14 +229,14 @@ using LinearAlgebra
 
         ampl = 1e-4
         e0 = sameproperty(unks, :BeamEnergy)
-        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl = ampl)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, e0, ampl = ampl)
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl = ampl)
-        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl = ampl)
-        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, e0, ampl = ampl)
-        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl = ampl)
-        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl = ampl)
-        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl = ampl)
+        alroi = charXRayLabels(al, n"Al", Set( ( n"Al", )), det, e0, ampl = ampl)
+        caroi = charXRayLabels(caf2, n"Ca", [ n"Ca", n"F" ], det, e0, ampl = ampl)
+        feroi = charXRayLabels(fe, n"Fe", Set( ( n"Fe", )), det, e0, ampl = ampl)
+        geroi = charXRayLabels(ge, n"Ge", Set( ( n"Ge", )), det, e0, ampl = ampl)
+        oroi = charXRayLabels(sio2, n"O", Set( ( n"Si", n"O", )), det, e0, ampl = ampl)
+        siroi = charXRayLabels(si, n"Si", Set( ( n"Si", )), det, e0, ampl = ampl)
+        tiroi = charXRayLabels(ti, n"Ti", Set( ( n"Ti", )), det, e0, ampl = ampl)
+        znroi = charXRayLabels(zn, n"Zn", [ n"Zn" ], det, e0, ampl = ampl)
 
         alk = tophatfilter(alroi, ff, 1.0 / dose(al))
         cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
@@ -301,14 +301,14 @@ using LinearAlgebra
 
         ampl = 1e-4
         e0 = sameproperty(unks, :BeamEnergy)
-        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl = ampl)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, e0, ampl = ampl)
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl = ampl)
-        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl = ampl)
-        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, e0, ampl = ampl)
-        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl = ampl)
-        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl = ampl)
-        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl = ampl)
+        alroi = charXRayLabels(al, n"Al", Set( ( n"Al", )), det, e0, ampl = ampl)
+        caroi = charXRayLabels(caf2, n"Ca", Set( ( n"Ca", n"F", )), det, e0, ampl = ampl)
+        feroi = charXRayLabels(fe, n"Fe", Set( ( n"Fe", )), det, e0, ampl = ampl)
+        geroi = charXRayLabels(ge, n"Ge", Set( ( n"Ge", )), det, e0, ampl = ampl)
+        oroi = charXRayLabels(sio2, n"O", Set( ( n"Si", n"O", )), det, e0, ampl = ampl)
+        siroi = charXRayLabels(si, n"Si", Set( ( n"Si", )), det, e0, ampl = ampl)
+        tiroi = charXRayLabels(ti, n"Ti", Set( ( n"Ti", )), det, e0, ampl = ampl)
+        znroi = charXRayLabels(zn, n"Zn", Set( ( n"Zn", )), det, e0, ampl = ampl)
 
         alk = tophatfilter(alroi, ff, 1.0 / dose(al))
         cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
@@ -462,14 +462,14 @@ using LinearAlgebra
 
         ampl = 1e-4
         e0 = sameproperty(unks, :BeamEnergy)
-        alroi = charXRayLabels(al, n"Al", [n"Al"], det, e0, ampl = ampl)
-        caroi = charXRayLabels(caf2, n"Ca", [n"Ca", n"F"], det, e0, ampl = ampl)
-        feroi = charXRayLabels(fe, n"Fe", [n"Fe"], det, e0, ampl = ampl)
-        geroi = charXRayLabels(ge, n"Ge", [n"Ge"], det, e0, ampl = ampl)
-        oroi = charXRayLabels(sio2, n"O", [n"Si", n"O"], det, e0, ampl = ampl)
-        siroi = charXRayLabels(si, n"Si", [n"Si"], det, e0, ampl = ampl)
-        tiroi = charXRayLabels(ti, n"Ti", [n"Ti"], det, e0, ampl = ampl)
-        znroi = charXRayLabels(zn, n"Zn", [n"Zn"], det, e0, ampl = ampl)
+        alroi = charXRayLabels(al, n"Al", Set( ( n"Al",)), det, e0, ampl = ampl)
+        caroi = charXRayLabels(caf2, n"Ca", Set( ( n"Ca", n"F")), det, e0, ampl = ampl)
+        feroi = charXRayLabels(fe, n"Fe", Set( ( n"Fe",)), det, e0, ampl = ampl)
+        geroi = charXRayLabels(ge, n"Ge", Set( ( n"Ge",)), det, e0, ampl = ampl)
+        oroi = charXRayLabels(sio2, n"O", Set( ( n"Si", n"O")), det, e0, ampl = ampl)
+        siroi = charXRayLabels(si, n"Si", Set( ( n"Si",)), det, e0, ampl = ampl)
+        tiroi = charXRayLabels(ti, n"Ti", Set( ( n"Ti",)), det, e0, ampl = ampl)
+        znroi = charXRayLabels(zn, n"Zn", Set( ( n"Zn",)), det, e0, ampl = ampl)
 
         alk = tophatfilter(alroi, ff, 1.0 / dose(al))
         cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
@@ -653,9 +653,9 @@ using LinearAlgebra
     @testset "Warnings" begin
         s = loadspectrum(joinpath(@__DIR__, "Other", "K411 simulated.msa"))
         @test_logs ( :warn, "The spectrum \"Noisy[MC simulation of bulk K411] #1\" cannot be used as a reference for the ROI \"O K-L3 + 1 other\" due to 2 peak interferences.") 
-            charXRayLabels(s, n"O", [n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe"], simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
+            charXRayLabels(s, n"O", Set( ( n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe")), simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
         @test_logs ( :warn, "The spectrum \"Noisy[MC simulation of bulk K411] #1\" cannot be used as a reference for the ROI \"Fe L3-M5 + 11 others\" due to 1 peak interference.") 
-            charXRayLabels(s, n"Fe", [n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe"], simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
+            charXRayLabels(s, n"Fe", Set( ( n"C", n"O",n"Mg",n"Si",n"Ca",n"Fe")), simpleEDS(2048,10.0,0.0,132.0), 1.0e6, ampl=1.0e-5)
     end
 
     @testset "Example 2" begin
