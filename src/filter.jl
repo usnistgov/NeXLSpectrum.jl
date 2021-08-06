@@ -463,11 +463,11 @@ function suitability(elm::Element, mats::AbstractSet{<:Material}, det::EDSDetect
     end
     cxrss = collect(keys(rois))
     sort!(cxrss, lt = (a,b) -> energy(brightest(a))<energy(brightest(b)))
-    res = DataFrame(:Material=>String[], :Count=>Int[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
+    res = DataFrame(:Material=>String[], :MassFrac =>Float64[], :Count=>Int[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
     for m in mats
-      push!(res, [wrap(name(m), latex), count(cxrs->m in rois[cxrs], cxrss), (m in rois[cxrs] ? chk : ex for cxrs in cxrss)...])
+      push!(res, [wrap(name(m), latex), round(value(m[elm]), digits=3), count(cxrs->m in rois[cxrs], cxrss), (m in rois[cxrs] ? chk : ex for cxrs in cxrss)...])
     end
-    sort!(res, :Count, rev=true)
+    sort!(res, [ :Count, :MassFrac ], rev=true)
 end
 function suitability(elm::Element, det::EDSDetector; maxE=30.0e3, minC=0.1, latex=false)
     suitability(elm, getstandards(elm, minC), det, maxE=maxE, latex=latex)
