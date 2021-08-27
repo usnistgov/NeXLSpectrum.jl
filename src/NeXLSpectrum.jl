@@ -110,6 +110,9 @@ export χ² # Compare spectra
 export duane_hunt # Estimate the Duane-Hunt limit
 export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
 
+export recalibrate # Change the LinearEnergyScale against which a spectrum is calibrated
+export shift # Shift the channels in a spectrum by a specified energy amount.
+
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array{<:Real,N} look like an Array{Spectrum,N-1}
 export plane # Sum planes in a HyperSpectrum

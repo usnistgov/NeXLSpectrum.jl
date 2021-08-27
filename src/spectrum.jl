@@ -1,3 +1,4 @@
+import FourierTools
 
 # Keeps track of the number of spectra in this session.
 
@@ -167,6 +168,16 @@ end
 function Base.similar(spec::Spectrum{T}, ::Type{U}) where { T <: Real, U <: Real }
     return Spectrum(spec.energy, similar(spec.counts, U), copy(spec.properties))
 end
+
+# Spectrum math simply performs the operation on the channel data but doesn't change any properties except the name.
+Base.:*(a::Real, s::Spectrum) = property!(Spectrum(s.energy, a*s.counts, copy(s.properties)), :Name, "$a⋅$(s[:Name])")
+Base.:*(s::Spectrum, a::Real) = property!(Spectrum(s.energy, a*s.counts, copy(s.properties)), :Name, "$a⋅$(s[:Name])")
+Base.:/(s::Spectrum, a::Real) = property!(Spectrum(s.energy, s.counts/a, copy(s.properties)), :Name, "$(s[:Name])/$a")
+Base.:+(s::Spectrum, a::Real) = property!(Spectrum(s.energy, s.counts .+ a, copy(s.properties)), :Name, "offset($(s[:Name]), $a)")
+Base.:+(a::Real, s::Spectrum) = property!(Spectrum(s.energy, s.counts .+ a, copy(s.properties)), :Name, "offset($(s[:Name]), $a)")
+Base.:-(s::Spectrum, a::Real) = property!(Spectrum(s.energy, s.counts .- a, copy(s.properties)), :Name, "offset($(s[:Name]), -$a)")
+Base.:-(a::Real, s::Spectrum) = property!(Spectrum(s.energy, a .- s.counts, copy(s.properties)), :Name, "offset(-$(s[:Name]), $a)")
+
 
 """
     property!(spec::Spectrum, sym::Symbol, val::Any)
@@ -1193,4 +1204,41 @@ function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} wher
     newProps[:LiveTime] *= scale
     newProps[:Name] = "N[$(spectrum[:Name]), $dose nA⋅s]"
     return Spectrum(spectrum.energy, Float64.(spectrum.counts) * scale, newProps)
+end
+
+"""
+    recalibrate(s::Spectrum{T}, es::LinearEnergyScale)
+
+Allows changing the energy scale on a spectrum from one LinearEnergyScale to another as though the spectrum were 
+measured on a different detector.  The algorith uses a FFT-base scheme to rescale and shift the spectral data.
+Ths scheme allows for fractional shifts of offset and fractional changes in the width.  It is limited in that
+the change in width must produce an integral number of channels in the resulting spectrum.  The result will 
+have a LinearEnergyScale slightly different from the requested one. ("Life isn't always fair.") The algorithm 
+also attempts to maintain the total spectrum integral so the new spectrum can be used for quantitative purposes.
+Plotting one spectrum over the other should maintain peak position but is likely to change the channel counts.
+"""
+function recalibrate(s::Spectrum{T}, es::LinearEnergyScale) where { T <: Real }
+    (!(s.energy isa LinearEnergyScale)) && error("The rescale(...) function requires that the spectrum has a LinearEnergyScale.")
+    # Resample the spectrum onto a new channel width (offset remains same)
+    cxs = counts(s)
+    oldlen, newlen = length(cxs), round(Int, (s.energy.width/es.width)*length(cxs))
+    if newlen ≠ length(cxs)
+        cxs = FourierTools.resample(cxs, newlen)*(oldlen/newlen)
+    end
+    newWidth = s.energy.width*(oldlen/newlen)
+    # Shift the first channel from s.energy.offset to es.offset 
+    shft = (s.energy.offset - es.offset) / newWidth
+    if abs(shft) > 0.01
+        cxs = FourierTools.shift(cxs, shft)
+    end 
+    return Spectrum(LinearEnergyScale(es.offset, newWidth), cxs, copy(s.properties))
+end
+
+"""
+    shift(s::Spectrum, ev::Float64)::Spectrum
+
+Shift the entire spectrum along the energy axis by a specified number of ev.
+"""
+function shift(s::Spectrum, ev::Float64)::Spectrum
+    return Spectrum(s.energy, FourierTools.shift(counts(s), ev/s.energy.width), copy(s.properties))
 end
