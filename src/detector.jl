@@ -35,7 +35,7 @@ struct LinearEnergyScale <: EnergyScale
 end
 
 Base.show(io::IO, es::LinearEnergyScale) =
-    print(io, "E[ch] = ", es.offset, " + ", es.width, "⋅ch")
+    print(io, es.offset, " + ", es.width, "⋅ch eV")
 
 Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width, h))
 
@@ -82,18 +82,19 @@ struct PolyEnergyScale <: EnergyScale
 end
 
 function Base.show(io::IO, pes::PolyEnergyScale)
-    print(io, "E[ch] = ")
     printpoly(io, pes.poly)
+    print(io, " eV")
 end
 
 function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
-    cp = Vector(coeffs(sc.poly))
+    cp = Float64[ coeffs(sc.poly)... ]
     cp[1] -= eV
     rts = roots(ImmutablePolynomial(cp))
     best = 100000
     for rt in rts
-        if !(rt isa Complex)
-            best = (rt >= -1000.0) && (rt < best) ? 1 + floor(rt) : best
+        if abs(imag(rt))<1.0e-4
+            rrt = real(rt)
+            best = (rrt >= -1000.0) && (rrt < best) ? 1 + floor(rrt) : best
         end
     end
     return best
@@ -125,15 +126,12 @@ Implements:
     extent(xrayE::Float64, res::Resolution, ampl::Float64)::Tuple{2,Float} # The range of channels over which the signal exceeds ampl
 """
 abstract type Resolution end
-# Implements linewidth(eV::Float64, res::Resolution)::Float
-
 
 """
     MnKaResolution
 
 Uses Chuck Fiori's simple function relating the FWHM at eV to the FWHM at another energy.
 """
-
 struct MnKaResolution <: Resolution
     fwhmatmnka::Float64
 end
