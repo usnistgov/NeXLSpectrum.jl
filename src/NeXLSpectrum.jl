@@ -112,6 +112,7 @@ export sigma # Computes the channel-by-channel dose corrected difference from th
 
 export recalibrate # Change the LinearEnergyScale against which a spectrum is calibrated
 export shift # Shift the channels in a spectrum by a specified energy amount.
+export offset # Offset the counts data by Δcounts
 
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array{<:Real,N} look like an Array{Spectrum,N-1}
