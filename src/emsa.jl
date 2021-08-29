@@ -221,7 +221,9 @@ function readEMSA(f::IO, T::Type{<:Real}=Float64)::Spectrum
     if startswith( props[:Name], "Bruker") && haskey(props, :Composition)
         props[:Name]=name(props[:Composition])
     end
-    props[:StagePosition] = stgpos
+    if !isempty(stgpos) 
+		props[:StagePosition] = stgpos
+	end
     return Spectrum(energy, counts, props)
 end
 
