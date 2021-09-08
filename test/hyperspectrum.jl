@@ -77,7 +77,20 @@ rrpath = artifact_path(rplraw_hash)
     @test indexofmaxpixel(hs, 640) == CartesianIndex(51, 64)
     @test hs[indexofmaxpixel(hs, 640)][640] == 0x0013
     @test hs[:BeamEnergy] == 20.0e3
-    @test livetime(hs,(1,1)) == 0.004
+    @test livetime(hs, 1, 1) == 0.004
+
+    livetime!(hs, 0.0044, 10, 12)
+    @test livetime(hs, 10, 12) == 0.0044
+    @test livetime(hs, 11, 12) == 0.004
+    @test livetime(hs, 10:11, 12:13) == [ 0.0044 0.004; 0.004 0.004 ]
+    @test hs[10,12][:LiveTime]==0.0044
+    @test hs[11,12][:LiveTime]==0.004
+    livetime!(hs, 0.0041)
+
+    @test livetime(hs, 10, 12) == 0.0041
+    @test all(idx->livetime(hs, idx) == 0.0041, eachindex(hs))
+    livetime!(hs, 0.004)
+    
     # @test all(sum(hs, map(ci->counts(hs,ci,640) .> 3, CartesianIndices(hs))) .<= sum(hs))
 
     @test length(hs) == 128 * 128

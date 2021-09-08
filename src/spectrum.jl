@@ -48,22 +48,22 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
 	:Elevation     # In radians
 	:TakeOffAngle  # In radians (Detector position)
     :Azimuthal     # In radians (Detector position)
-	:WorkingDistance # In cm
+	:WorkingDistance # In cm (not mm!!!!)
     :LiveTime      # In seconds
     :RealTime      # In seconds
     :DeadFraction  # Fractional
     :ProbeCurrent  # In nano-amps
-    :Name          # A string
-    :Owner         # A string
+    :Name          # A `String`
+    :Owner         # A `String`
     :Sample        # Description of the sample
     :StagePosition # A Dict{Symbol,Real} with entries :X, :Y, :Z, :R, :T, B: in cm and degrees
-    :Comment       # A string
-    :Composition   # A Material (known composition, not measured)
-    :Elements      # A collection of elements in the material
+    :Comment       # A `String`
+    :Composition   # A `Material` (known composition, not measured)
+    :Elements      # A collection of elements in the material like `[ n"Fe", n"Ca", n"Si" ]`
     :Detector      # A Detector like a BasicEDS or another EDSDetector
     :Filename      # Source filename
-    :Coating       # A Film or Film[] (eg. 10 nm of C|Au etc.)
-	:AcquisitionTime # Date and time of acquisition (DateTime struct)
+    :Coating       # A `Film` or `Film[]` (eg. 10 nm of C|Au etc.)
+	:AcquisitionTime # Date and time of acquisition (`DateTime` struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
 
 Spectrum Image items:
@@ -130,35 +130,46 @@ Base.isequal(spec1::Spectrum, spec2::Spectrum) =
 Base.isless(s1::Spectrum, s2::Spectrum) =
     isequal(s1[:Name], s2[:Name]) ? isless(s1.hash, s2.hash) : isless(s1[:Name], s2[:Name])
 # Make it act like an AbstractVector
-Base.eltype(::Spectrum{T}) where { T<: Real } = T
+Base.eltype(::Spectrum{T}) where { T <: Real } = T
 Base.length(spec::Spectrum) = length(spec.counts)
 Base.ndims(spec::Spectrum) = 1
 Base.size(spec::Spectrum) = size(spec.counts)
-Base.size(spec::Spectrum, n) = size(spec.counts, n)
 Base.axes(spec::Spectrum) = Base.axes(spec.counts)
-Base.axes(spec::Spectrum, n) = Base.axes(spec.counts, n)
 Base.eachindex(spec::Spectrum) = eachindex(spec.counts)
-Base.stride(spec::Spectrum, k) = stride(spec.counts, k)
 Base.strides(spec::Spectrum) = strides(spec.counts)
+Base.firstindex(spec::Spectrum) = firstindex(spec.counts)
+Base.lastindex(spec::Spectrum) = lastindex(spec.counts)
+Base.IndexStyle(::Type{<:Spectrum{T}}) where {T <: Real} = IndexStyle(Vector{T}) 
+Base.IteratorSize(::Type{<:Spectrum{T}}) where {T <: Real} =
+    Base.IteratorSize(Vector{T})
+Base.IteratorEltype(::Type{<:Spectrum{T}}) where {T <: Real} =
+    Base.IteratorEltype(Vector{T})
+Base.iterate(spec::Spectrum, args...) = iterate(spec.counts, args...)
 # Integer indices
-Base.getindex(spec::Spectrum, idx::Integer) = spec.counts[idx]
-Base.getindex(spec::Spectrum, ur::AbstractRange{<:Integer}) = spec.counts[ur]
-Base.get(spec::Spectrum, idx::Int, def = convert(eltype(spec.counts), 0)) =
+Base.@propagate_inbounds Base.getindex(spec::Spectrum, I...) =
+    getindex(spec.counts, I...)
+Base.get(spec::Spectrum, idx::Int, def = zero(eltype(spec.counts))) =
     get(spec.counts, idx, def)
 # AbstractFloat indices
-Base.getindex(spec::Spectrum, energy::AbstractFloat) = spec.counts[channel(energy, spec)]
+Base.getindex(spec::Spectrum, energy::AbstractFloat) = getindex(spec.counts, channel(energy, spec))
 Base.getindex(spec::Spectrum, sr::StepRangeLen{<:AbstractFloat}) =
     spec.counts[channel(sr[1], spec):channel(sr[end], spec)]
 # CharXRay indices
 Base.getindex(spec::Spectrum, cxr::CharXRay) = spec.counts[channel(energy(cxr), spec)]
-
-Base.setindex!(spec::Spectrum, val::Real, idx::Int) =
-    spec.counts[idx] = convert(eltype(spec.counts), val)
-Base.setindex!(spec::Spectrum, vals, ur::AbstractRange{<:Integer}) = spec.counts[ur] = vals
+# Symbol indices (ie Properties)
+Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties, sym, def)
+Base.getindex(spec::Spectrum, sym::Symbol)::Any = getindex(spec.properties, sym)
+# setindex!(...) for channel data
+Base.setindex!(spec::Spectrum{T}, val::Real, idx...) where {T <: Real} =
+    setindex!(spec.counts, convert(T, val), idx...)
+# setindex!(...) for spectrum properties
+Base.setindex!(spec::Spectrum, val::Real, sym::Symbol) = 
+    setindex!(spec.properties, val, sym)
+Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) = 
+    setindex!(spec.properties, val, sym)
+    
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
-Base.first(spec::Spectrum) = first(spec.counts)
-Base.last(spec::Spectrum) = last(spec.counts)
 properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
 Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Real } = spec
@@ -319,10 +330,6 @@ function matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool
            abs(energy(length(spec), spec) - energy(length(spec), det)) <
            tol * channelwidth(length(spec), det)
 end
-
-Base.get(spec::Spectrum, sym::Symbol, def::Any = missing) = get(spec.properties, sym, def)
-Base.getindex(spec::Spectrum, sym::Symbol)::Any = spec.properties[sym]
-Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) = spec.properties[sym] = val
 
 """
     Base.keys(spec::Spectrum)

@@ -140,26 +140,34 @@ function Base.show(io::IO, hss::HyperSpectrum{T,N,NP}) where {T<:Real, N, NP}
 end
 
 Base.eltype(::HyperSpectrum{T,N,NP}) where {T<:Real,N,NP} = Spectrum{T}
+Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
 Base.length(hss::HyperSpectrum) = prod(size(hss))
 Base.ndims(::HyperSpectrum{T,N,NP}) where {T<:Real,N,NP} = N
-Base.size(hss::HyperSpectrum) = size(hss.counts)[2:end]
-Base.size(hss::HyperSpectrum, n) = size(counts(hss), n+1)
 Base.axes(hss::HyperSpectrum) = Base.axes(counts(hss))[2:end]
-Base.axes(hss::HyperSpectrum, n) = Base.axes(counts(hss), n+1)
+Base.firstindex(hss::HyperSpectrum) = 1
+Base.lastindex(hss::HyperSpectrum) = length(hss)
 Base.eachindex(hss::HyperSpectrum) = Base.OneTo(length(hss))
-Base.stride(hss::HyperSpectrum, k::Int) = stride(counts(hss), k + 1)
 Base.strides(hss::HyperSpectrum) = strides(counts(hss))[2:end]
-depth(hss::HyperSpectrum) = size(counts(hss), 1)
+
+# Implement iterators over Spectrum{T}
+Base.IteratorSize(::Type{<:HyperSpectrum{T, N, NP}}) where {T <: Real, N, NP} =
+    Base.HasShape{NP}()
+Base.IndexStyle(::Type{<:HyperSpectrum{T, N, NP}}) where {T <: Real, N, NP} = IndexCartesian()
+Base.IteratorEltype(::Type{<:HyperSpectrum{T, N, NP}}) where {T <: Real, N, NP} = Base.HasEltype()
+Base.iterate(hss::HyperSpectrum{T, N, NP}, state=1) where {T <: Real, N, NP} =
+    state > length(hss) ? nothing : ( getindex(hss, state), state + 1 )
+    
 NeXLCore.name(hss::HyperSpectrum) = get(hss.properties, :Name, "HyperSpectrum")
 AxisArrays.axisnames(hss::HyperSpectrum) = AxisArrays.axisnames(hss.counts)[2:end]
 AxisArrays.axisvalues(hss::HyperSpectrum) = AxisArrays.axisvalues(hss.counts)[2:end]
 AxisArrays.axes(hss::HyperSpectrum) = AxisArrays.axes(hss.counts)[2:end]
-AxisArrays.axes(hss::HyperSpectrum, dim::Int) = AxisArrays.axes(hss.counts,dim+1)
 axisname(hss::HyperSpectrum, ax::Int) = AxisArrays.axisnames(hss.counts)[ax+1]
 axisvalue(hss::HyperSpectrum, ax::Int, j::Int) = AxisArrays.axisvalues(hss.counts)[ax+1][j]
 axisrange(hss::HyperSpectrum, ax::Int) = AxisArrays.axisvalues(hss.counts)[ax+1]
 Base.CartesianIndices(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP} = CartesianIndices(size(hss))
 Base.haskey(hss::HyperSpectrum, sym::Symbol) = haskey(hss.properties, sym)
+
+depth(hss::HyperSpectrum) = size(counts(hss), 1)
 
 """
     coordinate(hss::HyperSpectrum, idx::Tuple{<:Int})
@@ -189,26 +197,19 @@ dose(hss::HyperSpectrum, idx::Int...)  = hss[:ProbeCurrent] * hss.livetime[idx..
 
 
 """
-    livetime!(hss::HyperSpectrum,idx::CartesianIndex, lt::AbstractFloat)
-    livetime!(hss::HyperSpectrum{T,N}, idx::NTuple{Int,N}, lt::AbstractFloat)
+    livetime!(hss::HyperSpectrum, lt::AbstractFloat, idx...)
     livetime!(hss::HyperSpectrum{T,N}, lt::AbstractFloat) # All pixels to lt
 
 Set the livetime on a per pixel basis.
 """
-function livetime!(hss::HyperSpectrum, idx::CartesianIndex, lt::AbstractFloat) 
-    hss.livetime[idx] = lt
-end
-function livetime!(hss::HyperSpectrum{T,N}, idx::NTuple{N, Int}, lt::AbstractFloat)  where {T<:Real,N}  
+function livetime!(hss::HyperSpectrum, lt::AbstractFloat, idx...) 
     hss.livetime[idx...] = lt
 end
 function livetime!(hss::HyperSpectrum, lt::AbstractFloat)  
     hss.livetime .= lt
 end
 
-livetime(hss::HyperSpectrum, idx::CartesianIndex) = hss.livetime[idx]
-livetime(hss::HyperSpectrum{T,N}, idx::NTuple{N, Int}) where {T<:Real,N} = hss.livetime[idx...]
-livetime(hss::HyperSpectrum, idx::Int...) = hss.livetime[idx...]
-
+livetime(hss::HyperSpectrum, idx...) = hss.livetime[idx...]
 
 function Base.getindex(
     hss::HyperSpectrum{T,N,NP},
