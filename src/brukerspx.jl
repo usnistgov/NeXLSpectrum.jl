@@ -1,4 +1,4 @@
-
+# Read the Bruker XML-based EDS spectrum file format.
 
 """
     readbrukerspx(fn::AbstractString)::Spectrum

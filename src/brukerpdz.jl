@@ -1,3 +1,4 @@
+# Read the spectrum data file format associated with handheld Bruker XRF units.
 
 function readbrukerpdz(fn::AbstractString)
     open(fn, "r") do f

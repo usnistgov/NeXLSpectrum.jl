@@ -3,6 +3,7 @@
 
 # Spectrum
 ```@docs
+NeXLSpectrum.Spectrum
 NeXLSpectrum.property!
 NeXLSpectrum.duane_hunt
 NeXLSpectrum.sigma
@@ -14,37 +15,51 @@ NeXLSpectrum.apply
 NeXLSpectrum.loadmultispec
 NeXLUncertainties.uv
 NeXLSpectrum.χ²
+NeXLSpectrum.recalibrate
+NeXLSpectrum.shift
+NeXLSpectrum.offset
+NeXLSpectrum.dosenormalize
+NeXLSpectrum.extent
+NeXLSpectrum.characteristiccounts
+NeXLSpectrum.scale
+NeXLSpectrum.charXRayLabels
+NeXLSpectrum.channelcount
+NeXLSpectrum.sumcounts
+```
+
+# HyperSpectrum
+```@docs
+NeXLSpectrum.HyperSpectrum
+NeXLSpectrum.linescan
+NeXLSpectrum.block
+NeXLSpectrum.readrplraw
+NeXLSpectrum.readptx
+NeXLSpectrum.readhspy
+NeXLSpectrum.ishspy
+NeXLSpectrum.plane
+NeXLSpectrum.roiimage
+NeXLSpectrum.compress
+NeXLSpectrum.maxpixel
+NeXLSpectrum.colorize
+NeXLSpectrum.labeledimages
+NeXLSpectrum.labeledimage
+NeXLSpectrum.region
+NeXLSpectrum.indexofmaxpixel
+NeXLSpectrum.roiimages
+NeXLSpectrum.livetime!
 ```
 
 # Fitting Filter
+Core methods for constructing `FilterFitPacket`s and fitting spectra.
 ```@docs
-NeXLSpectrum.TopHatFilter
-NeXLSpectrum.ConstantWidthFilter
-NeXLSpectrum.GaussianFilter
-NeXLSpectrum.VariableWidthFilter
-NeXLSpectrum.tophatfilter
-NeXLSpectrum.buildfilter
-```
-
-```@docs
-NeXLSpectrum.FilteredReference
-NeXLSpectrum.FilterFitPacket
-NeXLSpectrum.spectra
-NeXLCore.elms
 NeXLSpectrum.reference
 NeXLSpectrum.references
-```
-
-```@docs
-NeXLSpectrum.FilteredUnknownW
-NeXLSpectrum.FilteredUnknownG
-NeXLSpectrum.filterfit
-NeXLSpectrum.isvisible
+NeXLSpectrum.FilterFitPacket
 NeXLSpectrum.fit_spectrum
+NeXLSpectrum.FilteredReference
+NeXLSpectrum.spectra
+NeXLCore.elms
 NeXLSpectrum.missingReferences
-```
-
-```@docs
 NeXLSpectrum.BasicFitResult
 NeXLSpectrum.FilterFitResult
 NeXLSpectrum.kratios
@@ -52,9 +67,21 @@ NeXLSpectrum.spectrum
 NeXLSpectrum.residual
 NeXLUncertainties.covariance
 NeXLSpectrum.filteredresidual
+NeXLUncertainties.extract
 ```
 
+## Advanced Filter Fitting
 ```@docs
+NeXLSpectrum.TopHatFilter
+NeXLSpectrum.ConstantWidthFilter
+NeXLSpectrum.GaussianFilter
+NeXLSpectrum.VariableWidthFilter
+NeXLSpectrum.tophatfilter
+NeXLSpectrum.buildfilter
+NeXLSpectrum.FilteredUnknownW
+NeXLSpectrum.FilteredUnknownG
+NeXLSpectrum.filterfit
+NeXLSpectrum.isvisible
 NeXLSpectrum.ReferenceLabel
 NeXLSpectrum.SpectrumFeature
 NeXLSpectrum.CharXRayLabel
@@ -62,7 +89,7 @@ NeXLSpectrum.EscapeLabel
 NeXLSpectrum.UnknownLabel
 ```
 
-## Matrix Correction
+# Matrix Correction
 ```@docs
 NeXLMatrixCorrection.quantify
 NeXLMatrixCorrection.estimatecoating
@@ -89,65 +116,37 @@ NeXLSpectrum.ScaleROISum
 NeXLSpectrum.ScalePeak
 NeXLSpectrum.ScaleWidth
 ```
-## Energy Axis Scales
+
+# EDS Detectors
+```@docs
+NeXLSpectrum.Detector
+NeXLSpectrum.EDSDetector
+NeXLSpectrum.resolution
+NeXLSpectrum.Resolution
+NeXLSpectrum.simpleEDSwICC
+NeXLSpectrum.MnKaResolution
+NeXLSpectrum.Beryllium
+NeXLSpectrum.AP33Tabulation
+```
+## Energy Axis Scales for EDS Detectors
 ```@docs
 NeXLSpectrum.EnergyScale
 NeXLSpectrum.LinearEnergyScale
 NeXLSpectrum.PolyEnergyScale
 ```
 
+## Bremsstrahlung
 ```@docs
-NeXLSpectrum.Detector
-NeXLSpectrum.EDSDetector
-
-NeXLSpectrum.resolution
-NeXLSpectrum.Resolution
-NeXLSpectrum.simpleEDSwICC
-```
-
-```@docs
-NeXLSpectrum.HyperSpectrum
-NeXLSpectrum.readrplraw
-NeXLSpectrum.readptx
-NeXLSpectrum.readhspy
-NeXLSpectrum.ishspy
-
-NeXLSpectrum.plane
-NeXLSpectrum.roiimage
-NeXLSpectrum.compress
-NeXLSpectrum.maxpixel
-NeXLSpectrum.colorize
-NeXLSpectrum.labeledimages
-NeXLSpectrum.labeledimage
-
-NeXLSpectrum.generated
 NeXLSpectrum.continuumrois
+NeXLSpectrum.generated
 NeXLSpectrum.emitted
 NeXLSpectrum.fitcontinuum
-NeXLSpectrum.indexofmaxpixel
-NeXLSpectrum.roiimages
 NeXLSpectrum.detectorresponse
 NeXLCore.weight
 NeXLSpectrum.extents
 NeXLSpectrum.profile
-NeXLSpectrum.region
-NeXLSpectrum.livetime!
-
 NeXLSpectrum.subtractcontinuum
 NeXLSpectrum.heterogeneity
-NeXLUncertainties.extract
-NeXLSpectrum.extent
-NeXLSpectrum.characteristiccounts
-NeXLSpectrum.scale
-NeXLSpectrum.charXRayLabels
-NeXLSpectrum.channelcount
-NeXLSpectrum.sumcounts
-
-```
-
-```@docs
-NeXLSpectrum.Beryllium
-NeXLSpectrum.AP33Tabulation
 ```
 
 ## Utility

@@ -1,8 +1,6 @@
-"""
-Unfortunately, while the standard ImageMagick TIFF reader can read the image data from ASPEX TIFF files,
-it can't read the spectrum data.  So I've written a lean TIFF tag reader to access the tags and
-to read the spectral data into a Spectrum object.
-"""
+# Unfortunately, while the standard ImageMagick TIFF reader can read the image data from ASPEX TIFF files,
+# it can't read the spectrum data.  So I've written a lean TIFF tag reader to access the tags and
+# to read the spectral data into a Spectrum object.
 
 struct _ATField
     tagId::UInt16

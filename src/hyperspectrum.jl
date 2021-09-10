@@ -185,16 +185,13 @@ coordinate(hss::HyperSpectrum, ci::CartesianIndex) = #
     coordinate(hss, ci.I)
 
 """
-    dose(hss::HyperSpectrum)
-    dose(hss::HyperSpectrum, idx::CartesianIndex)
-    dose(hss::HyperSpectrum, idx...)
+    dose(hss::HyperSpectrum) # Average dose per pixel
+    dose(hss::HyperSpectrum, idx...) # Dose for the `idx` pixel
 
 Returns the product of the probe current and the live-time on a per pixel basis.
 """
 dose(hss::HyperSpectrum) = hss[:ProbeCurrent] * mean(hss.livetime)
-dose(hss::HyperSpectrum, idx::CartesianIndex) = hss[:ProbeCurrent] * hss.livetime[idx]
-dose(hss::HyperSpectrum, idx::Int...)  = hss[:ProbeCurrent] * hss.livetime[idx...]
-
+dose(hss::HyperSpectrum, idx...)  = hss[:ProbeCurrent] * hss.livetime[idx...]
 
 """
     livetime!(hss::HyperSpectrum, lt::AbstractFloat, idx...)

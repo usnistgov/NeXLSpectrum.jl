@@ -34,15 +34,45 @@ Example:
     ******************************************************************************** 10.0 keV
     Spectrum[3062][10.0 keV, Unknown, 525000.0 counts]
 
+
+Spectra are usually loaded from disk using:
+
+    s1 = loadspectrum(joinpath(path,"ADM-6005a_1.msa")) # Auto-detects the file type (supports ISO/EMSA, Bruker, ASPEX, ??? files)
+      *                                                                                                  128860.0
+      *
+      *
+      *
+      *
+      *
+      *     *
+      *     *
+      *     *
+      * ** **
+      * ** *****        **  **
+    **************************************************************************************************** 20.0 keV
+    Spectrum{Float64}[ADM-6005a_1, -484.20818 + 5.01716⋅ch eV, 4096 ch, 20.0 keV, Unknown, 6.81e6 counts]
+
 `Spectrum` implements indexing using various different mechanisms.  If `spec` is a `Spectrum` then
 
     spec[123] # will return the number of counts in channel 123
 	spec[123:222] # will return a Vector of counts from channel 123:222
     spec[134.] # will return the number of counts in the channel at energy 134.0 eV
     spec[134.0:270.0] # will return a Vector of counts for channels with energies between 134.0 eV and 270.0 eV
-    spec[:Comment] # will return the property named :Comment
+    spec[n"Ca L3-M5"] # Counts in the channel at the Ca L3-M5 characteristic X-ray energy
+    spec[:Comment] # will return the meta-data item named :Comment
 
-Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
+Basic spectrum math is supported using the operators *, /, ÷, +, and -.  If `s1`, `s2` and `s3` are `Spectrum` objects
+then:
+
+    2*s1 # A Spectrum containing twice as many counts in each channel
+    2.0*s1 # A Spectrum containing twice as many counts in each channel
+    s1/2.0 # A spectrum containing half as many counts in each channel
+    s1÷2 # A spectrum containing half as many counts in each channel (Only works for Spectrum{<:Integer})
+    s1 + s2 # A Spectrum containing channel-by-channel sum of counts in s1 and s1 and common properties.
+    s1 - s2 # The channel-by-channel difference
+
+Spectrum metadata is identified by a `Symbol`. These `Symbol`s are used within NeXLSpectrum. You can create others 
+to associate other data items with a `Spectrum`.
 
     :BeamEnergy    # In eV
 	:Elevation     # In radians
@@ -67,6 +97,7 @@ Metadata is identified by a symbol. These Symbols are used within NeXLSpectrum.
 	:Signature     # Dict{Element,Real} with the "particle signature"
 
 Spectrum Image items:
+
     :ImageRotation # Rotation of the primary scan direction from the :X axis towards the :Y axis in radians
 
 Less common items:
@@ -174,7 +205,7 @@ properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
 Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Real } = spec
 function Base.convert(::Type{Spectrum{T}}, spec::Spectrum{U})::Spectrum{T} where {T <: Real, U <: Real }
-    return Spectrum{T}(spec.energy, T.(spec.counts), copy(spec.properties))
+    return Spectrum(spec.energy, T.(spec.counts), copy(spec.properties))
 end
 function Base.similar(spec::Spectrum{T}, ::Type{U}) where { T <: Real, U <: Real }
     return Spectrum(spec.energy, similar(spec.counts, U), copy(spec.properties))
@@ -184,14 +215,8 @@ end
 Base.:*(a::Real, s::Spectrum) = property!(Spectrum(s.energy, a*s.counts, copy(s.properties)), :Name, "$a⋅$(s[:Name])")
 Base.:*(s::Spectrum, a::Real) = property!(Spectrum(s.energy, a*s.counts, copy(s.properties)), :Name, "$a⋅$(s[:Name])")
 Base.:/(s::Spectrum, a::Real) = property!(Spectrum(s.energy, s.counts/a, copy(s.properties)), :Name, "$(s[:Name])/$a")
-
-"""
-    offset(s::Spectrum, dcounts::Real)
-
-Returns a `Spectrum` like `s` but with dcounts added to each channel.
-"""
-offset(s::Spectrum, dcounts::Real) = property!(Spectrum(s.energy, s.counts .+ dcounts, copy(s.properties)), :Name, "$(s[:Name]) offset by $dcounts")
-
+Base.:÷(s::Spectrum{T}, a::Integer) where {T <: Integer} = property!(Spectrum(s.energy, s.counts .÷ a, copy(s.properties)), :Name, "$(s[:Name])÷$a")
+# Operations with two Spectrum arguments combine the common properties and rename.
 function Base.:+(s1::Spectrum, s2::Spectrum) 
     @assert isequal(s1.energy,s2.energy) "The energy calibration must be the same to add two spectra."
     r = Base.OneTo(min(length(s1.counts),length(s2.counts)))
@@ -202,6 +227,14 @@ function Base.:-(s1::Spectrum, s2::Spectrum)
     r = Base.OneTo(min(length(s1.counts),length(s2.counts)))
     property!(Spectrum(s1.energy, view(s1.counts,r) - view(s2.counts,r), commonproperties(s1,s2)), :Name, "$(s1[:Name]) - $(s2[:Name])")
 end
+
+"""
+    offset(s::Spectrum, dcounts::Real)
+
+Returns a `Spectrum` like `s` but with dcounts added to each channel.
+"""
+offset(s::Spectrum, dcounts::Real) = property!(Spectrum(s.energy, s.counts .+ dcounts, copy(s.properties)), :Name, "$(s[:Name]) offset by $dcounts")
+
 
 
 """
@@ -222,7 +255,18 @@ Returns the low and high energy extremes for the channels `ch`.
 rangeofenergies(ch::Integer, spec::Spectrum) =
     (energy(ch, spec.energy), energy(ch + 1, spec.energy))
 
+"""
+    NeXLCore.hasminrequired(ty::Type, spec::Spectrum)
+
+Does `spec` have the necessary property items for the algorithm `ty`?
+"""
 NeXLCore.hasminrequired(ty::Type, spec::Spectrum) = hasminrequired(ty, spec.properties)
+
+"""
+    NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum)
+
+Which properties are missing from `spec` but are required for the algorithm `ty`?
+"""
 NeXLCore.requiredbutmissing(ty::Type, spec::Spectrum) =
     requiredbutmissing(ty, spec.properties)
 
@@ -310,7 +354,7 @@ function apply(spec::Spectrum, det::EDSDetector)::Spectrum
 end
 
 """
-	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1)::BasicEDS
+	matching(spec::Spectrum, resMnKa::Float64, lld::Int=1, minByFam::Dict{Shell,Element} = Dict())::BasicEDS
 
 Build an EDSDetector to match the channel count and energy scale in this spectrum.
 """
@@ -323,10 +367,14 @@ matching(
     lld::Int,
     minByFam::Dict{Shell,Element},
 )::BasicEDS = BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
+"""
+    matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool
 
-function matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool
-    return (det isa EDSDetector) &&
-           abs(energy(1, spec) - energy(1, det)) < tol * channelwidth(1, det) &&
+Does the calibration of the Spectrum (approximately) match the calibration of the Detector?
+"""
+matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool = false
+function matches(spec::Spectrum, det::EDSDetector, tol::Float64 = 1.0)::Bool
+    return abs(energy(1, spec) - energy(1, det)) < tol * channelwidth(1, det) &&
            abs(energy(length(spec), spec) - energy(length(spec), det)) <
            tol * channelwidth(length(spec), det)
 end
@@ -387,6 +435,11 @@ function dose(spec::Spectrum)
     end
 end
 
+"""
+    NeXLCore.energy(ch::Int, spec::Spectrum)::Float64
+
+What energy is associated with `ch` in `spec`?
+"""
 NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
 
 """
@@ -395,10 +448,14 @@ NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
     coordinate(hss::HyperSpectrum, ci::CartesianIndex)
 
 Returns the stage coordinate corresponding most closely to the :StagePosition (compensated
-for the image offset in a `HyperSpectrum`)
+for the image offset in a `HyperSpectrum`) Defaults to :X=>0, :Y=>0
+
+Nominally coordinates are:  :X, :Y, :Z, :R, :T, :B
+
+Use with: `image2stage(...)` and `stage2image(...)` to calculate the stage coordinate of image pixels.
 """
 function coordinate(spec::Spectrum)
-    return get(spec, :StagePosition,Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
+    return get(spec, :StagePosition, Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
 end
 
 """
@@ -411,33 +468,33 @@ channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 
 """
-    counts(spec::Spectrum, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
-    counts(spec::Spectrum, channels::AbstractUnitRange{<:Integer}, numType::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, ::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
+    counts(spec::Spectrum, channels::AbstractUnitRange{<:Integer}, ::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
 
 Creates a copy of the spectrum counts data as the specified Number type. If the spectrum has a :Detector
 property then the detector's lld (low-level discriminator) and applyLLD=true then the lld is applied to the result
-by setting all channels less-than-or-equal to det.lld to zero.
+by setting all channels less-than-or-equal to det.lld to zero. This method throws an error if the counts data
+cannot be converted without loss to the type `T`.
 """
 function counts(
     spec::Spectrum,
-    numType::Type{T} = Float64,
+    ::Type{T} = Float64,
     applyLLD = false,
 )::Array{T} where {T<:Number}
-    res = T[convert(numType, n) for n in spec.counts]
+    res = T.(spec.counts)
     if applyLLD && haskey(spec, :Detector)
-        fill!(view(res, 1:lld(spec[:Detector])), zero(numType))
+        fill!(view(res, 1:lld(spec[:Detector])), zero(T))
     end
     return res
 end
-
 function counts(
     spec::Spectrum,
     channels::AbstractRange{<:Integer},
-    numType::Type{T},
+    ::Type{T} = Float64,
     applyLLD = false,
 )::Array{T} where {T<:Real}
     if (first(channels) >= 1) && (last(channels) <= length(spec))
-        res = T[convert(numType, n) for n in spec.counts[channels]]
+        res = T.(spec.counts[channels])
     else
         res = zeros(numType, length(channels))
         r = max(first(channels), 1):min(last(channels), length(spec))
@@ -448,16 +505,18 @@ function counts(
     end
     return res
 end
-
 function counts(
     spec::Spectrum,
     channels::AbstractVector{<:Integer},
     numType::Type{T} = Float64,
+    applyLLD = false,
 )::Array{T} where {T<:Real}
-    return T[convert(numType, n) for n in spec.counts[channels]]
+    res = T.(spec.counts[channels])
+    if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
+    end
+    return res
 end
-
-
 
 """
     lld(spec::Spectrum)
@@ -482,9 +541,8 @@ function Base.findmax(spec::Spectrum)
         haskey(spec, :BeamEnergy) ? channel(spec[:BeamEnergy], spec) : length(spec.counts),
         length(spec.counts),
     )
-    return findmax(spec.counts, lld(spec):last)
+    return findmax(spec.counts[lld(spec):last])
 end
-
 
 """
     integrate(spec::Spectrum, channels::AbstractUnitRange{<:Integer})
@@ -586,6 +644,7 @@ kratio(
 
 """
     energyscale(spec::Spectrum)
+    energyscale(spec::Spectrum, chs::AbstractRange{<:Integer})
 
 Returns an array with the bin-by-bin energies
 """
@@ -634,7 +693,7 @@ that act as though the original spectrum was collected in n time intervals
 of LiveTime/n.  This is quite slow because it needs to call rand() for each
 count in the spectrum (not just each channel).
 """
-function subdivide(spec::Spectrum, n::Int)::Vector{Spectrum}
+function subdivide(spec::Spectrum{T}, n::Int)::Vector{Spectrum{T}} where {T <: Real}
     res = zeros(Int, n, length(spec.counts))
     for ch in eachindex(spec.counts)
         # Assign each event to one and only one detector
@@ -643,17 +702,15 @@ function subdivide(spec::Spectrum, n::Int)::Vector{Spectrum}
             res[i, ch] = count(e -> e == i, si)
         end
     end
-    specs = Spectrum[]
-    for i in 1:n
+    return map(1:n) do i
         props = deepcopy(spec.properties)
         props[:Name] = "Sub[$(spec[:Name]),$(i) of $(n)]"
         props[:LiveTime] = spec[:LiveTime] / n # Must have
         if haskey(spec, :RealTime)
             props[:RealTime] = spec[:RealTime] / n # Might have
         end
-        push!(specs, Spectrum(spec.energy, res[i, :], props))
+        Spectrum(spec.energy, res[i, :], props)
     end
-    return specs
 end
 
 
@@ -1043,7 +1100,7 @@ function χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::T where {T<:Real}
     return d / s
 end
 
-function χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
+function χ²(specs::AbstractVector{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
     χ2s = zeros(Float64, (length(specs), length(specs)))
     for i in eachindex(specs), j in i+1:length(specs)
         χ2s[i, j] = χ²(specs[i], specs[j], chs)
