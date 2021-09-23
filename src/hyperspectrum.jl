@@ -176,8 +176,8 @@ Computes the stage coordinate centering the pixel specified by `idx` using the `
 """
 function coordinate(hss::HyperSpectrum, idx::Tuple)
     av, an = axisvalues(hss.counts), axisnames(hss.counts)
-    img_coord = Dict{Symbol,Float64}(  an[i+1] => av[i+1][ii] for (i,ii) in enumerate(idx) )
-    stage_coord = get(hss.properties, :StagePosition, Dict{Symbol,Float64}(:X=>0.0, :Y=>0.0))
+    img_coord = Dict(  an[i+1] => av[i+1][ii] for (i,ii) in enumerate(idx) )
+    stage_coord = get(hss.properties, :StagePosition, Dict(sy=>zero(typeof(av[2][1])) for sy in (:X, :Y) ))
     th = get(hss.properties, :ImageRotation, 0.0)
     return image2stage(hss.stagemap, stage_coord, img_coord, th)
 end
