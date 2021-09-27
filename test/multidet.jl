@@ -48,7 +48,6 @@ using Test
     ], 132.0 )
 
     q = quantify(multisum(k412), refs)
-    # display(asa(DataFrame, q))
     @test isapprox(value(q.comp[n"Al"]), 0.049, atol = 0.001)
     @test isapprox(value(q.comp[n"Ca"]), 0.108, atol = 0.001)
     @test isapprox(value(q.comp[n"Fe"]), 0.080, atol = 0.001)
