@@ -560,4 +560,20 @@ function plot_compare(specs::AbstractArray{<:Spectrum}, mode=:Plot; xmin=100.0, 
     end
 end
 
+"""
+    plot_multicompare(specs::AbstractArray{Spectrum{T}}; minE=200.0, maxE=0.5*specs[1][:BeamEnergy]) where { T<: Real}
+
+Compare spectra collected simultaneously on multiple detectors in a single acquisition.
+"""
+function plot_multicompare(specs::AbstractArray{Spectrum{T}}; minE=200.0, maxE=0.5*specs[1][:BeamEnergy]) where { T<: Real}
+    s, mcs = specs[1], multicompare(specs)
+    chs = max(1,channel(minE, s)): min(channel(maxE, s), length(s))
+    xx = map(i->energy(i,s), chs)
+    plot(
+        (layer(x=xx, y=view(mc,chs), Geom.line, Theme(default_color=c)) for (c,mc) in zip(NeXLPalette[1:length(mcs)],mcs))...,
+        Guide.xlabel("Energy (eV)"), Guide.ylabel("Ratio")
+    )
+end
+
+
 @info "Loading Gadfly support into NeXLSpectrum."

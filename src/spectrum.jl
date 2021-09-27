@@ -369,14 +369,21 @@ matching(
 )::BasicEDS = BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
 """
     matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool
+    matches(spec1::Spectrum, spec2::Spectrum, tol::Float64 = 1.0)::Bool
 
-Does the calibration of the Spectrum (approximately) match the calibration of the Detector?
+Does the calibration of the Spectrum (approximately) match the calibration of the Detector
+or the other Spectrum?
 """
 matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool = false
 function matches(spec::Spectrum, det::EDSDetector, tol::Float64 = 1.0)::Bool
     return abs(energy(1, spec) - energy(1, det)) < tol * channelwidth(1, det) &&
            abs(energy(length(spec), spec) - energy(length(spec), det)) <
            tol * channelwidth(length(spec), det)
+end
+function matches(spec1::Spectrum, spec2::Spectrum, tol::Float64 = 1.0)::Bool
+    return abs(energy(1, spec1) - energy(1, spec2)) < tol * channelwidth(1, spec1) &&
+           abs(energy(length(spec1), spec1) - energy(length(spec2), spec2)) <
+           tol * channelwidth(length(spec1), spec1)
 end
 
 """
