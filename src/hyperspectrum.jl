@@ -169,6 +169,12 @@ Base.haskey(hss::HyperSpectrum, sym::Symbol) = haskey(hss.properties, sym)
 
 depth(hss::HyperSpectrum) = size(counts(hss), 1)
 
+function matches(spec1::HyperSpectrum, spec2::HyperSpectrum, tol::Float64 = 1.0)::Bool
+    return abs(energy(1, spec1) - energy(1, spec2)) < tol * channelwidth(1, spec1) &&
+           abs(energy(length(spec1), spec1) - energy(length(spec2), spec2)) <
+           tol * channelwidth(length(spec1), spec1)
+end
+
 """
     coordinate(hss::HyperSpectrum, idx::Tuple{<:Int})
 
@@ -315,6 +321,7 @@ end
 
 NeXLCore.energy(ch::Integer, hss::HyperSpectrum) = energy(ch, hss.energy)
 channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
+channelwidth(ch::Int, hss::HyperSpectrum) = energy(ch + 1, hss) - energy(ch, hss)
 rangeofenergies(ch::Integer, hss::HyperSpectrum) =
     (energy(ch, hss.energy), energy(ch + 1, hss.energy))
 properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties

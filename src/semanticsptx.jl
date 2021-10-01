@@ -6,16 +6,25 @@ using Mmap
     readptx(
         fn::AbstractString, 
         scale::EnergyScale, # Energy scale for hyperspectrum
+        props::Dict{Symbol,Any},
         nch::Int; # Number of channels in hyperspectrum
         blocksize = 1,  # Size of blocks to sum to create averaged hyperspectrum
         dets=[true,true,true,true], # Which detectors to include
         frames=1:typemax(Int)) # which frames to include in hyperspectrum
-
+    readptx(
+        fn::AbstractString, 
+        scale::EnergyScale, # Energy scale for hyperspectrum
+        nch::Int; # Number of channels in hyperspectrum
+        blocksize = 1,  # Size of blocks to sum to create averaged hyperspectrum
+        dets=[true,true,true,true], # Which detectors to include
+        frames=1:typemax(Int)) # which frames to include in hyperspectrum
+    
 Read a SEMantics .ptx file into a HyperSpectrum.
 """
 function readptx(
     fn::AbstractString,
     scale::EnergyScale,
+    props::Dict{Symbol,<:Any},
     nch::Int;
     blocksize = 1,
     frames = 1:typemax(Int),
@@ -42,8 +51,8 @@ function readptx(
         # Read and interpret the header
         xml = read(joinpath(tmp_dir,"Header")) 
         hdr = readxml(IOBuffer(xml))
-        props = Dict{Symbol,Any}()
-        props[:Name] = splitpath(fn)[end]
+        nprops = Dict{Symbol,Any}(props)
+        nprops[:Name] = splitpath(fn)[end]
         dwell = 1.0e-6 * parse(Float64, findfirst("/OpticState/mDwell", hdr).content)
         fov = 0.1 * parse(Float64, findfirst("/OpticState/mFieldOfView", hdr).content)
         width = parse(Int, findfirst("/OpticState/mWidth", hdr).content)
@@ -54,7 +63,7 @@ function readptx(
         rh = parse(Int, findfirst("/OpticState/mRaster/height", hdr).content)
         hss = HyperSpectrum(
             scale, # EnergyScale
-            props, # Properties
+            nprops, # Properties
             ((rh - ry)÷blocksize, (rw - rx)÷blocksize), # Pixel dimensions 
             nch, # Channel depth
             datatype, # Default UInt16,
@@ -173,3 +182,12 @@ function readptx(
         end # close the file
     end # delete the temporary directory
 end
+readptx(
+    fn::AbstractString,
+    scale::EnergyScale,
+    nch::Int;
+    blocksize = 1,
+    frames = 1:typemax(Int),
+    dets = ( true, true, true, true ),
+    datatype = UInt16
+) = readptx(fn, scale, Dict{Symbol,Any}(), nch, blocksize=blocksize, frames=frames, dets=dets, datatype=datatype)

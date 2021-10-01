@@ -34,6 +34,15 @@ function checkmultispec(specs::AbstractArray{<:Spectrum})
     @assert all(s->matches(s, s1), so) "The energy calibration of the spectra must all match (approximately.)"
     @assert all(s->length(s.counts)==length(s1.counts), so) "The channel length of the spectra must all match."
 end
+function checkmultispec(specs::AbstractArray{<:HyperSpectrum})
+    s1, so = specs[1], view(specs, 2:length(specs))
+    @assert all(s->get(s,:ProbeCurrent,0.0)==get(s1, :ProbeCurrent, 0.0), so) "The spectra must have all been collected at the same probe current."
+    @assert all(s->s[:RealTime]==s1[:RealTime], so) "The spectra must have all been collected at the same real time."
+    @assert all(s->s[:BeamEnergy]==s1[:BeamEnergy], so) "The spectra must have all been collected at the same beam energy."
+    @assert all(s->matches(s, s1), so) "The energy calibration of the spectra must all match (approximately.)"
+    @assert all(s->length(s.counts)==length(s1.counts), so) "The channel length of the spectra must all match."
+end
+
 
 """
    specratio(specs::AbstractArray{<:Spectrum})::Vector{Vector{Float64}}
@@ -41,9 +50,17 @@ end
 Computes the channel-by-channel ratio of the counts data over the mean counts data for all spectra for each spectrum.
 """
 function specratio(specs::AbstractArray{<:Spectrum})
-    ss = map(s -> max(1, s), counts(sum(specs)))
-    return length(specs) * [counts(spec) ./ ss for spec in specs]
+    ss = map(s -> max(1, s), sum.(zip(map(ss->ss.counts, specs)...)))
+    return length(specs) * [spec.counts ./ ss for spec in specs]
 end
+function specratio(specs::AbstractArray{<:HyperSpectrum})
+    d=Base.OneTo(depth(specs[1]))
+    map(CartesianIndices(specs[1])) do ci
+        ss = map(s -> max(1, s), sum.(zip(map(hs->view(hs.counts, d, ci), specs)...)))
+        length(specs) * map(hs->hs.counts[:,ci] ./ ss, specs)
+    end
+end
+
 """
     binnedspecratio(specs::AbstractArray{<:Spectrum}; minE=100.0, deltaE=100.0)::Vector{Vector{Float64}}
 
@@ -51,18 +68,15 @@ Bins the specratio(spec) to reduce the variation.
 """
 function binnedspecratio(specs::AbstractArray{<:Spectrum}; minE = 100.0, deltaE = 100.0)
     sr = specratio(specs)
-    map(
-        i -> map(
-            ee -> mean(
-                sr[i][channel(
-                    ee,
-                    specs[i],
-                ):channel(min(specs[i][:BeamEnergy], ee + deltaE), specs[i])],
-            ),
-            minE:deltaE:specs[i][:BeamEnergy]/1.8,
-        ),
-        eachindex(specs),
-    )
+    return map(eachindex(specs)) do i
+        map(minE:deltaE:specs[i][:BeamEnergy]/1.8) do ee
+            mean(
+                sr[i][
+                    channel(ee,specs[i]):channel(min(specs[i][:BeamEnergy], ee + deltaE), specs[i])
+                ] #
+            )
+        end
+    end
 end
 
 """
@@ -76,13 +90,20 @@ to tilt and obstructions like surface texture which may make one spectrum's low 
 others. 
 """
 function multiscore(specs::AbstractArray{<:Spectrum}, e0 = specs[1][:BeamEnergy])
-    srs = specratio(specs)
-    sp = specs[1]
+    srs, sp = specratio(specs), specs[1]
     rr = channel(200.0, sp):channel(500.0, sp)
     ss = channel(e0 / 2.0, sp):channel(e0 / 1.5, sp)
     return [mean(sr[rr]) / mean(sr[ss]) - 1.0 for sr in srs]
 end
-
+function multiscore(specs::AbstractArray{<:HyperSpectrum}, e0 = specs[1][:BeamEnergy])
+    sp = specs[1]
+    rr = channel(200.0, sp):channel(500.0, sp)
+    ss = channel(e0 / 2.0, sp):channel(e0 / 1.5, sp)
+    return map(CartesianIndices(specs[1])) do ci
+        srs = specratio(map(sp->sp[ci], specs))
+        [mean(sr[rr]) / mean(sr[ss]) - 1.0 for sr in srs]
+    end
+end
 """
     multirank(specs::AbstractArray{<:Spectrum})::Float64
 
@@ -92,7 +113,7 @@ one or more of the spectra may suffer from additional low energy absorption due 
 sample tilt or other.
 """
 function multirank(specs::AbstractArray{<:Spectrum})::Float64
-    -(-)(extrema(multiscore(specs))...)
+    sqrt(sum((x->x*x).(multiscore(specs))))
 end
 
 # Return the common prefix
