@@ -504,24 +504,24 @@ function counts(
     if (first(channels) >= 1) && (last(channels) <= length(spec))
         res = T.(spec.counts[channels])
     else
-        res = zeros(numType, length(channels))
+        res = zeros(T, length(channels))
         r = max(first(channels), 1):min(last(channels), length(spec))
         res[first(r)-first(channels)+1:last(r)-first(channels)+1] = spec.counts[r]
     end
     if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
-        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))
     end
     return res
 end
 function counts(
     spec::Spectrum,
     channels::AbstractVector{<:Integer},
-    numType::Type{T} = Float64,
+    ::Type{T} = Float64,
     applyLLD = false,
 )::Array{T} where {T<:Real}
     res = T.(spec.counts[channels])
     if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
-        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))
     end
     return res
 end

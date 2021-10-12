@@ -25,7 +25,7 @@ using Test
     @test isapprox(value(m20[n"O"]), 0.4402, atol=0.0001)
     @test isapprox(value(m20[n"Mg"]), 0.1147, atol=0.0001)
     @test isapprox(value(m20[n"Al"]), 0.0484, atol=0.0001)
-    @test isapprox(value(m20[n"Si"]), 0.2068, atol=0.0001)
+    @test isapprox(value(m20[n"Si"]), 0.2066, atol=0.0001)
     @test isapprox(value(m20[n"Ca"]), 0.1079, atol=0.0001)
     @test isapprox(value(m20[n"Fe"]), 0.0802, atol=0.0001)
 
@@ -50,8 +50,8 @@ using Test
     m15 = mean(material.(q15))
     @test isapprox(value(m15[n"O"]), 0.4566, atol=0.0001)
     @test isapprox(value(m15[n"Mg"]), 0.1157, atol=0.0001)
-    @test isapprox(value(m15[n"Al"]), 0.0486, atol=0.0001)
-    @test isapprox(value(m15[n"Si"]), 0.2105, atol=0.0001)
+    @test isapprox(value(m15[n"Al"]), 0.0485, atol=0.0001)
+    @test isapprox(value(m15[n"Si"]), 0.2102, atol=0.0001)
     @test isapprox(value(m15[n"Ca"]), 0.1082, atol=0.0001)
     @test isapprox(value(m15[n"Fe"]), 0.0803, atol=0.0001)
 
@@ -63,7 +63,7 @@ using Test
     @test isapprox(value(m15_20[n"O"]), 0.4708, atol=0.0001)
     @test isapprox(value(m15_20[n"Mg"]), 0.1176, atol=0.0001)
     @test isapprox(value(m15_20[n"Al"]), 0.0488, atol=0.0001)
-    @test isapprox(value(m15_20[n"Si"]), 0.2075, atol=0.0001)
+    @test isapprox(value(m15_20[n"Si"]), 0.2073, atol=0.0001)
     @test isapprox(value(m15_20[n"Ca"]), 0.1075, atol=0.0001)
     @test isapprox(value(m15_20[n"Fe"]), 0.0825, atol=0.0001)
 
@@ -73,7 +73,7 @@ using Test
     @test isapprox(value(m20_15[n"O"]), 0.4278, atol=0.0001)
     @test isapprox(value(m20_15[n"Mg"]), 0.1128, atol=0.0001)
     @test isapprox(value(m20_15[n"Al"]), 0.0481, atol=0.0001)
-    @test isapprox(value(m20_15[n"Si"]), 0.2096, atol=0.0001)
+    @test isapprox(value(m20_15[n"Si"]), 0.2094, atol=0.0001)
     @test isapprox(value(m20_15[n"Ca"]), 0.1087, atol=0.0001)
     @test isapprox(value(m20_15[n"Fe"]), 0.0781, atol=0.0001)
 end

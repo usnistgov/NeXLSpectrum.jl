@@ -284,17 +284,3 @@ function fit_spectrum(
     end
 end
 
-
-fit_spectrum(
-    ty::Type{FilteredUnknownG},
-    unk::Spectrum,
-    ffp::FilterFitPacket,
-    forcezeros::Bool = true,
-) = fit_spectrum(ty, unk, ffp.filter, ffp.references, forcezeros)
-
-fit_spectrum(
-    ty::Type{FilteredUnknownG},
-    unks::AbstractVector{<:Spectrum},
-    ffp::FilterFitPacket,
-    forcezeros::Bool = true,
-) = fit_spectrum(ty, unks, ffp.filter, ffp.references, forcezeros)

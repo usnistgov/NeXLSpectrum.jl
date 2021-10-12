@@ -58,7 +58,7 @@ using Test
     @test all(isapprox(ms,v, atol=0.0001) for (ms, v) in zip(multiscore(al2o3), [0.0321, -0.0689, -0.0149, 0.0440 ]))
     @test all(isapprox(ms,v, atol=0.0001) for (ms, v) in zip(multiscore(sio2), [ 0.0478, -0.0473, -0.0287, 0.0196 ]))
 
-    @test isapprox(multirank(k412), 0.0977, atol=0.0001)
-    @test isapprox(multirank(fe), 0.0466, atol=0.0001)
+    @test isapprox(multirank(k412), 0.0898, atol=0.0001)
+    @test isapprox(multirank(fe), 0.0396, atol=0.0001)
 
 end

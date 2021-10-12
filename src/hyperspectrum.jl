@@ -709,11 +709,12 @@ is taken from it.   Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}) = roiimages(hss, map(cxr->fwhmroi(hss, cxr), cxrs))
 
 """
-    colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All[|:Each])
+    colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
 
-Create RGB colorized images from three `KRatios` or from three `Element`s.  The elements
-are normalized relative to all `KRatios` in `krs`. The resulting images are scaled by the factor
-`scale` to allow visualization of trace elements.
+Create RGB colorized images from up to three `CharXRay` which define channels over which
+the count signal is integrated. `normalize=:All` puts the intensities on a common scale
+using the `roiimages(...)` method.  Otherwise each image is scaled independently based on
+the brightest pixel.
 """
 function NeXLCore.colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
     if normalize==:All
