@@ -369,14 +369,21 @@ matching(
 )::BasicEDS = BasicEDS(length(spec), spec.energy, MnKaResolution(resMnKa), lld, minByFam)
 """
     matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool
+    matches(spec1::Spectrum, spec2::Spectrum, tol::Float64 = 1.0)::Bool
 
-Does the calibration of the Spectrum (approximately) match the calibration of the Detector?
+Does the calibration of the Spectrum (approximately) match the calibration of the Detector
+or the other Spectrum?
 """
 matches(spec::Spectrum, det::Detector, tol::Float64 = 1.0)::Bool = false
 function matches(spec::Spectrum, det::EDSDetector, tol::Float64 = 1.0)::Bool
     return abs(energy(1, spec) - energy(1, det)) < tol * channelwidth(1, det) &&
            abs(energy(length(spec), spec) - energy(length(spec), det)) <
            tol * channelwidth(length(spec), det)
+end
+function matches(spec1::Spectrum, spec2::Spectrum, tol::Float64 = 1.0)::Bool
+    return abs(energy(1, spec1) - energy(1, spec2)) < tol * channelwidth(1, spec1) &&
+           abs(energy(length(spec1), spec1) - energy(length(spec2), spec2)) <
+           tol * channelwidth(length(spec1), spec1)
 end
 
 """
@@ -460,6 +467,7 @@ end
 
 """
     channelwidth(ch::Int, spec::Spectrum)::Float64
+    channelwidth(ch::Int, spec::HyperSpectrum)::Float64
 
 Returns the width of the `ch` channel in eV.
 """
@@ -496,24 +504,24 @@ function counts(
     if (first(channels) >= 1) && (last(channels) <= length(spec))
         res = T.(spec.counts[channels])
     else
-        res = zeros(numType, length(channels))
+        res = zeros(T, length(channels))
         r = max(first(channels), 1):min(last(channels), length(spec))
         res[first(r)-first(channels)+1:last(r)-first(channels)+1] = spec.counts[r]
     end
     if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
-        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))
     end
     return res
 end
 function counts(
     spec::Spectrum,
     channels::AbstractVector{<:Integer},
-    numType::Type{T} = Float64,
+    ::Type{T} = Float64,
     applyLLD = false,
 )::Array{T} where {T<:Real}
     res = T.(spec.counts[channels])
     if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
-        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(numType))
+        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))
     end
     return res
 end

@@ -169,6 +169,12 @@ Base.haskey(hss::HyperSpectrum, sym::Symbol) = haskey(hss.properties, sym)
 
 depth(hss::HyperSpectrum) = size(counts(hss), 1)
 
+function matches(spec1::HyperSpectrum, spec2::HyperSpectrum, tol::Float64 = 1.0)::Bool
+    return abs(energy(1, spec1) - energy(1, spec2)) < tol * channelwidth(1, spec1) &&
+           abs(energy(length(spec1), spec1) - energy(length(spec2), spec2)) <
+           tol * channelwidth(length(spec1), spec1)
+end
+
 """
     coordinate(hss::HyperSpectrum, idx::Tuple{<:Int})
 
@@ -315,6 +321,7 @@ end
 
 NeXLCore.energy(ch::Integer, hss::HyperSpectrum) = energy(ch, hss.energy)
 channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
+channelwidth(ch::Int, hss::HyperSpectrum) = energy(ch + 1, hss) - energy(ch, hss)
 rangeofenergies(ch::Integer, hss::HyperSpectrum) =
     (energy(ch, hss.energy), energy(ch + 1, hss.energy))
 properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
@@ -702,11 +709,12 @@ is taken from it.   Otherwise, a FWHM of 130 eV at Mn Kα is assumed.
 roiimages(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}) = roiimages(hss, map(cxr->fwhmroi(hss, cxr), cxrs))
 
 """
-    colorize(krs::AbstractVector{KRatios}, red::Element, green::Element, blue::Element, normalize=:All[|:Each])
+    colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
 
-Create RGB colorized images from three `KRatios` or from three `Element`s.  The elements
-are normalized relative to all `KRatios` in `krs`. The resulting images are scaled by the factor
-`scale` to allow visualization of trace elements.
+Create RGB colorized images from up to three `CharXRay` which define channels over which
+the count signal is integrated. `normalize=:All` puts the intensities on a common scale
+using the `roiimages(...)` method.  Otherwise each image is scaled independently based on
+the brightest pixel.
 """
 function NeXLCore.colorize(hss::HyperSpectrum, cxrs::AbstractVector{CharXRay}, normalize=:All)
     if normalize==:All

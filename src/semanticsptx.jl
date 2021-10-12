@@ -1,25 +1,36 @@
 using p7zip_jll
 using Colors
+using Mmap
 
 """
     readptx(
         fn::AbstractString, 
         scale::EnergyScale, # Energy scale for hyperspectrum
-        nch::Int, # Number of channels in hyperspectrum
+        props::Dict{Symbol,Any},
+        nch::Int; # Number of channels in hyperspectrum
         blocksize = 1,  # Size of blocks to sum to create averaged hyperspectrum
         dets=[true,true,true,true], # Which detectors to include
         frames=1:typemax(Int)) # which frames to include in hyperspectrum
-
+    readptx(
+        fn::AbstractString, 
+        scale::EnergyScale, # Energy scale for hyperspectrum
+        nch::Int; # Number of channels in hyperspectrum
+        blocksize = 1,  # Size of blocks to sum to create averaged hyperspectrum
+        dets=[true,true,true,true], # Which detectors to include
+        frames=1:typemax(Int)) # which frames to include in hyperspectrum
+    
 Read a SEMantics .ptx file into a HyperSpectrum.
 """
 function readptx(
     fn::AbstractString,
     scale::EnergyScale,
-    nch::Int,
+    props::Dict{Symbol,<:Any},
+    nch::Int;
     blocksize = 1,
     frames = 1:typemax(Int),
-    dets = [true, true, true, true],
-)::HyperSpectrum
+    dets = ( true, true, true, true ),
+    datatype = UInt16
+)
     function readmsg(io::IO)
         hdr = Array{UInt8}(undef, 32)
         if readbytes!(io, hdr) == 32
@@ -40,8 +51,8 @@ function readptx(
         # Read and interpret the header
         xml = read(joinpath(tmp_dir,"Header")) 
         hdr = readxml(IOBuffer(xml))
-        props = Dict{Symbol,Any}()
-        props[:Name] = splitpath(fn)[end]
+        nprops = Dict{Symbol,Any}(props)
+        nprops[:Name] = splitpath(fn)[end]
         dwell = 1.0e-6 * parse(Float64, findfirst("/OpticState/mDwell", hdr).content)
         fov = 0.1 * parse(Float64, findfirst("/OpticState/mFieldOfView", hdr).content)
         width = parse(Int, findfirst("/OpticState/mWidth", hdr).content)
@@ -50,24 +61,32 @@ function readptx(
         ry = parse(Int, findfirst("/OpticState/mRaster/y", hdr).content)
         rw = parse(Int, findfirst("/OpticState/mRaster/width", hdr).content)
         rh = parse(Int, findfirst("/OpticState/mRaster/height", hdr).content)
-        hss = HyperSpectrum(scale, props, ((rh - ry)÷blocksize, (rw - rx)÷blocksize), nch, UInt32)
-
-        open(joinpath(tmp_dir, "Data")) do data
+        hss = HyperSpectrum(
+            scale, # EnergyScale
+            nprops, # Properties
+            ((rh - ry)÷blocksize, (rw - rx)÷blocksize), # Pixel dimensions 
+            nch, # Channel depth
+            datatype, # Default UInt16,
+            axisnames = ( "X", "Y" ),
+            fov=(fov*(rw/width),fov*(rh/height)) # Image scale
+        )
+        open(joinpath(tmp_dir, "Data"),"r", lock=true) do data
             realtime, deadtime = zero(UInt64), zero(UInt64)
             maxchannel, maxframeid, minframeid = zero(Int32), zero(Int32), typemax(Int32)
             # elapsetime, prevelapse = zero(UInt64), typemax(UInt32)
             seen = Set{String}()
             images = Dict{Tuple{Int32,Int32},Array}()
             cmd, msg = readmsg(data)
+            bpp=8
             while cmd != "End"
                 # println("$cmd[$(isnothing(msg) ? "nothing" : length(msg))]")
                 if cmd == "GetMapData"
                     # The output array consists of list of datagrams, each has got five double-word (32-bit) values (DW0 to
                     # DW4). Little endian is storage is applied. Most significant byte (bits 31-24) of W0 tells the event type:
-                    err = reinterpret(Int32, msg[1:4])[1]
-                    overflow = reinterpret(UInt32, msg[5:8])[1]
-                    usage = reinterpret(Float32, msg[9:12])[1]
-                    encoding = reinterpret(UInt32, msg[13:16])[1]
+                    # err = reinterpret(Int32, msg[1:4])[1]
+                    (reinterpret(UInt32, msg[5:8])[1]!=0) && warn("A buffer overflow occured during the acquisition of the map data.")
+                    # usage = reinterpret(Float32, msg[9:12])[1]
+                    # @assert reinterpret(UInt32, msg[13:16])[1]==0
                     ws = reinterpret(UInt32, msg[13:end])
                     frame = zero(eltype(ws))
                     for i = 1:length(ws)÷5
@@ -82,9 +101,9 @@ function readptx(
                             # W2 – dead-time timer value in 10 ns
                             # W3 – event counter
                             x_det = 1 + ((w0 >>> 8) & 0x0F)
-                            if dets[x_det] && frame in frames
-                                @inbounds realtime += w1
-                                @inbounds deadtime += w2
+                            if (x_det>=1) && (x_det<=length(dets)) && dets[x_det] && frame in frames
+                                realtime += w1
+                                deadtime += w2
                             end
                         elseif msgid == 0x00 # measured energy
                             # W0 = 0x00xxxxxx – measured energy
@@ -94,7 +113,7 @@ function readptx(
                             # W3 – pixel index
                             # W4 – frame index
                             x_det, frame = 1 + ((w0 >>> 8) & 0x0F), w4
-                            if dets[x_det] && frame in frames
+                            if (x_det>=1) && (x_det<=length(dets)) && dets[x_det] && frame in frames
                                 ch = channel(Float64(w1 >>> 8), scale)
                                 r, c = Int(w3 ÷ rw - ry + 1)÷blocksize, Int(w3 % rw - rx + 1)÷blocksize
                                 #elapsetime = ( prevelapse == typemax(UInt64) ? 0 : elapsetime + (w2 >= prevelapse ? UInt64(w2 - prevelapse) : zero(typeof(elapsetime))) # w2 + (prevelapse - typemax(UInt32)))
@@ -150,7 +169,7 @@ function readptx(
                             image[:,:,ch] .= images[(frameid,ch)]
                         end
                     end
-                    hss[Symbol("Image$(maxframeid-minframeid+1)")] = gray.(permutedims(image, (2, 1, 3)))
+                    hss[Symbol("Image$(maxframeid-minframeid+1)")] = Gray.(reinterpret(bpp==8 ? N0f8 : N0f16, permutedims(image, (2, 1, 3))))
                 end
             end
             hss[:Dwell] = dwell * blocksize^2
@@ -160,6 +179,15 @@ function readptx(
             hss.livetime .= (1.0e-8 * blocksize^2 / ((rh - ry) * (rw - rx))) * (realtime - deadtime)  # seconds
             hss[:DeadFraction] = deadtime / realtime
             return hss
-        end
-    end # Delete the temporary directory
+        end # close the file
+    end # delete the temporary directory
 end
+readptx(
+    fn::AbstractString,
+    scale::EnergyScale,
+    nch::Int;
+    blocksize = 1,
+    frames = 1:typemax(Int),
+    dets = ( true, true, true, true ),
+    datatype = UInt16
+) = readptx(fn, scale, Dict{Symbol,Any}(), nch, blocksize=blocksize, frames=frames, dets=dets, datatype=datatype)

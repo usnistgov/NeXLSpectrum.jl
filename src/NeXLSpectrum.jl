@@ -207,9 +207,6 @@ include("llsq.jl")
 # The implementation for weighted filter-fit.
 include("filterfit_wls.jl")
 export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
-# The implementation for generalized filter-fit.
-include("filterfit_gls.jl")
-export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 
 include("continuum.jl")
 export ContinuumModel # Build a model to compute the continuum intensity
@@ -261,8 +258,12 @@ include("multidet.jl") # Multi-detector support
 export loadmultispec # Loads multiple related spectra.
 export multiscore # Scores spectra relative to one another. 
 export multirank # A single number value that scores the spectra
+export multisum, multimean
+export multicompare
 
+export plot_multicompare # Plots a channel-by-channel ratio comparison
 export plot_compare # Plots a statistical channel-by-channel comparison of spectra
+
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
