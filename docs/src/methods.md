@@ -79,7 +79,6 @@ NeXLSpectrum.VariableWidthFilter
 NeXLSpectrum.tophatfilter
 NeXLSpectrum.buildfilter
 NeXLSpectrum.FilteredUnknownW
-NeXLSpectrum.FilteredUnknownG
 NeXLSpectrum.filterfit
 NeXLSpectrum.isvisible
 NeXLSpectrum.ReferenceLabel

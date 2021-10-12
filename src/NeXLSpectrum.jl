@@ -207,9 +207,6 @@ include("llsq.jl")
 # The implementation for weighted filter-fit.
 include("filterfit_wls.jl")
 export FilteredUnknownW # A filtered datum representing an unknown spectrum (for weighted least squares fitting)
-# The implementation for generalized filter-fit.
-include("filterfit_gls.jl")
-export FilteredUnknownG # A filtered datum representing an unknown spectrum (for generalized least squares fitting)
 
 include("continuum.jl")
 export ContinuumModel # Build a model to compute the continuum intensity

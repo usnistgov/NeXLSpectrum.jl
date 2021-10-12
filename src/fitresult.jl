@@ -181,7 +181,7 @@ end
 """
     FilterFitResult
 
-Represents the result of fitting either FilteredUnknownG or FilteredUnknownW to a FilteredUnknown.
+Represents the result of fitting a FilteredUnknownW to a FilteredUnknown.
 
 Struct elements
 

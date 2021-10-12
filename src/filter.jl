@@ -588,9 +588,7 @@ end
 """
     FilteredUnknown
 
-A FilteredDatum representing the unknown.  There are two types of FilteredUnknown - FilteredUnknownG and
-FilteredUnknownW for "generalized" and "weighted" model unknowns.  The distinction is desirable since the
-full covariance calculation for the generalized model is so expensive relative to the weighted approximation.
+A FilteredDatum representing the unknown (currently only FilteredUnknownW).
 """
 abstract type FilteredUnknown <: FilteredDatum end
 
