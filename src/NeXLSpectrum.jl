@@ -151,6 +151,7 @@ include("hspy.jl")
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format
 export sniffspectrum # Determine spectrum file type
+export isspectrumfile # Is a file a spectrum file?
 export readptx # Read a SEMantics PTX file
 export readhspy # Read a HyperSpy-style HDF5 file
 export ishspy # Is the file a HyperSpy-style HDF5 file
@@ -263,7 +264,6 @@ export multicompare
 
 export plot_multicompare # Plots a channel-by-channel ratio comparison
 export plot_compare # Plots a statistical channel-by-channel comparison of spectra
-
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
