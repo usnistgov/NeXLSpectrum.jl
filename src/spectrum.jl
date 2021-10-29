@@ -470,8 +470,14 @@ end
     channelwidth(ch::Int, spec::HyperSpectrum)::Float64
 
 Returns the width of the `ch` channel in eV.
+
+    channelwidth(spec::Spectrum)::Float64
+
+Returns the mean channel width.
 """
 channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
+
+channelwidth(spec::Spectrum) = (energy(length(spec), spec) - energy(1, spec))/length(spec) 
 
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 
