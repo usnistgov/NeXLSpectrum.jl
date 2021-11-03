@@ -59,20 +59,20 @@ function detectorresponse(
     det::EDSDetector,
     eff::DetectorEfficiency,
     incidence::Float64 = π / 2,
-)::AbstractMatrix
+)
     res = zeros(Float64, (channelcount(det), channelcount(det)))
     # An x-ray with energy in ch will be dispersed among a range of channels about ch
-    for ch = lld(det):channelcount(det) # X-ray energy by channel
+    for ch in max(channel(10.0, det), lld(det)):channelcount(det) # X-ray energy by channel
         el, eh = energy(ch, det), energy(ch + 1, det)  # X-ray energy
-        effic, fwhm =
-            0.5 * (efficiency(eff, eh, incidence) + efficiency(eff, el, incidence)),
-            resolution(0.5 * (eh + el), det)
+        fwhm = resolution(0.5 * (eh + el), det)
         roc =
             max(
                 lld(det),
                 channel(el - 3.0 * fwhm, det),
             ):min(channelcount(det), channel(el + 3.0 * fwhm, det))
-        res[ch, roc] = map(ch2 -> effic * profile(ch2, 0.5 * (eh + el), det), roc)
+        tmp = map(ch2 -> profile(ch2, 0.5 * (eh + el), det), roc)
+        effic = 0.5 * (efficiency(eff, eh, incidence) + efficiency(eff, el, incidence))
+        res[ch, roc] = (effic/sum(tmp))*tmp # Ensure exact normalization
     end
     return res
 end
