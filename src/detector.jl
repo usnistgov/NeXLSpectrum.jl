@@ -154,6 +154,8 @@ Converts full-width half-max to Gaussian width.
 """
 gaussianwidth(fwhm::Float64) = fwhm / (2.0*sqrt(2.0*log(2.0)))
 
+fwhm(gauss::Float64) = gauss*(2.0*sqrt(2.0*log(2.0)))
+
 """"
     profile(energy::Float64, xrayE::Float64, res::Resolution)
 
