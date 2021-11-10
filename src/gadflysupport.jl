@@ -239,7 +239,7 @@ function Gadfly.plot(
         maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
         push!(names, spec[:Name])
         ly = Gadfly.layer(
-            x = energyscale(spec)[chs],
+            x = energyscale(spec, chs),
             y = ytransform.(specdata[i][chs]), #
             Geom.step,
             Theme(default_color = palette[i]),

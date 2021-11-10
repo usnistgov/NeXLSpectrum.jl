@@ -111,7 +111,7 @@ NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
 Computes the energy associated with a range of channel indexes and returns
 it as an Array.
 """
-energyscale(es::EnergyScale, channels) = collect(energy(ch, es) for ch in channels)
+energyscale(es::EnergyScale, channels) = map(ch->energy(ch, es), channels)
 
 """
     Resolution
@@ -146,6 +146,14 @@ The FWHM at eV for the `<:Resolution` model.
 """
 resolution(eV::Float64, res::MnKaResolution) =
     sqrt(2.45 * (eV - enx"Mn K-L3") + res.fwhmatmnka^2)
+
+"""
+    resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64)
+
+Given the FWHM at res predict the resolution at Mn Kα.
+"""
+resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64) = 
+    sqrt(res^2 - 2.45 * (eV - enx"Mn K-L3"))
 
 """
     gaussianwidth(fwhm::Float64)
@@ -293,6 +301,7 @@ channel(eV::Float64, det::EDSDetector) = channel(eV, det.scale)
 channel(sf::SpectrumFeature, det::EDSDetector) = channel(energy(sf), det.scale)
 
 channelwidth(ch::Int64, det::EDSDetector) = energy(ch + 1, det) - energy(ch, det)
+channelwidth(det::EDSDetector) = (energy(channelcount(det), det) - energy(1, det))/channelcount(det)
 
 
 """"
