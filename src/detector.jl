@@ -138,14 +138,6 @@ end
 
 Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn K-L3")
 
-""""
-    resolution(eV::Float64, res::Resolution)
-    resolution(eV::Float64, det::EDSDetector)
-
-The FWHM at eV for the `<:Resolution` model.
-"""
-resolution(eV::Float64, res::MnKaResolution) =
-    sqrt(2.45 * (eV - enx"Mn K-L3") + res.fwhmatmnka^2)
 
 """
     resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64)
@@ -153,15 +145,29 @@ resolution(eV::Float64, res::MnKaResolution) =
 Given the FWHM at res predict the resolution at Mn Kα.
 """
 resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64) = 
-    sqrt(res^2 - 2.45 * (eV - enx"Mn K-L3"))
+    sqrt(2.45 * (eV - enx"Mn K-L3") + res^2)
+
+
+""""
+    resolution(eV::Float64, res::Resolution)
+    resolution(eV::Float64, det::EDSDetector)
+
+The FWHM at eV for the `<:Resolution` model.
+"""
+resolution(eV::Float64, res::MnKaResolution) = resolution_to_fwhm(MnKaResolution, res.fwhmatmnka, eV)
 
 """
     gaussianwidth(fwhm::Float64)
 
-Converts full-width half-max to Gaussian width.
+Converts full-width half-max to Gaussian width.  See also fwhm(...)
 """
 gaussianwidth(fwhm::Float64) = fwhm / (2.0*sqrt(2.0*log(2.0)))
+"""
+    fwhm(gauss::Float64)
 
+    
+Converts Gaussian width to full-width half-max.  See also gaussianwidth
+"""
 fwhm(gauss::Float64) = gauss*(2.0*sqrt(2.0*log(2.0)))
 
 """"
@@ -293,6 +299,7 @@ Low level detection limit in channels.  Channels at or below this value will be 
 lld(det::EDSDetector) = det.lld
 
 resolution(eV::Float64, det::EDSDetector) = resolution(eV, det.resolution)
+resolution(det::Detector) = resolution(enx"Mn K-L3", det)
 
 
 NeXLCore.energy(ch::Int, det::EDSDetector) = energy(ch, det.scale)
