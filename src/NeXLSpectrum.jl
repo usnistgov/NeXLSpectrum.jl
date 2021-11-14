@@ -46,6 +46,7 @@ export channelcount # Detector channel count
 export apply # Create a copy of a spectrum with the specified detector
 export scale # Detector EnergyScale
 export resolution # Detector Resolution
+export resolution_to_fwhm # Given resolution at E what is resolution at Mn Kα
 export profile # Computes the resolution function
 export simpleEDS # Create a basic EDS detector
 export simpleEDSwICC # Create a basic EDS detector with a naive incomplete charge collection model
@@ -55,6 +56,7 @@ export matching # Build a detector to match a spectrum
 export matches # Do the spectrum and detector match
 export lld # Low-level discriminator in eV
 export detectorresponse # Build a matrix that describes the detectors response to X-rays
+export gaussianwidth, fwhm
 
 
 # X-ray window models

@@ -95,6 +95,8 @@ to associate other data items with a `Spectrum`.
     :Coating       # A `Film` or `Film[]` (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (`DateTime` struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
+    :SolidAngle    # Detector solid angle is steradians (area/dist²)
+    :Detector      # A detector model property like `EDSDetector`
 
 Spectrum Image items:
 
