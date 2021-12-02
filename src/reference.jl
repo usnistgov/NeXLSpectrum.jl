@@ -38,11 +38,11 @@ end
 
 function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
     function p2b(fref)
-        croi = first(fref.roi)-first(fref.ffroi):last(fref.roi)-first(fref.ffroi)
+        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
         sum(fref.charonly) / (sum(fref.data[croi])-sum(fref.charonly))
     end 
     function s2n(fref)
-        croi = first(fref.roi)-first(fref.ffroi):last(fref.roi)-first(fref.ffroi)
+        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
         sum(fref.charonly) / sqrt(sum(fref.data[croi])-sum(fref.charonly))
     end 
     DataFrame(
