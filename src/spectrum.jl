@@ -482,6 +482,7 @@ channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
 channelwidth(spec::Spectrum) = (energy(length(spec), spec) - energy(1, spec))/length(spec) 
 
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
+channel(::Type{Float64}, eV::Float64, spec::Spectrum)::Float64 = channel(Float64, eV, spec.energy)
 
 """
     counts(spec::Spectrum, ::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
@@ -1077,6 +1078,9 @@ Computes the sum spectrum over an `AbstractArray{Spectrum}` where the :ProbeCurr
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
 :ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
+
+This function behaves differently from `reduce(+, specs)` which checks whether the energy scales match and fails if 
+they don't.
 """
 function Base.sum(
     specs::AbstractArray{Spectrum{T}},
