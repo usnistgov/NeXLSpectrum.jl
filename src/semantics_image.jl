@@ -13,7 +13,7 @@ function readSEManticsImage(fn::AbstractString)
     if isfile(img_txt)
         imgs = CSV.File(img_txt, delim = "\t") |> DataFrame
         (nm, _) = splitext(sp[end])
-        rg = Regex(replace(nm[1:end-3], "_" => "[.\\\\:]"))
+        rg = Regex(replace(nm[1:end-3], "_" => "[.\\\\:]", "["=>"\\[", "]"=>"\\]"))
         mimgs = filter(r -> !isnothing(match(rg, r[:Name])), imgs)
         if nrow(mimgs) > 0
             # Since an image can be written more than once, take the last...
