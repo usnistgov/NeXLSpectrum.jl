@@ -95,6 +95,8 @@ to associate other data items with a `Spectrum`.
     :Coating       # A `Film` or `Film[]` (eg. 10 nm of C|Au etc.)
 	:AcquisitionTime # Date and time of acquisition (`DateTime` struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
+    :SolidAngle    # Detector solid angle is steradians (area/dist²)
+    :Detector      # A detector model property like `EDSDetector`
 
 Spectrum Image items:
 
@@ -339,7 +341,7 @@ NeXLUncertainties.asa(
 """
     apply(spec::Spectrum, det::EDSDetector)::Spectrum
 
-Applys the specified detector to this spectrum by ensuring that the energy scales match and spec[:Detector] = det.
+Applies the specified detector to this spectrum by ensuring that the energy scales match and spec[:Detector] = det.
 Creates a copy of the original spectrum unless the detector is already det.
 """
 
@@ -470,10 +472,17 @@ end
     channelwidth(ch::Int, spec::HyperSpectrum)::Float64
 
 Returns the width of the `ch` channel in eV.
+
+    channelwidth(spec::Spectrum)::Float64
+
+Returns the mean channel width.
 """
 channelwidth(ch::Int, spec::Spectrum) = energy(ch + 1, spec) - energy(ch, spec)
 
+channelwidth(spec::Spectrum) = (energy(length(spec), spec) - energy(1, spec))/length(spec) 
+
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
+channel(::Type{Float64}, eV::Float64, spec::Spectrum)::Float64 = channel(Float64, eV, spec.energy)
 
 """
     counts(spec::Spectrum, ::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}
@@ -949,33 +958,33 @@ end
 
 """
     details(io, spec::Spectrum)
-    details(spec::Spectrum)
+    details(spec::Spectrum)::String
 
 Outputs a description of the data in the spectrum.
 """
-function details(io::IO, spec::Spectrum)
-    println(io, "           Name:   $(spec[:Name])")
-    println(io, "    Calibration:   $(spec.energy)")
-    println(io, "    Beam energy:   $(get(spec, :BeamEnergy, missing)/1000.0) keV")
-    println(io, "  Probe current:   $(get(spec, :ProbeCurrent, missing)) nA")
-    println(io, "      Live time:   $(get(spec, :LiveTime, missing)) s")
-    println(io, "        Coating:   $(get(spec,:Coating, "None"))")
-    println(io, "       Detector:   $(get(spec, :Detector, missing))")
-    println(io, "        Comment:   $(get(spec, :Comment, missing))")
-    println(io, "       Integral:   $(integrate(spec)) counts")
+function details(spec::Spectrum)
+    df = DataFrame(Property=String[], Value=String[])
+    push!(df, ("Name", "$(spec[:Name])"))
+    push!(df, ("Calibration", "$(spec.energy)"))
+    push!(df, ("Beam energy", "$(get(spec, :BeamEnergy, missing)/1000.0) keV"))
+    push!(df, ("Probe current", "$(get(spec, :ProbeCurrent, missing)) nA"))
+    push!(df, ("Live time", "$(get(spec, :LiveTime, missing)) s"))
+    push!(df, ("Coating", "$(get(spec,:Coating, nothing))"))
+    push!(df, ("Detector", "$(get(spec, :Detector, missing))"))
+    push!(df, ("Comment", "$(get(spec, :Comment, missing))"))
+    push!(df, ("Integral", "$(integrate(spec)) counts"))
     comp = get(spec, :Composition, missing)
     if !ismissing(comp)
-        println(io, "    Composition:   $(comp)")
+        push!(df, ("Composition", "$(comp)"))
         det = get(spec, :Detector, missing)
         if !ismissing(det)
             coating = get(spec, :Coating, missing)
-            comp2 = collect(keys(comp))
+            comp2 = Set(keys(comp))
             if !ismissing(coating)
-                append!(comp2, keys(coating.material))
+                union!(comp2, keys(coating.material))
             end
-            for elm1 in keys(comp)
+            for elm1 in comp2
                 for ext1 in extents(elm1, det, 1.0e-4)
-                    print(io, "            ROI:   $(elm1.symbol)[$(ext1)]")
                     intersects = []
                     for elm2 in comp2
                         if elm2 ≠ elm1
@@ -987,23 +996,20 @@ function details(io::IO, spec::Spectrum)
                         end
                     end
                     if length(intersects) > 0
-                        println(io, " intersects $(join(intersects,", "))")
+                        push!(df, ("ROI $(elm1.symbol)[$(ext1)]","Intersects $(join(intersects,", "))"))
                     else
                         p, b = peak(spec, ext1), background(spec, ext1)
                         σ = p / sqrt(b)
-                        println(
-                            io,
-                            " = $(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))",
-                        )
+                        push!(df, ("ROI $(elm1.symbol)[$(ext1)]", "$(round(Int,p)) counts over $(round(Int,b)) counts - σ = $(round(Int,σ))"))
                     end
                 end
             end
         end
     end
-    return nothing
+    return df
 end
 
-details(spec::Spectrum) = details(stdout, spec)
+details(io::IO, spec::Spectrum) = print(io, details(spec))
 
 """
     commonproperties(specs::AbstractArray{Spectrum})
@@ -1072,6 +1078,9 @@ Computes the sum spectrum over an `AbstractArray{Spectrum}` where the :ProbeCurr
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
 :ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
+
+This function behaves differently from `reduce(+, specs)` which checks whether the energy scales match and fails if 
+they don't.
 """
 function Base.sum(
     specs::AbstractArray{Spectrum{T}},

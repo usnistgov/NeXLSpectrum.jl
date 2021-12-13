@@ -185,7 +185,7 @@ function buildfilter(
     cc = channelcount(det)
     filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
     for ch1 in eachindex(wgts)
-        center = 0.5 * (energy(ch1, det) + energy(ch1 + 1, det)) # midpoint of channel
+        center = max(0.0, 0.5 * (energy(ch1, det) + energy(ch1 + 1, det))) # midpoint of channel
         res = resf(ty, center, det)
         ea = (center - 0.5 * a * res, center + 0.5 * a * res)
         eb = (ea[1] - 0.5 * b * res, ea[2] + 0.5 * b * res)

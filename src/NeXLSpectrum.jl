@@ -46,6 +46,7 @@ export channelcount # Detector channel count
 export apply # Create a copy of a spectrum with the specified detector
 export scale # Detector EnergyScale
 export resolution # Detector Resolution
+export resolution_to_fwhm # Given resolution at E what is resolution at Mn Kα
 export profile # Computes the resolution function
 export simpleEDS # Create a basic EDS detector
 export simpleEDSwICC # Create a basic EDS detector with a naive incomplete charge collection model
@@ -55,6 +56,7 @@ export matching # Build a detector to match a spectrum
 export matches # Do the spectrum and detector match
 export lld # Low-level discriminator in eV
 export detectorresponse # Build a matrix that describes the detectors response to X-rays
+export gaussianwidth, fwhm
 
 
 # X-ray window models
@@ -151,6 +153,7 @@ include("hspy.jl")
 export loadspectrum # Load a spectrum from IO or filename
 export savespectrum # Save a spectrum to IO or filename to a format
 export sniffspectrum # Determine spectrum file type
+export isspectrumfile # Is a file a spectrum file?
 export readptx # Read a SEMantics PTX file
 export readhspy # Read a HyperSpy-style HDF5 file
 export ishspy # Is the file a HyperSpy-style HDF5 file
@@ -264,6 +267,9 @@ export multicompare
 export plot_multicompare # Plots a channel-by-channel ratio comparison
 export plot_compare # Plots a statistical channel-by-channel comparison of spectra
 
+include("semantics_image.jl")
+export readSEManticsImage
+export mark_acquisition_points
 
 function __init__()
     @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")

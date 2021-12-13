@@ -9,10 +9,13 @@ wavescans.
 
 Implements:
 
-    channel(eV::AbstractFloat, sc::EnergyScale)::Int
+    channel(::Type{Float64}, eV::AbstractFloat, sc::EnergyScale)::Float64
     energy(ch::Int, sc::EnergyScale)::Float64
 """
 abstract type EnergyScale end
+
+channel(eV::AbstractFloat, sc::EnergyScale)::Int =
+    1 + floor(Int, channel(Float64, eV, sc))
 
 """
     LinearEnergyScale
@@ -40,14 +43,17 @@ Base.show(io::IO, es::LinearEnergyScale) =
 Base.hash(les::LinearEnergyScale, h::UInt64) = hash(les.offset, hash(les.width, h))
 
 """
-    channel(eV::AbstractFloat, sc::EnergyScale)
-    channel(eV::Float64, spec::Spectrum)
-    channel(eV::Float64, det::EDSDetector)
+    channel(::Type{Float64}, eV::AbstractFloat, sc::EnergyScale)::Float64
 
-    Returns the integer index of the channel for the specified energy X-ray (in eV).
+Returns the fractional-channel index of the specified energy X-ray (in eV).
+
+    channel(eV::AbstractFloat, sc::EnergyScale)::Int
+    channel(eV::Float64, spec::Spectrum)::Int
+    channel(eV::Float64, det::EDSDetector)::Int
+
+Returns the integer index of the channel for the specified energy X-ray (in eV).
 """
-channel(eV::AbstractFloat, sc::LinearEnergyScale)::Int =
-    1 + floor(Int, (eV - sc.offset) / sc.width)
+channel(::Type{Float64}, eV::AbstractFloat, sc::LinearEnergyScale) = (eV - sc.offset) / sc.width
 
 
 """
@@ -86,15 +92,15 @@ function Base.show(io::IO, pes::PolyEnergyScale)
     print(io, " eV")
 end
 
-function channel(eV::AbstractFloat, sc::PolyEnergyScale)::Int
+function channel(::Type{Float64}, eV::AbstractFloat, sc::PolyEnergyScale)::Float64
     cp = Float64[ coeffs(sc.poly)... ]
     cp[1] -= eV
     rts = roots(ImmutablePolynomial(cp))
-    best = 100000
+    best = 100000.0
     for rt in rts
         if abs(imag(rt))<1.0e-4
             rrt = real(rt)
-            best = (rrt >= -1000.0) && (rrt < best) ? 1 + floor(rrt) : best
+            best = (rrt >= -1000.0) && (rrt < best) ? rrt : best
         end
     end
     return best
@@ -111,7 +117,7 @@ NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
 Computes the energy associated with a range of channel indexes and returns
 it as an Array.
 """
-energyscale(es::EnergyScale, channels) = collect(energy(ch, es) for ch in channels)
+energyscale(es::EnergyScale, channels) = map(ch->energy(ch, es), channels)
 
 """
     Resolution
@@ -138,21 +144,37 @@ end
 
 Base.show(io::IO, mnka::MnKaResolution) = print(io, "$(mnka.fwhmatmnka) eV @ Mn K-L3")
 
+
+"""
+    resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64)
+
+Given the FWHM at res predict the resolution at Mn Kα.
+"""
+resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64) = 
+    sqrt(2.45 * (eV - enx"Mn K-L3") + res^2)
+
+
 """"
     resolution(eV::Float64, res::Resolution)
     resolution(eV::Float64, det::EDSDetector)
 
 The FWHM at eV for the `<:Resolution` model.
 """
-resolution(eV::Float64, res::MnKaResolution) =
-    sqrt(2.45 * (eV - enx"Mn K-L3") + res.fwhmatmnka^2)
+resolution(eV::Float64, res::MnKaResolution) = resolution_to_fwhm(MnKaResolution, res.fwhmatmnka, eV)
 
 """
     gaussianwidth(fwhm::Float64)
 
-Converts full-width half-max to Gaussian width.
+Converts full-width half-max to Gaussian width.  See also fwhm(...)
 """
 gaussianwidth(fwhm::Float64) = fwhm / (2.0*sqrt(2.0*log(2.0)))
+"""
+    fwhm(gauss::Float64)
+
+    
+Converts Gaussian width to full-width half-max.  See also gaussianwidth
+"""
+fwhm(gauss::Float64) = gauss*(2.0*sqrt(2.0*log(2.0)))
 
 """"
     profile(energy::Float64, xrayE::Float64, res::Resolution)
@@ -283,14 +305,18 @@ Low level detection limit in channels.  Channels at or below this value will be 
 lld(det::EDSDetector) = det.lld
 
 resolution(eV::Float64, det::EDSDetector) = resolution(eV, det.resolution)
+resolution(det::Detector) = resolution(enx"Mn K-L3", det)
 
 
 NeXLCore.energy(ch::Int, det::EDSDetector) = energy(ch, det.scale)
 
 channel(eV::Float64, det::EDSDetector) = channel(eV, det.scale)
 channel(sf::SpectrumFeature, det::EDSDetector) = channel(energy(sf), det.scale)
+channel(::Type{Float64}, eV::Float64, det::EDSDetector) = channel(Float64, eV, det.scale)
+channel(::Type{Float64}, sf::SpectrumFeature, det::EDSDetector) = channel(Float64, energy(sf), det.scale)
 
 channelwidth(ch::Int64, det::EDSDetector) = energy(ch + 1, det) - energy(ch, det)
+channelwidth(det::EDSDetector) = (energy(channelcount(det), det) - energy(1, det))/channelcount(det)
 
 
 """"
