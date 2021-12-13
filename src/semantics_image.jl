@@ -61,30 +61,42 @@ function scale_bar(img::AxisArray; marker = HSVA(60, 1, 1, 0.3))
         (context(), Compose.rectangle(1.0 - 3.0 * xo - dp, yo, dp + 2.0 * xo, yo + 0.07), stroke("transparent"), fill(RGBA(0.1, 0.1, 0.1, 0.3)))
     ]
 end
+
 """
-    function mark_acquisition_points(
+    mark_acquisition_points(
+        img::AxisArray, 
+        coords::AbstractArray{<:AbstractDict{Symbol,<:AbstractFloat}}; 
+        label = true, 
+        scale = true, 
+        marker = HSVA(60, 1, 1, 0.3)
+    )
+    mark_acquisition_points(
         img::AxisArray, 
         specs::AbstractArray{<:Spectrum}; 
         label = true, 
         scale = true, 
-        marker = HSVA(60, 1, 1, 0.3))
+        marker = HSVA(60, 1, 1, 0.3)
+    )
 
 Mark the locations on the ImageAxes scaled image from which the list of Spectrum objects
 was collected.  Optionally, place numeric index labels and a scale marker on the image.
+
+`coords` contains an array of dictionaries with keys `:X` and `:Y` with the x- and y-
+coordinates.
 
 This function assumes that the spectra were collected from the stage coordinates in the
 `sp=spec[:StagePosition]` property as `sp[:X]` and `sp[:Y]`. 
 """
 function mark_acquisition_points(
     img::AxisArray, 
-    specs::AbstractArray{<:Spectrum}; 
+    coords::AbstractArray{<:AbstractDict{Symbol, <:AbstractFloat}}; 
     label = true, 
     scale = true, 
-    marker = HSVA(60, 1, 1, 0.3))
+    marker = HSVA(60, 1, 1, 0.3)
+)
     x, y = Float64[], Float64[]
-    for spec in specs
-        sp = spec[:StagePosition]
-        pt = _ns_closest(img, (sp[:X], sp[:Y]))
+    for coord in coords
+        pt = _ns_closest(img, (coord[:X], coord[:Y]))
         if !any(isnothing.(pt))
             push!(x, pt[1] / size(img, 1))
             push!(y, pt[2] / size(img, 2))
@@ -95,7 +107,7 @@ function mark_acquisition_points(
     if label
         fx(x) = x < 0.9 ? x + 0.01 : x - 0.01
         fh(x) = x < 0.9 ? hleft : hright
-        push!(items, (context(), Compose.text(fx.(x), y, repr.(eachindex(specs)), fh.(x), [vcenter]), fill(marker), stroke("transparent")))
+        push!(items, (context(), Compose.text(fx.(x), y, repr.(eachindex(coords)), fh.(x), [vcenter]), fill(marker), stroke("transparent")))
     end
     # Scale bar
     if scale
@@ -109,4 +121,13 @@ function mark_acquisition_points(
         items...,
         (context(), Compose.bitmap("image/png", take!(io), 0.0, 0.0, 1.0, 1.0)),
     )
+end
+
+function mark_acquisition_points(
+    img::AxisArray, 
+    specs::AbstractArray{<:Spectrum}; 
+    kwargs...
+)
+    coords = [ spec[:StagePosition] for spec in specs ]
+    mark_acquisition_points(img, coords; kwargs...)
 end
