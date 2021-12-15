@@ -131,3 +131,16 @@ function mark_acquisition_points(
     coords = [ spec[:StagePosition] for spec in specs ]
     mark_acquisition_points(img, coords; kwargs...)
 end
+
+"""
+    shannon_entropy(img::AbstractArray{Gray{N0f8}})
+
+Computes the log2-entropy of the data in the image.
+The entropy(...) in Images.jl 24.1 is buggy and is removed in 25.0
+"""
+function shannon_entropy(img::AbstractArray{Gray{N0f8}})
+    c = zeros(256)
+    foreach(v->c[reinterpret(UInt8, v.val)+1] += 1.0/length(img), img)
+    l2(v) = v==0 ? 0.0 : log2(v)
+    return -sum(v->v*l2(v), c)
+end
