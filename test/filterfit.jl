@@ -362,7 +362,6 @@ using LinearAlgebra
         )
     end
 
-
     @testset "Repeated refs" begin
         path = joinpath(@__DIR__, "K412 spectra")
         fe = mat"Fe"
@@ -404,9 +403,9 @@ using LinearAlgebra
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
-        @test isapprox(value(qr.comp[n"Al"]), 0.0510, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Al"]), 0.05077, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.4471, atol=0.0001)
+        @test isapprox(value(qr.comp[n"O"]), 0.44744, atol=0.0001)
     end
 end
