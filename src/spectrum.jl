@@ -1338,3 +1338,20 @@ counts data.  This function can shift by a fractional number of channels.
 function shift(s::Spectrum, ev::AbstractFloat)::Spectrum
     return Spectrum(s.energy, FourierTools.shift(counts(s), ev/s.energy.width), copy(s.properties))
 end
+
+"""
+    shannon_entropy(spec::Spectrum)
+
+Computes a measure of the information content in a spectrum.  As there become more and more
+distinct values in a spectrum, this value approaches log2(nchannels(spec)).  This number
+reflects the number of bits necessary to encode the spectrum data with maximum efficiency.
+
+This is inspired by John Colby's FLAME software which did something similar.  Although, to
+be honest, I don't know how his algorithm was implemented.
+"""
+function shannon_entropy(spec::Spectrum)
+    d = Dict{Int,Float64}()
+    foreach(c->d[c] = get(d, c, 0.0) + 1.0 / length(spec), counts(spec))
+    f(c) = c<=0 ? 0.0 : log2(c)
+    return -sum(cx -> cx*f(cx), values(d))
+end
