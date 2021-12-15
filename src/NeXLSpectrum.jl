@@ -269,7 +269,7 @@ export plot_compare # Plots a statistical channel-by-channel comparison of spect
 
 include("semantics_image.jl")
 export readSEManticsImage
-export mark_acquisition_points
+export annotate
 export shannon_entropy
 
 function __init__()

@@ -20,7 +20,7 @@ if isnothing(rplraw_hash) || !artifact_exists(rplraw_hash)
         println("Artifact dir: $artifact_dir")
         url = "https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX"
         tarball = if VERSION >= v"1.6.0-beta1.0"
-            Downloads.download(url)
+            download(url)
         else
             Base.download(url)
         end

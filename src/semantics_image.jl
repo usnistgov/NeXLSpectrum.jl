@@ -18,7 +18,7 @@ function readSEManticsImage(fn::AbstractString)
         if nrow(mimgs) > 0
             # Since an image can be written more than once, take the last...
             x, y, fov = mimgs[end, :X], mimgs[end, :Y], mimgs[end, :FOV]
-            pix = fov / size(img, 2) #square pixels
+            pix = fov / size(img, 2) # square pixels determined by horizontal FOV
             img = AxisArray(
                 img, #
                 Axis{:y}(StepRangeLen(y, pix, size(img,1), size(img,1)÷2)),
@@ -48,7 +48,7 @@ function _ns_closest(img::AxisArray, coord)
     )
 end
 
-function scale_bar(img::AxisArray; marker = HSVA(60, 1, 1, 0.3))
+function build_scale_bar(img::AxisArray; marker = HSVA(60, 1, 1, 0.3))
     ax = AxisArrays.axisvalues(img)[1]
     fov = abs(ax[end] - ax[1]) / 2.0
     sc = 10.0^floor(log10(fov))
@@ -62,36 +62,10 @@ function scale_bar(img::AxisArray; marker = HSVA(60, 1, 1, 0.3))
     ]
 end
 
-"""
-    mark_acquisition_points(
-        img::AxisArray, 
-        coords::AbstractArray{<:AbstractDict{Symbol,<:AbstractFloat}}; 
-        label = true, 
-        scale = true, 
-        marker = HSVA(60, 1, 1, 0.3)
-    )
-    mark_acquisition_points(
-        img::AxisArray, 
-        specs::AbstractArray{<:Spectrum}; 
-        label = true, 
-        scale = true, 
-        marker = HSVA(60, 1, 1, 0.3)
-    )
-
-Mark the locations on the ImageAxes scaled image from which the list of Spectrum objects
-was collected.  Optionally, place numeric index labels and a scale marker on the image.
-
-`coords` contains an array of dictionaries with keys `:X` and `:Y` with the x- and y-
-coordinates.
-
-This function assumes that the spectra were collected from the stage coordinates in the
-`sp=spec[:StagePosition]` property as `sp[:X]` and `sp[:Y]`. 
-"""
-function mark_acquisition_points(
-    img::AxisArray, 
-    coords::AbstractArray{<:AbstractDict{Symbol, <:AbstractFloat}}; 
+function build_acquisition_points(
+    img::AxisArray,
+    coords::AbstractArray{<:AbstractDict{Symbol, <:AbstractFloat}};
     label = true, 
-    scale = true, 
     marker = HSVA(60, 1, 1, 0.3)
 )
     x, y = Float64[], Float64[]
@@ -107,29 +81,95 @@ function mark_acquisition_points(
     if label
         fx(x) = x < 0.9 ? x + 0.01 : x - 0.01
         fh(x) = x < 0.9 ? hleft : hright
-        push!(items, (context(), Compose.text(fx.(x), y, repr.(eachindex(coords)), fh.(x), [vcenter]), fill(marker), stroke("transparent")))
+        push!(items, (context(), Compose.text(fx.(x), y, repr.(eachindex(coords)), fh.(x), [ vcenter]), fill(marker), stroke("transparent")))
     end
-    # Scale bar
+    return items
+end
+
+function build_thumbnails(
+    img::AxisArray, 
+    thumbnails::Union{Nothing, AbstractArray{<:AxisArray}}=nothing;
+    label = true, 
+    marker = HSVA(60, 1, 1, 0.3)
+)
+    ya, xa = axisvalues(img)[1:2]
+    rx, ry, rw, rh = Float64[], Float64[], Float64[], Float64[]
+    for thumb in thumbnails
+        yt, xt = axisvalues(thumb)[1:2]
+        y1o = (yt[1]-ya[1])/(ya[end]-ya[1])
+        yeo = (yt[end]-ya[1])/(ya[end]-ya[1])
+        x1o = (xt[1]-xa[1])/(xa[end]-xa[1])
+        xeo = (xt[end]-xa[1])/(xa[end]-xa[1])
+        if (max(x1o,xeo)>0.0) && (min(x1o,xeo)<1.0) &&
+            (max(y1o,yeo)>0.0) && (min(y1o,yeo)<1.0)
+            push!(rx, x1o)
+            push!(ry, y1o)
+            push!(rw, xeo-x1o)
+            push!(rh, yeo-y1o)
+        end
+    end
+    #  Place rectangles at image points
+    items = Tuple[ (context(), Compose.rectangle(rx, ry, rw, rh), fill(RGBA(0.1, 0.1, 0.1, 0.3)), stroke(marker)) ]
+    if label
+        push!(items, (context(), Compose.text(rx .+ 0.001, ry .+ 0.005, repr.(eachindex(thumbnails)), [ hleft ], [ vtop ]), fill(marker), stroke("transparent")))
+    end
+    return items
+end
+
+"""
+    annotate(
+        img::AxisArray; 
+        scale::Bool = true,
+        coords::Union{Nothing, AbstractArray{<:AbstractDict{Symbol, <:AbstractFloat}}} = nothing,
+        spectra::Union{Nothing, <:AbstractArray{<:Spectrum}} = nothing,
+        thumbnails::Union{Nothing, AbstractArray{<:AxisArray}}=nothing,
+        labelcoords::Bool = true,
+        labelthumbnails::Bool = true,
+        marker::Colorant = HSVA(60, 1, 1, 0.3) 
+    )
+
+Add annotations like scale-bars, acquisition points, image areas to an image
+and display the result.
+
+  * `coords` and `spectra` display as circles (with/without numeric labels).
+  * `thumbnails` display as rectangles overlaying the image
+  * `scale` displays as a scale-bar in the upper-right corner
+  * `marker` is the color of the annotations which is by-default slightly transparent
+"""
+function annotate(
+    img::AxisArray; 
+    scale::Bool = true,
+    coords::Union{Nothing, AbstractArray{<:AbstractDict{Symbol, <:AbstractFloat}}} = nothing,
+    spectra::Union{Nothing, <:AbstractArray{<:Spectrum}} = nothing,
+    thumbnails::Union{Nothing, AbstractArray{<:AxisArray}}=nothing,
+    labelcoords::Bool = true,
+    labelthumbnails::Bool = true,
+    marker::Colorant = HSVA(60, 1, 1, 0.3) 
+)
+    items = Tuple[]
     if scale
-        append!(items, scale_bar(img, marker = marker))
+        append!(items, build_scale_bar(img, marker=marker))
     end
-    # Draw the image to a context()
+    allcoords = AbstractDict{Symbol, <:AbstractFloat}[]
+    if !isnothing(coords)
+        append!(allcoords, coords)
+    end
+    if !isnothing(spectra)
+        foreach(sp->push!(allcoords, sp[:StagePosition]), spectra)
+    end
+    if length(allcoords)>0
+        append!(items, build_acquisition_points(img, allcoords; label=labelcoords, marker=marker))
+    end
+    if !isnothing(thumbnails)
+        append!(items, build_thumbnails(img, thumbnails; label=labelthumbnails, marker=marker))
+    end
     io = IOBuffer()
     ImageIO.save(Stream{format"PNG"}(io), img)
     return compose(
         context(0.0, 0.0, 1.0, 1.0),
         items...,
-        (context(), Compose.bitmap("image/png", take!(io), 0.0, 0.0, 1.0, 1.0)),
+        ( context(), Compose.bitmap("image/png", take!(io), 0.0, 0.0, 1.0, 1.0) ),
     )
-end
-
-function mark_acquisition_points(
-    img::AxisArray, 
-    specs::AbstractArray{<:Spectrum}; 
-    kwargs...
-)
-    coords = [ spec[:StagePosition] for spec in specs ]
-    mark_acquisition_points(img, coords; kwargs...)
 end
 
 """
@@ -139,8 +179,11 @@ Computes the log2-entropy of the data in the image.
 The entropy(...) in Images.jl 24.1 is buggy and is removed in 25.0
 """
 function shannon_entropy(img::AbstractArray{Gray{N0f8}})
-    c = zeros(256)
-    foreach(v->c[reinterpret(UInt8, v.val)+1] += 1.0/length(img), img)
+    # c = @MVector zeros(Int(typemax(UInt8))+1) # Reduces allocations to zero..
+    c = zeros(Int(typemax(UInt8))+1) 
+    for v in img
+        @inbounds c[reinterpret(UInt8, v.val)+1] += 1.0/length(img)
+    end
     l2(v) = v==0 ? 0.0 : log2(v)
     return -sum(v->v*l2(v), c)
 end
