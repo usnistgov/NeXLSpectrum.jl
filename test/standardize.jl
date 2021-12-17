@@ -65,6 +65,4 @@ using Test
     @test all(std->element(std)==n"Ba", ba_stds)
     @test all(std->isequal(std.standard,mat"BaCl2"), ba_stds)
     @test all(std->isequal(std.unkProps[:Composition],mat"BaSi2O5"), ba_stds)
-
-
 end

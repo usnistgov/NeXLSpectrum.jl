@@ -1233,17 +1233,30 @@ function duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
             # this handles pulse pile-up above the D-H
             ed[findlast(map(i -> mean(cd[i:i+len]), eachindex(cd[1:end-len])) .> lim)]
         end
-        xdata, ydata = let
+        xdata, ydata, wdata = let
             chs = let # Range of channels above/below `este0`
                 ch0 = channel(este0, spec)
-                max(1,(19*ch0)÷20):min((21*ch0)÷20,length(spec))
+                max(1,(18*ch0)÷20):min((21*ch0)÷20,length(spec))
             end
-            energyscale(spec)[chs], counts(spec, chs)
+            esc = energyscale(spec)[chs]
+            cx = counts(spec,chs)
+            # Reduce the weight for the grass (low count events)
+            wgts = [ c<=3.0 ? 1.0e3 : 1.0/c for c in cx ]
+            # Energy scale, counts, weights
+            esc, cx, wgts
         end
         esti0 = mean(ydata[1:min(10,length(ydata))]) * xdata[1] / (este0 - xdata[1])
-        model(xs, p) = map(x -> p[1] * bremsstrahlung(Kramers1923, x, p[2], n"H"), xs)
-        curve_fit(model, xdata, ydata, [esti0, este0]).param[2]
+        e0 = spec[:BeamEnergy]
+        # Apply constraint functions to keep DH between 0.1E0 and 1.1E0.
+        transform(v) = asin(2*(v-0.1*e0)/(1.1*e0-0.1*e0)-1)
+        inv_transform(tv) = 0.1*e0+(sin(tv)+1)*(1.1*e0-0.1*e0)/2
+        # Fit the Kramer's continuum model to the data (ignore detector efficiency)
+        # The `element` argument is just a redundant scale factor in the Kramer's model.
+        model(xs, p) = map(x -> p[1] * bremsstrahlung(Kramers1923, x, inv_transform(p[2]), n"H"), xs)
+        res = curve_fit(model, xdata, ydata, wdata, [esti0, transform(este0)])
+        return inv_transform(res.param[2])
     else
+        @info "Unable to estimate the Duane-Hunt on $(spec[:Name]) because the counts data does not extend to $(spec[:BeamEnergy]) keV."
         def
     end
 end
