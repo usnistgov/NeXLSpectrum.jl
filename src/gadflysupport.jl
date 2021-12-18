@@ -222,6 +222,25 @@ function Gadfly.plot(
     maxI, maxE, maxE0 = 16, 1.0e3, 1.0e3
     names, layers = String[], Layer[]
     append!(layers, customlayers)
+    if duanehunt 
+        if length(specs)==1    
+            try    
+                p = _duane_hunt_impl(specs[1])
+                es = (0.9*p[2]):10.0:(1.05*p[2])
+                _duane_hunt_func(es, p)
+                append!(layers, layer(x=es, y=_duane_hunt_func(es, p), Geom.line, Theme(default_color="black")))
+            catch err
+                @warn err.msg
+            end
+        else
+            dhx, dhy = Float64[], Float64[] 
+            for i in eachindex(specs)
+                append!(dhx, duane_hunt(specs[i]))
+                append!(dhy, 0.9*maxI*yscale)
+            end
+            append!(layers, layer(x=dhx, y=dhy, color=palette[eachindex(specs)], Geom.hair(orientation=:vertical), Geom.point))
+        end
+    end
     for (i, spec) in enumerate(specs)
         mE =
             ismissing(xmax) ? get(spec, :BeamEnergy, energy(length(spec), spec)) :
@@ -245,14 +264,6 @@ function Gadfly.plot(
             Theme(default_color = palette[i]),
         )
         append!(layers, ly)
-    end
-    if duanehunt 
-        dhx, dhy = Float64[], Float64[] 
-        for i in eachindex(specs)
-            append!(dhx, duane_hunt(specs[i]))
-            append!(dhy, 0.1*maxI*yscale)
-        end
-        append!(layers, layer(x=dhx, y=dhy, color=palette[eachindex(specs)], Geom.hair(orientation=:vertical), Geom.point))
     end
     autoklms && append!(klms, mapreduce(s -> elms(s, true), union!, specs))
     if length(klms) > 0

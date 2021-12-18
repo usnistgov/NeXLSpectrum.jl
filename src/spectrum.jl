@@ -1219,47 +1219,46 @@ function findsimilar(
     return specs
 end
 
+
+# Duane-Hunt related functions
+
+_duane_hunt_func(es, p) = map(ee-> p[1]*bremsstrahlung(Small1987, ee, p[2], n"H"), es)
+
+function _duane_hunt_impl(spec::Spectrum)
+    if channel(spec[:BeamEnergy], spec) < length(spec)
+        cdata = counts(spec)
+        este0, estCh = let # Sometimes the D-H can be much below `spec[:BeamEnergy]`
+            # this handles pulse pile-up above the D-H
+            lim = min(10.0, max(1.0, 1.0e-5 * maximum(cdata)))
+            len = min(10, max(5, length(spec) ÷ 400))
+            chlast = findlast(i -> mean(@view cdata[i-len:i]) > lim, len+1:length(cdata))
+            energy(chlast, spec), chlast
+        end
+        xdata, ydata = let
+            # Range of channels above/below `este0`
+            chs = max(1,(9*estCh)÷10):min((21*estCh)÷20,length(spec))
+            energyscale(spec, chs), cdata[chs]
+        end
+        esti0 = sum(ydata) / sum(_duane_hunt_func(xdata, (1.0, este0)))
+        e0 = spec[:BeamEnergy]
+        # Apply constraint functions to keep DH between 0.1 E0 and 1.1 E0.
+        transform(v) = asin(2*(v-0.1*e0)/(1.1*e0-0.1*e0)-1)
+        inv_transform(tv) = 0.1*e0+(sin(tv)+1)*(1.1*e0-0.1*e0)/2
+        # Fit Small's continuum model to the data (ignore detector efficiency)
+        model(xs, p) = _duane_hunt_func(xs, (p[1], inv_transform(p[2])))
+        res = curve_fit(model, xdata, ydata, [esti0, transform(este0)])
+        return (res.param[1], inv_transform(res.param[2]))
+    else
+        error("Unable to estimate the Duane-Hunt on $(spec[:Name]) because the counts data does not extend to $(spec[:BeamEnergy]) keV.")
+    end
+end
+
 """
-    duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
+    duane_hunt(spec::Spectrum)
 
 Estimates the Duane-Hunt limit (the energy at which the continuum goes to effectively zero.)
 """
-function duane_hunt(spec::Spectrum, def = spec[:BeamEnergy])
-    if channel(spec[:BeamEnergy], spec) < length(spec)
-        este0 = let # Sometimes the D-H can be much below `spec[:BeamEnergy]`
-            ed, cd = energyscale(spec), counts(spec)
-            lim = min(10.0, max(1.0, 1.0e-5 * maximum(cd)))
-            len = min(10, max(5, length(spec) ÷ 400))
-            # this handles pulse pile-up above the D-H
-            ed[findlast(map(i -> mean(cd[i:i+len]), eachindex(cd[1:end-len])) .> lim)]
-        end
-        xdata, ydata, wdata = let
-            chs = let # Range of channels above/below `este0`
-                ch0 = channel(este0, spec)
-                max(1,(18*ch0)÷20):min((21*ch0)÷20,length(spec))
-            end
-            esc = energyscale(spec)[chs]
-            cx = counts(spec,chs)
-            # Reduce the weight for the grass (low count events)
-            wgts = [ c<=3.0 ? 1.0e3 : 1.0/c for c in cx ]
-            # Energy scale, counts, weights
-            esc, cx, wgts
-        end
-        esti0 = mean(ydata[1:min(10,length(ydata))]) * xdata[1] / (este0 - xdata[1])
-        e0 = spec[:BeamEnergy]
-        # Apply constraint functions to keep DH between 0.1E0 and 1.1E0.
-        transform(v) = asin(2*(v-0.1*e0)/(1.1*e0-0.1*e0)-1)
-        inv_transform(tv) = 0.1*e0+(sin(tv)+1)*(1.1*e0-0.1*e0)/2
-        # Fit the Kramer's continuum model to the data (ignore detector efficiency)
-        # The `element` argument is just a redundant scale factor in the Kramer's model.
-        model(xs, p) = map(x -> p[1] * bremsstrahlung(Kramers1923, x, inv_transform(p[2]), n"H"), xs)
-        res = curve_fit(model, xdata, ydata, wdata, [esti0, transform(este0)])
-        return inv_transform(res.param[2])
-    else
-        @info "Unable to estimate the Duane-Hunt on $(spec[:Name]) because the counts data does not extend to $(spec[:BeamEnergy]) keV."
-        def
-    end
-end
+duane_hunt(spec::Spectrum)  = _duane_hunt_impl(spec)[2]
 
 """
     uv(spec::Spectrum, chs::AbstractRange{<:Integer}=eachindex(spec))::Vector{UncertainValue}
