@@ -115,6 +115,7 @@ function Gadfly.plot(
     palette = NeXLPalette,
     customlayers = Gadfly.Layer[],
     duanehunt = false,
+    title = nothing
 )::Plot
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
         d = Dict{Any,Vector{CharXRay}}()
@@ -311,6 +312,7 @@ function Gadfly.plot(
                     xmin = convert(Float64, xmin),
                     xmax = maxE,
                 ),
+                Guide.title(title),
                 leg...,
             )
         catch
@@ -326,6 +328,7 @@ function Gadfly.plot(
                     xmin = convert(Float64, xmin),
                     xmax = maxE,
                 ),
+                Guide.title(title),
                 leg...,
             )
         end
