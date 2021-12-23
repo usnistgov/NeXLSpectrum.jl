@@ -637,7 +637,7 @@ function _computeResidual(
     return res
 end
 
-# Internal: Computes the peak and background count based on the fit k-ratios
+# Internal: Computes the total peak and background count based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference}, #

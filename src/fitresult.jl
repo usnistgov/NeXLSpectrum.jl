@@ -246,100 +246,77 @@ end
 
 
 """
-    NeXLUncertainties.asa(::Type{DataFrame}, ffr::FilterFitResult; charOnly::Bool=true, material=nothing)::DataFrame
+    NeXLUncertainties.asa(
+        ::Type{DataFrame}, 
+        ffr::FilterFitResult; 
+        charOnly::Bool=true, 
+        material=nothing,
+        mc = XPP, fc=ReedFluorescence,
+        columns = () # Selected from ( :roi, :peakback, :counts )
+    )::DataFrame
 
 Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
   * If charOnly then only display characteristic X-ray data (not escapes etc.)
-  * If `material` is a Material then the computed k-ratio will also be tabulated along with kmeas/kcalc.
+  * If `material` is a Material then the computed k-ratio (KCalc) will also be tabulated along with kmeas/kcalc (KoKCalc).
+  * columns - :roi - ROI for peak (Start, Stop)
+              :peakback - characteristic intensity, background intensity and PtoB over a 10 eV/channel (Peak, Back, PtoB)
+              :counts - Characteristic intensity in peak (Counts)
 """
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
     ffr::FilterFitResult;
     charOnly::Bool = true,
-    material = nothing,
+    material::Union{Material,Nothing} = nothing,
+    columns::Tuple = () # ( :roi, :peakback, :counts)
+    mc = XPP, fc=ReedFluorescence,
 )::DataFrame
-    lbls, klbl, std, kr, dkr, roi1, roi2, peak, back, ptob = UnknownLabel[],
-    ReferenceLabel[],
-    String[],
-    Float64[],
-    Float64[],
-    Int[],
-    Int[],
-    Float64[],
-    Float64[],
-    Float64[]
-    kcalc, ratio = Float64[], Float64[]
-    for lbl in NeXLUncertainties.sortedlabels(ffr.kratios)
-        if (!charOnly) || (lbl isa CharXRayLabel)
-            stdspec, unkspec = properties(lbl), ffr.label.spectrum
-            push!(lbls, ffr.label)
-            push!(std, stdspec[:Name])
-            push!(klbl, lbl)
-            push!(roi1, lbl.roi.start)
-            push!(roi2, lbl.roi.stop)
-            push!(kr, NeXLUncertainties.value(ffr.kratios, lbl))
-            push!(dkr, σ(ffr.kratios, lbl))
-            pb = ffr.peakback[lbl]
-            push!(peak, pb[1])
-            push!(back, pb[2])
-            push!(ptob, peaktobackground(ffr, lbl))
-            if material isa Material
-                kc = NaN64
-                if lbl isa CharXRayLabel
-                    try
-                        zcu = zafcorrection(
-                            XPP,
-                            ReedFluorescence,
-                            NullCoating,
-                            material,
-                            lbl.xrays,
-                            unkspec[:BeamEnergy],
-                        )
-                        zcs = zafcorrection(
-                            XPP,
-                            ReedFluorescence,
-                            NullCoating,
-                            stdspec[:Composition],
-                            lbl.xrays,
-                            stdspec[:BeamEnergy],
-                        )
-                        kc = k(zcu, zcs, unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
-                    catch
-                        kc = NaN64
-                    end
-                end
-                push!(kcalc, kc)
-                push!(ratio, NeXLUncertainties.value(ffr.kratios, lbl) / kc)
-            end
-        end
+    sl = NeXLUncertainties.sortedlabels(ffr.kratios)
+    if charOnly
+        sl = filter(lbl->lbl isa CharXRayLabel, sl)
     end
-    return material isa Material ?
-           DataFrame(
-        Spectrum = lbls,
-        Feature = klbl,
-        Reference = std,
-        Start = roi1,
-        Stop = roi2,
-        K = kr,
-        dK = dkr,
-        Peak = peak,
-        Back = back,
-        PtoB = ptob,
-        Kcalc = kcalc,
-        Ratio = ratio,
-    ) :
-           DataFrame(
-        Spectrum = lbls,
-        Feature = klbl,
-        Reference = std,
-        Start = roi1,
-        Stop = roi2,
-        K = kr,
-        dK = dkr,
-        Peak = peak,
-        Back = back,
-        PtoB = ptob,
-    )
+    res = DataFrame(
+        Spectrum = [ ffr.label for _ in sl ],
+        Feature = sl,
+        Reference = [properties(lbl) for lbl in sl],
+        K = [ NeXLUncertainties.value(ffr.kratios, lbl) for lbl in sl],
+        dK = [ NeXLUncertainties.σ(ffr.kratios, lbl) for lbl in sl]
+    ) 
+    if :roi in columns
+        insertcols!(res, 4, :Start => [ lbl.roi.start for lbl in sl])
+        insertcols!(res, 5, :Stop => [ lbl.roi.stop for lbl in sl])
+    end
+    if :peakback in columns
+        insertcols!(res, :Peak => [ (-)(ffr.peakback[lbl]...) for lbl in sl] )
+        insertcols!(res, :Back => [ ffr.peakback[lbl][2] for lbl in sl] )
+        insertcols!(res, :PtoB => [ peaktobackground(ffr, lbl) for lbl in sl] )
+    end
+    if material isa Material
+        function kcalc(lbl) 
+            zcu = zafcorrection(
+                mc,
+                fc,
+                NullCoating,
+                material,
+                lbl.xrays,
+                unkspec[:BeamEnergy],
+            )
+            zcs = zafcorrection(
+                mc,
+                fc,
+                NullCoating,
+                stdspec[:Composition],
+                lbl.xrays,
+                stdspec[:BeamEnergy],
+            )
+            k(zcu, zcs, unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
+        end
+        insertcols!(res, :KCalc => kcalc.(sl))
+        insertcols!(res, :KoKcalc => [ r[:K]/r[:KCalc] for r in eachrow(res) ])
+    end
+    if :counts in columns
+        insertcols!(res, :Counts => [ (-)(ffr.peakback[lbl]...) for lbl in sl] )
+    end
+    return res
 end
 
 """
@@ -367,6 +344,5 @@ assigned to the properties of `fr` so that it can be account for in the matrix c
 This method is intended for use on standards where the substrate composition is known a priori.
 """
 function NeXLMatrixCorrection.estimatecoating(fr::FitResult, substrate::Material, coating::Material, cxr::CharXRay, mc::Type{<:MatrixCorrection}=XPP)::Film
-    coating[:Density] = get(coating, :Density, 1.0)
     properties(fr.label.spectrum)[:Coating] = estimatecoating(substrate, coating, kratio(fr, cxr), mc)
 end
