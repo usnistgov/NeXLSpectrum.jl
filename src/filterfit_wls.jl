@@ -150,9 +150,9 @@ function filterfit(
     ffs::AbstractVector{FilteredReference},
     forcezeros = true,
 )::FilterFitResult
-    kr = _filterfit(unk, ffs, forcezeros)
-    resid, pb = _computeResidual(unk, ffs, kr), _computecounts(unk, ffs, kr)
-    return FilterFitResult(unk.label, kr, unk.roi, unk.data, resid, pb)
+    krs = _filterfit(unk, ffs, forcezeros)
+    resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
+    return FilterFitResult(unk.label, krs, unk.roi, unk.data, resid, pb)
 end
 
 function filterfitk(

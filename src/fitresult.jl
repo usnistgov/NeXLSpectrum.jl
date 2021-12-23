@@ -209,7 +209,7 @@ struct FilterFitResult <: FitResult
     roi::UnitRange{Int}
     raw::Vector{Float64}
     residual::Vector{Float64}
-    peakback::Dict{ReferenceLabel,NTuple{2,Float64}}
+    peakback::Dict{ReferenceLabel,NTuple{3,Float64}}
 end
 
 """
@@ -251,7 +251,7 @@ function peaktobackground(
     backwidth::Float64 = 10.0,
 )::Float64
     unk = spectrum(unknown(ffr))
-    peak, back = ffr.peakback[klabel]
+    peak, back, _ = ffr.peakback[klabel]
     return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) /
            (backwidth * back)
 end
@@ -273,23 +273,25 @@ Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'Da
   * columns - :roi - ROI for peak (Start, Stop)
               :peakback - characteristic intensity, background intensity and PtoB over a 10 eV/channel (Peak, Back, PtoB)
               :counts - Characteristic intensity in peak (Counts)
+              :dose - :LiveTime, :ProbeCurrent, :Dose properties from the spectrum
 """
 function NeXLUncertainties.asa(
     ::Type{DataFrame},
     ffr::FilterFitResult;
     charOnly::Bool = true,
     material::Union{Material,Nothing} = nothing,
-    columns::Tuple = () # ( :roi, :peakback, :counts)
+    columns::Tuple = (), # ( :roi, :peakback, :counts, :dose)
     mc = XPP, fc=ReedFluorescence,
 )::DataFrame
     sl = NeXLUncertainties.sortedlabels(ffr.kratios)
+    unkspec = ffr.label.spectrum
     if charOnly
         sl = filter(lbl->lbl isa CharXRayLabel, sl)
     end
     res = DataFrame(
         Spectrum = [ ffr.label for _ in sl ],
         Feature = sl,
-        Reference = [properties(lbl) for lbl in sl],
+        Reference = [properties(lbl)[:Name] for lbl in sl],
         K = [ NeXLUncertainties.value(ffr.kratios, lbl) for lbl in sl],
         dK = [ NeXLUncertainties.σ(ffr.kratios, lbl) for lbl in sl]
     ) 
@@ -298,12 +300,13 @@ function NeXLUncertainties.asa(
         insertcols!(res, 5, :Stop => [ lbl.roi.stop for lbl in sl])
     end
     if :peakback in columns
-        insertcols!(res, :Peak => [ (-)(ffr.peakback[lbl]...) for lbl in sl] )
+        insertcols!(res, :Peak => [ ffr.peakback[lbl][1]-ffr.peakback[lbl][2] for lbl in sl] )
         insertcols!(res, :Back => [ ffr.peakback[lbl][2] for lbl in sl] )
         insertcols!(res, :PtoB => [ peaktobackground(ffr, lbl) for lbl in sl] )
     end
     if material isa Material
         function kcalc(lbl) 
+            stdspec = lbl.spectrum
             zcu = zafcorrection(
                 mc,
                 fc,
@@ -325,8 +328,17 @@ function NeXLUncertainties.asa(
         insertcols!(res, :KCalc => kcalc.(sl))
         insertcols!(res, :KoKcalc => [ r[:K]/r[:KCalc] for r in eachrow(res) ])
     end
+    if :dose in columns
+        dt(spec) = 100.0*(spec[:RealTime]-spec[:LiveTime])/spec[:RealTime]
+        insertcols!(res, 2, :LiveTime => [ get(unkspec, :LiveTime, missing) for _ in sl ])
+        insertcols!(res, 3, :ProbeCurrent => [ get(unkspec, :ProbeCurrent, missing) for _ in sl ])
+        insertcols!(res, 4, :DeadPct => [ dt(unkspec) for lbl in sl ])
+
+    end
     if :counts in columns
-        insertcols!(res, :Counts => [ (-)(ffr.peakback[lbl]...) for lbl in sl] )
+        insertcols!(res, :Counts => [ ffr.peakback[lbl][1]-ffr.peakback[lbl][2] for lbl in sl] )
+        insertcols!(res, :RefCountsPernAs => [ ffr.peakback[lbl][3]/(lbl.spectrum[:ProbeCurrent]*lbl.spectrum[:LiveTime]) for lbl in sl] )
+        insertcols!(res, :CountsPernAs => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) / (lbl.spectrum[:ProbeCurrent]*lbl.spectrum[:LiveTime]) for lbl in sl ])
     end
     return res
 end

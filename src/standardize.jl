@@ -96,8 +96,8 @@ function NeXLUncertainties.compute(
     return (LabeledValues(outputs, results), jac)
 end
 
-function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{2,Float64}}, sm::StandardizeModel)::Dict{ReferenceLabel,NTuple{2,Float64}}
-    res = Dict{ReferenceLabel,NTuple{2,Float64}}()
+function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{3,Float64}}, sm::StandardizeModel)::Dict{ReferenceLabel,NTuple{3,Float64}}
+    res = Dict{ReferenceLabel,NTuple{3,Float64}}()
     for (meas, pb) in pbs
         i = findfirst(std->matches(meas, std), sm.standards)
         if !isnothing(i)

@@ -637,18 +637,19 @@ function _computeResidual(
     return res
 end
 
-# Internal: Computes the total peak and background count based on the fit k-ratios
+# Internal: Computes the total peak, background and reference count based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference}, #
     kr::UncertainValues, #
-)::Dict{<:ReferenceLabel,NTuple{2,Float64}}
-    res = Dict{ReferenceLabel,NTuple{2,Float64}}()
+)::Dict{<:ReferenceLabel,NTuple{3,Float64}}
+    res = Dict{ReferenceLabel,NTuple{3,Float64}}()
     for ff in ffs
         su = sum(unk.data[ff.roi])
         res[ff.label] = (
             su,
-            su - (value(kr, ff.label) * ff.scale / unk.scale) * sum(ff.charonly)
+            su - (value(kr, ff.label) * ff.scale / unk.scale) * sum(ff.charonly),
+            sum(ff.charonly)
         )
     end
     return res
@@ -681,7 +682,7 @@ function selectBestReferences(
         for ref in filter(ref -> element(ref.label) == elm, refs)
             comp = composition(ref.label)
             # Pick the reference with the largest charonly value but prefer pure elements over compounds
-            mrf = maximum(ref.charonly) * (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)
+            mrf = sum(ref.charonly) * (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
                 rois[ref.roi] = (ref, mrf)
             end
