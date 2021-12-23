@@ -126,11 +126,11 @@ function NeXLUncertainties.asa(
     ffrs::AbstractVector{<:FitResult};
     charOnly = true,
     withUnc = false,
-    pivot = false,
+    format = :normal # :pivot or :long
 )::DataFrame
     lbls = sort(collect(Set(mapreduce(labels, append!, ffrs))))
     lbls = charOnly ? filter(lbl -> lbl isa CharXRayLabel, lbls) : lbls
-    if pivot
+    if format==:pivot
         res = DataFrame(ROI = lbls)
         for ffr in ffrs
             vals = [value(ffr.kratios, lbl, missing) for lbl in lbls]
@@ -138,6 +138,18 @@ function NeXLUncertainties.asa(
             if withUnc
                 unc = [σ(ffr.kratios, lbl, missing) for lbl in lbls]
                 insertcols!(res, ncol(res) + 1, Symbol('Δ' * repr(ffr.label)) => unc)
+            end
+        end
+    elseif format==:long
+        if withUnc
+            res = DataFrame(Spectrum=String[], ROI = String[], k = Float64[], dk = Float64[]) 
+            for ffr in ffrs, lbl in lbls
+                push!(res, ( repr(ffr.label), repr(lbl), value(ffr.kratios, lbl, missing), σ(ffr.kratios, lbl, missing) ))
+            end
+        else
+            res = DataFrame(Spectrum=String[], ROI = String[], k = Float64[]) 
+            for ffr in ffrs, lbl in lbls
+                push!(res, ( repr(ffr.label), repr(lbl), value(ffr.kratios, lbl, missing)))
             end
         end
     else
