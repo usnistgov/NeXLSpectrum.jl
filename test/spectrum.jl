@@ -148,9 +148,11 @@ using Distributions
         @test isapprox(slr[4], -3.3497, atol=1.0e-4)
     end
     @testset "Duane-Hunt" begin
-        fns = ( "Al2O3 std", "CaF2 std", "Fe std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...)
+        # Fe's Duane-Hunt truly appears to be outside this range
+        fns = ( "Al2O3 std", "CaF2 std", "MgO std", "SiO2 std", ("III-E K412[$i][4]" for i in 0:4)...) 
         specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
-        @test all(isapprox.(NeXLSpectrum.duane_hunt.(specs), 20.0e3, atol=100.0))
+        # @show duane_hunt.(specs)
+        @test all(isapprox.(duane_hunt.(specs), 20.0e3, atol=100.0))
     end
 
     @testset "sigma" begin

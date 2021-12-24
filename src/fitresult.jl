@@ -300,7 +300,7 @@ function NeXLUncertainties.asa(
         insertcols!(res, 5, :Stop => [ lbl.roi.stop for lbl in sl])
     end
     if :peakback in columns
-        insertcols!(res, :Peak => [ ffr.peakback[lbl][1]-ffr.peakback[lbl][2] for lbl in sl] )
+        insertcols!(res, :Peak => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) for lbl in sl] )
         insertcols!(res, :Back => [ ffr.peakback[lbl][2] for lbl in sl] )
         insertcols!(res, :PtoB => [ peaktobackground(ffr, lbl) for lbl in sl] )
     end
@@ -337,8 +337,8 @@ function NeXLUncertainties.asa(
     end
     if :counts in columns
         insertcols!(res, :Counts => [ ffr.peakback[lbl][1]-ffr.peakback[lbl][2] for lbl in sl] )
-        insertcols!(res, :RefCountsPernAs => [ ffr.peakback[lbl][3]/(lbl.spectrum[:ProbeCurrent]*lbl.spectrum[:LiveTime]) for lbl in sl] )
-        insertcols!(res, :CountsPernAs => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) / (lbl.spectrum[:ProbeCurrent]*lbl.spectrum[:LiveTime]) for lbl in sl ])
+        insertcols!(res, :RefCountsPernAs => [ ffr.peakback[lbl][3] for lbl in sl] )
+        insertcols!(res, :CountsPernAs => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) / dose(unkspec) for lbl in sl ])
     end
     return res
 end

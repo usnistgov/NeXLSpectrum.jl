@@ -622,7 +622,7 @@ NeXLUncertainties.extract(
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
-    Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
+    Diagonal([unk.scale / ff.scale for ff in ffs])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
 function _computeResidual(
@@ -637,7 +637,7 @@ function _computeResidual(
     return res
 end
 
-# Internal: Computes the total peak, background and reference count based on the fit k-ratios
+# Internal: Computes the total peak (counts), background (counts) and reference count (c/nAs) based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference}, #
@@ -645,11 +645,11 @@ function _computecounts( #
 )::Dict{<:ReferenceLabel,NTuple{3,Float64}}
     res = Dict{ReferenceLabel,NTuple{3,Float64}}()
     for ff in ffs
-        su = sum(unk.data[ff.roi])
+        su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
         res[ff.label] = (
             su,
-            su - (value(kr, ff.label) * ff.scale / unk.scale) * sum(ff.charonly),
-            sum(ff.charonly)
+            su - value(kr, ff.label) * sco * ff.scale / unk.scale,
+            sco * ff.scale
         )
     end
     return res
