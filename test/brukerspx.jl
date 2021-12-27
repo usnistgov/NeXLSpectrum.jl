@@ -2,7 +2,7 @@ using NeXLSpectrum
 using Test
 
 @testset "XRF Spectrum" begin
-    fn1 = joinpath("Other", "20170510_D1_Mo_50kv_100mA_acryl 0.spx")
+    fn1 = joinpath(@__DIR__, "Other", "20170510_D1_Mo_50kv_100mA_acryl 0.spx")
     sp1a = loadspectrum(fn1)
     #sp1b = FileIO.load(fn1)
     @test sp1a[:RealTime] == 310.610
@@ -32,7 +32,7 @@ using Test
 end
 
 @testset "SEM/EDS" begin
-    fn2 = joinpath("Other", "Albite_ChMxd_20kV0p5nA130kHzTC_5p9kHzOCR_4ks.spx")
+    fn2 = joinpath(@__DIR__, "Other", "Albite_ChMxd_20kV0p5nA130kHzTC_5p9kHzOCR_4ks.spx")
     sp2a = loadspectrum(fn2)
     #sp2b = FileIO.load(fn2)
     @test sp2a[:RealTime] == 4028.702
