@@ -105,7 +105,7 @@ using Distributions
         @test isapprox(comp[n"O"], 0.470749, atol = 1.0e-6)
         @test isapprox(comp[n"Al"], 0.529251, atol = 1.0e-6)
         @test comp[n"Zr"] == 0.0
-        @test density(comp) == 4.00
+        @test NeXLCore.density(comp) == 4.00
 
         chs = channel(1335.0, sp):channel(1688.0, sp)
         @test integrate(sp, chs) == 33143490

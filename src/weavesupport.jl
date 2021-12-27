@@ -1,15 +1,10 @@
 import Compose
 import .Weave
-try
-    import Cairo
-catch
-    @warn("Cairo.jl is required to be installed to generate raster images")
-end
 
 Base.showable(m::MIME"application/svg", ctx::Context) = true
 Base.showable(m::MIME"application/png", ctx::Context) = true
 
-function Base.display(report::Weave.Report, m::MIME"image/svg+xml", ctx::Context)
+function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Context)
     chunk = report.cur_chunk
 
     w = chunk.options[:fig_width]Compose.inch
