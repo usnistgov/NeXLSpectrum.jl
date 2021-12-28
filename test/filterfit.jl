@@ -404,10 +404,10 @@ using DataFrames
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
-        @test isapprox(value(qr.comp[n"Al"]), 0.05077, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44744, atol=0.0001)
+        @test isapprox(value(qr.comp[n"O"]), 0.44715, atol=0.0001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
         @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
@@ -435,14 +435,14 @@ using DataFrames
         @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
         @test df[1,:Start]==131
         @test df[1,:Stop]==168
-        @test isapprox(df[1,:K],0.0331066, atol=0.00001)
-        @test isapprox(df[1,:dK],0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Peak],1.05241e5, atol=10.0)
-        @test isapprox(df[1,:Back],1.02961e5, atol=10.0)
-        @test isapprox(df[1,:PtoB],74.9106, atol=0.001)
-        @test isapprox(df[1,:KCalc],0.0322868, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc],1.02539, atol=0.00001)
-        @test isapprox(df[1,:RefCountsPernAs],44231.6, atol=0.1)
-        @test isapprox(df[1,:CountsPernAs],1464.36, atol=0.1)
+        @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
+        @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
+        @test isapprox(df[1,:Peak], 1.05241e5, atol=10.0)
+        @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
+        @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
+        @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
+        @test isapprox(df[1,:KoKcalc], 1.029873, atol=0.00001)
+        @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
     end
 end

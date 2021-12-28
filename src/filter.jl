@@ -549,7 +549,7 @@ function tophatfilter(
     lbls = filter(labels) do lbl
         res = (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) 
         (!res) && @warn "The ROI $(lbl.roi) not fully contained on [1, $(length(filt))] for $lbl."
-        w = (weight(brightest(lbl.xrays)) > 1.0e-3)
+        w = (weight(NormalizeToUnity, brightest(lbl.xrays)) > 1.0e-3)
         (!w) && @warn "No sufficiently bright X-rays for $lbl."
         res && w
     end    

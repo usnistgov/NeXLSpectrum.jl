@@ -132,8 +132,8 @@ function Gadfly.plot(
             if ich > 0
                 for c in cs
                     push!(x, energy(c))
-                    push!(y, ytransform(ich * weight(c)))
-                    push!(label, weight(c) > 0.1 ? "$(element(c).symbol)" : "")
+                    push!(y, ytransform(ich * weight(NormalizeToUnity, c)))
+                    push!(label, weight(NormalizeToUnity, c) > 0.1 ? "$(element(c).symbol)" : "")
                 end
             end
         end
