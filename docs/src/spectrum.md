@@ -1,6 +1,5 @@
 # ![](NeXL_sm.png)Spectrum
-## Working with Spectrum objects
-
+## [Working with Spectrum objects](@id spectrum_methods)
 ```@meta
 CurrentModule = NeXLSpectrum
 ```

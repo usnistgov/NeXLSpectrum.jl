@@ -35,7 +35,11 @@ function Base.show(io::IO, ffp::FilterFitPacket)
     print(io, "References[\n\t$(ffp.detector), \n$xrays\n]")
 end
 
+"""
+    NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
 
+Summarize the `FilteredReference` structs within a `FilterFitPacket` as a `DataFrame`.
+"""
 function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
     function p2b(fref)
         croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
@@ -188,11 +192,21 @@ fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
     map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
 
 """
-fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
+    fit_spectrum(spec::Spectrum, ffp::FilterFitPacket)::FilterFitResult
 
-  * mode = :Fast - Uses precomputed, filtered "vector" fit method.  No uncertainties are available.
-  * mode = :Intermediate - Uses an optimized full fit without refits for negative k-ratios.
-  * mode = :Full - Uses the full single spectrum fit algorithm including refitting when one or more k-ratio is less than zero.
+    fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket)::FilterFitResult
+
+Fit a `Spectrum` or a vector of `Spectrum` using the specified `FilterFitPacket`.  The result is a
+`FilterFitResult` structure which contains k-ratios, residuals, etc. 
+
+
+
+
+    fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
+
+  * `mode = :Fast` - Uses precomputed, filtered "vector" fit method.  No uncertainties are available.
+  * `mode = :Intermediate` - Uses an optimized full fit without refits for negative k-ratios.
+  * `mode = :Full` - Uses the full single spectrum fit algorithm including refitting when one or more k-ratio is less than zero.
 
 Performs a filtered fit on a hyperspectrum returning an `Array{KRatios}`.
 
@@ -208,13 +222,11 @@ The following timing on a 512 x 512 x 2048 hyperspectrum fitting 15 elements wit
 with 64 GiB memory give a relative feel for the speed of each algorithm.  Yes, :Fast is approximately 20x faster than
 :Intermediate and used almost 100x less memory.  (Single thread timings)
 
-|---------------|----------------|--------------|--------------|----------|
 | mode          | Run time (s)   | Allocations  | Memory (GiB) | GC time  |
 |---------------|----------------|--------------|--------------|----------|
 | :Fast         | 44.8           | 3.95 M       | 5.72         | 4.2%     |
 | :Intermediate | 1305.1         | 24.83 M      | 523.7        | 2.7%     |
 | :Full         | 2056           | 2.7 G        | 786.1        | 4.2%     |
-|---------------|----------------|--------------|--------------|----------|
 """
 function fit_spectrum(
     hs::HyperSpectrum,

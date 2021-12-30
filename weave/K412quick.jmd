@@ -1,7 +1,7 @@
 ## Quick Quantifying K412 using NeXLSpectrum VectorQuant
 
-Fred Schamber taught me this trick for quantifying spectrum extremely quickly.  If you are willing to overlook
-the fact that
+Fred Schamber taught me this trick for quantifying spectrum extremely quickly.  It works reasonably well
+for a moderate number of ROIs, particularly when few of the ROIs interfere.
 
 Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.
 

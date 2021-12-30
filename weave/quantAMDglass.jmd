@@ -1,4 +1,5 @@
 # Filter fitting example: ADM-6005a glass
+
 This example uses the low-level filter fitting functions to
     * load spectra from EMSA files,
     * builds a detector description and a top-hat filter,

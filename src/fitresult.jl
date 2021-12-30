@@ -173,6 +173,11 @@ function NeXLUncertainties.asa(
     return res
 end
 
+"""
+    NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
+
+Summarize the ROI and k-ratio data within a `FitResult` structure as a `DataFrame`. 
+"""
 function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
     rois = labels(fr)
     res =  DataFrame(
@@ -206,6 +211,10 @@ Struct elements
     roi::UnitRange{Int} # Range of channels fit
     raw::Vector{Float64} # Raw spectrum data
     residual::Vector{Float64} # Residual spectrum
+    peakback::Dict{ReferenceLabel,NTuple{3,Float64}} # peak counts, background counts and counts/(nAs)
+
+
+Use asa(DataFrame, ffr::FilterFitResult) to summarize in tabular form.
 """
 struct FilterFitResult <: FitResult
     label::UnknownLabel

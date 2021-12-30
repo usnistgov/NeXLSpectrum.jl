@@ -1,5 +1,4 @@
 ### How good are the fit uncertainty estimates?
-
 This document looks at two different sets of measured spectra to evaluate how well, the estimated fit uncertainties
 match the observed uncertainties.  We are using two materials known to be highly homogeneous - K412 and ADM-6006a
 glasses.  To produce a set of spectra that differ only in count statistics, we will subdivide a spectrum into

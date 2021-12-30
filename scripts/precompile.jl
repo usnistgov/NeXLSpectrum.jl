@@ -17,5 +17,5 @@ using PackageCompiler
 PackageCompiler.create_sysimage(
     [ "Gadfly", "DataFrames", "BoteSalvatICX", "FFAST", "NeXLUncertainties", "NeXLCore", "NeXLMatrixCorrection", "NeXLSpectrum" ]; 
     sysimage_path=joinpath(homedir(), ".julia", "NeXLSysimage.dll"),
-    precompile_execution_file=joinpath(homedir(), ".julia","dev","NeXLSpectrum","scripts", "precompile.jl"))
+    precompile_execution_file=joinpath(pkgdir(NeXLSpectrum),"scripts", "precompile.jl"))
 =#
