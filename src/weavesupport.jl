@@ -31,4 +31,15 @@ function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Context)
     end
 end
 
+"""
+    kill_temporaries(path)
+
+Kills temporary files associated with weave...
+"""
+function kill_temporaries(path::AbstractString)
+    for fn in filter(f->!isnothing(match(r"^jl_[a-zA-Z0-9]+$", f)), readdir(path))
+        rm(joinpath(path,fn);force=true, recursive=true)
+    end
+end
+
 @info "Weave support loaded into NeXLSpectrum"
