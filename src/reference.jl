@@ -174,7 +174,7 @@ function references(
     @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
     # Build the top-hat filter for det
     ff = buildfilter(det)
-    # Apply the top-hat filter to all refs
+    # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
         frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
         length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
@@ -183,23 +183,20 @@ function references(
     return FilterFitPacket(det, ff, frefs)
 end
 references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(refs[1].spectrum, fwhm))
+    references(refs, matching(first(refs).spectrum, fwhm))
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
     fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
 
 fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
-    map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
+    ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
 
 """
     fit_spectrum(spec::Spectrum, ffp::FilterFitPacket)::FilterFitResult
-
-    fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket)::FilterFitResult
+    fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket)::Vector{FilterFitResult}
 
 Fit a `Spectrum` or a vector of `Spectrum` using the specified `FilterFitPacket`.  The result is a
 `FilterFitResult` structure which contains k-ratios, residuals, etc. 
-
-
 
 
     fit_spectrum(hs::HyperSpectrum, ffp::FilterFitPacket; mode::Symbol=:Fast, zero = x -> max(0.0, x))::Array{KRatios}
@@ -212,7 +209,7 @@ Performs a filtered fit on a hyperspectrum returning an `Array{KRatios}`.
 
 Selecting a mode:
   :Fast is good for generating k-ratio maps or exploratory analysis of a k-ratio map. :Full is best when a
-  quantitative map of a high count hyperspectrum is desired.  Fit frefsults for major elements are similar for
+  quantitative map of a high count hyperspectrum is desired.  Fit results for major elements are similar for
   all three but differ for minor and trace elements.  Particularly when a k-ratio is slightly negative. This
   negative k-ratio can effect the other k-ratios.  :Fast also works less well when many elements (>>10) (particularly
   interfering elements) are included in the fit. Unfortunately, :Intermediate and :Full slow down when many elements

@@ -142,7 +142,7 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     properties::Dict{Symbol,Any}
     hash::UInt  # Stays fixed as underlying data changes
     function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,<:Any})
-        res = new{typeof(data[1])}(
+        res = new{eltype(data)}(
             energy,
             data,
             convert(Dict{Symbol, Any}, props),
