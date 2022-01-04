@@ -19,3 +19,6 @@ PackageCompiler.create_sysimage(
     sysimage_path=joinpath(homedir(), ".julia", "NeXLSysimage.dll"),
     precompile_execution_file=joinpath(pkgdir(NeXLSpectrum),"scripts", "precompile.jl"))
 =#
+
+## To use the sysimage, start Julia with the `-J` option
+# julia -JC:\Users\username\.julia\NeXLSysimage.dll"
