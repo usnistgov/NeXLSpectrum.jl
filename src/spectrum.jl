@@ -142,7 +142,7 @@ struct Spectrum{T<:Real} <: AbstractVector{T}
     properties::Dict{Symbol,Any}
     hash::UInt  # Stays fixed as underlying data changes
     function Spectrum(energy::EnergyScale, data::AbstractVector{<:Real}, props::Dict{Symbol,<:Any})
-        res = new{typeof(data[1])}(
+        res = new{eltype(data)}(
             energy,
             data,
             convert(Dict{Symbol, Any}, props),
@@ -427,22 +427,21 @@ end
 
 """
     dose(spec::Spectrum, def=missing)
-    dose(spec::Spectrum)
+    dose(props::Dict{Symbol, Any}, def=missing)
 
-The probe dose in nano-amp seconds
+The probe dose in nA⋅s and is equals spec[:LiveTime]⋅spec[:ProbeCurrent].
 """
-function dose(spec::Spectrum, def::Union{Float64,Missing})::Union{Float64,Missing}
-    res = get(spec.properties, :LiveTime, missing) * get(spec, :ProbeCurrent, missing)
+function dose(props::Dict{Symbol, Any}, def::Union{Float64,Missing})::Union{Float64,Missing}
+    res = get(props, :LiveTime, missing) * get(props, :ProbeCurrent, missing)
     return isequal(res, missing) ? def : res
 end
-
-function dose(spec::Spectrum)
-    if haskey(spec.properties, :LiveTime) && haskey(spec.properties, :ProbeCurrent)
-        return get(spec.properties, :LiveTime, missing) * get(spec, :ProbeCurrent, missing)
-    else
-        @error "One or more properties necessary to calculate the dose is missing.\n  You must provide both :ProbeCurrent and :LiveTime."
-    end
+dose(spec::Spectrum, def::Union{Float64,Missing})::Union{Float64,Missing} = dose(spec.properties, def)
+function dose(props::Dict{Symbol, Any})
+    res = get(props, :LiveTime, missing) * get(props, :ProbeCurrent, missing)
+    ismissing(res) && @error "One or more of the properties necessary to calculate the dose (:ProbeCurrent and :LiveTime) is not available."
+    return res
 end
+dose(spec::Spectrum) = dose(spec.properties)
 
 """
     NeXLCore.energy(ch::Int, spec::Spectrum)::Float64

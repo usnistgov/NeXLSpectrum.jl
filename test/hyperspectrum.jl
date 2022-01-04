@@ -1,42 +1,11 @@
 using Test
-using Pkg
-using Pkg.Artifacts
 using NeXLSpectrum
 using DataFrames
-using Downloads: download
 using Statistics
 
-# This is the path to the Artifacts.toml we will manipulate
-artifacts_toml = joinpath(@__DIR__, "Artifacts.toml")
-
-# Query the `Artifacts.toml` file for the hash bound to the name "rplraw"
-# (returns `nothing` if no such binding exists)
-rplraw_hash = artifact_hash("rplraw", artifacts_toml)
-
-# If the name was not bound, or the hash it was bound to does not exist, create it!
-if isnothing(rplraw_hash) || !artifact_exists(rplraw_hash)
-    # create_artifact() returns the content-hash of the artifact directory once we're finished creating it
-    rplraw_hash = create_artifact() do artifact_dir
-        println("Artifact dir: $artifact_dir")
-        url = "https://drive.google.com/uc?export=download&id=1C93kn9-EIXXMDPcqJ9E4Xt4j9qfs5eeX"
-        tarball = if VERSION >= v"1.6.0-beta1.0"
-            download(url)
-        else
-            Base.download(url)
-        end
-        Pkg.probe_platform_engines!()
-        Pkg.unpack(tarball, artifact_dir, verbose = true)
-        rm(tarball)
-    end
-    # Now bind that hash within our `Artifacts.toml`.  `force = true` means that if it already exists,
-    # just overwrite with the new content-hash.  Unless the source files change, we do not expect
-    # the content hash to change, so this should not cause unnecessary version control churn.
-    bind_artifact!(artifacts_toml, "rplraw", rplraw_hash)
-end
-
 # Get the path of the rplraw dataset, either newly created or previously generated.
-# this should be something like `~/.julia/artifacts/dbd04e28be047a54fbe9bf67e934be5b5e0d357a`
-rrpath = artifact_path(rplraw_hash)
+# this should be something like `~/.julia/datadep/map[15]Artifact`
+rrpath = datadep"map[15]Artifact"
 
 @testset "HyperSpectrum" begin
     raw = readrplraw(joinpath(rrpath, "map[15]"))

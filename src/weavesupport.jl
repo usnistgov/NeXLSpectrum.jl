@@ -1,15 +1,10 @@
 import Compose
 import .Weave
-try
-    import Cairo
-catch
-    @warn("Cairo.jl is required to be installed to generate raster images")
-end
 
 Base.showable(m::MIME"application/svg", ctx::Context) = true
 Base.showable(m::MIME"application/png", ctx::Context) = true
 
-function Base.display(report::Weave.Report, m::MIME"image/svg+xml", ctx::Context)
+function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Context)
     chunk = report.cur_chunk
 
     w = chunk.options[:fig_width]Compose.inch
@@ -33,6 +28,17 @@ function Base.display(report::Weave.Report, m::MIME"image/svg+xml", ctx::Context
         Compose.draw(Compose.PGF(full_name, w, h, true), ctx)
     else
         @warn("Can't save figure. Unsupported format, $format")
+    end
+end
+
+"""
+    kill_temporaries(path)
+
+Kills temporary files associated with weave...
+"""
+function kill_temporaries(path::AbstractString)
+    for fn in filter(f->!isnothing(match(r"^jl_[a-zA-Z0-9]+$", f)), readdir(path))
+        rm(joinpath(path,fn);force=true, recursive=true)
     end
 end
 

@@ -42,7 +42,7 @@ NeXLCore.element(ca::ComptonArtifact) = element(xray)
 
 NeXLCore.energy(ca::ComptonArtifact) =
     energy(ca.xray) * NeXLCore.comptonShift(ca.angle, energy(ca.xray))
-NeXLCore.weight(esc::ComptonArtifact) = weight(esc.xray)
+NeXLCore.weight(esc::ComptonArtifact) = weight(NormalizeToUnity, esc.xray)
 
 NeXLCore.energy(esc::EscapeArtifact) = energy(esc.xray) - energy(esc.escape)
 
@@ -51,7 +51,7 @@ NeXLCore.energy(esc::EscapeArtifact) = energy(esc.xray) - energy(esc.escape)
 
 The weight of an EscapeArtifact which is factor * weight(esc.xray).
 """
-NeXLCore.weight(esc::EscapeArtifact, factor = 0.01) = factor * weight(esc.xray)
+NeXLCore.weight(esc::EscapeArtifact, factor = 0.01) = factor * weight(NormalizeToUnity, esc.xray)
 
 
 """

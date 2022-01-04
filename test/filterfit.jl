@@ -2,6 +2,7 @@ using Test
 using NeXLSpectrum
 using Statistics
 using LinearAlgebra
+using DataFrames
 
 @testset "Filter Fitting" begin
     @testset "Filter" begin
@@ -403,9 +404,45 @@ using LinearAlgebra
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
-        @test isapprox(value(qr.comp[n"Al"]), 0.05077, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44744, atol=0.0001)
+        @test isapprox(value(qr.comp[n"O"]), 0.44715, atol=0.0001)
+
+        df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
+        @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
+        @test ncol(df)==17
+        @test nrow(df)==2
+        @test isapprox(df[2,2],0.715218,atol=0.0001)
+        @test isapprox(df[2,3],0.001413,atol=0.0001)
+
+        df = asa(DataFrame, [ fr, ],  charOnly = false, withUnc = true, format = :pivot) 
+        @test ncol(df)==3 && nrow(df)==8
+        @test repr(df[1,:ROI])=="k[O K-L3 + 1 other, MgO]"
+        @test isapprox(df[2,2], 0.0511086, atol=0.00001)
+        @test isapprox(df[3,3], 0.00323159, atol=0.00001)
+
+        df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :long)
+        @test ncol(df)==4 && nrow(df)==16
+        @test df[2,:ROI]=="k[Fe L3-M5 + 13 others, Fe]"
+        @test isapprox(df[3,3], 1.38384, atol=0.00001)
+        @test isapprox(df[3,4], 0.00323159, atol=0.00001)
+
+        df = asa(DataFrame, fr, charOnly = false, material = srm470_k412, columns = ( :roi, :peakback, :counts, :dose))
+        @test all(r->startswith(repr(r[:Spectrum]),"K412-0[Mon Oct 17 16:11:17 2011]"), eachrow(df))
+        @test all(r->r[:LiveTime]==60.0,eachrow(df))
+        @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
+        @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
+        @test df[1,:Start]==131
+        @test df[1,:Stop]==168
+        @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
+        @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
+        @test isapprox(df[1,:Peak], 1.05241e5, atol=10.0)
+        @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
+        @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
+        @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
+        @test isapprox(df[1,:KoKcalc], 1.029873, atol=0.00001)
+        @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
     end
 end

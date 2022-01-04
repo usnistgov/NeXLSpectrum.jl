@@ -53,11 +53,11 @@ function fit_spectrum(
     for (i, (_, roi, co, _, _)) in enumerate(vq.references)
         residual[roi] -= krs[i] * co
     end
-    peakback = Dict{ReferenceLabel,NTuple{2,Float64}}()
+    peakback = Dict{ReferenceLabel,NTuple{3,Float64}}()
     dkrs = zeros(Float64, length(vq.references))
     for (i, (lbl, roi, _, ico, _)) in enumerate(vq.references)
         ii, bb = krs[i] * ico, sum(residual[roi])
-        peakback[lbl] = (ii, bb)
+        peakback[lbl] = (ii, bb, bb / spsc)
         dkrs[i] = sqrt(max(0.0, ii + bb)) / ico
     end
     kratios = uvs(

@@ -1,7 +1,11 @@
 using .Gadfly
 using Colors
 using Printf
-
+"""
+`NeXLSpectrumStyle` defines the default look-and-feel for Gadfly.plot(...) as
+applied to EDS spectra using the Gadfly.plot(...) functions implemented in 
+`NeXLSpectrum`.
+"""
 const NeXLSpectrumStyle = style(
     background_color = nothing,
     panel_fill = RGB(253 / 255, 253 / 255, 241 / 255),
@@ -55,18 +59,6 @@ Named:
     customlayers = Gadfly.Layer[] # Allows additional plot layers to be added
 
 Plot a multiple spectra on a single plot using Gadfly.
-
-    Gadfly.plot(
-      ffr::FilterFitResult,
-      roi::Union{Missing,UnitRange{Int}} = missing;
-      palette = NeXLPalette,
-      style = NeXLSpectrumStyle, xmax=missing)
-
-Plot the spectrum, residual and k-ratios using Gadfly.
-
-    Gadfly.plot(fr::FilteredReference)
-
-Plot a filtered reference spectrum.
 """
 Gadfly.plot( #
     specs::AbstractVector{Spectrum{<:Real}};
@@ -132,8 +124,8 @@ function Gadfly.plot(
             if ich > 0
                 for c in cs
                     push!(x, energy(c))
-                    push!(y, ytransform(ich * weight(c)))
-                    push!(label, weight(c) > 0.1 ? "$(element(c).symbol)" : "")
+                    push!(y, ytransform(ich * weight(NormalizeToUnity, c)))
+                    push!(label, weight(NormalizeToUnity, c) > 0.1 ? "$(element(c).symbol)" : "")
                 end
             end
         end
@@ -335,6 +327,22 @@ function Gadfly.plot(
     end
 end
 
+
+"""
+    Gadfly.plot(
+        ffr::FilterFitResult,
+        roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
+        palette = NeXLPalette,
+        style = NeXLSpectrumStyle,
+        xmax::Union{AbstractFloat, Nothing} = nothing,
+        comp::Union{Material, Nothing} = nothing,
+        det::Union{EDSDetector, Nothing} = nothing,
+        resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
+        yscale = 1.0
+    )
+
+Plot the sample spectrum, the residual and fit regions-of-interests and the associated k-ratios.
+"""
 function Gadfly.plot(
     ffr::FilterFitResult,
     roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
@@ -420,6 +428,11 @@ function Gadfly.plot(
     end
 end
 
+"""
+    Gadfly.plot(fr::FilteredReference; palette = NeXLPalette))
+
+Plot a filtered reference spectrum.
+"""
 function Gadfly.plot(fr::FilteredReference; palette = NeXLPalette)
     roicolors = Colorant[RGB(0.9, 1.0, 0.9), RGB(0.95, 0.95, 1.0)]
     layers = [
@@ -463,7 +476,11 @@ function Gadfly.plot(fr::FilteredReference; palette = NeXLPalette)
         )
     end
 end
+"""
+    plot(ff::TopHatFilter, fr::FilteredReference)
 
+Plot a color map showing the filter data relevant to filtering the specified `FilteredReference`.
+"""
 Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) = spy(
     filterdata(ff, fr.ffroi),
     Guide.title(repr(fr.label)),
@@ -471,6 +488,11 @@ Gadfly.plot(ff::TopHatFilter, fr::FilteredReference) = spy(
     Guide.ylabel("Channels"),
 )
 
+"""
+    Gadfly.plot(vq::VectorQuant, chs::UnitRange)
+
+Plots the "vectors" used to quantify various elements/regions-of-interest over the range of channels specified.
+"""
 function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
     colors = distinguishable_colors(
         size(vq.vectors, 1) + 2,
@@ -512,6 +534,11 @@ function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
     end
 end
 
+"""
+    Gadfly.plot(deteff::DetectorEfficiency, emax = 20.0e3)
+
+Plots the detector efficiency function assuming the detector is perpendicular to the incident X-rays.
+"""
 function Gadfly.plot(deteff::DetectorEfficiency, emax = 20.0e3)
     eff(ee) = efficiency(deteff, ee, π / 2)
     plot(eff, 100.0, emax)
@@ -539,6 +566,11 @@ function plotandimage(plot::Gadfly.Plot, image::Array)
     )
 end
 
+"""
+    Gadfly.plot(ffp::FilterFitPacket; kwargs...)
+
+Plots the reference spectra which were used to construct a `FilterFitPacket`.
+"""
 Gadfly.plot(ffp::FilterFitPacket; kwargs...) =
     plot(unique(spectra(ffp))...; klms = collect(elms(ffp)), kwargs...)
 
@@ -584,7 +616,7 @@ function plot_multicompare(specs::AbstractArray{Spectrum{T}}; minE=200.0, maxE=0
     chs = max(1,channel(minE, s)): min(channel(maxE, s), length(s))
     xx = map(i->energy(i,s), chs)
     plot(
-        (layer(x=xx, y=view(mc,chs), Geom.line, Theme(default_color=c)) for (c,mc) in zip(NeXLPalette[1:length(mcs)],mcs))...,
+        (layer(x=xx, y=view(mc,chs), Geom.line, Theme(default_color=c)) for (c,mc) in zip(NeXLPalette[1:length(mcs)], mcs))...,
         Guide.xlabel("Energy (eV)"), Guide.ylabel("Ratio")
     )
 end

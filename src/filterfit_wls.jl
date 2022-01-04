@@ -46,7 +46,7 @@ function fitcontiguousww(
     chs::UnitRange{Int},
 )::UncertainValues
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    covscales = [ff.covscale for ff in ffs]
+    covscales = [ ff.covscale for ff in ffs ]
     return scale * wlspinv2(extract(unk, chs), x, covariance(unk, chs), covscales, lbls)
 end
 
@@ -153,24 +153,6 @@ function filterfit(
     krs = _filterfit(unk, ffs, forcezeros)
     resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
     return FilterFitResult(unk.label, krs, unk.roi, unk.data, resid, pb)
-end
-
-function filterfitk(
-    unk::FilteredUnknownW,
-    ffs::AbstractVector{FilteredReference},
-    forcezeros = true,
-)
-    uvs = _filterfit(unk, ffs, forcezeros)
-    unkprops = properties(spectrum(unk.label))
-    return [
-        KRatio(
-            xrays(lbl),
-            unkprops,
-            properties(spectrum(lbl)),
-            spectrum(lbl)[:Composition],
-            uvs[lbl],
-        ) for lbl in labels(uvs)
-    ]
 end
 
 function fit_spectrum(

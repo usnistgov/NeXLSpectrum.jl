@@ -369,7 +369,7 @@ function charXRayLabels(#
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
 )::Vector{ReferenceLabel}
-    suitable = suitablefor(elm, allElms, det, maxE, ampl)
+    suitable = suitablefor(elm, allElms, det, maxE = maxE, ampl = ampl)
     length(suitable) > 0 || @error "The spectrum $(name(spec)) provides no suitable ROIs for the element $(symbol(elm))."
     # Find all the ROIs associated with other elements
     return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
@@ -384,15 +384,22 @@ charXRayLabels(#
 )::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set{Element}(allElms), det, maxE, ampl=ampl)
 
 """
-    suitablefor(elm::Element, allElms::AbstractSet{Element}, det::Detector, maxE::Float64 = 1.0e6, ampl::Float64 = 1.0e-5)::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
+    suitablefor(
+        elm::Element, 
+        matOrElms::Union{Material, AbstractSet{Element}}, 
+        det::Detector; 
+        maxE::Float64 = 1.0e6, 
+        ampl::Float64 = 1.0e-5,
+        warnme::Bool = true
+    )::Vector{Tuple{Vector{CharXRay}, UnitRange{Int64}}}
 
-Given a material containing `allElms` which ROIs for element `elm` is the material a suitable reference on the detector `det`?  
+Given a material or collection of `Element` which ROIs for element `elm` is the material a suitable reference on the detector `det`?  
 This function provides informational, warning and error messages depending upon the suitability of the material. 
 """
 function suitablefor( #
     elm::Element, #
     allElms::AbstractSet{Element}, #
-    det::Detector, #
+    det::Detector; #
     maxE::Float64 = 1.0e6,
     ampl::Float64 = 1.0e-5, #
     warnme::Bool = true #
@@ -422,12 +429,12 @@ end
 function suitablefor( #
     elm::Element, #
     mat::Material, #
-    det::Detector, #
+    det::Detector; #
     maxE::Float64 = 1.0e6,
     ampl::Float64 = 1.0e-5, #
     warnme::Bool = true #
 )
-    suitablefor(elm, keys(mat), det, maxE, ampl, warnme)
+    suitablefor(elm, keys(mat), det, maxE=maxE, ampl=ampl, warnme=warnme)
 end
 
 """
@@ -453,11 +460,11 @@ function suitability(elm::Element, mats::AbstractSet{<:Material}, det::EDSDetect
     mats = filter(m->value(m[elm])>0.0, mats)
     # Find all elemental ROIs
     rois = Dict{Vector{CharXRay}, Vector{Material}}()
-    for (cxrs, _) in NeXLSpectrum.suitablefor(elm, Set( (elm, ) ), det, maxE, 1.0e-5, false)
+    for (cxrs, _) in NeXLSpectrum.suitablefor(elm, Set( (elm, ) ), det, maxE=maxE, ampl=1.0e-5, warnme=false)
       rois[cxrs] = Material[]
     end
     for mat in mats
-      for (cxrs, _) in NeXLSpectrum.suitablefor(elm, mat, det, maxE, 1.0e-5, false)
+      for (cxrs, _) in NeXLSpectrum.suitablefor(elm, mat, det, maxE=maxE, ampl=1.0e-5, warnme=false)
         push!(rois[cxrs], mat) 
       end
     end
@@ -549,7 +556,7 @@ function tophatfilter(
     lbls = filter(labels) do lbl
         res = (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) 
         (!res) && @warn "The ROI $(lbl.roi) not fully contained on [1, $(length(filt))] for $lbl."
-        w = (weight(brightest(lbl.xrays)) > 1.0e-3)
+        w = (weight(NormalizeToUnity, brightest(lbl.xrays)) > 1.0e-3)
         (!w) && @warn "No sufficiently bright X-rays for $lbl."
         res && w
     end    
@@ -622,7 +629,7 @@ NeXLUncertainties.extract(
 
 _buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
-    Diagonal([unk.scale / ffs[i].scale for i in eachindex(ffs)])
+    Diagonal([unk.scale / ff.scale for ff in ffs])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
 function _computeResidual(
@@ -637,7 +644,7 @@ function _computeResidual(
     return res
 end
 
-# Internal: Computes the total peak, background and reference count based on the fit k-ratios
+# Internal: Computes the total peak (counts), background (counts) and reference count (c/nAs) based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference}, #
@@ -645,11 +652,11 @@ function _computecounts( #
 )::Dict{<:ReferenceLabel,NTuple{3,Float64}}
     res = Dict{ReferenceLabel,NTuple{3,Float64}}()
     for ff in ffs
-        su = sum(unk.data[ff.roi])
+        su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
         res[ff.label] = (
             su,
-            su - (value(kr, ff.label) * ff.scale / unk.scale) * sum(ff.charonly),
-            sum(ff.charonly)
+            su - value(kr, ff.label) * sco * ff.scale / unk.scale,
+            sco * ff.scale
         )
     end
     return res

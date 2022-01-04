@@ -222,7 +222,7 @@ function extent(xrayE::Float64, res::MnKaPlusICC, ampl::Float64)
 end
 
 extent(cxr::CharXRay, res::Resolution, ampl::Float64) =
-    extent(energy(cxr), res, min(0.999, ampl / weight(cxr)))
+    extent(energy(cxr), res, min(0.999, ampl / weight(NormalizeToUnity, cxr)))
 
 """
     Detector
@@ -248,7 +248,7 @@ abstract type Detector end
 The extent of an escape artifact is determined by the resolution of the detector at the energy of the escape peak.
 """
 extent(esc::EscapeArtifact, res::Resolution, ampl::Float64 = 0.01) =
-    extent(energy(esc), res, min(0.999, ampl / weight(esc.xray)))
+    extent(energy(esc), res, min(0.999, ampl / weight(NormalizeToUnity, esc.xray)))
 
 """
     extent(escape::ComptonArtifact, res::Resolution, ampl::Float64)::Tuple{2,Float64}
@@ -256,7 +256,7 @@ extent(esc::EscapeArtifact, res::Resolution, ampl::Float64 = 0.01) =
 The extent of a Compton artifact is determined by the resolution of the detector at the energy of the Compton peak.
 """
 extent(ca::ComptonArtifact, res::Resolution, ampl::Float64 = 1.0e-4) =
-    extent(energy(ca), res, min(0.999, ampl / weight(ca.xray)))
+    extent(energy(ca), res, min(0.999, ampl / weight(NormalizeToUnity, ca.xray)))
 
 """
     extent(sf::SpectrumFeature, det::Detector, ampl::Float64)::Tuple{Float64, Float64}
@@ -373,7 +373,7 @@ function extents( #
     # Note: extent(cxr,...) takes line weight into account
     es = map(
         cxr -> extent(cxr, det, ampl),
-        filter(cxr -> weight(cxr) > ampl, isvisible(cxrs, det)),
+        filter(cxr -> weight(NormalizeToUnity, cxr) > ampl, isvisible(cxrs, det)),
     )
     return length(es) > 0 ? filter(
         inrange,
@@ -400,7 +400,7 @@ function labeledextents(
     det::Detector,
     ampl::Float64,
 )::Vector{Tuple{Vector{T},UnitRange{Int}}} where {T<:SpectrumFeature}
-    fcxrs = filter(cxr -> weight(cxr) > ampl, isvisible(cxrs, det))
+    fcxrs = filter(cxr -> weight(NormalizeToUnity, cxr) > ampl, isvisible(cxrs, det))
     es = map(xr -> extent(xr, det, ampl), fcxrs) # CharXRay -> energy ranges
     le = collect(zip(fcxrs, map(ee -> channel(ee[1], det):channel(ee[2], det), es))) # Energy ranges to channel ranges
     sort!(le, lt = (x1, x2) -> isless(energy(x1[1]), energy(x2[1]))) # sort by x-ray energy

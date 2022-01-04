@@ -1,14 +1,16 @@
-using Documenter, NeXLSpectrum, Gadfly
+using Documenter, NeXLSpectrum, Gadfly, Colors, FixedPointNumbers
 
 weavedocs = ( "continuummodel", "errorbars", "K412fit", "K412quick", "XRFSpectra" )
 
-rebuildweave = !all(map(wd->isfile(joinpath("src", "$wd.md")), weavedocs))
+rebuildweave = !all(map(weavedocs) do name
+    isfile(joinpath(@__DIR__, "src", "$name.md"))
+end)
 
 if rebuildweave
-    map(name->rm(joinpath("src","$name.md")), filter(wd->isfile(joinpath("src","$name.md")),weavedocs))
+    map(name->rm(joinpath(@__DIR__, "src","$name.md")), filter(wd->isfile(joinpath(@__DIR__, "src","$name.md")),weavedocs))
     let curr=pwd()
         try
-            include(joinpath("..","weave","buildweave.jl"))
+            include(joinpath(@__DIR__, "..","weave","buildweave.jl"))
         finally
             cd(curr)
         end
@@ -25,7 +27,8 @@ pages = [
     "Fitting XRF Spectra" => "XRFspectra.md",
     "Lovely Error Bars" => "errorbars.md",
     "Modeling the Continuum" => "continuummodel.md",
-    "Methods" => "methods.md"
+    "Methods" => "methods.md",
+    "Precompilation" => "precompile.md"
  ]
 
 makedocs(

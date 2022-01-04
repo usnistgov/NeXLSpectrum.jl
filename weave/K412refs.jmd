@@ -1,7 +1,7 @@
-## Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection
+## [Quantifying K412 using NeXLSpectrum and NeXLMatrixCorrection](@id k412refs)
 
 This document demonstrates the high-level API for filter fitting spectra.  This API is less flexible than
-the low-level API discussed [here](K412fit.md).
+the low-level API discussed [here](@ref k412fits).
 
 #### Libraries
 Use the NeXLSpectrum to load, plot, fit and report the quantification of a set of K412 spectra.
