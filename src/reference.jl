@@ -4,17 +4,17 @@ A `FilterFitPacket` contains the data necessary to filter the unknown and to app
 If there are duplicate `FilteredReference` for an elemental ROI, the preference is for the first one.  This
 allows you to fill in unavailable "FilteredReference" elemental ROIs with more general ones.
 """
-struct FilterFitPacket{T<:Detector}
-    detector::T
-    filter::TopHatFilter
-    references::Vector{FilteredReference}
+struct FilterFitPacket{S<:Detector, T<:AbstractFloat}
+    detector::S
+    filter::TopHatFilter{T}
+    references::Vector{FilteredReference{T}}
 
-    function FilterFitPacket(det::T, filt::TopHatFilter, refs::Vector{FilteredReference}) where {T <: Detector}
+    function FilterFitPacket(det::S, filt::TopHatFilter{T}, refs::Vector{FilteredReference{T}})  where {S<:Detector, T<:AbstractFloat}
         # Only permit one FilteredReference for each type of label for a set of X-rays 
-        filtrefs = FilteredReference[]
+        filtrefs = FilteredReference{T}[]
         for ref in refs
             exists = false
-            for (i, fr) in enumerate(filtrefs)
+            for fr in filtrefs
                 # If a reference already exists of this type for these X-rays reassign it
                 if (typeof(fr.label) == typeof(ref.label))  && (fr.label.xrays==ref.label.xrays)
                     # filtrefs[i] = ref
@@ -26,7 +26,7 @@ struct FilterFitPacket{T<:Detector}
                 push!(filtrefs, ref)
             end
         end
-        new{T}(det, filt, filtrefs)
+        new{S,T}(det, filt, filtrefs)
     end
 end # struct
 
@@ -167,13 +167,14 @@ in the L-lines with a spectrum from pure Fe.
 """
 function references(
     refs::AbstractVector{ReferencePacket},
-    det::EDSDetector,
+    det::EDSDetector;
+    ftype::Type{<:AbstractFloat} = Float64
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
     # Build the top-hat filter for det
-    ff = buildfilter(det)
+    ff = buildfilter(ftype, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
         frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
@@ -182,14 +183,14 @@ function references(
     end
     return FilterFitPacket(det, ff, frefs)
 end
-references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(first(refs).spectrum, fwhm))
+references(refs::AbstractVector{ReferencePacket}, fwhm::Float64; ftype::Type{<:AbstractFloat}=Float64) =
+    references(refs, matching(first(refs).spectrum, fwhm), ftype=ftype)
 
-fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
-    fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
+fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
+    fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)
 
-fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
-    ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
+fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
+    ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references), specs)
 
 """
     fit_spectrum(spec::Spectrum, ffp::FilterFitPacket)::FilterFitResult

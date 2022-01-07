@@ -92,8 +92,8 @@ function glssvd(
 )::UncertainValues where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = cov_whitening(Matrix(cov))
-    #olssvd(w*y, w*a, 1.0, xLabels, tol)
-    return olspinv(w * y, w * x, 1.0, xLabels, tol)
+    #olssvd(w*y, w*a, one(N), xLabels, tol)
+    return olspinv(w * y, w * x, one(N), xLabels, tol)
 end
 
 """
@@ -110,7 +110,7 @@ function glschol(
 )::UncertainValues where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = inv(cholesky(cov).L)
-    return olspinv(w * y, w * x, 1.0, xLabels, tol)
+    return olspinv(w * y, w * x, one(N), xLabels, tol)
 end
 
 
@@ -126,8 +126,8 @@ function wlssvd(
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
 )::UncertainValues where {N<:AbstractFloat}
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return olssvd(w * y, w * x, 1.0, xLabels, tol)
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return olssvd(w * y, w * x, one(N), xLabels, tol)
 end
 
 """
@@ -142,8 +142,8 @@ function wlspinv(
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
 )::UncertainValues where {N<:AbstractFloat}
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return olspinv(w * y, w * a, 1.0, xLabels, tol)
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return olspinv(w * y, w * a, one(N), xLabels, tol)
 end
 
 """
@@ -172,8 +172,8 @@ function wlspinv2(
         end
         return UncertainValues(uvs.labels, uvs.values, cov)
     end
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return rescaleCovariances(olspinv(w * y, w * a, one(N), xLabels, tol), covscales)
 end
 
 """
@@ -182,9 +182,9 @@ end
 Peforms simple linear regression. Returns the `( slope, intercept, r, t )` of the unweighted best fit line through
 the data `x` and `y`.  ( y = slope*x + intercept ), r is the correlation coefficient and t is the t-statistic.
 """
-function simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+function simple_linear_regression(x::AbstractVector{T}, y::AbstractVector{T}) where { T <: Real }
     sx, sy, n = sum(x), sum(y), length(x)
     ssxy, ssxx, ssyy = (dot(x, y) - sx*sy/n), (dot(x, x) - sx*sx/n), (dot(y, y) - sy*sy/n)
     slope, r = ssxy / ssxx, ssxy/sqrt(ssxx*ssyy)
-    return ( slope, (sy - slope*sx)/n, r, r/sqrt((1.0-r^2)/(n-2)) )
+    return ( slope, (sy - slope*sx)/n, r, r/sqrt((one(T)-r^2)/(n-2)) )
 end

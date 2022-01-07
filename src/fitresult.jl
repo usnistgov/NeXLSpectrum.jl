@@ -216,13 +216,13 @@ Struct elements
 
 Use asa(DataFrame, ffr::FilterFitResult) to summarize in tabular form.
 """
-struct FilterFitResult <: FitResult
+struct FilterFitResult{T <: AbstractFloat} <: FitResult
     label::UnknownLabel
     kratios::UncertainValues
     roi::UnitRange{Int}
-    raw::Vector{Float64}
-    residual::Vector{Float64}
-    peakback::Dict{ReferenceLabel,NTuple{3,Float64}}
+    raw::Vector{T}
+    residual::Vector{T}
+    peakback::Dict{ReferenceLabel,NTuple{3,T}}
 end
 
 """
@@ -231,7 +231,7 @@ end
 A Spectrum containing the histogram representing the unknown spectrum
 minus the fitted characteristic peaks shapes times the best fit coefficient.
 """
-function residual(ffr::FilterFitResult)::Spectrum
+function residual(ffr::FilterFitResult)
     props = copy(properties(ffr.label.spectrum))
     props[:Name] = "Residual[$(props[:Name])]"
     return Spectrum(ffr.label.spectrum.energy, ffr.residual, props)
@@ -242,7 +242,7 @@ end
 
 Returns the original unknown spectrum.
 """
-spectrum(ffr::FilterFitResult)::Spectrum = ffr.label.spectrum
+spectrum(ffr::FilterFitResult) = ffr.label.spectrum
 
 """
     characteristiccounts(ffr::FiterFitResult, strip)
@@ -259,10 +259,10 @@ The peak-to-background ratio as determined from the raw and residual spectra int
 the fit region-of-interest and scaled to `backwidth` eV of continuum (nominally 10 eV).
 """
 function peaktobackground(
-    ffr::FilterFitResult,
+    ffr::FilterFitResult{T},
     klabel::ReferenceLabel,
-    backwidth::Float64 = 10.0,
-)::Float64
+    backwidth::T = convert(T, 10.0),
+) where { T <: AbstractFloat }
     unk = spectrum(unknown(ffr))
     peak, back, _ = ffr.peakback[klabel]
     return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) /
@@ -374,10 +374,10 @@ end
 Computes the difference between the best fit and the unknown filtered spectral data.
 """
 function filteredresidual(
-    fit::FilterFitResult,
+    fit::FilterFitResult{T},
     unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference},
-)::Vector{Float64}
+    ffs::AbstractVector{FilteredReference{T}},
+) where { T <: AbstractFloat }
     return unk.filtered - mapreduce(+, ffs) do ff
         (value(fit, ff.label) * (ff.scale / unk.scale)) * extract(ff, unk.ffroi)
     end
