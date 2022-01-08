@@ -17,11 +17,17 @@ end
 # _buildXXX - Helpers for fitcontiguousX functions...
 function _buildmodel(
     ffs::AbstractVector{FilteredReference{T}},
-    chs::UnitRange{Int},
+    roi::UnitRange{Int},
 ) where { T<: AbstractFloat }
-    x = Matrix{T}(undef, (length(chs), length(ffs)))
-    for i in eachindex(ffs)
-        x[:, i] = extract(ffs[i], chs)
+    x = zeros(T, length(roi), length(ffs))
+    data = zeros(T, length(roi))
+    for (i,fd) in enumerate(ffs)
+        #@assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
+        #@assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
+        fill!(data, zero(T))
+        data[fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1] .= fd.filtered
+        x[:, i] .= data
+        # @assert x[:, i] == extract(fd, roi)
     end
     return x
 end

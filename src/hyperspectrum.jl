@@ -62,7 +62,6 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
         end
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(arr, axes...)
-        # @show AxisArrays.axes(counts)
         new{eltype(arr), ndims(arr) - 1, ndims(arr)}(
             counts,
             energy,
@@ -368,32 +367,49 @@ Returns a HyperSpectrum with smaller or equal storage space to `hss` without los
 reduce the depth of hss.
 """
 function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP}
-    data = counts(hss)
-    (minval, maxval) = extrema(data)
-    maxi = mapreduce(max, CartesianIndices(hss)) do ci
-        something(findlast(c -> c != 0.0, data[:, ci]), 0)
-    end
-    data = maxi < depth(hss) ? data[1:maxi, axes(data)[2:end]...] : data
+    (minval, maxval) = extrema(hss.counts)
+    restype=T
     if T isa Int16 || T isa Int32 || T isa Int64
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
             if minval >= typemin(newtype) && maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
+                restype=newtype
+                break
             end
         end
     elseif T isa UInt16 || T isa UInt32 || T isa UInt64
         for newtype in filter(ty -> sizeof(T) > sizeof(ty), (UInt8, UInt16, UInt32))
             if maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
+                restype=newtype
+                break
             end
         end
     elseif T isa Float64
         if sizeof(T) < sizeof(Float32) &&
            minval >= typemin(Float32) &&
            maxval <= typemax(Float32)
-            return HyperSpectrum(hss.energy, copy(hss.properties), Float32.(data), livetime=hss.livetime)
+           restype=Float32
         end
     end
-    return maxi < depth(hss) ? HyperSpectrum(hss.energy, copy(hss.properties), data, livetime=hss.livetime) : hss
+    convert_data(restype, hss)
+end
+
+"""
+    convert_data(S::Type{<:Real}, hss::HyperSpectrum)
+
+Converts the counts data type to S.  Also trims any high energy channels that
+are entirely filled with zeros.
+"""
+function convert_data(S::Type{<:Real}, hss::HyperSpectrum)
+    data = counts(hss)
+    maxi = size(data,1)
+   for i in size(data,1):-1:1
+        if !all((==)(zero(eltype(data))), @view data[i, Base.axes(data)[2:end]...])
+            maxi = i
+            break
+        end
+    end
+    trdata = maxi < size(data,1) ? data[1:maxi, Base.axes(data)[2:end]...] : data
+    return HyperSpectrum(hss.energy, copy(hss.properties), S.(trdata), livetime=hss.livetime)
 end
 
 """

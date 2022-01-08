@@ -3,7 +3,6 @@ using NeXLSpectrum
 using Statistics
 using LinearAlgebra
 using DataFrames
-using BenchmarkTools
 
 @testset "Filter Fitting" begin
     @testset "Filter" begin
@@ -29,6 +28,8 @@ using BenchmarkTools
             NeXLSpectrum.filterdata(filt, r)[r-1] == NeXLSpectrum.filterdata(filt, r)[r+1]
             for r = 2:(size(filt)[1]-1)
         )
+        # Check the old and new ways are equivalent
+        @test NeXLSpectrum.filterdata(filt, 1:size(filt)[1]) == NeXLSpectrum.filterdata(filt)
     end
 
     @testset "LLSQ_K412_1" begin

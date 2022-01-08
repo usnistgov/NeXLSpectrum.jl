@@ -2,6 +2,7 @@ using Test
 using NeXLSpectrum
 using DataFrames
 using Statistics
+using DataDeps
 
 # Get the path of the rplraw dataset, either newly created or previously generated.
 # this should be something like `~/.julia/datadep/map[15]Artifact`
@@ -146,6 +147,10 @@ end
         132.0,
     )
     res = fit_spectrum(hs, ffp, mode = :Fast)
+    # @info "QQ - 64-bit"
+    # res = @time fit_spectrum(hs, ffp, mode = :Fast)
+
+
     @test res isa Vector{KRatios}
     # Test if :Fast quant equivalent to :Full quant for a couple of pixels
     res12_23 = fit_spectrum(hs[12, 23], ffp)
@@ -171,6 +176,114 @@ end
             end
         end
     end
+
+    vq = VectorQuant(ffp)
+    # Single spectrum by VectorQuant
+    res12_23p = fit_spectrum(hs[12, 23], vq)
+    for krs in res
+        kr1 = krs[12, 23]
+        for kr2 in kratios(res12_23p)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    res60_29p = fit_spectrum(hs[60, 29], vq)
+    for krs in res
+        kr1 = krs[60, 29]
+        for kr2 in kratios(res60_29)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
+
+    raw = nothing
+    GC.gc()
+end
+
+
+@testset "QQHyperspec - 32-bit" begin
+    hs = HyperSpectrum(
+        LinearEnergyScale(0.0, 10.0),
+        Dict{Symbol,Any}(
+            :LiveTime => 0.01,
+            :BeamEnergy => 20.0e3,
+            :ProbeCurrent => 1.0,
+            :Name => "Map[15]",
+        ),
+        readrplraw(joinpath(rrpath, "map[15]")),
+        fov = (0.128, 0.128)
+    )
+    ffp = references(
+        [
+            reference(n"C", joinpath(rrpath, "standards", "C std.msa"), mat"C"),
+            reference(n"Fe", joinpath(rrpath, "standards", "Fe std.msa"), mat"Fe"),
+            reference(n"S", joinpath(rrpath, "standards", "FeS2 std.msa"), mat"FeS2"),
+            reference(n"O", joinpath(rrpath, "standards", "MgO std.msa"), mat"MgO"),
+            reference(n"Si", joinpath(rrpath, "standards", "Si std.msa"), mat"Si"),
+        ],
+        132.0, 
+        ftype=Float32 # Only difference with above...
+    )
+    res = fit_spectrum(hs, ffp, mode = :Fast)
+    # @info "QQ - 32-bit"
+    # res = @time fit_spectrum(hs, ffp, mode = :Fast)
+
+    @test res isa Vector{KRatios}
+    # Test if :Fast quant equivalent to :Full quant for a couple of pixels
+
+    matches(kr1::KRatio, kr2::KRatio) =
+        kr1.element == kr2.element && brightest(kr1.xrays) == brightest(kr2.xrays)
+
+    res12_23 = fit_spectrum(hs[12, 23], ffp)
+    for krs in res
+        kr1 = krs[12, 23]
+        for kr2 in kratios(res12_23)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    res60_29 = fit_spectrum(hs[60, 29], ffp)
+    for krs in res
+        kr1 = krs[60, 29]
+        for kr2 in kratios(res60_29)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    vq = VectorQuant(ffp)
+    # Single spectrum by VectorQuant
+    res12_23p = fit_spectrum(hs[12, 23], vq)
+    for krs in res
+        kr1 = krs[12, 23]
+        for kr2 in kratios(res12_23p)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    res60_29p = fit_spectrum(hs[60, 29], vq)
+    for krs in res
+        kr1 = krs[60, 29]
+        for kr2 in kratios(res60_29)
+            if matches(kr1, kr2)
+                @test equivalent(kr1.kratio, kr2.kratio)
+            end
+        end
+    end
+
+    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
 
     raw = nothing
     GC.gc()

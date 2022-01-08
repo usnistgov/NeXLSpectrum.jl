@@ -740,7 +740,7 @@ function estimatebackground(
     channel::Int,
     width::Int = 5,
     order::Int = 2,
-)::ImmutablePolynomial where { T<: AbstractFloat }
+) where { T<: AbstractFloat }
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
         fr = fit(
