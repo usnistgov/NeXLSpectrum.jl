@@ -216,20 +216,19 @@ Selecting a mode:
   interfering elements) are included in the fit. Unfortunately, :Intermediate and :Full slow down when many elements
   are fit - O(n(elements)²).
 
-The following timing on a 512 x 512 x 2048 hyperspectrum fitting 21 elements with 33 distinct ROIs on a fast laptop
-with 64 GiB memory give a relative feel for the speed of each algorithm.  Yes, :Fast is approximately 100x faster than
-:Intermediate and used almost 80x less memory.  (64-bit references, 32-bit references use about 1/2 the memory and
-take about 2/3 the time.)
+The following timing on a 512 x 512 x 2048 hyperspectrum fitting 21 elements with 33 distinct ROIs on a fast 6-core 
+laptop with 16 GiB memory give a relative feel for the speed of each algorithm.  Yes, :Fast is approximately 30 × 
+faster than :Intermediate and used almost 80x less memory.  (64-bit references, 32-bit references use about 1/2 
+the memory and take about 4/5 the time.)
 
-| mode=         | Threads  |Run time (s)   | Allocations  | Memory (GiB) | GC time  |
-|---------------|----------|---------------|--------------|--------------|----------|
-| :Fast         | 4        | 13.8          | 2.11 M       | 4.72         | 4.2%     |
-| :Intermediate | 4        | 1921.2        | 13.11 M      | 364.35       | 57.2%    |
-| :Full         | 4        | 2641.6        | 6.16 G       | 860.6        | 54.7%    |
-| :Fast         | 1        |           |  M       |          |      |
-| :Intermediate | 1        |         |  M      |        |     |
-| :Full         | 1        |         |  G       |         |     |
-
+| mode=         | Threads  |Run time (s)   | Allocations  | Allocated (GiB) | GC time  |
+|---------------|----------|---------------|--------------|-----------------|----------|
+| :Fast         | 6        | 11.4          | 2.11 M       | 4.72            | 3.0%     |
+| :Intermediate | 6        | 342.7         | 13.11 M      | 364.4           | 4.2%     |
+| :Full         | 6        | 574.6         | 6.2 G        | 862.9           | 5.5%     |
+| :Fast         | 1        | 25.5          | 2.1 M        | 4.72            | 1.8%     |
+| :Intermediate | 1        | 1064.6        | 13.1 M       | 364.4           | 0.9%     |
+| :Full         | 1        | 2186.2        | 6.2 G        | 862.1           | 2.8%     |
 """
 function fit_spectrum(
     hs::HyperSpectrum,
