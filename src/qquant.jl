@@ -106,7 +106,7 @@ function fit_spectrum(
     vecs = vq.vectors[:, 1:depth(hs)]
     foreach(i->vecs[i,:]/=vq.references[i].scale, eachindex(vq.references))
     data = T.(counts(hs))  # One large allocation over many smaller????
-    # In my testing, ThreadsX produces about a 2.7x speedup
+    # In my testing, ThreadsX produces about a 2.7x speedup for 4 threads on 4 cores
     ThreadsX.foreach(CartesianIndices(hs)) do ci
         krs[:, ci] .= (vecs * view(data, :, ci)) / T(dose(hs, ci))
     end

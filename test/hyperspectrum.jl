@@ -7,6 +7,7 @@ using DataDeps
 # Get the path of the rplraw dataset, either newly created or previously generated.
 # this should be something like `~/.julia/datadep/map[15]Artifact`
 rrpath = datadep"map[15]Artifact"
+@info "Loading hyperspectral data from $rrpath."
 
 @testset "HyperSpectrum" begin
     raw = readrplraw(joinpath(rrpath, "map[15]"))
@@ -166,6 +167,12 @@ end
             end
         end
     end
+
+    nkrs = normalizek(krs)
+    @test isapprox(sum(p->p[13,17].kratio, nkrs), 1.0, atol=1.0e-5)  
+    @test isapprox(sum(p->p[11,19].kratio, nkrs), 1.0, atol=1.0e-5)  
+    @test isapprox(sum(p->p[19,11].kratio, nkrs), 1.0, atol=1.0e-5)  
+    @test isapprox(sum(p->p[17,13].kratio, nkrs), 1.0, atol=1.0e-5)  
 
     res60_29 = fit_spectrum(hs[60, 29], ffp)
     for krs in res

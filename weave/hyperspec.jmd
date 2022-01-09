@@ -44,7 +44,7 @@ Select a sub-set of the k-ratios - one per element.  normalize
 the k-ratios.
 ```julia
 bestks = optimizeks(SimpleKRatioOptimizer(2.0), res)
-best = NeXLCore.normalize(bestks);
+best = normalizek(bestks);
 ```
 
 Next, we will create images to represent the k-ratio data. We will both

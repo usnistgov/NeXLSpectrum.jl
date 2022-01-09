@@ -96,8 +96,8 @@ function NeXLUncertainties.compute(
     return (LabeledValues(outputs, results), jac)
 end
 
-function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{3,Float64}}, sm::StandardizeModel)::Dict{ReferenceLabel,NTuple{3,Float64}}
-    res = Dict{ReferenceLabel,NTuple{3,Float64}}()
+function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{3,T}}, sm::StandardizeModel) where { T<: AbstractFloat }
+    res = Dict{ReferenceLabel,NTuple{3,T}}()
     for (meas, pb) in pbs
         i = findfirst(std->matches(meas, std), sm.standards)
         if !isnothing(i)
@@ -112,17 +112,15 @@ function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{3,Float64}}, sm::S
     return res
 end
 
-
-
 """
-    NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, material::Material, els=elms(material))::FilterFitResult
-    NeXLCore.standardize(ffrs::Vector{FilterFitResult}, standard::FilterFitResult, material::Material, els=elms(material))::Vector{FilterFitResult}
-    NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRatio})::FilterFitResult
-    NeXLCore.standardize(ffrs::Vector{FilterFitResult}, standards::AbstractArray{KRatio})::FilterFitResult
+    NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult{T}, material::Material, els=elms(material))::FilterFitResult{T}
+    NeXLCore.standardize(ffrs::Vector{FilterFitResult{T}}, standard::FilterFitResult{T}, material::Material, els=elms(material))::Vector{FilterFitResult{T}}
+    NeXLCore.standardize(ffr::FilterFitResult{T}, standards::AbstractArray{KRatio})::FilterFitResult{T}
+    NeXLCore.standardize(ffrs::Vector{FilterFitResult{T}}, standards::AbstractArray{KRatio})::Vector{FilterFitResult{T}}
 
 Apply the standard `KRatio`s to the `FilterFitResult` producing a re-standardized `FilterFitResult`.
 """
-function NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, material::Material, els=elms(material))::FilterFitResult
+function NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult{T}, material::Material, els=elms(material)) where { T<: AbstractFloat }
     stds = filter(labels(standard.kratios)) do lbl
         (lbl isa CharXRayLabel) && (element(lbl) in els)
     end
@@ -131,7 +129,7 @@ function NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, m
     # Problem here with equivalent CharXRayLabel(s) for unknown and standard...
     inp = cat(ffr.kratios, rext)
     stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(rext)))
-    return FilterFitResult(
+    return FilterFitResult{T}(
             ffr.label, # Same
             stdize(inp), # remapped
             ffr.roi, # Same
@@ -141,13 +139,13 @@ function NeXLCore.standardize(ffr::FilterFitResult, standard::FilterFitResult, m
         )
 end
 
-function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult}, standard::FilterFitResult, material::Material, els=elms(material))::Vector{FilterFitResult}
+function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult{T}}, standard::FilterFitResult{T}, material::Material, els=elms(material)) where { T<: AbstractFloat }
     map(ffrs) do ffr
         standardize(ffr, standard, material, els)
     end
 end
 
-function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRatio})::FilterFitResult
+function NeXLCore.standardize(ffr::FilterFitResult{T}, standards::AbstractArray{KRatio}) where { T<: AbstractFloat }
     @assert all(std->isstandard(std), standards) "One or more required property is missing from a standard (for details, see the above warnings.)" 
     stdis = map(cxrl->findfirst(std->matches(cxrl, std), standards), labels(ffr.kratios))
     stds = uvs(map(filter(i->!isnothing(i), stdis)) do i
@@ -157,7 +155,7 @@ function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRa
     return if length(stds)>0
         stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(stds)))
         inp = cat(ffr.kratios, stds)
-        FilterFitResult(
+        FilterFitResult{T}(
             ffr.label,
             stdize(inp),
             ffr.roi,
@@ -171,7 +169,7 @@ function NeXLCore.standardize(ffr::FilterFitResult, standards::AbstractArray{KRa
     end
 end
 
-function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult}, standards::AbstractArray{KRatio})::Vector{FilterFitResult}
+function NeXLCore.standardize(ffrs::AbstractVector{FilterFitResult{T}}, standards::AbstractArray{KRatio}) where { T<: AbstractFloat }
     map(ffrs) do ffr
         standardize(ffr, standards)
     end
