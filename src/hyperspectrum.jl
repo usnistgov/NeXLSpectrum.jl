@@ -364,52 +364,52 @@ counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex) where {T<:Real, N, NP} 
 
 Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing or truncating any counts 
 (note: AbstractFloat compresses to Float32 with loss of precision).  Can change the storage type and/or 
-reduce the depth of hss.
+reduce the depth of hss.  If there is nothing that can be done to reduce the size of `hss` then `compress(hss)===hss`.
+
+Example:
+
+     hs = compress(hs) # Replace `hs` with a version that uses less memory (if possible).
 """
-function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP}
-    (minval, maxval) = extrema(hss.counts)
+function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Integer, N, NP}
+    (minval, maxval) = extrema(counts(hss))
+    tyopts = minval < 0 ? (Int8, Int16, Int32, Int64) : (UInt8, UInt16, UInt32, UInt64)
+    restype = tyopts[findfirst(tyopts) do ty
+        minval >= typemin(ty) && maxval <= typemax(ty)
+    end]
+    @assert sizeof(restype) <= sizeof(T) "$restype"
+    return compact(restype, hss)
+end
+function compress(hss::HyperSpectrum{T, N, NP}) where {T<:AbstractFloat, N, NP}
+    (minval, maxval) = extrema(counts(hss))
     restype=T
-    if T isa Int16 || T isa Int32 || T isa Int64
-        for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
-            if minval >= typemin(newtype) && maxval <= typemax(newtype)
-                restype=newtype
-                break
-            end
-        end
-    elseif T isa UInt16 || T isa UInt32 || T isa UInt64
-        for newtype in filter(ty -> sizeof(T) > sizeof(ty), (UInt8, UInt16, UInt32))
-            if maxval <= typemax(newtype)
-                restype=newtype
-                break
-            end
-        end
-    elseif T isa Float64
-        if sizeof(T) < sizeof(Float32) &&
-           minval >= typemin(Float32) &&
-           maxval <= typemax(Float32)
-           restype=Float32
-        end
+    if sizeof(T) < sizeof(Float32) &&
+        minval >= typemin(Float32) &&
+        maxval <= typemax(Float32)
+        restype=Float32
     end
-    convert_data(restype, hss)
+    return compact(restype, hss)
 end
 
 """
-    convert_data(S::Type{<:Real}, hss::HyperSpectrum)
+    compact(S::Type{<:Real}, hss::HyperSpectrum)
 
-Converts the counts data type to S.  Also trims any high energy channels that
-are entirely filled with zeros.
+Converts the counts data type to S.  Also eliminates any channel planes on the end that
+are entirely less than or equal to zero.
 """
-function convert_data(S::Type{<:Real}, hss::HyperSpectrum)
+function compact(S::Type{<:Real}, hss::HyperSpectrum)
     data = counts(hss)
-    maxi = size(data,1)
-   for i in size(data,1):-1:1
-        if !all((==)(zero(eltype(data))), @view data[i, Base.axes(data)[2:end]...])
-            maxi = i
-            break
-        end
+    itr = Iterators.reverse(Base.axes(data,1))
+    maxi = findfirst(itr) do ch # First non-negative channel
+        !all((<=)(zero(eltype(data))), @view data[ch, Base.axes(data)[2:end]...])
     end
-    trdata = maxi < size(data,1) ? data[1:maxi, Base.axes(data)[2:end]...] : data
-    return HyperSpectrum(hss.energy, copy(hss.properties), S.(trdata), livetime=hss.livetime)
+    @assert !isnothing(maxi) "There are no non-negative counts in this hyperspectrum."
+    maxch = itr[maxi]
+    if S != eltype(data) || maxch < size(data,1)
+        sdata = maxch == size(data,1) ? S.(data) : S.(data[1:maxch, Base.axes(data)[2:end]...])
+        return HyperSpectrum(hss.energy, copy(hss.properties), sdata, livetime=hss.livetime)
+    else
+        return hss
+    end
 end
 
 """
