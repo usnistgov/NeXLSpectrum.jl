@@ -1,8 +1,11 @@
 """
 Represents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
-A `FilterFitPacket` contains the data necessary to filter the unknown and to apply pre-filtered references.
-If there are duplicate `FilteredReference` for an elemental ROI, the preference is for the first one.  This
-allows you to fill in unavailable "FilteredReference" elemental ROIs with more general ones.
+A `FilterFitPacket{S<:Detector, T<:AbstractFloat}` contains the data necessary to filter the unknown and to 
+apply pre-filtered references.  The type `T <: AbstractFloat` allows you to specify the bit-depth used to
+perform subsequent calculations using this `FilterFitPacket`.  `Float32` uses less memory and is a little
+faster than `Float64`.  If there are duplicate `FilteredReference` for an elemental ROI, the preference 
+is for the first one.  This allows you to fill in unavailable "FilteredReference" elemental ROIs with more 
+general ones.
 """
 struct FilterFitPacket{S<:Detector, T<:AbstractFloat}
     detector::S
