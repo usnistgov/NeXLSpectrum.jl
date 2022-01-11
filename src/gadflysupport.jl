@@ -260,7 +260,9 @@ function Gadfly.plot(
     end
     autoklms && append!(klms, mapreduce(s -> elms(s, true), union!, specs))
     if length(klms) > 0
-        tr(elm::Element) = characteristic(elm, alltransitions, 1.0e-3, maxE0)
+        tr(elm::Element) = filter(characteristic(elm, alltransitions, 1.0e-3, maxE0)) do cxr
+            energy(cxr) > min(200.0, maxE0/25)
+        end
         tr(cxr::CharXRay) = [cxr]
         pklms = mapreduce(klm -> tr(klm), append!, klms)
         if length(pklms) > 0

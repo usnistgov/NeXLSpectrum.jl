@@ -32,11 +32,11 @@ function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Context)
 end
 
 """
-    kill_temporaries(path)
+    kill_weave_temporaries(path)
 
-Kills temporary files associated with weave...
+Kills temporary directories and files associated with weave...
 """
-function kill_temporaries(path::AbstractString)
+function kill_weave_temporaries(path::AbstractString)
     for fn in filter(f->!isnothing(match(r"^jl_[a-zA-Z0-9]+$", f)), readdir(path))
         rm(joinpath(path,fn);force=true, recursive=true)
     end

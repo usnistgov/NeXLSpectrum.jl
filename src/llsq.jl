@@ -12,7 +12,7 @@ function olssvd(
     sigma::N,
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10)
-)::UncertainValues where {N<:AbstractFloat}
+) where {N<:AbstractFloat}
     f = svd(a)
     mins = tol * maximum(f.S)
     fs = [s > mins ? one(N) / s : zero(N) for s in f.S]
@@ -33,8 +33,8 @@ function olspinv(
     a::AbstractMatrix{N},
     sigma::N,
     xLabels::Vector{<:Label},
-    tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+    ::N = convert(N, 1.0e-10),
+) where {N<:AbstractFloat}
     genInv = pinv(a, rtol = 1.0e-6)
     return uvs(xLabels, genInv * y, sigma * genInv * transpose(genInv))
 end
@@ -53,8 +53,8 @@ function glspinv(
     x::AbstractMatrix{N},
     v::AbstractMatrix{N},
     xLabels::Vector{<:Label},
-    tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+    ::N = convert(N, 1.0e-10),
+) where {N<:AbstractFloat}
     txiv = transpose(x) * pinv(v)
     yp, ixp = txiv * y, pinv(txiv * x)
     return uvs(xLabels, ixp * yp, ixp)
@@ -70,8 +70,8 @@ function glsinv(
     x::AbstractMatrix{N},
     v::AbstractMatrix{N},
     xLabels::Vector{<:Label},
-    tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+    ::N = convert(N, 1.0e-10),
+) where {N<:AbstractFloat}
     txiv = transpose(x) * inv(v)
     yp, ixp = txiv * y, inv(txiv * x)
     return uvs(xLabels, ixp * yp, ixp)
@@ -89,11 +89,11 @@ function glssvd(
     cov::AbstractMatrix{N},
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+) where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = cov_whitening(Matrix(cov))
-    #olssvd(w*y, w*a, 1.0, xLabels, tol)
-    return olspinv(w * y, w * x, 1.0, xLabels, tol)
+    #olssvd(w*y, w*a, one(N), xLabels, tol)
+    return olspinv(w * y, w * x, one(N), xLabels, tol)
 end
 
 """
@@ -107,10 +107,10 @@ function glschol(
     cov::AbstractMatrix{N},
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+) where {N<:AbstractFloat}
     checkcovariance!(cov)
     w = inv(cholesky(cov).L)
-    return olspinv(w * y, w * x, 1.0, xLabels, tol)
+    return olspinv(w * y, w * x, one(N), xLabels, tol)
 end
 
 
@@ -125,9 +125,9 @@ function wlssvd(
     cov::AbstractVector{N},
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return olssvd(w * y, w * x, 1.0, xLabels, tol)
+) where {N<:AbstractFloat}
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return olssvd(w * y, w * x, one(N), xLabels, tol)
 end
 
 """
@@ -141,9 +141,9 @@ function wlspinv(
     cov::AbstractVector{N},
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return olspinv(w * y, w * a, 1.0, xLabels, tol)
+) where {N<:AbstractFloat}
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return olspinv(w * y, w * a, one(N), xLabels, tol)
 end
 
 """
@@ -159,7 +159,7 @@ function wlspinv2(
     covscales::AbstractVector{N},
     xLabels::Vector{<:Label},
     tol::N = convert(N, 1.0e-10),
-)::UncertainValues where {N<:AbstractFloat}
+) where {N<:AbstractFloat}
     function rescaleCovariances(
         uvs::UncertainValues,
         covscales::AbstractVector{N},
@@ -172,8 +172,8 @@ function wlspinv2(
         end
         return UncertainValues(uvs.labels, uvs.values, cov)
     end
-    w = Diagonal([sqrt(1.0 / cv) for cv in cov])
-    return rescaleCovariances(olspinv(w * y, w * a, 1.0, xLabels, tol), covscales)
+    w = Diagonal([sqrt(one(N) / cv) for cv in cov])
+    return rescaleCovariances(olspinv(w * y, w * a, one(N), xLabels, tol), covscales)
 end
 
 """

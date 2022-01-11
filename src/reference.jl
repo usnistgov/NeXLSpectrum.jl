@@ -1,20 +1,23 @@
 """
 Represents the processed spectral data necessary to efficiently filter-fit one or more unknown spectra.
-A `FilterFitPacket` contains the data necessary to filter the unknown and to apply pre-filtered references.
-If there are duplicate `FilteredReference` for an elemental ROI, the preference is for the first one.  This
-allows you to fill in unavailable "FilteredReference" elemental ROIs with more general ones.
+A `FilterFitPacket{S<:Detector, T<:AbstractFloat}` contains the data necessary to filter the unknown and to 
+apply pre-filtered references.  The type `T <: AbstractFloat` allows you to specify the bit-depth used to
+perform subsequent calculations using this `FilterFitPacket`.  `Float32` uses less memory and is a little
+faster than `Float64`.  If there are duplicate `FilteredReference` for an elemental ROI, the preference 
+is for the first one.  This allows you to fill in unavailable "FilteredReference" elemental ROIs with more 
+general ones.
 """
-struct FilterFitPacket{T<:Detector}
-    detector::T
-    filter::TopHatFilter
-    references::Vector{FilteredReference}
+struct FilterFitPacket{S<:Detector, T<:AbstractFloat}
+    detector::S
+    filter::TopHatFilter{T}
+    references::Vector{FilteredReference{T}}
 
-    function FilterFitPacket(det::T, filt::TopHatFilter, refs::Vector{FilteredReference}) where {T <: Detector}
+    function FilterFitPacket(det::S, filt::TopHatFilter{T}, refs::Vector{FilteredReference{T}})  where {S<:Detector, T<:AbstractFloat}
         # Only permit one FilteredReference for each type of label for a set of X-rays 
-        filtrefs = FilteredReference[]
+        filtrefs = FilteredReference{T}[]
         for ref in refs
             exists = false
-            for (i, fr) in enumerate(filtrefs)
+            for fr in filtrefs
                 # If a reference already exists of this type for these X-rays reassign it
                 if (typeof(fr.label) == typeof(ref.label))  && (fr.label.xrays==ref.label.xrays)
                     # filtrefs[i] = ref
@@ -26,7 +29,7 @@ struct FilterFitPacket{T<:Detector}
                 push!(filtrefs, ref)
             end
         end
-        new{T}(det, filt, filtrefs)
+        new{S,T}(det, filt, filtrefs)
     end
 end # struct
 
@@ -42,16 +45,23 @@ Summarize the `FilteredReference` structs within a `FilterFitPacket` as a `DataF
 """
 function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
     function p2b(fref)
-        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
+        # charonly over roi, data over ffroi
+        croi = max(1,first(fref.roi)-first(fref.ffroi)+1):min(length(fref.data), last(fref.roi)-first(fref.ffroi)+1)
+        @assert length(croi)==length(fref.roi)
         sum(fref.charonly) / (sum(fref.data[croi])-sum(fref.charonly))
     end 
     function s2n(fref)
-        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
+        croi = max(1,first(fref.roi)-first(fref.ffroi)+1):min(length(fref.data), last(fref.roi)-first(fref.ffroi)+1)
+        @assert length(croi)==length(fref.roi)
         sum(fref.charonly) / sqrt(sum(fref.data[croi])-sum(fref.charonly))
     end 
     DataFrame(
-        :Lines => [ fr.label.xrays for fr in ffp.references],
+        :Spectrum => [ name(fr.label.spectrum) for fr in ffp.references ],
+        Symbol("Beam Energy (keV)") => [ get(fr.label.spectrum, :BeamEnergy, missing)/1000.0 for fr in ffp.references ],
+        Symbol("Probe Current (nA)") => [ get(fr.label.spectrum, :ProbeCurrent, missing) for fr in ffp.references ],
+        Symbol("Live Time (s)") => [ get(fr.label.spectrum, :LiveTime, missing) for fr in ffp.references ],
         :Material => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
+        :Lines => [ fr.label.xrays for fr in ffp.references],
         :ROI => [ fr.roi for fr in ffp.references],
         # :FullROI => [ fr.ffroi for fr in ffp.references],
         Symbol("P-to-B") => p2b.(ffp.references), 
@@ -167,13 +177,14 @@ in the L-lines with a spectrum from pure Fe.
 """
 function references(
     refs::AbstractVector{ReferencePacket},
-    det::EDSDetector,
+    det::EDSDetector;
+    ftype::Type{<:AbstractFloat} = Float64
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
     # Build the top-hat filter for det
-    ff = buildfilter(det)
+    ff = buildfilter(ftype, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
         frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
@@ -182,14 +193,14 @@ function references(
     end
     return FilterFitPacket(det, ff, frefs)
 end
-references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket =
-    references(refs, matching(first(refs).spectrum, fwhm))
+references(refs::AbstractVector{ReferencePacket}, fwhm::Float64; ftype::Type{<:AbstractFloat}=Float64) =
+    references(refs, matching(first(refs).spectrum, fwhm), ftype=ftype)
 
-fit_spectrum(spec::Spectrum, ffp::FilterFitPacket) =
-    fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references)
+fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
+    fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)
 
-fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket) =
-    ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW, spec, ffp.filter, ffp.references), specs)
+fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
+    ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references), specs)
 
 """
     fit_spectrum(spec::Spectrum, ffp::FilterFitPacket)::FilterFitResult
@@ -215,81 +226,113 @@ Selecting a mode:
   interfering elements) are included in the fit. Unfortunately, :Intermediate and :Full slow down when many elements
   are fit - O(n(elements)²).
 
-The following timing on a 512 x 512 x 2048 hyperspectrum fitting 15 elements with 25 distinct ROIs on a fast laptop
-with 64 GiB memory give a relative feel for the speed of each algorithm.  Yes, :Fast is approximately 20x faster than
-:Intermediate and used almost 100x less memory.  (Single thread timings)
+The following timing on a 512 x 512 x 2048 hyperspectrum fitting 21 elements with 33 distinct ROIs on a fast 6-core 
+laptop with 16 GiB memory give a relative feel for the speed of each algorithm.  Yes, :Fast is approximately 30 × 
+faster than :Intermediate and used almost 80x less memory.  (64-bit references, 32-bit references use about 1/2 
+the memory and take about 4/5 the time.)
 
-| mode          | Run time (s)   | Allocations  | Memory (GiB) | GC time  |
-|---------------|----------------|--------------|--------------|----------|
-| :Fast         | 44.8           | 3.95 M       | 5.72         | 4.2%     |
-| :Intermediate | 1305.1         | 24.83 M      | 523.7        | 2.7%     |
-| :Full         | 2056           | 2.7 G        | 786.1        | 4.2%     |
+| mode=         | Threads  |Run time (s)   | Allocations  | Allocated (GiB) | GC time  |
+|---------------|----------|---------------|--------------|-----------------|----------|
+| :Fast         | 6        | 11.4          | 2.11 M       | 4.72            | 3.0%     |
+| :Intermediate | 6        | 342.7         | 13.11 M      | 364.4           | 4.2%     |
+| :Full         | 6        | 574.6         | 6.2 G        | 862.9           | 5.5%     |
+| :Fast         | 1        | 25.5          | 2.1 M        | 4.72            | 1.8%     |
+| :Intermediate | 1        | 1064.6        | 13.1 M       | 364.4           | 0.9%     |
+| :Full         | 1        | 2186.2        | 6.2 G        | 862.1           | 2.8%     |
 """
 function fit_spectrum(
     hs::HyperSpectrum,
-    ffp::FilterFitPacket;
+    ffp::FilterFitPacket{S, T};
     mode::Symbol = :Fast,
-    zero = x -> max(0.0, x),
-    sigma = 0.0
-)::Array{KRatios}
+    zero = x -> max(Base.zero(T), x),
+    sigma = Base.zero(T)
+)::Array{KRatios} where { S <: Detector, T <: AbstractFloat }
+    @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
+    @assert (mode==:Fast) || (mode==:Intermediate) || (mode==:Full) "The mode argument must be :Fast, :Intermediate or :Full."
+    if mode == :Fast
+        vq = VectorQuant(ffp.references, ffp.filter)
+        return fit_spectrum(hs, vq, zero)
+    elseif mode == :Intermediate
+        return fit_spectrum_int(hs, ffp, zero)
+    elseif mode == :Full
+        return fit_spectrum_full(hs, ffp, sigma)
+    end
+    # Should never get here...
+    return  Array{KRatio}[]
+end
+
+function fit_spectrum_int(
+    hs::HyperSpectrum,
+    ffp::FilterFitPacket{S, T},
+    zero::Function
+)::Array{KRatios} where { S <: Detector, T <: AbstractFloat }
     unklabel = UnknownLabel(hs)
-     function _tophatfilterhs(unklabel, data, thf, scale) 
-        @assert length(data) <= length(thf) "The reference spectra have fewer channels than the hyperspectrum data."
-        filtered = Float64[filtereddatum(thf, data, i) for i in eachindex(data)]
-        dp = Float64[max(x, 1.0) for x in data] # To ensure covariance isn't zero or infinite precision
-        covar = Float64[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
-        FilteredUnknownW(unklabel, scale, eachindex(data), data, filtered, covar)
+    function _tophatfilterhs(unklabel, data, thf, scale) 
+        @assert length(data) <= length(thf) "The reference spectra must have more channels than the hyperspectrum data."
+        filtered = [filtereddatum(thf, data, i) for i in eachindex(data)]
+        dp = [max(x, one(T)) for x in data] # To ensure covariance isn't zero or infinite precision
+        covar = [filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+        FilteredUnknownW{T}(unklabel, scale, 1:length(data), data, filtered, covar)
     end
-    function fitcontiguousx(unk, ffs, chs)
-        _buildscale(unk, ffs) * pinv(_buildmodel(ffs, chs), rtol = 1.0e-6) * extract(unk, chs)
-    end
+    fitcontiguousx(unk, ffs, chs) = #
+        _buildscale(unk, ffs) * pinv(_buildmodel(ffs, chs), rtol = convert(T, 1.0e-6)) * extract(unk,chs)
     function _filterfitx(unk, ffs, fitrois) 
-        mapreduce(append!, fitrois) do fr
+        Iterators.flatten(map(fitrois) do fr
             fitcontiguousx(
                 unk,
                 filter(ff -> length(intersect(fr, ff.ffroi)) > 0, ffs),
                 fr,
             )
-        end
+        end)
     end
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
-    if mode == :Fast
-        vq = VectorQuant(ffp.references, ffp.filter)
-        return fit_spectrum(vq, hs, zero)
-    elseif mode == :Intermediate
-        krs = zeros(Float32, length(ffp.references), size(hs)...)
-        len = 1:depth(hs)
-        data = zeros(Float64, length(ffp.filter))
-        fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
-        ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= view(counts(hs), len, ci)
-            unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
-            krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
-        end
-        return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
-            k, lbl = krs[i], ffp.references[i].label
-            rprops = properties(spectrum(lbl))
-            KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
-        end
-    elseif mode == :Full
-        krs = zeros(Float32, length(ffp.references), size(hs)...)
-        len = 1:depth(hs)
-        data = zeros(Float64, length(ffp.filter))
-        ThreadsX.foreach(CartesianIndices(hs)) do ci
-            data[len] .= view(counts(hs), len, ci)
-            unk = _tophatfilterhs(unklabel, data, ffp.filter, 1.0/dose(hs,ci))
-            uvs = _filterfit(unk, ffp.references, true)
-            krs[:, ci] = map(ref.label for ref in ffp.references) do id
-                isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? zero(eltype(krs)) : convert(eltype(krs), value(uvs, id))
-            end
-        end
-        return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
-            k, lbl = krs[i], ffp.references[i].label
-            rprops = properties(spectrum(lbl))
-            KRatios( xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
-        end
-    else
-        @assert false "The mode argument must be :Fast, :Intermediate or :Full."
+    krs = zeros(Float32, length(ffp.references), size(hs)...)
+    len = 1:min(depth(hs),length(ffp.filter))
+    data = zeros(T, length(ffp.filter))
+    fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
+    cdata = counts(hs)
+    ThreadsX.foreach(CartesianIndices(hs)) do ci
+        data[len] .= T.(cdata[len,ci])
+        unk = _tophatfilterhs(unklabel, data, ffp.filter, convert(T,1/dose(hs,ci)))
+        krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
+    end
+    return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
+        lbl = ffp.references[i].label
+        rprops = properties(spectrum(lbl))
+        KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
     end
 end
 
+function fit_spectrum_full(
+    hs::HyperSpectrum,
+    ffp::FilterFitPacket{S, T},
+    sigma::T
+)::Array{KRatios} where { S <: Detector, T <: AbstractFloat }
+    unklabel = UnknownLabel(hs)
+    function _tophatfilterhs(unklabel, data, thf, scale) 
+        @assert length(data) <= length(thf) "The reference spectra must have more channels than the hyperspectrum data."
+        filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
+        dp = T[max(x, one(T)) for x in data] # To ensure covariance isn't zero or infinite precision
+        covar = T[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+        FilteredUnknownW{T}(unklabel, scale, 1:length(data), data, filtered, covar)
+    end
+    @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
+    krs = zeros(Float32, length(ffp.references), size(hs)...)
+    len = 1:depth(hs)
+    data = zeros(T, length(ffp.filter))
+    cdata = counts(hs)
+    ThreadsX.foreach(CartesianIndices(hs)) do ci
+        data[len] .= view(cdata, len, ci)
+        unk = _tophatfilterhs(unklabel, data, ffp.filter, convert(T,1/dose(hs,ci)))
+        uvs = _filterfit(unk, ffp.references, true)
+        krs[:, ci] = map(ffp.references) do ref
+            id = ref.label
+            isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? Base.zero(eltype(krs)) : convert(eltype(krs), value(uvs, id))
+        end
+    end
+    return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
+        lbl = ffp.references[i].label
+        rprops = properties(spectrum(lbl))
+        KRatios( xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
+    end
+end

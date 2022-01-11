@@ -282,11 +282,11 @@ sameproperty(specs::AbstractArray{<:Spectrum}, prop::Symbol) =
     error("The property $prop is not equal for all these spectra.")
 
 function Base.show(io::IO, ::MIME"text/plain", spec::Spectrum{<:Real})
-    comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "Unknown"
+    comp = haskey(spec, :Composition) ? name(spec[:Composition]) : "unknown composition"
     e0 =
         haskey(spec, :BeamEnergy) ? #
         "$(round(spec[:BeamEnergy]/1000.0,sigdigits=3))" :  #
-        "Unknown"
+        "?"
     cnts = "$(round(sum(spec.counts),sigdigits=3))"
     if !(get(io, :compact, false) || haskey(io, :SHOWN_SET))
         textplot(io, spec, size = (12, 100))
@@ -736,11 +736,11 @@ end
 Returns the tangent to the a quadratic fit to the counts data centered at channel with width
 """
 function estimatebackground(
-    data::AbstractArray{Float64},
+    data::AbstractArray{T},
     channel::Int,
     width::Int = 5,
     order::Int = 2,
-)::ImmutablePolynomial
+) where { T<: AbstractFloat }
     minCh, maxCh = max(1, channel - width), min(length(data), channel + width)
     if maxCh - minCh >= order
         fr = fit(

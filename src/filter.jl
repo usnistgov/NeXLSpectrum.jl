@@ -31,9 +31,9 @@ sum of the filter elements is zero.
 struct GaussianFilter <: TopHatFilterType end # A variable width Gaussian filter
 
 """
-The TopHatFilter struct represents a zero-sum symmetric second-derivative-like filter that when applied to
-spectral data has the property of suppressing constant and slowly varying signals (like the continuum) while
-retaining a linear signal for faster changing signals like the characteristic peaks.
+The TopHatFilter{T <: AbstractFloat} struct represents a zero-sum symmetric second-derivative-like filter that when 
+applied to spectral data has the property of suppressing constant and slowly varying signals (like the continuum)
+while retaining a linear signal for faster changing signals like the characteristic peaks.
 
 See
   * F. H. Schamber Proc Symposium of "X-ray Fluorscence Analysis on Environmental Samples" Chapel Hill 1976 T Dzubay Ed.
@@ -59,23 +59,23 @@ product F⋅D⋅Fᵀ reduces down to a sum over a single variable.  The product 
 implemented as element-by-element multiplies and sums.  Thus storing the filter as offsets and row filters is
 efficient in both memory and CPU use.
 """
-struct TopHatFilter
+struct TopHatFilter{T<:AbstractFloat}  
     filttype::Type{<:TopHatFilterType}
     detector::Detector
     offsets::Vector{Int}  # offset to start of filter in row
-    filters::Vector{Vector{Float64}} # Filter data
-    weights::Vector{Float64} # Correlation compensation weights
+    filters::Vector{Vector{T}} # Filter data
+    weights::Vector{T} # Correlation compensation weights
 
-    function TopHatFilter(
+    function TopHatFilter{T}(
         ty::Type{<:TopHatFilterType},
         det::Detector,
-        filt::AbstractMatrix{Float64},
-        wgts::AbstractVector{Float64},
-    )
+        filt::AbstractMatrix{T},
+        wgts::AbstractVector{T},
+    ) where { T <: AbstractFloat }
         # Extract the contiguous non-zero elements
         dim = size(filt)[1]
         offsets = zeros(Int, dim)
-        filts = fill(Vector{Float64}(), dim)
+        filts = fill(Vector{T}(), dim)
         for (r, row) in enumerate(eachrow(filt))
             start = findfirst(i -> i ≠ 0.0, row)
             if !isnothing(start)
@@ -84,27 +84,37 @@ struct TopHatFilter
                 filts[r] = [row[start:stop]...]
             end
         end
-        return new(ty, det, offsets, filts, wgts)
+        return new{T}(ty, det, offsets, filts, wgts)
     end
 end
 
-function filterdata(filt::TopHatFilter, row::Int)::Vector{Float64}
-    res = zeros(Float64, length(filt.filters))
+"""
+    filterdata(filt::TopHatFilter{T}, row::Int)::Vector{T} where { A<: AbstractFloat }
+    filterdata(filt::TopHatFilter{T}, region::AbstractUnitRange{Int})::Matrix{T} where { T <: AbstractFloat }
+    filterdata(filt::TopHatFilter)
+
+Extract the filter data matrix F as a Vector (for a row), or a Matrix for a region or the full filter.
+"""
+function filterdata(filt::TopHatFilter{T}, row::Int)::Vector{T} where {T <: AbstractFloat }
+    res = zeros(T, length(filt.filters))
     res[filt.offsets[row]:filt.offsets[row]+length(filt.filters[row])-1] = filt.filters[row]
     return res
 end
-
-function filterdata(filt::TopHatFilter, region::AbstractUnitRange{Int})::Matrix{Float64}
-    res = zeros(Float64, length(region), length(region))
+function filterdata(filt::TopHatFilter{T}, region::AbstractUnitRange{Int})::Matrix{T} where { T <: AbstractFloat }
+    res = zeros(T, length(region), length(region))
     foreach(r -> res[r-first(region)+1, :] = filterdata(filt, r)[region], region)
     return res
 end
-
-filterdata(filt::TopHatFilter) = #
-    filterdata(filt, eachindex(filt.filters))
+function filterdata(filt::TopHatFilter{T})::Matrix{T} where { T<: AbstractFloat } 
+    res = zeros(T, length(filt.filters), length(filt.filters))
+    for row in eachindex(filt.filters)
+        res[row, filt.offsets[row]:filt.offsets[row]+length(filt.filters[row])-1] = filt.filters[row]
+    end
+    return res
+end
 
 """
-    filteredcovar(filt::TopHatFilter, specdata::Vector{Float64}, row::Int, col::Int)::Float64
+    filteredcovar(filt::TopHatFilter, specdata::Vector{T}, row::Int, col::Int)::T where { A<: AbstractFloat }
 
 Compute the covariance matrix entry for the specified row and column.  The resulting covariance matrix is equal
 to F⋅Ω⋅Fᵀ where F is the filter and Ω is the covariance matrix of the spectrum data.  Since each channel in the spectrum
@@ -115,14 +125,14 @@ multiplication reduces to sum over a single index.  Often this sum is zero becau
 Note:  `specdata` should be preprocessed so that no element is less than or equal to zero.
 """
 function filteredcovar(
-    filt::TopHatFilter,
-    specdata::Vector{Float64},
+    filt::TopHatFilter{T},
+    specdata::Vector{T},
     i::Int,
     l::Int,
-)::Float64
+)::T where {T <: AbstractFloat }
     function dot3(a, b, c) # vmapreduce((ai,bi,ci)->ai*bi*ci, +, a, b, c)
         sum = zero(eltype(a))
-        @avx for i in eachindex(a)  # @avx takes overall time from 670 μs down to 430 μs
+        @turbo for i in eachindex(a)  # @turbo takes overall time from 670 μs down to 430 μs
             sum += a[i] * b[i] * c[i]
         end
         return sum
@@ -134,18 +144,16 @@ function filteredcovar(
         view(fi, roi.start-oi+1:roi.stop-oi+1),
         view(specdata, roi),
         view(fl, roi.start-ol+1:roi.stop-ol+1),
-    ) : 0.0
+    ) : zero(T)
 end
 
 """
-    filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, ch::Int)::Float64 =
+    filtereddatum(filt::TopHatFilter{T}, specdata::Vector{T}, ch::Int)::T where { T<: AbstractFloat }
 
 Compute a single channel in the filtered spectrum.
 """
-filtereddatum(filt::TopHatFilter, specdata::Vector{Float64}, i::Int)::Float64 = dot(
-    filt.filters[i],
-    view(specdata, filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1),
-)
+filtereddatum(filt::TopHatFilter{T}, specdata::AbstractVector{T}, i::Int) where { T } = #
+    dot(filt.filters[i], view(specdata, filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
@@ -154,25 +162,33 @@ Base.length(filt::TopHatFilter) = length(filt.filters)
 Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector)]")
 
 """
-    buildfilter(det::Detector, a::Float64=1.0, b::Float64=2.0)::TopHatFilter
+    buildfilter(
+        [ ::Type{T} = Float64],
+        ty::Type{<:TopHatFilterType},
+        det::Detector,
+        a::AbstractFloat = 1.0, # Top
+        b::AbstractFloat = 2.0,  # Base
+    )
+    buildfilter(::Type{T}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0) where { T<:AbstractFloat }
+    buildfilter(det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0)::TopHatFilter{Float64}
+    buildfilter(ty::Type{<:TopHatFilterType}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0)::TopHatFilter{Float64}
 
-Build the default top-hat filter for the specified detector with the specified top and base parameters.
+Build a top-hat filter for the specified detector with the specified top and base parameters.  The default element type is `Float64`
+and the default shape model (`TopHatFilterType`) is `VariableWidthFilter`.
 """
-buildfilter(det::Detector, a::Float64 = 1.0, b::Float64 = 2.0)::TopHatFilter =
-    buildfilter(VariableWidthFilter, det, a, b)
-
-"""
-    buildfilter(::Type{<:TopHatFilterType}, det::Detector, a::Float64=1.0, b::Float64=1.0)::TopHatFilter
-
-Build a top-hat-style filter for the specified detector with the specified top and base parameters. The
-VariableWidthFilter and ConstantWidthFilter types are currently supported.
-"""
+buildfilter(::Type{T}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0) where { T<:AbstractFloat } = #
+    buildfilter(T, VariableWidthFilter, det, a, b)
+buildfilter(det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0)::TopHatFilter{Float64} = #
+    buildfilter(Float64, VariableWidthFilter, det, a, b)
+buildfilter(ty::Type{<:TopHatFilterType}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0) = #
+    buildfilter(Float64, ty, det, a, b)
 function buildfilter(
+    ::Type{T},
     ty::Type{<:TopHatFilterType},
     det::Detector,
-    a::Float64 = 1.0, # Top
-    b::Float64 = 2.0,  # Base
-)::TopHatFilter
+    a::AbstractFloat = 1.0, # Top
+    b::AbstractFloat = 2.0,  # Base
+) where { T <: AbstractFloat }
     resf(::Type{VariableWidthFilter}, center, det) = resolution(center, det) # FWHM at center
     resf(::Type{ConstantWidthFilter}, center, det) = resolution(energy(n"Mn K-L3"), det) # FWHM at Mn Ka
     intersect(aa, bb, cc, dd) = max(0.0, min(bb, dd) - max(aa, cc)) # Length of intersection [a,b) with [c,d)
@@ -183,7 +199,7 @@ function buildfilter(
     M(astop, astart) = (channel(astop, det) - channel(astart, det) - 1.0) / 2.0   # base length in channels
     N(bstart, astart) = channel(astart, det) - channel(bstart, det) # Top length in channels
     cc = channelcount(det)
-    filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
+    filt, wgts = zeros(T, (cc, cc)), zeros(T, cc)
     for ch1 in eachindex(wgts)
         center = max(0.0, 0.5 * (energy(ch1, det) + energy(ch1 + 1, det))) # midpoint of channel
         res = resf(ty, center, det)
@@ -193,33 +209,35 @@ function buildfilter(
         if (chmin >= 1) && (chmax <= cc)
             for i = 0:(chmax-chmin)÷2
                 filt[ch1, chmax-i] = (
-                    filt[ch1, i+chmin] = filtint(
+                    filt[ch1, i+chmin] = convert(T, filtint(
                         energy(i + chmin, det),
                         energy(i + chmin + 1, det),
                         eb[1],
                         ea[1],
                         ea[2],
                         eb[2],
-                    )
+                    ))
                 )
             end
             filt[ch1, chmax] =
                 (filt[ch1, chmin] -= sum(filt[ch1, chmin:min(cc, chmax)]) / 2.0)
-            @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert abs(sum(filt[ch1, :])) < (T == Float64 ? 1.0e-12 : 1.0e-6) "Filter $ch1 does not sum to zero."
             @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - O"
         end
         m, n = M(ea[2], ea[1]), N(eb[1], ea[1])
         @assert m > 0.0 "m=$(m)!!!!"
         @assert n > 0.0 "n=$(n)!!!!"
-        wgts[ch1] = 2.87 + 1.758e-4 * energy(ch1, det)
+        wgts[ch1] = convert(T, 2.87 + 1.758e-4 * energy(ch1, det))
         # wgts[ch1] = 2.0*n*m/(n+2.0*m)  # Schamber's formula (see Schamber 1997, note the formula in Statham 1977, Anal Chem 49, 14 doesn't seem to work.)
     end
-    @assert all(r -> abs(sum(r)) < 1.0e-12, eachrow(filt)) "A filter does not sum to zero."
-    return TopHatFilter(ty, det, filt, wgts)
+    eps(::Type{Float64}) = 1.0e-12
+    eps(::Type{Float32}) = 1.0e-6
+    @assert all(r -> abs(sum(r)) < eps(T), eachrow(filt)) "A filter does not sum to zero."
+    return TopHatFilter{T}(ty, det, filt, wgts)
 end
 
 """
-    buildfilter(::Type{GaussianFilter}, det::Detector, a::Float64=1.0, b::Float64=5.0)::TopHatFilter
+    buildfilter(::Type{GaussianFilter}, det::Detector, a::AbstractFloat=1.0, b::AbstractFloat=6.0)::TopHatFilter
 
 Build a top-hat filter with Gaussian shape whose width varies with the detector's resolution as a function of X-ray
 energy for the specified detector with the specified top and base parameters. The `a` parameter corresponds
@@ -229,14 +247,17 @@ filter in Gaussian widths.  The default `a=1, b=5` corresponds to a  filter that
 as the detector and an extent of 2.5 Gaussian widths above and below the center channel.
 """
 function buildfilter(
+    ::Type{T},
     ty::Type{GaussianFilter},
     det::Detector,
-    a::Float64 = 1.0,
-    b::Float64 = 6.0, # Width
-)::TopHatFilter
+    a::AbstractFloat = 1.0,
+    b::AbstractFloat = 6.0 # Width
+) where {T<:AbstractFloat}
+    eps(::Type{Float64}) = 1.0e-12
+    eps(::Type{Float32}) = 1.0e-6
     filtint(center, ee, gw) = exp(-0.5 * ((ee - center) / gw)^2)
     cc = channelcount(det)
-    filt, wgts = zeros(Float64, (cc, cc)), zeros(Float64, cc)
+    filt, wgts = zeros(T, (cc, cc)), zeros(T, cc)
     for ch1 in eachindex(wgts)
         center = energy(ch1, det) # midpoint of channel
         res = a * gaussianwidth(resolution(center, det))
@@ -245,19 +266,23 @@ function buildfilter(
         if (chmin >= 1) && (chmax <= cc)
             for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
                 filt[ch1, chmax-i] =
-                    (filt[ch1, chmin+i] = filtint(center, energy(chmin + i, det), res))
+                    (filt[ch1, chmin+i] = convert(T, filtint(center, energy(chmin + i, det), res)))
             end
             # Offset the Gaussian to ensure the sum is zero.
             filt[ch1, chmin:chmax] .-= sum(filt[ch1, chmin:chmax]) / length(chmin:chmax)
-            @assert abs(sum(filt[ch1, :])) < 1.0e-12 "Filter $ch1 does not sum to zero."
+            @assert abs(sum(filt[ch1, :])) < eps(T) "Filter $ch1 does not sum to zero."
             @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
         end
         wgts[ch1] = 2.87 + 1.758e-4 * energy(ch1, det)
     end
     @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
-    return TopHatFilter(ty, det, filt, wgts)
+    return TopHatFilter{T}(ty, det, filt, wgts)
 end
 
+
+"""
+`FilteredDatum" is the base type for `FilteredReference` and `FilteredUnknown`.
+"""
 abstract type FilteredDatum end
 
 """
@@ -268,15 +293,15 @@ Carries the minimal data necessary to support filter-fitting a single
 region-of-interest (continguous range of channles) and computing
 useful output statistics.
 """
-struct FilteredReference <: FilteredDatum
+struct FilteredReference{T <: AbstractFloat } <: FilteredDatum
     label::ReferenceLabel # A way of identifying this filtered datum
-    scale::Float64 # A dose or other scale correction factor
+    scale::T # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data
     ffroi::UnitRange{Int} # ROI for the filtered data
-    data::Vector{Float64} # Spectrum data over ffroi
-    filtered::Vector{Float64} # Filtered spectrum data over ffroi
-    charonly::Vector{Float64} # Background corrected intensity data over roi
-    covscale::Float64  # Schamber's variance scale factor
+    data::Vector{T} # Spectrum data over ffroi
+    filtered::Vector{T} # Filtered spectrum data over ffroi
+    charonly::Vector{T} # Background corrected intensity data over roi
+    covscale::T  # Schamber's variance scale factor
 end
 
 Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.label)]")
@@ -291,16 +316,16 @@ Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.label)]")
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
-function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter, tol::Float64)
-    # Extract the spectrum data as Float64 to match the filter
-    data = counts(spec, Float64, true)
+function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter{T}, tol::T) where { T<: AbstractFloat }
+    # Extract the spectrum data as T to match the filter
+    data = counts(spec, T, true)
     # Determine tangents to the two background end points
     tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
     # Replace the non-ROI channels with extensions of the tangent functions
     data[1:roi.start-1] = map(tangents[1], 1-roi.start:-1)
     data[roi.stop+1:end] = map(tangents[2], 1:length(data)-roi.stop)
     # Compute the filtered data
-    filtered = [filtereddatum(thf, data, i) for i in eachindex(data)]
+    filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
     maxval = maximum(filtered)
     ff = findfirst(f -> abs(f) > tol * maxval, filtered)
     if isnothing(ff)
@@ -310,24 +335,6 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter, tol::Fl
     return (roiff, data[roiff], filtered[roiff])
 end
 
-function tophatfilter(
-    escLabel::EscapeLabel,
-    thf::TopHatFilter,
-    scale::Float64,
-    tol::Float64 = 1.0e-6,
-)::FilteredReference
-    spec, roi = spectrum(escLabel), escLabel.roi
-    charonly = spec[roi] - modelBackground(spec, roi)
-    f = _filter(spec, roi, thf, tol)
-    return FilteredReference(
-        escLabel,
-        scale,
-        roi,
-        f...,
-        charonly,
-        thf.weights[(roi.start+roi.stop)÷2],
-    )
-end
 
 """
     function labeledextents(
@@ -518,26 +525,36 @@ function escapeLabels(#
     return ReferenceLabel[EscapeLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
+
+
+
 """
     tophatfilter(
-        charLabel::CharXRayLabel,
-        thf::TopHatFilter,
-        scale::Float64 = 1.0,
-        tol::Float64 = 1.0e-6,
+        charLabel::Union{CharXRayLabel,EscapeLabel, ReferenceLabel}
+        filt::TopHatFilter{T},
+        scale::T = one(T),
+        tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
     )::FilteredReference
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.  Use a simple
 edge-based background model.
+
+    tophatfilter(
+        labels::AbstractVector{ReferenceLabel},
+        filt::TopHatFilter{T},
+        scale::T = one(T),
+        tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
+    )::Vector{FilteredReference{T}}
 """
 function tophatfilter(
     charLabel::CharXRayLabel,
-    filt::TopHatFilter,
-    scale::Float64 = 1.0,
-    tol::Float64 = 1.0e-6,
-)::FilteredReference
+    filt::TopHatFilter{T},
+    scale::T = one(T),
+    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
+) where {T <: AbstractFloat }
     ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
     spec, roi, ashell = spectrum(charLabel), charLabel.roi, ashellof(charLabel.xrays)
-    return FilteredReference(
+    return FilteredReference{T}(
         charLabel,
         scale,
         roi,
@@ -548,11 +565,47 @@ function tophatfilter(
 end
 
 function tophatfilter(
+    escLabel::EscapeLabel,
+    thf::TopHatFilter{T},
+    scale::T,
+    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
+) where { T<: AbstractFloat }
+    spec, roi = spectrum(escLabel), escLabel.roi
+    charonly = spec[roi] - modelBackground(spec, roi)
+    f = _filter(spec, roi, thf, T(tol))
+    return FilteredReference{T}(
+        escLabel,
+        T(scale),
+        roi,
+        f...,
+        charonly,
+        thf.weights[(roi.start+roi.stop)÷2],
+    )
+end
+
+function tophatfilter(
+    reflabel::ReferenceLabel,
+    thf::TopHatFilter{T},
+    scale::T = one(T),
+    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
+) where { T <: AbstractFloat }
+    spec, roi = spectrum(reflabel), reflabel.roi
+    return FilteredReference{T}(
+        reflabel,
+        convert(T, scale),
+        roi,
+        _filter(spec, roi, thf, convert(T, tol))...,
+        spec[roi] - modelBackground(spec, roi),
+        thf.weights[(roi.start+roi.stop)÷2],
+    )
+end
+
+function tophatfilter(
     labels::AbstractVector{ReferenceLabel},
-    filt::TopHatFilter,
-    scale::Float64 = 1.0,
-    tol::Float64 = 1.0e-6,
-)::Vector{FilteredReference} 
+    filt::TopHatFilter{T},
+    scale::T = one(T),
+    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
+) where { T <: AbstractFloat }
     lbls = filter(labels) do lbl
         res = (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) 
         (!res) && @warn "The ROI $(lbl.roi) not fully contained on [1, $(length(filt))] for $lbl."
@@ -560,36 +613,7 @@ function tophatfilter(
         (!w) && @warn "No sufficiently bright X-rays for $lbl."
         res && w
     end    
-    return [ tophatfilter(lbl, filt, scale, tol) for lbl in lbls ]
-end
-
-"""
-    tophatfilter(
-      reflabel::ReferenceLabel,
-      roi::UnitRange{Int},
-      thf::TopHatFilter,
-      scale = 1.0,
-      tol = 1.0e-6
-    )::FilteredReference
-
-For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter. Use a naive
-linear background model.
-"""
-function tophatfilter(
-    reflabel::ReferenceLabel,
-    thf::TopHatFilter,
-    scale::Float64 = 1.0,
-    tol::Float64 = 1.0e-6,
-)::FilteredReference
-    spec, roi = spectrum(reflabel), reflabel.roi
-    return FilteredReference(
-        reflabel,
-        scale,
-        roi,
-        _filter(spec, roi, thf, tol)...,
-        spec[roi] - modelBackground(spec, roi),
-        thf.weights[(roi.start+roi.stop)÷2],
-    )
+    return FilteredReference{T}[ tophatfilter(lbl, filt, scale, tol) for lbl in lbls ]
 end
 
 """
@@ -602,41 +626,35 @@ abstract type FilteredUnknown <: FilteredDatum end
 Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.label)
 
 """
-    extract(fd::FilteredReference, roi::UnitRange{Int})
+    extract(fd::FilteredReference{T}, roi::UnitRange{Int})::Vector{T} where { T <: AbstractFloat }
+    extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{T} where { T <: AbstractFloat }
 
 Extract the filtered data representing the specified range.  `roi` must fully encompass the filtered
 data in `fd`.
 """
-function NeXLUncertainties.extract(fd::FilteredReference, roi::UnitRange{Int})
+function NeXLUncertainties.extract(fd::FilteredReference{T}, roi::UnitRange{Int}) where { T <: AbstractFloat }
     @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
     @assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
-    data = zeros(Float64, length(roi))
+    data = zeros(T, length(roi))
     nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
-    data[nz] = fd.filtered
+    data[nz] .= fd.filtered
     return data
 end
-
-"""
-    extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{Float64}
-
-Extract the filtered data representing the specified range.  `roi` must be fully contained within the
-filtered data in `fd`.
-"""
 NeXLUncertainties.extract(
     fd::FilteredUnknown,
     roi::UnitRange{Int},
-)::AbstractVector{Float64} = view(fd.filtered, roi)
+) = view(fd.filtered, roi)
 
-_buildlabels(ffs::AbstractVector{FilteredReference}) = collect(ff.label for ff in ffs)
-_buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference}) =
-    Diagonal([unk.scale / ff.scale for ff in ffs])
+_buildlabels(ffs::AbstractVector{<:FilteredReference}) = collect(ff.label for ff in ffs)
+_buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference{T}}) where { T<: AbstractFloat } =
+    Diagonal([convert(T, unk.scale / ff.scale) for ff in ffs])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
 function _computeResidual(
     unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference},
+    ffs::AbstractVector{FilteredReference{T}},
     kr::UncertainValues,
-)
+) where { T <: AbstractFloat }
     res = copy(unk.data)
     for ff in ffs
         res[ff.roi] -= (value(kr, ff.label) * ff.scale / unk.scale) * ff.charonly
@@ -647,10 +665,10 @@ end
 # Internal: Computes the total peak (counts), background (counts) and reference count (c/nAs) based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
-    ffs::AbstractVector{FilteredReference}, #
+    ffs::AbstractVector{FilteredReference{T}}, #
     kr::UncertainValues, #
-)::Dict{<:ReferenceLabel,NTuple{3,Float64}}
-    res = Dict{ReferenceLabel,NTuple{3,Float64}}()
+) where { T <: AbstractFloat }
+    res = Dict{ReferenceLabel,NTuple{3,T}}()
     for ff in ffs
         su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
         res[ff.label] = (
@@ -663,13 +681,19 @@ function _computecounts( #
 end
 
 """
+    fitcontiguouso(
+        unk::FilteredUnknown,
+        ffs::AbstractVector{FilteredReference{T}},
+        chs::UnitRange{Int},
+    )::UncertainValues
+    
 Ordinary least squares for either FilteredUnknown[G|W]
 """
 function fitcontiguouso(
     unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference},
+    ffs::AbstractVector{FilteredReference{T}},
     chs::UnitRange{Int},
-)::UncertainValues
+)::UncertainValues where { T <: AbstractFloat }
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
 end
@@ -681,9 +705,9 @@ For each roi in each element, pick the best FilteredReference with the highest
 intensity in the characteristic-only data.
 """
 function selectBestReferences(
-    refs::AbstractVector{FilteredReference},
-)::Vector{FilteredReference}
-    rois = Dict{UnitRange,Tuple{FilteredReference,Float64}}()
+    refs::AbstractVector{FilteredReference{T}},
+) where { T<: AbstractFloat }
+    rois = Dict{UnitRange,Tuple{FilteredReference{T},Float64}}()
     elms = unique(element(ref.label) for ref in refs)
     for elm in elms
         for ref in filter(ref -> element(ref.label) == elm, refs)
@@ -695,17 +719,34 @@ function selectBestReferences(
             end
         end
     end
-    return [v[1] for v in values(rois)]
+    return FilteredReference{T}[v[1] for v in values(rois)]
 end
+"""
+    filterreference(
+        filt::TopHatFilter{T},
+        spec::Spectrum,
+        elm::Element,
+        allElms::[AbstractSet{Element}|Material]
+        props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+        withEsc::Bool = false,
+    )
+    filterreferences(
+        filt::TopHatFilter,
+        refs::Tuple{Spectrum,Element,Material}...;
+        props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+        withEsc::Bool = false,
+    )
 
+
+"""
 function filterreference(
-    filt::TopHatFilter,
+    filt::TopHatFilter{T},
     spec::Spectrum,
     elm::Element,
     allElms::AbstractSet{Element};
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
-)::Vector{FilteredReference}
+) where { T<: AbstractFloat }
     @assert elm in allElms "$elm not in $allElms"
     cprops = merge(spec.properties, props)
     if !haskey(cprops, :Detector)
@@ -717,7 +758,7 @@ function filterreference(
         append!(lbls, escapeLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]))
     end
     # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
-    return tophatfilter(lbls, filt, 1.0 / (cprops[:ProbeCurrent] * cprops[:LiveTime]))
+    return tophatfilter(lbls, filt, one(T) / convert(T, dose(cprops)))
 end
 
 function filterreference(
@@ -727,8 +768,8 @@ function filterreference(
     comp::Material;
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
-)::Vector{FilteredReference}
-    spec[:Composition] = get(spec, :Composition, comp)
+)
+    # spec[:Composition] = get(spec, :Composition, comp)
     filterreference(filt, spec, elm, keys(comp), props = props, withEsc = withEsc)
 end
 

@@ -221,7 +221,7 @@ function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64
     if withImgs && (!ismissing(res))
         try
             seekstart(ios)
-            imgs = FileIO.load(Stream(format"TIFF", ios))
+            imgs = FileIO.load(Stream{format"TIFF"}(ios))
             nimgs = ndims(imgs)>2 ? size(imgs,3) : 1
             if haskey(res, :ImageMag) || haskey(res, :FieldOfView)
                 fov = haskey(res, :ImageMag) ? (3.5*25.4)/res[:ImageMag] : 1.0e3*res[:FieldOfView] # X field-of-view in mm

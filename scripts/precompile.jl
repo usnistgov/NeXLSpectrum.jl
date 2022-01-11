@@ -13,7 +13,8 @@ specs = [ loadspectrum(joinpath(pkgdir(NeXLSpectrum), "test", "K412 spectra", "I
 plot(specs..., autoklms=true, klms = [ n"C", ], edges = [ n"Fe K", n"Ca K" ], coincidences = [ n"O K-L3", ]) |> SVG(tempname(), 10inch, 3inch)
 
 #=
-using PackageCompiler, NeXLSpectrum
+using NeXLSpectrum, Gadfly, DataFrames # Load the libraries
+using PackageCompiler
 PackageCompiler.create_sysimage(
     [ "Gadfly", "DataFrames", "BoteSalvatICX", "FFAST", "NeXLUncertainties", "NeXLCore", "NeXLMatrixCorrection", "NeXLSpectrum" ]; 
     sysimage_path=joinpath(homedir(), ".julia", "NeXLSysimage.dll"),

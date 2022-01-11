@@ -62,7 +62,6 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
         end
         haskey(props, :Name) || (props[:Name] = "HS$(hyperspectrumCounter())")
         counts = AxisArray(arr, axes...)
-        # @show AxisArrays.axes(counts)
         new{eltype(arr), ndims(arr) - 1, ndims(arr)}(
             counts,
             energy,
@@ -365,35 +364,52 @@ counts(hss::HyperSpectrum{T, N, NP}, ci::CartesianIndex) where {T<:Real, N, NP} 
 
 Returns a HyperSpectrum with smaller or equal storage space to `hss` without losing or truncating any counts 
 (note: AbstractFloat compresses to Float32 with loss of precision).  Can change the storage type and/or 
-reduce the depth of hss.
+reduce the depth of hss.  If there is nothing that can be done to reduce the size of `hss` then `compress(hss)===hss`.
+
+Example:
+
+     hs = compress(hs) # Replace `hs` with a version that uses less memory (if possible).
 """
-function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Real, N, NP}
+function compress(hss::HyperSpectrum{T, N, NP}) where {T<:Integer, N, NP}
+    (minval, maxval) = extrema(counts(hss))
+    tyopts = minval < 0 ? (Int8, Int16, Int32, Int64) : (UInt8, UInt16, UInt32, UInt64)
+    restype = tyopts[findfirst(tyopts) do ty
+        minval >= typemin(ty) && maxval <= typemax(ty)
+    end]
+    @assert sizeof(restype) <= sizeof(T) "$restype"
+    return compact(restype, hss)
+end
+function compress(hss::HyperSpectrum{T, N, NP}) where {T<:AbstractFloat, N, NP}
+    (minval, maxval) = extrema(counts(hss))
+    restype=T
+    if sizeof(T) < sizeof(Float32) &&
+        minval >= typemin(Float32) &&
+        maxval <= typemax(Float32)
+        restype=Float32
+    end
+    return compact(restype, hss)
+end
+
+"""
+    compact(S::Type{<:Real}, hss::HyperSpectrum)
+
+Converts the counts data type to S.  Also eliminates any channel planes on the end that
+are entirely less than or equal to zero.
+"""
+function compact(S::Type{<:Real}, hss::HyperSpectrum)
     data = counts(hss)
-    (minval, maxval) = extrema(data)
-    maxi = mapreduce(max, CartesianIndices(hss)) do ci
-        something(findlast(c -> c != 0.0, data[:, ci]), 0)
+    itr = Iterators.reverse(Base.axes(data,1))
+    maxi = findfirst(itr) do ch # First non-negative channel
+        !all((<=)(zero(eltype(data))), @view data[ch, Base.axes(data)[2:end]...])
     end
-    data = maxi < depth(hss) ? data[1:maxi, axes(data)[2:end]...] : data
-    if T isa Int16 || T isa Int32 || T isa Int64
-        for newtype in filter(ty -> sizeof(T) > sizeof(ty), (Int8, Int16, Int32))
-            if minval >= typemin(newtype) && maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
-            end
-        end
-    elseif T isa UInt16 || T isa UInt32 || T isa UInt64
-        for newtype in filter(ty -> sizeof(T) > sizeof(ty), (UInt8, UInt16, UInt32))
-            if maxval <= typemax(newtype)
-                return HyperSpectrum(hss.energy, copy(hss.properties), newtype.(data), livetime=hss.livetime)
-            end
-        end
-    elseif T isa Float64
-        if sizeof(T) < sizeof(Float32) &&
-           minval >= typemin(Float32) &&
-           maxval <= typemax(Float32)
-            return HyperSpectrum(hss.energy, copy(hss.properties), Float32.(data), livetime=hss.livetime)
-        end
+    @assert !isnothing(maxi) "There are no non-negative counts in this hyperspectrum."
+    maxch = itr[maxi]
+    if S != eltype(data) || maxch < size(data,1)
+        sdata = maxch == size(data,1) ? S.(data) : S.(data[1:maxch, Base.axes(data)[2:end]...])
+        return HyperSpectrum(hss.energy, copy(hss.properties), sdata, livetime=hss.livetime)
+    else
+        return hss
     end
-    return maxi < depth(hss) ? HyperSpectrum(hss.energy, copy(hss.properties), data, livetime=hss.livetime) : hss
 end
 
 """
@@ -599,11 +615,9 @@ function Base.sum(
     @assert size(mask) == size(hss) "Mask size[$(size(mask))] ≠ Hyperspectrum size[$(size(hss))]"
     data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in CartesianIndices(hss)
-        if mask[ci]
-            res .+= data[:, ci]
-            lt += hss.livetime[ci]
-        end
+    for ci in filter(ci->mask[ci], CartesianIndices(hss))
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
     props[:Name] = something(name, "MaskedSum[$(props[:Name])]")
@@ -616,11 +630,9 @@ function Base.sum(
 ) where {T<:Real, N, NP}
     data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in CartesianIndices(hss)
-        if filt(hss,ci)
-            res .+= data[:, ci]
-            lt += hss.livetime[ci]
-        end
+    for ci in filter(ci->filt(hss,ci), CartesianIndices(hss))
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
     props[:Name] = something(name, "FilteredSum[$(props[:Name])]")
