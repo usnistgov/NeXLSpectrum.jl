@@ -42,16 +42,23 @@ Summarize the `FilteredReference` structs within a `FilterFitPacket` as a `DataF
 """
 function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
     function p2b(fref)
-        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
+        # charonly over roi, data over ffroi
+        croi = max(1,first(fref.roi)-first(fref.ffroi)+1):min(length(fref.data), last(fref.roi)-first(fref.ffroi)+1)
+        @assert length(croi)==length(fref.roi)
         sum(fref.charonly) / (sum(fref.data[croi])-sum(fref.charonly))
     end 
     function s2n(fref)
-        croi = max(1,first(fref.roi)-first(fref.ffroi)):min(length(fref.data), last(fref.roi)-first(fref.ffroi))
+        croi = max(1,first(fref.roi)-first(fref.ffroi)+1):min(length(fref.data), last(fref.roi)-first(fref.ffroi)+1)
+        @assert length(croi)==length(fref.roi)
         sum(fref.charonly) / sqrt(sum(fref.data[croi])-sum(fref.charonly))
     end 
     DataFrame(
-        :Lines => [ fr.label.xrays for fr in ffp.references],
+        :Spectrum => [ name(fr.label.spectrum) for fr in ffp.references ],
+        Symbol("Beam Energy (keV)") => [ get(fr.label.spectrum, :BeamEnergy, missing)/1000.0 for fr in ffp.references ],
+        Symbol("Probe Current (nA)") => [ get(fr.label.spectrum, :ProbeCurrent, missing) for fr in ffp.references ],
+        Symbol("Live Time (s)") => [ get(fr.label.spectrum, :LiveTime, missing) for fr in ffp.references ],
         :Material => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
+        :Lines => [ fr.label.xrays for fr in ffp.references],
         :ROI => [ fr.roi for fr in ffp.references],
         # :FullROI => [ fr.ffroi for fr in ffp.references],
         Symbol("P-to-B") => p2b.(ffp.references), 

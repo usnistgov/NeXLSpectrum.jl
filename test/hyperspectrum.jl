@@ -168,7 +168,7 @@ end
         end
     end
 
-    nkrs = normalizek(krs)
+    nkrs = normalizek(res)
     @test isapprox(sum(p->p[13,17].kratio, nkrs), 1.0, atol=1.0e-5)  
     @test isapprox(sum(p->p[11,19].kratio, nkrs), 1.0, atol=1.0e-5)  
     @test isapprox(sum(p->p[19,11].kratio, nkrs), 1.0, atol=1.0e-5)  

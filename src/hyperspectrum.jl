@@ -615,11 +615,9 @@ function Base.sum(
     @assert size(mask) == size(hss) "Mask size[$(size(mask))] ≠ Hyperspectrum size[$(size(hss))]"
     data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in CartesianIndices(hss)
-        if mask[ci]
-            res .+= data[:, ci]
-            lt += hss.livetime[ci]
-        end
+    for ci in filter(ci->mask[ci], CartesianIndices(hss))
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
     props[:Name] = something(name, "MaskedSum[$(props[:Name])]")
@@ -632,11 +630,9 @@ function Base.sum(
 ) where {T<:Real, N, NP}
     data = counts(hss)
     res, lt = zeros(T isa Int ? Int64 : Float64, depth(hss)), 0.0
-    for ci in CartesianIndices(hss)
-        if filt(hss,ci)
-            res .+= data[:, ci]
-            lt += hss.livetime[ci]
-        end
+    for ci in filter(ci->filt(hss,ci), CartesianIndices(hss))
+        res .+= data[:, ci]
+        lt += hss.livetime[ci]
     end
     props = copy(hss.properties)
     props[:Name] = something(name, "FilteredSum[$(props[:Name])]")
