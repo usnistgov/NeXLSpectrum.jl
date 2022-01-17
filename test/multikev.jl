@@ -1,5 +1,4 @@
 using NeXLSpectrum
-using NeXLMatrixCorrection
 using Test
 
 @testset "15 keV vs 20 keV" begin    
