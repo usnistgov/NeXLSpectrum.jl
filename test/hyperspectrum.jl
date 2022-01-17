@@ -2,7 +2,6 @@ using Test
 using NeXLSpectrum
 using DataFrames
 using Statistics
-using DataDeps
 
 # Get the path of the rplraw dataset, either newly created or previously generated.
 # this should be something like `~/.julia/datadep/map[15]Artifact`
