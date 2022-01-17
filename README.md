@@ -82,14 +82,14 @@ and the `NeXLSysimage`.  The `sysimage` is selected using the `-J` command line 
 
 ```
 ## To use the sysimage, start Julia with the `-J` option
-# > julia -JC:\Users\username\.julia\NeXLSysimage.dll"
+# > julia -J"C:\Users\username\.julia\NeXLSysimage.dll"
 ```
 
 You can edit the properties of the link used to start Julia to include the `-J` option.  While you are at it,
 you might also want to add the `-t` option to start Julia with multiple threads.  For example,
 ```
 ## To use the sysimage, start Julia with the `-J` option
-# > julia -JC:\Users\username\.julia\NeXLSysimage.dll" -t 4
+# > julia -J"C:\Users\username\.julia\NeXLSysimage.dll" -t 4
 ```
 will start Julia with the `sysimage` and 4 threads.  Usually, selecting the number of threads equal to the number of
 cores (not HyperThreads) will produce the optimal performance.
