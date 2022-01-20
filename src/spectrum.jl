@@ -206,8 +206,12 @@ Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, p
 properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
 Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Real } = spec
+Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Integer } = spec
 function Base.convert(::Type{Spectrum{T}}, spec::Spectrum{U})::Spectrum{T} where {T <: Real, U <: Real }
     return Spectrum(spec.energy, T.(spec.counts), copy(spec.properties))
+end
+function Base.convert(::Type{Spectrum{T}}, spec::Spectrum{U})::Spectrum{T} where {T <: Integer, U <: Real }
+    return Spectrum(spec.energy, floor.(T, spec.counts), copy(spec.properties))
 end
 function Base.similar(spec::Spectrum{T}, ::Type{U}) where { T <: Real, U <: Real }
     return Spectrum(spec.energy, similar(spec.counts, U), copy(spec.properties))
@@ -722,9 +726,7 @@ function subdivide(spec::Spectrum{T}, n::Int)::Vector{Spectrum{T}} where {T <: R
         props = deepcopy(spec.properties)
         props[:Name] = "Sub[$(spec[:Name]),$(i) of $(n)]"
         props[:LiveTime] = spec[:LiveTime] / n # Must have
-        if haskey(spec, :RealTime)
-            props[:RealTime] = spec[:RealTime] / n # Might have
-        end
+        haskey(spec, :RealTime)  && (props[:RealTime] = spec[:RealTime] / n) # Might have
         Spectrum(spec.energy, res[i, :], props)
     end
 end
@@ -1109,14 +1111,11 @@ end
 Computes the dose corrected χ² metric of similarity between `s1` and `s2`.
 Or computes the matrix of χ² for the array of spectra.
 """
-function χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::T where {T<:Real}
+function χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::Float64 where {T<:Real}
     k1, k2 = 1.0 / dose(s1), 1.0 / dose(s2)
-    d = sum((k1 * s1[ch] - k2 * s2[ch])^2 for ch in chs)
-    s = sum(sqrt(k1^2 * max(one(T), s1[ch]) + k2^2 * max(one(T), s2[ch])) for ch in chs)
-    return d / s
+    return var((k1 * s1[ch] - k2 * s2[ch]) / sqrt(k1^2 * max(one(T), s1[ch]) + k2^2 * max(one(T), s2[ch])) for ch in chs)
 end
-
-function χ²(specs::AbstractVector{Spectrum{T}}, chs)::Matrix{T} where {T<:Real}
+function χ²(specs::AbstractVector{Spectrum{T}}, chs)::Matrix{Float64} where {T<:Real}
     χ2s = zeros(Float64, (length(specs), length(specs)))
     for i in eachindex(specs), j in i+1:length(specs)
         χ2s[i, j] = χ²(specs[i], specs[j], chs)
@@ -1128,20 +1127,20 @@ end
 """
     measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, chs)::Vector{Float64}
     measure_dissimilarity(specs::AbstractArray{Spectrum}, minE::Float64=100.0)::Vector{Float64}
+    measure_dissimilarity(specs::AbstractArray{<:Spectrum}, det::Detector, elm::Element)::Vector{Float64}
     measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
 
 Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
-The first version covers all the channels between minE and the nominal beam energy. The second version
-only considers those channels representing peaks in a spectrum from the `Material` on the `Detector`.
-The statistic returned is the χ² for each spectrum relative to the mean spectrum.  It should be nominally
-a vector of 1's for spectra that differ only by count statistics.
+The first version covers all the channels between minE and the nominal beam energy. The third and fourth versions
+considers those channels representing peaks in a spectrum from the `Material` or `Element` on the `Detector`.
+The statistic returned is the χ² for each spectrum relative to the mean spectrum of the other spectra.  
+It should be nominally a vector of 1's for spectra that differ only by count statistics.
 """
 function measure_dissimilarity(
     specs::AbstractArray{<:Spectrum},
-    chs,
+    chs
 )::Vector{Float64}
-    s = sum(specs)
-    return [χ²(spec, s, chs) for spec in specs]
+    return [χ²(spec, sum(filter(s->!(s===spec), specs)), chs) for spec in specs]
 end
 
 function measure_dissimilarity(
@@ -1155,7 +1154,16 @@ function measure_dissimilarity(
         ):maximum(channel(e0, spec) for spec in specs)
     return measure_dissimilarity(specs, chs)
 end
-
+function measure_dissimilarity(
+    specs::AbstractArray{<:Spectrum},
+    det::Detector,
+    elm::Element,
+)::Vector{Float64}
+    e0 = maximum(spec[:BeamEnergy] for spec in specs)
+    rois = extents(characteristic(elm, alltransitions, 0.01, e0), det, 0.001)
+    chs = mapreduce(collect, append!, rois)
+    return measure_dissimilarity(specs, chs)
+end
 function measure_dissimilarity(
     specs::AbstractArray{<:Spectrum},
     det::Detector,
@@ -1209,7 +1217,7 @@ function findsimilar(
         # Now perform this recursively until all are within tol or we hit minspecs
         if fmσ > tol * Statistics.mean(rem)
             return findsimilar(
-                filter(s -> s != specs[fmi], specs),
+                filter(s -> !(s === specs[fmi]), specs),
                 tol = tol,
                 minspecs = minspecs,
             )
