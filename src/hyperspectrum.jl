@@ -695,10 +695,10 @@ function roiimage(hss::HyperSpectrum, chs::AbstractUnitRange{<:Integer})
     Gray.(N0f8.(tmp ./= maximum(tmp)))
 end
 
-function fwhmroi(hss::HyperSpectrum, cxr::CharXRay)
+function fwhmroi(hss::Union{Spectrum, HyperSpectrum}, cxr::CharXRay, k=1.0)
     ecxr = energy(cxr)
     r = haskey(hss.properties, :Detector) ? resolution(ecxr, hss[:Detector]) : resolution(ecxr, MnKaResolution(130.0))
-    return channel(ecxr-0.5*r, hss.energy):channel(ecxr+0.5*r, hss.energy)
+    return channel(ecxr-0.5*r*k, hss.energy):channel(ecxr+0.5*r*k, hss.energy)
 end
 
 """
