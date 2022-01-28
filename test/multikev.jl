@@ -48,7 +48,7 @@ using Test
     # show(NeXLMatrixCorrection.describe(q15))
     m15 = mean(material.(q15))
     @test isapprox(value(m15[n"O"]), 0.4566, atol=0.0001)
-    @test isapprox(value(m15[n"Mg"]), 0.1157, atol=0.0001)
+    @test isapprox(value(m15[n"Mg"]), 0.1157, atol=0.0002)
     @test isapprox(value(m15[n"Al"]), 0.0485, atol=0.0001)
     @test isapprox(value(m15[n"Si"]), 0.2102, atol=0.0001)
     @test isapprox(value(m15[n"Ca"]), 0.1082, atol=0.0001)
