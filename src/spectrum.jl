@@ -1078,7 +1078,8 @@ end
 Computes the sum spectrum over an `AbstractArray{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
-:ProbeCurrent, :LiveTime and :RealTime, only the properties that the spectra hold in common will be maintained.
+:ProbeCurrent, :LiveTime and :RealTime which are computed to maintain the total sum dose, only those properties that the 
+spectra hold in common will be maintained.
 
 This function behaves differently from `reduce(+, specs)` which checks whether the energy scales match and fails if 
 they don't.
@@ -1097,25 +1098,24 @@ function Base.sum(
     props[:ProbeCurrent] = mean(sp[:ProbeCurrent] for sp in specs)
     props[:LiveTime] = sum(dose.(specs)) / props[:ProbeCurrent]
     rt = sum(get(sp, :RealTime, NaN64) for sp in specs)
-    if !isnan(rt)
-        props[:RealTime] = rt
-    end
+    (!isnan(rt)) && (props[:RealTime] = rt)
     props[:Name] = something(name, "Sum[$(length(specs)) spectra]")
     return Spectrum(specs[1].energy, cxs, props)
 end
 
 """
-    χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::T where {T<:Real}
+    χ²(s1::Spectrum{T}, s2::Spectrum{U}, chs)::T where {T<:Real, U <: Real}
     χ²(specs::AbstractArray{Spectrum{T}}, chs)::Matrix{T}
 
-Computes the dose corrected χ² metric of similarity between `s1` and `s2`.
-Or computes the matrix of χ² for the array of spectra.
+Computes the dose corrected reduced χ² metric between `s1` and `s2` over the channels in `chs`.
+
+The second form computes a matrix of χ² comparing each spectrum in the array to the others.
 """
-function χ²(s1::Spectrum{T}, s2::Spectrum{T}, chs)::Float64 where {T<:Real}
+function χ²(s1::Spectrum{T}, s2::Spectrum{U}, chs)::Float64 where {T<:Real, U<:Real}
     k1, k2 = 1.0 / dose(s1), 1.0 / dose(s2)
-    return var((k1 * s1[ch] - k2 * s2[ch]) / sqrt(k1^2 * max(one(T), s1[ch]) + k2^2 * max(one(T), s2[ch])) for ch in chs)
+    return sum(ch->(k1 * s1[ch] - k2 * s2[ch])^2 /  (k1*k1*max(one(T), s1[ch]) + k2*k2*max(one(U), s2[ch])), chs)
 end
-function χ²(specs::AbstractVector{Spectrum{T}}, chs)::Matrix{Float64} where {T<:Real}
+function χ²(specs::AbstractVector{<:Spectrum}, chs)::Matrix{Float64}
     χ2s = zeros(Float64, (length(specs), length(specs)))
     for i in eachindex(specs), j in i+1:length(specs)
         χ2s[i, j] = χ²(specs[i], specs[j], chs)
@@ -1125,25 +1125,33 @@ function χ²(specs::AbstractVector{Spectrum{T}}, chs)::Matrix{Float64} where {T
 end
 
 """
-    measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, chs)::Vector{Float64}
-    measure_dissimilarity(specs::AbstractArray{Spectrum}, minE::Float64=100.0)::Vector{Float64}
-    measure_dissimilarity(specs::AbstractArray{<:Spectrum}, det::Detector, elm::Element)::Vector{Float64}
-    measure_dissimilarity(specs::AbstractArray{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
+    similarity(s1::Spectrum{T}, s2::Spectrum{T}, chs)::Float64 where {T<:Real}
+    similarity(specs::AbstractArray{Spectrum{T}}, chs)::Vector{Float64}
+    similarity(specs::AbstractArray{Spectrum}, minE::Float64=100.0)::Vector{Float64}
+    similarity(specs::AbstractArray{<:Spectrum}, det::Detector, elm::Element)::Vector{Float64}
+    similarity(specs::AbstractArray{Spectrum{T}}, det::Detector, mat::Material)::Vector{Float64}
 
-Returns a vector of χ²s which measure how different the i-th `Spectrum` is from the other spectra.
+Returns a vector of similarity metrics which measure how similar the i-th `Spectrum` is to the other spectra.
+The mean reduced χ² statistic metric is such that if `s1` and `s2` differ by only count statistics 
+then the metric will be approximately unity.  If `s1` and `s2` vary due to probe current drift, sample 
+inhomogeneity, surface roughness or other non-count statistics related reasons then the metric will be 
+larger than one.
+
 The first version covers all the channels between minE and the nominal beam energy. The third and fourth versions
 considers those channels representing peaks in a spectrum from the `Material` or `Element` on the `Detector`.
-The statistic returned is the χ² for each spectrum relative to the mean spectrum of the other spectra.  
-It should be nominally a vector of 1's for spectra that differ only by count statistics.
 """
-function measure_dissimilarity(
+function similarity(s1::Spectrum{T}, s2::Spectrum{T}, chs)::Float64 where {T<:Real}
+    k1, k2 = 1.0 / dose(s1), 1.0 / dose(s2)
+    return χ²(s1, s2, chs)/length(chs)
+end
+function similarity(
     specs::AbstractArray{<:Spectrum},
     chs
 )::Vector{Float64}
-    return [χ²(spec, sum(filter(s->!(s===spec), specs)), chs) for spec in specs]
+    return [similarity(spec, sum(filter(s->!(s===spec), specs)), chs) for spec in specs]
 end
 
-function measure_dissimilarity(
+function similarity(
     specs::AbstractArray{<:Spectrum},
     minE::Float64 = 100.0,
 )::Vector{Float64}
@@ -1152,9 +1160,9 @@ function measure_dissimilarity(
         minimum(
             channel(minE, spec) for spec in specs
         ):maximum(channel(e0, spec) for spec in specs)
-    return measure_dissimilarity(specs, chs)
+    return similarity(specs, chs)
 end
-function measure_dissimilarity(
+function similarity(
     specs::AbstractArray{<:Spectrum},
     det::Detector,
     elm::Element,
@@ -1162,9 +1170,9 @@ function measure_dissimilarity(
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
     rois = extents(characteristic(elm, alltransitions, 0.01, e0), det, 0.001)
     chs = mapreduce(collect, append!, rois)
-    return measure_dissimilarity(specs, chs)
+    return similarity(specs, chs)
 end
-function measure_dissimilarity(
+function similarity(
     specs::AbstractArray{<:Spectrum},
     det::Detector,
     mat::Material,
@@ -1193,39 +1201,68 @@ function measure_dissimilarity(
         ),
     )
     chs = mapreduce(collect, append!, rois)
-    return measure_dissimilarity(specs, chs)
+    return similarity(specs, chs)
 end
 
 
 """
-    findsimilar(specs::AbstractArray{Spectrum{T}}; tol = 1.8, minspecs=3)::Vector{Spectrum{T}}
+    findsimilar(specs::AbstractArray{Spectrum{T}}; atol = 4.0, rtol=1.5, minspecs=3)::Vector{Spectrum{T}}
+    findsimilar(specs::AbstractArray{Spectrum{T}},det::Detector,elm::Element; atol = 4.0, rtol=1.5, minspecs = 3)::Vector{Spectrum{T}}
+
 
 Filters a collection of spectra for the ones most similar to the average by
-removing the least similar spectrum sequentially until all the remaining spectra are within
-tol times the mean(χ²).  This is useful for finding which of a set of replicate spectra are
-sufficiently similar to each other.
+removing the least similar spectrum sequentially until all the remaining spectra are within either:
+ 
+  * atol of the mean
+  * rtol * max(others) of the mean
+
+when applying the 'similarity(...)` function to the spectrum and the sum of the other spectra.
+
+This is useful for finding which of a set of replicate spectra are sufficiently similar 
+to each other.
 """
 function findsimilar(
     specs::AbstractArray{Spectrum{T}};
-    tol = 1.8,
+    atol = 4.0,
+    rtol = 1.5,
     minspecs = 3,
 )::Vector{Spectrum{T}} where {T<:Real}
-    if length(specs) > minspecs
-        σs = measure_dissimilarity(specs)
+    if length(specs) >= minspecs
+        σs = abs.(similarity(specs))
         (fmσ, fmi) = findmax(σs)
-        rem = filter(σ -> σ ≠ fmσ, σs)
         # Now perform this recursively until all are within tol or we hit minspecs
-        if fmσ > tol * Statistics.mean(rem)
-            return findsimilar(
-                filter(s -> !(s === specs[fmi]), specs),
-                tol = tol,
-                minspecs = minspecs,
-            )
+        maxσ = maximum(filter(σ -> σ ≠ fmσ, σs))
+        if (fmσ > atol + maxσ) || (fmσ > rtol*maxσ)
+            rem = filter(s -> !(s === specs[fmi]), specs)
+            return findsimilar(rem, atol = atol, rtol=rtol, minspecs = minspecs)
+        else
+            return specs
         end
     end
-    return specs
+    error("There are not $minspecs spectra which are sufficiently similar to the mean spectrum.")
 end
-
+function findsimilar(
+    specs::AbstractArray{Spectrum{T}},
+    det::Detector,
+    elm::Element;
+    atol = 4.0,
+    rtol = 1.5,
+    minspecs = 3,
+)::Vector{Spectrum{T}} where {T<:Real}
+    if length(specs) >= minspecs
+        σs = abs.(NeXLSpectrum.similarity(specs, det, elm))
+        (fmσ, fmi) = findmax(σs)
+        # Now perform this recursively until all are within tol or we hit minspecs
+        maxσ = maximum(filter(σ -> σ ≠ fmσ, σs))
+        if (fmσ > atol) || (fmσ > rtol*maxσ)
+            rem = filter(s -> !(s === specs[fmi]), specs)
+            return findsimilar(rem, det, elm, atol = atol, rtol=rtol, minspecs = minspecs)
+        else
+            return specs
+        end
+    end
+    error("There are not $minspecs spectra which are sufficiently similar to the mean spectrum.")
+end
 
 # Duane-Hunt related functions
 
