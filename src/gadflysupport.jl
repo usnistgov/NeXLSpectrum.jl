@@ -107,7 +107,8 @@ function Gadfly.plot(
     palette = NeXLPalette,
     customlayers = Gadfly.Layer[],
     duanehunt = false,
-    title = nothing
+    title = nothing,
+    minklmweight = 1.0e-3
 )::Plot
     function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
         d = Dict{Any,Vector{CharXRay}}()
@@ -136,7 +137,7 @@ function Gadfly.plot(
             Geom.hair,
             Geom.point,
             Geom.label(position = :above),
-            Theme(default_color = colorant"gray"),
+            Theme(default_color = colorant"antiquewhite"),
         )
     end
     function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
@@ -260,7 +261,7 @@ function Gadfly.plot(
     end
     autoklms && append!(klms, mapreduce(s -> elms(s, true), union!, specs))
     if length(klms) > 0
-        tr(elm::Element) = filter(characteristic(elm, alltransitions, 1.0e-3, maxE0)) do cxr
+        tr(elm::Element) = filter(characteristic(elm, alltransitions, minklmweight, maxE0)) do cxr
             energy(cxr) > min(200.0, maxE0/25)
         end
         tr(cxr::CharXRay) = [cxr]
