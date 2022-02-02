@@ -1,5 +1,4 @@
 using Test
-using NeXLCore
 using NeXLSpectrum
 
 @testset "Al2O3" begin
