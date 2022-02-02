@@ -1,20 +1,20 @@
 using Test
 
 @testset "Windows" begin
-    ap33 = AP33Model()
+    ap33 = ModeledWindow(MoxtekAP33)
     @test repr(ap33) == "Moxtek AP3.3 model"
-    ap5 = AP5Model()
+    ap5 = ModeledWindow(MoxtekAP5)
     @test repr(ap5) == "Moxtek AP5 model"
-    ap33t = AP33Tabulation()
+    ap33t = TabulatedWindow(MoxtekAP33)
     @test repr(ap33t) == "Moxtek AP3.3"
-    ap5t = AP5Tabulation()
+    ap5t = TabulatedWindow(MoxtekAP5)
     @test repr(ap5t) == "Moxtek AP5"
-    be = Beryllium()
+    be = ModeledWindow(BerylliumWindow)
     @test repr(be) == "5.0 μm Be window"
-    ac1 = AmptekC1()
-    @test repr(ac1) == "Amptek C1"
-    ac2 = AmptekC2()
-    @test repr(ac2) == "Amptek C2"
+    ac1 = ModeledWindow(AmetekC1)
+    @test repr(ac1) == "AMETEK C1"
+    ac2 = ModeledWindow(AmetekC2)
+    @test repr(ac2) == "AMETEK C2"
     now = NoWindow() # 100% transmission
     @test repr(now) == "No window"
 

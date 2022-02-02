@@ -62,11 +62,8 @@ export gaussianwidth, fwhm
 # X-ray window models
 include("window.jl")
 # primary function transmission(wnd, energy, angle)
-export AbstractWindow, LayerWindow, TabulatedWindow
-export AP33Model, AP5Model, AP33Tabulation, AP5Tabulation # Moxtek windows
-export Beryllium # Classic windows
-export AmptekC1, AmptekC2 # Amptek windows
-export NoWindow # 100% transmission
+export AbstractWindow, ModeledWindow, TabulatedWindow, NoWindow
+export WindowType, MoxtekAP33, MoxtekAP5, AmetekC1, AmetekC2, BerylliumWindow
 
 include("detefficiency.jl")
 export DetectorEfficiency
