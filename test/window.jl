@@ -1,20 +1,20 @@
 using Test
 
 @testset "Windows" begin
-    ap33 = ModeledWindow(MoxtekAP33)
-    @test repr(ap33) == "Moxtek AP3.3 model"
-    ap5 = ModeledWindow(MoxtekAP5)
-    @test repr(ap5) == "Moxtek AP5 model"
-    ap33t = TabulatedWindow(MoxtekAP33)
-    @test repr(ap33t) == "Moxtek AP3.3"
-    ap5t = TabulatedWindow(MoxtekAP5)
-    @test repr(ap5t) == "Moxtek AP5"
-    be = ModeledWindow(BerylliumWindow)
-    @test repr(be) == "5.0 μm Be window"
-    ac1 = ModeledWindow(AmetekC1)
-    @test repr(ac1) == "AMETEK C1"
-    ac2 = ModeledWindow(AmetekC2)
-    @test repr(ac2) == "AMETEK C2"
+    ap33 = ModeledWindow(MoxtekAP33())
+    @test repr(ap33) == "Moxtek AP3.3 - Modeled"
+    ap5 = ModeledWindow(MoxtekAP5())
+    @test repr(ap5) == "Moxtek AP5 - Modeled"
+    ap33t = TabulatedWindow(MoxtekAP33())
+    @test repr(ap33t) == "Moxtek AP3.3 - Tabulated"
+    ap5t = TabulatedWindow(MoxtekAP5())
+    @test repr(ap5t) == "Moxtek AP5 - Tabulated"
+    be = ModeledWindow(BerylliumWindow(5.0e-4))
+    @test repr(be) == "5.0 μm Beryllium - Modeled"
+    ac1 = ModeledWindow(AmetekC1())
+    @test repr(ac1) == "AMETEK C1 Si₃N₄ - Modeled"
+    ac2 = ModeledWindow(AmetekC2())
+    @test repr(ac2) == "AMETEK C2 Si₃N₄ - Modeled"
     now = NoWindow() # 100% transmission
     @test repr(now) == "No window"
 
@@ -45,3 +45,4 @@ using Test
     @test isapprox(transmission(ac1, 30000.0), 0.9999, atol = 0.0001)
     @test isapprox(transmission(ac2, 30000.0), 0.9999, atol = 0.0001)
 end
+

@@ -625,4 +625,31 @@ function plot_multicompare(specs::AbstractArray{Spectrum{T}}; minE=200.0, maxE=0
 end
 
 
+"""
+    plot(wind::Union{AbstractWindow, AbstractArray{<:AbstractWindow}}; xmax=20.0e3, angle=π/2, style=NeXLSpectrumStyle)
+
+
+Plot the window transmission function.
+"""
+function Gadfly.plot(winds::AbstractArray{<:AbstractWindow}; xmin=0.0, xmax=20.0e3, angle=π/2, style=NeXLSpectrumStyle)
+    Gadfly.with_theme(style) do
+        es = max(xmin, 10.0):10.0:xmax
+        lyr(w, c) = layer(x=es, y=map(e->transmission(w,e,angle), es), Theme(default_color=c), Geom.line)
+        plot(
+            ( lyr(w,c) for (w,c) in zip(winds, NeXLPalette[eachindex(winds)]))..., 
+            Coord.cartesian(
+                xmin = xmin,
+                xmax = xmax,
+                ymin = 0.0,
+                ymax = 1.0,
+            ),
+            Guide.xlabel("Energy (eV)"),
+            Guide.ylabel("Transmission"),
+            Guide.manual_color_key("Window", [ name(w) for w in winds], NeXLPalette[eachindex(winds)])
+        )
+    end
+end
+Gadfly.plot(wind::AbstractWindow; xmin=0.0, xmax=20.0e3, angle=π/2, style=NeXLSpectrumStyle) = #
+    plot([ wind ], xmin=xmin, xmax=xmax, angle=angle, style=style)
++
 @info "Loading Gadfly support into NeXLSpectrum."
