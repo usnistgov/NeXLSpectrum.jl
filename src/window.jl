@@ -3,6 +3,13 @@
 You can view the window transmission function using `Gadfly` and the method:
 
     plot(wind::Union{AbstractWindow, AbstractArray{<:AbstractWindow}}; xmax=20.0e3, angle=π/2, style=NeXLSpectrumStyle)
+
+Window types are identified by types based on `WindowType` like `MoxtekAP33`, `MoxtekAP5`, `AmetekC1`, `AmetekC2`, `BerylliumWindow`.
+
+An implementation of an `AbstractWindow` is instantiate using code like `TabulatedWindow(MoxtekAP33())` or `ModeledWindow(AmetekC1())`.
+In addition, there is a `NoWindow()` type that implements a 100% transparent window.
+
+`AbstractWindow` types primarily implement `NeXLCore.transmission(wnd::AbstractWindow, energy::Float64, angle::Float64 = π / 2)`
 """
 abstract type AbstractWindow end
 Base.show(io::IO, wnd::AbstractWindow) = print(io, name(wnd))
@@ -25,7 +32,6 @@ Use the `TabulatedWindow` or `ModeledWindow` to instantiate `AbstractWindow` whi
 `transmission(wnd::AbstractWindow, energy::Float64, angle::Float64 = π / 2)` method.
 
 Predefined `WindowType`s are `MoxtekAP33`, `MoxtekAP5`, `AmetekC1`, `AmetekC2`, `BerylliumWindow`.
-In addition, there is a `NoWindow <: AbstractWindow` type that implements a 100% transparent window.
 """
 abstract type WindowType end
 struct MoxtekAP33 <: WindowType end
@@ -74,7 +80,11 @@ struct ModeledWindow <: AbstractWindow
 end
 name(mw::ModeledWindow) = "$(name(mw.type)) - Modeled"
 
-NeXLCore.transmission(wnd::ModeledWindow, energy::Float64, angle::Float64 = π / 2) =
+function NeXLCore.transmission(
+    wnd::ModeledWindow, 
+    energy::Float64, 
+    angle::Float64 = π / 2
+)
     (
         length(wnd.layers) > 0 ?
         mapreduce(lyr -> NeXLCore.transmission(lyr, energy, angle), *, wnd.layers) : 1.0
@@ -82,6 +92,7 @@ NeXLCore.transmission(wnd::ModeledWindow, energy::Float64, angle::Float64 = π /
         wnd.openfraction +
         (1.0 - wnd.openfraction) * NeXLCore.transmission(wnd.support, energy, angle)
     )
+end
 
 function ModeledWindow(wt::MoxtekAP33)
     support, openarea = Film(pure(n"Si"), 0.038), 0.77
@@ -117,9 +128,11 @@ function ModeledWindow(wt::AmetekC2)
 end
 
 """
-    TabulatedWindow(wt::AbstractWindowType)
+    TabulatedWindow(wt::WindowType)
 
-Construct a model of the window transmission based on vendor-supplied tabulations of transparency.
+Construct a model of the window transmission based on vendor-supplied tabulations of transparency. At the
+end of the user supplied data, the transmission function is extended by matching the ModeledWindow
+with the tabulation.
 """
 struct TabulatedWindow <: AbstractWindow
     type::WindowType
