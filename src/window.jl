@@ -20,7 +20,7 @@ Base.show(io::IO, wnd::AbstractWindow) = print(io, name(wnd))
 A 100% transparent window.
 """
 struct NoWindow <: AbstractWindow end
-name(::NoWindow) = "No window"
+NeXLCore.name(::NoWindow) = "No window"
 NeXLCore.transmission(wnd::NoWindow, energy::Float64, angle::Float64 = π / 2) = 1.0
 
 
@@ -35,23 +35,23 @@ Predefined `WindowType`s are `MoxtekAP33`, `MoxtekAP5`, `AmetekC1`, `AmetekC2`, 
 """
 abstract type WindowType end
 struct MoxtekAP33 <: WindowType end
-name(::MoxtekAP33) = "Moxtek AP3.3"
+NeXLCore.name(::MoxtekAP33) = "Moxtek AP3.3"
 struct MoxtekAP5 <: WindowType end
-name(::MoxtekAP5) = "Moxtek AP5"
+NeXLCore.name(::MoxtekAP5) = "Moxtek AP5"
 
 """
 Create modeled windows for the Ametek C1 Si₃N₄ windows according to the specifications here:
     https://www.amptek.com/products/accessories-for-xrf-eds/c-series-low-energy-x-ray-windows#Specifications   
 """
 struct AmetekC1 <: WindowType end
-name(::AmetekC1) = "AMETEK C1 Si₃N₄"
+NeXLCore.name(::AmetekC1) = "AMETEK C1 Si₃N₄"
 
 """
 Create modeled windows for the Ametek C2 Si₃N₄ windows according to the specifications here:
     https://www.amptek.com/products/accessories-for-xrf-eds/c-series-low-energy-x-ray-windows#Specifications   
 """
 struct AmetekC2 <: WindowType end
-name(::AmetekC2) = "AMETEK C2 Si₃N₄"
+NeXLCore.name(::AmetekC2) = "AMETEK C2 Si₃N₄"
 
 """
     BerylliumWindow(thickness)
@@ -63,7 +63,7 @@ struct BerylliumWindow <: WindowType
 
     BerylliumWindow(thickness=5.0e-4) = new(thickness)
 end
-name(bw::BerylliumWindow) = "$(bw.thickness*1.0e4) μm Beryllium"
+NeXLCore.name(bw::BerylliumWindow) = "$(bw.thickness*1.0e4) μm Beryllium"
 
 
 """
@@ -78,7 +78,7 @@ struct ModeledWindow <: AbstractWindow
     support::Film
     openfraction::Float64
 end
-name(mw::ModeledWindow) = "$(name(mw.type)) - Modeled"
+NeXLCore.name(mw::ModeledWindow) = "$(name(mw.type)) - Modeled"
 
 function NeXLCore.transmission(
     wnd::ModeledWindow, 
@@ -108,8 +108,8 @@ function ModeledWindow(wt::MoxtekAP5)
     ModeledWindow(wt, [aluminum, paralene], support, openarea)
 end
 
-function ModeledWindow(wt::BerylliumWindow; thickness = 5.0e-4)
-    support, openarea = Film(pure(n"Be"), thickness), 0.0
+function ModeledWindow(wt::BerylliumWindow)
+    support, openarea = Film(pure(n"Be"), wt.thickness), 0.0
     ModeledWindow(wt, [], support, openarea)
 end
 
@@ -140,7 +140,7 @@ struct TabulatedWindow <: AbstractWindow
     extrapolation::ModeledWindow
     match::Float64 # Used to match tabulated and modeled transmission functions.
 end
-name(mw::TabulatedWindow) = "$(name(mw.type)) - Tabulated"
+NeXLCore.name(mw::TabulatedWindow) = "$(name(mw.type)) - Tabulated"
 
 function NeXLCore.transmission(
     wnd::TabulatedWindow,
