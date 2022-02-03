@@ -48,7 +48,7 @@ X-ray. The detector response function (implemented as a matrix) is a function th
 """
 
 # ╔═╡ 458d65a0-687c-11eb-18aa-29a72e160f55
-resp = detectorresponse(det,SDDEfficiency(AP33Model()))
+resp = detectorresponse(det,SDDEfficiency(ModeledWindow(MoxtekAP33)))
 
 # ╔═╡ 26bf4360-6885-11eb-316f-618f54f568b9
 md"""
