@@ -144,8 +144,6 @@ function continuumrois(
     return invert(ascontiguous, channel(minE, det):channel(maxE, det))
 end
 
-
-
 """
     fitcontinuum(
       spec::Spectrum,
@@ -181,7 +179,8 @@ function fitcontinuum(
     det::EDSDetector,
     resp::AbstractArray{<:Real,2}; #
     minE::Float64 = 1.5e3,
-    maxE::Float64 = 0.95 * spec[:BeamEnergy],
+    maxE::Float64 = 0.90 * spec[:BeamEnergy],
+    width::Int = 20,
     brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
     mc::Type{<:MatrixCorrection} = Riveros1993,
 )::Vector{Float64}
@@ -198,17 +197,27 @@ function fitcontinuum(
     # meas is the raw continuum shape.  It needs to be scaled to the unknown.
     minEmod = max(50.0, energy(lld(spec), spec))
     model = resp * map(e -> e > minEmod ? emitted(cmod, e) : 0.0, energyscale(spec))
-    prevroi, brem = missing, counts(spec, Float64)
+    chlow, k0 = 1, 0.0
+    chdata, result = counts(spec, Float64), zeros(Float64, length(spec))
     for roi in continuumrois(elms(spec, true), det, minE, maxE)
-        currrois = ismissing(prevroi) ? (roi,) : (prevroi, roi)
-        k =
-            sum(sum(counts(spec, roi, Float64)) for roi in currrois) /
-            sum(sum(model[roi]) for roi in currrois)
-        peak = (ismissing(prevroi) ? lld(det) : prevroi.stop):roi.start
-        brem[peak] = k * model[peak]
-        prevroi = roi
+        # Begining of continuum ROI
+        roi1 = roi.start:(roi.start+min(width, length(roi))-1)
+        k1 = sum(@view chdata[roi1]) / sum(@view model[roi1])
+        # End of continuum ROI
+        roi2 = (roi.stop - min(width, length(roi)) + 1):roi.stop
+        k2 = sum(@view chdata[roi2]) / sum(@view model[roi2])
+        # Model between roi1 and roi2 
+        k1_2(ch) = (k2-k1)*(ch-roi.start)/length(roi) + k1
+        result[roi] = k1_2.(roi) .* model[roi]
+        k0 = chlow == 1 ? k1 : k0
+        # Model between prev roi and roi
+        k0_1(ch) = (k1-k0)*(ch-chlow)/(roi.start-chlow) + k0
+        result[chlow:roi.start-1] = k0_1.(chlow:roi.start-1) .* model[chlow:roi.start-1]
+        chlow, k0 = roi.stop + 1, k1
     end
-    return brem
+    # Fill the final patch
+    result[chlow:length(result)] = k0*model[chlow:length(result)]
+    return result
 end
 
 function fittedcontinuum(
@@ -253,7 +262,7 @@ end
       mc::Type{<:MatrixCorrection} = Riveros1993,
     )::Spectrum
 
-Computes the characteristic-only spectrum by subtracting the .
+Computes the characteristic-only spectrum by subtracting the continuum.
 """
 function subtractcontinuum(
     spec::Spectrum,
