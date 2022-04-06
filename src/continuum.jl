@@ -166,6 +166,7 @@ The ROIs are computed using `continuumrois(...)` and each roi is fit seperately.
       mode = :Global [ | :Local ] # Fit to all ROIs simultaneously (:Global) or to each roi independently (:Local)
       minE::Float64 = 1.5e3,
       maxE::Float64 = 0.95 * spec[:BeamEnergy],
+      width::Int = 20, # Width of ROI at each end of each patch of continuum that is matched
       brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
       mc::Type{<:MatrixCorrection} = Riveros1993,
     )::Spectrum
