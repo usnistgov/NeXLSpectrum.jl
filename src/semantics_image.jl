@@ -13,7 +13,8 @@ function readSEManticsImage(fn::AbstractString)
     if isfile(img_txt)
         imgs = CSV.File(img_txt, delim = "\t") |> DataFrame
         (nm, _) = splitext(sp[end])
-        rg = Regex(replace(nm[1:end-3], "_" => "[.\\\\:]", "["=>"\\[", "]"=>"\\]"))
+        # Single class to replace fails in 1.6
+        rg = Regex(reduce((a,b)->replace(a,b), ( "["=>"\\[", "]"=>"\\]", "_" => "[.\\\\:_]"); init=string(nm[1:end-3])))
         mimgs = filter(r -> !isnothing(match(rg, r[:Name])), imgs)
         if nrow(mimgs) > 0
             # Since an image can be written more than once, take the last...
@@ -26,10 +27,10 @@ function readSEManticsImage(fn::AbstractString)
             )
                     
         else
-            @info "There is no meta-data in image.txt for images matching $rg."
+            @info "There is no meta-data in images.txt for images matching $rg for $fn."
         end
     else
-        @info "There is no meta-data file images.txt for images matching $rg."
+        @info "There is no meta-data file images.txt for images matching $rg for $fn."
     end
     return img
 end
