@@ -211,9 +211,10 @@ function fitcontinuum(
         result[roi] = k1_2.(roi) .* model[roi]
         k0 = chlow == 1 ? k1 : k0
         # Model between prev roi and roi
-        k0_1(ch) = (k1-k0)*(ch-chlow)/(roi.start-chlow) + k0
-        result[chlow:roi.start-1] = k0_1.(chlow:roi.start-1) .* model[chlow:roi.start-1]
-        chlow, k0 = roi.stop + 1, k1
+        roi0_1 = chlow:(roi.start-1)
+        k0_1(ch) = (k1-k0)*(ch-roi0_1.start)/length(roi0_1) + k0
+        result[roi0_1] = k0_1.(roi0_1) .* model[roi0_1]
+        chlow, k0 = roi.stop + 1, k2
     end
     # Fill the final patch
     result[chlow:length(result)] = k0*model[chlow:length(result)]
