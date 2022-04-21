@@ -159,7 +159,7 @@ using DataFrames
         cak = tophatfilter(caroi, ff, 1.0 / dose(caf2))
         fekl = tophatfilter(feroi, ff, 1.0 / dose(fe))
 
-        fds = collect(Iterators.flatten((ok, mgk, alk, sik, cak, fekl)))
+        fds = collect(toarray((ok, mgk, alk, sik, cak, fekl)))
 
         unk = tophatfilter(unks[1], ff, 1.0 / dose(unks[1]))
 
@@ -250,7 +250,7 @@ using DataFrames
         tilk = tophatfilter(tiroi, ff, 1.0 / dose(ti))
         znlk = tophatfilter(znroi, ff, 1.0 / dose(zn))
 
-        fds = collect(Iterators.flatten((alk, cak, felk, gelk, ok, sik, tilk, znlk)))
+        fds = collect(toarray((alk, cak, felk, gelk, ok, sik, tilk, znlk)))
 
         res = FilterFitResult[]
         for i = 1:15
