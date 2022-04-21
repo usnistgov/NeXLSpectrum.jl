@@ -71,7 +71,7 @@ function references(refs::Vector{DirectRefInit}, det::Detector, resp::Matrix{Flo
 end
 
 
-Base.show(io::IO, drs::DirectReferences) = print(io, "DirectReferences(\n"*join( ("\t$dr" for dr in drs.references), ",\n")*"\n)")
+Base.show(io::IO, drs::DirectReferences) = print(io, "DirectReferences(\n"*join( ("\t$(dr.label)" for dr in drs.references), ",\n")*"\n)")
 
 """
 `DirectFitResult` contains the result of a direct fit of a `DirectReferences` to an unknown spectrum.

@@ -757,4 +757,24 @@ function Gadfly.plot(
     end
 end 
 
+function Gadfly.plot(dr::DirectReference)
+    sp = dr.label.spectrum
+    bc = copy(sp.counts)
+    bc[dr.roi] -= dr.data
+    back = Spectrum(sp.energy, bc, copy(sp.properties))
+    extroi = max(1,dr.roi.start-length(dr.roi)÷3):min(length(sp),dr.roi.stop+length(dr.roi)÷3)
+    plot(
+        layer(x=extroi, y=sp.counts[extroi], Geom.step, Theme(default_color=NeXLPalette[1])),
+        layer(x=extroi, y=back.counts[extroi], Geom.step, Theme(default_color=NeXLPalette[2])),
+        Guide.title("$(dr.label)"), Coord.cartesian(xmin=extroi.start, xmax=extroi.stop),
+        Guide.xlabel("Channel"), Guide.ylabel("Counts")
+    )
+end
+
+function Gadfly.plot(drs::DirectReferences; cols=3)
+    plts = [ plot(ref) for ref in drs.references ]
+    foreach(_->push!(plts, plot()), 1:((cols-length(drs.references) % cols)%cols))
+    gridstack( reshape(plts, length(plts)÷cols, cols))
+end
+
 @info "Loading Gadfly support into NeXLSpectrum."
