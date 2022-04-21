@@ -239,6 +239,12 @@ export suitability # Tabulates material suitability for use as a fitting referen
 include("qquant.jl")
 export VectorQuant
 
+include("direct.jl")
+export DirectReference
+export DirectReferences
+export DirectFitResult
+export direct
+
 include("labeled.jl")
 export labeledimage # Displays an image and caption.
 export labeledimages # Displays a grid of images and captions.

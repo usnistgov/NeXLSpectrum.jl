@@ -18,6 +18,7 @@ const NeXLSpectrumStyle = style(
     plot_padding = [2pt],
     key_title_font_size = 9pt,
     key_position = :right, # :bottom
+    colorkey_swatch_shape = :square
 )
 
 
@@ -292,6 +293,7 @@ function Gadfly.plot(
                     length(specs) > 1 ? "Spectra" : "Spectrum",
                     names,
                     palette[1:length(specs)],
+                    pos = [ 0.8w, 0.0h ]  # 80# over, centered
                 ),
             ) : tuple()
         try
@@ -357,13 +359,14 @@ function Gadfly.plot(
     resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
     yscale = 1.0
 )
+    fspec = spectrum(ffr)
     function defroi(ffrr) # Compute a reasonable default display ROI
         tmp =
             minimum(
                 lbl.roi[1] for lbl in keys(ffrr.kratios)
             ):maximum(lbl.roi[end] for lbl in keys(ffrr.kratios))
         return max(
-            lld(ffr.label.spectrum),
+            lld(fspec),
             tmp[1] - length(ffrr.roi) ÷ 40,
         ):min(tmp[end] + length(ffrr.roi) ÷ 10, ffrr.roi[end])
     end
@@ -374,14 +377,15 @@ function Gadfly.plot(
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
     # If the information is available,also model the continuum
-    comp = isnothing(comp) ? get(spectrum(ffr), :Composition, nothing) : comp
-    det = isnothing(det) ? get(spectrum(ffr), :Detector, nothing) : det
+    comp = isnothing(comp) ? get(fspec, :Composition, nothing) : comp
+    det = isnothing(det) ? get(fspec, :Detector, nothing) : det
     if !any(isnothing.((comp, resp, det)))
-        cc = fitcontinuum(spectrum(ffr), det, resp)
+        cc = fitcontinuum(fspec, det, resp)
         push!(layers, layer(x=roi, y=cc[roi], Geom.line, Theme(default_color=palette[2])))
     end
+    scroi = min(channel(100.0, fspec), length(fspec)):roi.stop
     miny, maxy, prev, i =
-        minimum(ffr.residual[roi]), 3.0 * yscale * maximum(ffr.residual[roi]), -1000, -1
+        minimum(ffr.residual[scroi]), 3.0 * yscale * maximum(ffr.residual[scroi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
         if NeXLUncertainties.value(ffr, lbl) > 0.0
             # This logic keeps the labels on different lines (mostly...)
@@ -651,5 +655,106 @@ function Gadfly.plot(winds::AbstractArray{<:AbstractWindow}; xmin=0.0, xmax=20.0
 end
 Gadfly.plot(wind::AbstractWindow; xmin=0.0, xmax=20.0e3, angle=π/2, style=NeXLSpectrumStyle) = #
     plot([ wind ], xmin=xmin, xmax=xmax, angle=angle, style=style)
-+
+
+"""
+    Gadfly.plot(
+        dfr::DirectFitResult,
+        roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
+        palette = NeXLPalette,
+        style = NeXLSpectrumStyle,
+        xmax::Union{AbstractFloat, Nothing} = nothing,
+        comp::Union{Material, Nothing} = nothing,
+        det::Union{EDSDetector, Nothing} = nothing,
+        resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
+        yscale = 1.0
+    )
+
+Plot the sample spectrum, the residual and fit regions-of-interests and the associated k-ratios.
+"""
+function Gadfly.plot(
+    dfr::DirectFitResult,
+    roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
+    palette = NeXLPalette,
+    style = NeXLSpectrum.NeXLSpectrumStyle,
+    xmax::Union{AbstractFloat, Nothing} = nothing,
+    comp::Union{Material, Nothing} = nothing,
+    det::Union{EDSDetector, Nothing} = nothing,
+    resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
+    yscale = 1.0
+)
+    dspec = dfr.label.spectrum
+    function defroi(ddffrr) # Compute a reasonable default display ROI
+        raw = ddffrr.label.spectrum.counts
+        res = ddffrr.residual.counts
+        mx = findlast(i->raw[i]!=res[i], eachindex(raw))
+        mx = min(max(mx + mx÷5, 100), length(raw))
+        mn = channel(0.0, ddffrr.label.spectrum)
+        return mn:mx
+    end
+    roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
+    roi = something(roi, defroi(dfr))
+    layers = [
+        layer(x = roi, y = counts(dfr.continuum, roi), Geom.step, Theme(default_color = palette[3])),
+        layer(x = roi, y = counts(dfr.residual, roi), Geom.step, Theme(default_color = palette[2])),
+        layer(x = roi, y = counts(dspec, roi), Geom.step, Theme(default_color = palette[1])),
+    ]
+    # If the information is available,also model the continuum
+    comp = isnothing(comp) ? get(dspec, :Composition, nothing) : comp
+    det = isnothing(det) ? get(dspec, :Detector, nothing) : det
+    if !any(isnothing.((comp, resp, det)))
+        cc = fitcontinuum(dspec, det, resp)
+        push!(layers, layer(x=roi, y=cc[roi], Geom.line, Theme(default_color=palette[2])))
+    end
+    scroi = min(channel(100.0, dspec), length(dspec)):roi.stop
+    miny, maxy, prev, i =
+        minimum(dfr.residual.counts[scroi]), 3.0 * yscale * maximum(dfr.residual.counts[scroi]), -1000, -1
+    for lbl in sort(collect(keys(dfr.kratios)), lt = roilt)
+        if NeXLUncertainties.value(dfr.kratios, lbl) > 0.0
+            # This logic keeps the labels on different lines (mostly...)
+            i, prev =
+                (lbl.roi[1] > prev + length(roi) ÷ 10) || (i == 6) ? (0, lbl.roi[end]) :
+                (i + 1, prev)
+            labels = ["", name(lbl.xrays)]
+            # Plot the ROI
+            push!(
+                layers,
+                layer(
+                    x = [lbl.roi[1], lbl.roi[end]],
+                    y = maxy * [0.4 + 0.1 * i, 0.4 + 0.1 * i],
+                    label = labels,
+                    Geom.line,
+                    Geom.point,
+                    Geom.label(position = :right),
+                    Theme(default_color = "gray"),
+                ),
+            )
+            # Plot the k-ratio as a label above ROI
+            push!(
+                layers,
+                layer(
+                    x = [0.5 * (lbl.roi[1] + lbl.roi[end])],
+                    y = maxy * [0.4 + 0.1 * i],
+                    label = [@sprintf("%1.4f", NeXLUncertainties.value(dfr, lbl))],
+                    Geom.label(position = :above),
+                    Theme(default_color = "gray"),
+                ),
+            )
+        end
+    end
+    Gadfly.with_theme(style) do
+        plot(
+            layers...,
+            Coord.cartesian(
+                xmin = roi[1],
+                xmax = something(xmax, roi[end]),
+                ymin = min(1.1 * miny, 0.0),
+                ymax = maxy,
+            ),
+            Guide.XLabel("Channels"),
+            Guide.YLabel("Counts"),
+            Guide.title("$(dfr.label)"),
+        )
+    end
+end 
+
 @info "Loading Gadfly support into NeXLSpectrum."

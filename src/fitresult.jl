@@ -18,7 +18,7 @@ function findlabel(ffr::FitResult, cxr::CharXRay)
     return lbls[fa[1]]
 end
 
-Base.show(io::IO, ffr::FitResult) = print(io, "$(ffr.label)")
+Base.show(io::IO, ffr::FitResult) = print(io, "FitResult($(ffr.label))")
 NeXLUncertainties.NeXLUncertainties.value(ffr::FitResult, label::ReferenceLabel) =
     NeXLUncertainties.value(ffr.kratios, label)
 NeXLUncertainties.σ(ffr::FitResult, label::ReferenceLabel) = σ(ffr.kratios, label)
@@ -181,7 +181,8 @@ Summarize the ROI and k-ratio data within a `FitResult` structure as a `DataFram
 function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
     rois = labels(fr)
     res =  DataFrame(
-        ROI = rois,
+        Spectrum = fill(fr.label, length(rois)),
+        Feature = rois,
         K = map(l -> value(fr.kratios, l), rois),
     )
     withUnc && insertcols!(res, :dK => map(l -> σ(fr.kratios, l), rois) )
@@ -224,6 +225,9 @@ struct FilterFitResult{T <: AbstractFloat} <: FitResult
     residual::Vector{T}
     peakback::Dict{ReferenceLabel,NTuple{3,T}}
 end
+
+Base.show(io::IO, ffr::FilterFitResult) = print(io, "FitResult($(ffr.label))")
+
 
 """
     residual(ffr::FilterFitResult)::Spectrum
