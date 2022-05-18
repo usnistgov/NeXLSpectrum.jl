@@ -151,8 +151,10 @@ function readbrukerspx(io::IO)::Spectrum
             props[:TakeOffAngle] =
                 deg2rad(parse(Float64, findfirst("ElevationAngle", item).content))
         )
-        props[:WorkingDistance] =
-            0.1 * parse(Float64, findfirst("WorkingDistance", item).content)
+        wd = findfirst("WorkingDistance", item)
+        if !isnothing(wd)
+            props[:WorkingDistance] = 0.1 * parse(Float64, wd.content)
+        end
     end
     #item = findfirst("//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTXrfFPModelHeader']",xml)
     #item = findfirst("//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTQuantitatorConfig']",xml)
