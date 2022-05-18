@@ -216,6 +216,9 @@ end
 function Base.similar(spec::Spectrum{T}, ::Type{U}) where { T <: Real, U <: Real }
     return Spectrum(spec.energy, similar(spec.counts, U), copy(spec.properties))
 end
+function Base.similar(spec::Spectrum{T}) where { T <: Real }
+    return Spectrum(spec.energy, similar(spec.counts, T), copy(spec.properties))
+end
 
 # Spectrum math simply performs the operation on the channel data but doesn't change any properties except the name.
 Base.:*(a::Real, s::Spectrum) = property!(Spectrum(s.energy, a*s.counts, copy(s.properties)), :Name, "$a⋅$(s[:Name])")
