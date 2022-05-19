@@ -60,3 +60,34 @@ end
     @test sp2a[:TakeOffAngle] == deg2rad(35.0)
     @test sp2a[:WorkingDistance] == 1.1
 end
+
+@testset "Old Bruker" begin
+    sp2a = loadspectrum(joinpath(@__DIR__, "Other", "chevkinite-1.spx"))
+    @test sp2a[:RealTime] ≈ 63.44
+    @test sp2a[:LiveTime] ≈ 60.227
+    @test sp2a[:BrukerThroughput] ≈ 60000
+    @test sp2a[:DetectorModel] == "Bruker XFlash 6|10"
+    @test sp2a[:DetectorSerialNumber] == "8273/74"
+    @test sp2a[:DetectorThickness] ≈ 0.045
+    @test sp2a[:DeadLayerThickness] ≈ 0.1 * 0.029
+    @test dsp2a[:Elevation] ≈ deg2rad(35.0)
+    win = sp2a[:Window]
+    @test length(win) == 5
+    @test isapprox(win[1], Film(pure(n"B"), 1.3E1 * 1.0e-7))
+    @test isapprox(win[2], Film(pure(n"C"), 1.45E1 * 1.0e-7))
+    @test isapprox(win[3], Film(pure(n"N"), 4.5 * 1.0e-7))
+    @test isapprox(win[4], Film(pure(n"O"), 8.5 * 1.0e-7))
+    @test isapprox(win[5], Film(pure(n"Al"), 3.5 * 1.0e-7))
+    @test sp2a[:BeamEnergy] ≈ 20.0e3
+
+    @test n"O" in sp2a[:Elements]
+    @test n"Si" in sp2a[:Elements]
+    @test n"Ti" in sp2a[:Elements]
+    @test n"Fe" in sp2a[:Elements]
+    @test n"Ba" in sp2a[:Elements]
+    @test n"Ca" in sp2a[:Elements]
+    @test n"Cr" in sp2a[:Elements]
+    @test n"Cs" in sp2a[:Elements]
+    @test n"La" in sp2a[:Elements]
+    @test sp2a[:TakeOffAngle] ≈ deg2rad(35.0)
+end
