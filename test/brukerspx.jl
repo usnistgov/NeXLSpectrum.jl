@@ -70,7 +70,7 @@ end
     @test sp2a[:DetectorSerialNumber] == "8273/74"
     @test sp2a[:DetectorThickness] ≈ 0.045
     @test sp2a[:DeadLayerThickness] ≈ 0.1 * 0.029
-    @test dsp2a[:Elevation] ≈ deg2rad(35.0)
+    @test sp2a[:Elevation] ≈ deg2rad(35.0)
     win = sp2a[:Window]
     @test length(win) == 5
     @test isapprox(win[1], Film(pure(n"B"), 1.3E1 * 1.0e-7))
