@@ -63,7 +63,7 @@ export gaussianwidth, fwhm
 include("window.jl")
 # primary function transmission(wnd, energy, angle)
 export AbstractWindow, ModeledWindow, TabulatedWindow, NoWindow
-export WindowType, MoxtekAP33, MoxtekAP5, AmetekC1, AmetekC2, BerylliumWindow
+export WindowType, MoxtekAP33, MoxtekAP5, AmetekC1, AmetekC2, AmptekC1, AmptekC2, BerylliumWindow
 
 include("detefficiency.jl")
 export DetectorEfficiency
