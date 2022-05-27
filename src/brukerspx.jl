@@ -13,15 +13,20 @@ function readbrukerspx(filename::String)::Spectrum
 end
 
 function readbrukerspx(io::IO)::Spectrum
-    xml = readxml(io)
+    rootxml = readxml(io)
+    spxml = findfirst("//ClassInstance[@Type='TRTSpectrum']", rootxml)
+    brukerxml2spectrum(spxml)
+end
+
+function brukerxml2spectrum(xml::Node)::Spectrum
     # Read the counts data
-    chdata = findall("//TRTSpectrum/ClassInstance/Channels", xml)[1].content
+    chdata = findfirst("//Channels", xml).content
     counts = parse.(Int, strip.(split(chdata, ",")))
     # Read the header data
     props = Dict{Symbol,Any}()
     nrgy = missing
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/ClassInstance[@Type='TRTSpectrumHeader']",
+        "//ClassInstance[@Type='TRTSpectrumHeader']",
         xml,
     )
     if !isnothing(item)
@@ -32,9 +37,10 @@ function readbrukerspx(io::IO)::Spectrum
         off = 1000.0 * parse(Float64, findfirst("CalibAbs", item).content) # <CalibAbs>-9.5639563E-1</CalibAbs>
         gain = 1000.0 * parse(Float64, findfirst("CalibLin", item).content) # <CalibLin>1.0001E-2</CalibLin>
         nrgy = LinearEnergyScale(off, gain)
+        props[:SigmaZerokV] = 1000.0 * parse(Float64, findfirst("SigmaAbs", item).content)  # useful for ZeroPeak Integration
     end
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/ClassInstance[@Type='TRTPSEElementList']",
+        "//ClassInstance[@Type='TRTPSEElementList']",
         xml,
     )
     if !isnothing(item)
@@ -49,20 +55,24 @@ function readbrukerspx(io::IO)::Spectrum
     end
     # item = findall("//TRTSpectrum/ClassInstance/ClassInstance[@Type='TRTResult']",xml) # Someday...
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTSpectrumHardwareHeader']",
-        xml,
-    )
-    item = findfirst(
-        "//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTSpectrumHardwareHeader']",
+        "//TRTHeaderedClass/ClassInstance[@Type='TRTSpectrumHardwareHeader']",
         xml,
     )
     if !isnothing(item)
-        props[:RealTime] = 0.001 * parse(Int, findfirst("RealTime", item).content) # <RealTime>310610</RealTime>
-        props[:LiveTime] = 0.001 * parse(Int, findfirst("LifeTime", item).content) # <LifeTime>300294</LifeTime>
+        if !isnothing(findfirst("RealTime", item))
+            props[:RealTime] = 0.001 * parse(Int, findfirst("RealTime", item).content) # <RealTime>310610</RealTime>
+        end
+        if !isnothing(findfirst("LifeTime", item))
+            props[:LiveTime] = 0.001 * parse(Int, findfirst("LifeTime", item).content) # <LifeTime>300294</LifeTime>
+        end
         props[:BrukerThroughput] = parse(Int, findfirst("ShapingTime", item).content) # <ShapingTime>130000</ShapingTime>
+        # in case Real time and LifeTime is not there (Hyperspectra) it can
+        # be calculated from ZeroPeak knowing following parameters: 
+        props[:ZeroPeakPosition] = parse(Int, findfirst("ZeroPeakPosition", item).content)  # in Channel index (0 or 1 based? Delfi Pascal has both)
+        props[:ZeroPeakFrequency] = parse(Int, findfirst("ZeroPeakFrequency", item).content)  # in Hz
     end
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTDetectorHeader']",
+        "//TRTHeaderedClass/ClassInstance[@Type='TRTDetectorHeader']",
         xml,
     )
     if !isnothing(item)
@@ -91,7 +101,7 @@ function readbrukerspx(io::IO)::Spectrum
         end
     end
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTXrfHeader']",
+        "//TRTHeaderedClass/ClassInstance[@Type='TRTXrfHeader']",
         xml,
     )
     if !isnothing(item)
@@ -140,7 +150,7 @@ function readbrukerspx(io::IO)::Spectrum
         props[:XRFTubeWindow] = Film(pure(welm), wthk)
     end
     item = findfirst(
-        "//TRTSpectrum/ClassInstance/TRTHeaderedClass/ClassInstance[@Type='TRTESMAHeader']",
+        "//TRTHeaderedClass/ClassInstance[@Type='TRTESMAHeader']",
         xml,
     )
     if !isnothing(item)

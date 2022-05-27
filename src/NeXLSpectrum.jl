@@ -12,7 +12,7 @@ using ImageAxes: AxisArrays, AxisArray, axes, axisnames, axisvalues
 using Unitful: mm
 using FileIO
 using Mmap
-using EzXML: readxml
+using EzXML: readxml, Node
 using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
 using LoopVectorization
