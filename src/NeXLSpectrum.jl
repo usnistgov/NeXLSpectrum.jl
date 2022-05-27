@@ -12,7 +12,7 @@ using ImageAxes: AxisArrays, AxisArray, axes, axisnames, axisvalues
 using Unitful: mm
 using FileIO
 using Mmap
-using EzXML: readxml
+using EzXML: readxml, Node
 using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
 using LinearAlgebra
 using LoopVectorization
@@ -143,6 +143,7 @@ include("emsa.jl")
 include("aspextiff.jl")
 include("brukerpdz.jl")
 include("brukerspx.jl")
+include("brukerbcf.jl")
 include("fileiosupport.jl")
 include("semanticsptx.jl")
 include("hspy.jl")
