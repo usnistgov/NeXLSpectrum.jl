@@ -53,11 +53,11 @@ Primarily, `NeXLSpectrum`
     * Implements a 'vector-based' quick-quant algorithm for processing hyper-spectra
 
 ## NeXL and PackageCompiler
-Because Julia using a just-in-time compiler that recompiles libraries each time Julia
+Because Julia uses a just-in-time compiler that recompiles libraries each time Julia
 is restarted and the `NeXL` libraries are quite large, the first time you perform an 
-operation it can be quite slow.  Subsequent times are much faster.  There is a way 
-around this.  The `PackageCompiler` library can be used to build a version of Julia 
-in which `NeXLSpectrum` and the libraries on which it depends are build into the 
+operation it can be quite slow.  Subsequent calls are much faster.  Fortunately, there 
+is a way around this.  The `PackageCompiler` library can be used to build a version of 
+Julia in which `NeXLSpectrum` and the libraries on which it depends are build into the 
 language much like the base libraries.  I recommend that you use the `PackageCompiler` 
 to rebuild Julia each time you update the packages (using `julia> ]up`) or upgrade
 to a new version of Julia.
