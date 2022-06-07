@@ -3,6 +3,7 @@ using NeXLSpectrum
 using NeXLCore
 using Statistics
 using Distributions
+using Dates
 
 @testset "Spectrum" begin
     les = LinearEnergyScale(-495.0, 5.0)
@@ -153,6 +154,16 @@ using Distributions
         specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
         # @show duane_hunt.(specs)
         @test all(isapprox.(duane_hunt.(specs), 20.0e3, atol=100.0))
+    end
+
+    @testset "TESCAN TIMA EMSA" begin
+        sp = loadspectrum(joinpath(@__DIR__,"Other","Spc(Calcite(2))_2.msa"))
+        @test sp[:BeamEnergy]==25000.0
+        @test sp[:AcquisitionTime] == DateTime("2022-04-26T03:26:00")
+        @test sp[52] == 1491.0
+        @test length(sp)==3000
+        @test sp.energy.offset==0.0
+        @test sp.energy.width==10.0
     end
 
     @testset "sigma" begin
