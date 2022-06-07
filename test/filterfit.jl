@@ -443,7 +443,7 @@ using DataFrames
         @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
         @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.02988, atol=0.00002)
+        @test isapprox(df[1,:KoKcalc], 1.02996, atol=0.00002)
         @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
         @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
     end
@@ -495,7 +495,7 @@ using DataFrames
         @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
         @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.02988, atol=0.00002)
+        @test isapprox(df[1,:KoKcalc], 1.02997, atol=0.00002)
         @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
         @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
     end
