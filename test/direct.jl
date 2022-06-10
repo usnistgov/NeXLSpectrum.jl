@@ -27,8 +27,8 @@ using Statistics
     dffrs = map(sp->fit_spectrum(sp, drefs), unks)
 
     df = asa(DataFrame, dffrs)
-    @test isapprox(mean(df[:, "k[O K-L3 + 1 other, SiO2]"]), 0.639317, atol=1.0e-6)
-    @test isapprox(mean(df[:, "k[Fe L3-M5 + 13 others, Fe]"]), 0.0274815, atol=1.0e-6)
+    @test isapprox(mean(df[:, "k[O K-L3 + 1 other, SiO2]"]), 0.639290, atol=1.0e-6)
+    @test isapprox(mean(df[:, "k[Fe L3-M5 + 13 others, Fe]"]), 0.0274337, atol=1.0e-6)
     @test isapprox(mean(df[:, "k[Mg K-L3 + 1 other, MgO]"]), 0.148236, atol=1.0e-6)
     @test isapprox(mean(df[:, "k[Al K-L3 + 2 others, Al2O3]"]), 0.0682411, atol=1.0e-6)
     @test isapprox(mean(df[:, "k[Si K-L3 + 2 others, SiO2]"]), 0.353566, atol=1.0e-6)
@@ -38,7 +38,7 @@ using Statistics
 
     qs = quantify.(dffrs)
     qdf = asa(DataFrame, qs)
-    @test isapprox(mean(qdf[:, "O"]), 0.435087, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "O"]), 0.435068, atol=1.0e-6)
     @test isapprox(mean(qdf[:, "Mg"]), 0.115615, atol=1.0e-6)
     @test isapprox(mean(qdf[:, "Al"]), 0.0491013, atol=1.0e-6)
     @test isapprox(mean(qdf[:, "Si"]), 0.209176, atol=1.0e-6)
