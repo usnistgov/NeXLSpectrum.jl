@@ -267,7 +267,7 @@ using DataFrames
         @test isapprox(mean(values(res, znroi[2])), 0.1115, atol = 0.0005)
         @test isapprox(mean(values(res, znroi[3])), 0.1231, rtol = 0.01)
         @test isapprox(mean(values(res, tiroi[1])), 0.0404, atol = 0.001)
-        @test isapprox(mean(values(res, tiroi[2])), 0.064, rtol = 0.0002)
+        @test isapprox(mean(values(res, tiroi[2])), 0.06398, rtol = 0.0002)
         @test isapprox(mean(values(res, tiroi[3])), 0.064, rtol = 0.06)
         @test isapprox(mean(values(res, feroi[1])), 0.0, atol = 0.001)
         @test isapprox(mean(values(res, feroi[2])), 0.0, atol = 0.0004)
@@ -316,7 +316,7 @@ using DataFrames
         )
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Ge K-M3"))),
-            0.2734,
+            0.2739,
             atol = 0.0001,
         )
         @test isapprox(
@@ -409,7 +409,7 @@ using DataFrames
         @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44715, atol=0.0001)
+        @test isapprox(value(qr.comp[n"O"]), 0.44725, atol=0.0001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
         @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
@@ -436,16 +436,16 @@ using DataFrames
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
         @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
         @test df[1,:Start]==131
-        @test df[1,:Stop]==168
+        @test df[1,:Stop]==169
         @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Peak], 1.05241e5, atol=10.0)
-        @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
-        @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
-        @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.02996, atol=0.00002)
-        @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
-        @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
+        @test isapprox(df[1,:Peak], 1.05366e5, atol=10.0)
+        @test isapprox(df[1,:Back], 1.18593e5, atol=10.0)
+        @test isapprox(df[1,:PtoB], 71.849, atol=0.001)
+        @test isapprox(df[1,:KCalc], 0.032160115, atol=0.00001)
+        @test isapprox(df[1,:KoKcalc], 1.02946, atol=0.00002)
+        @test isapprox(df[1,:RefCountsPernAs], 44283.1, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1466.11, atol=0.1)
     end
     @testset "Example 2 - 32-bit" begin
         path = joinpath(@__DIR__, "Example 2")
@@ -461,7 +461,7 @@ using DataFrames
         @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44715, atol=0.0001)
+        @test isapprox(value(qr.comp[n"O"]), 0.44725, atol=0.0001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
         @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
@@ -488,15 +488,15 @@ using DataFrames
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
         @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
         @test df[1,:Start]==131
-        @test df[1,:Stop]==168
+        @test df[1,:Stop]==169
         @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Peak], 1.05241e5, atol=10.0)
-        @test isapprox(df[1,:Back], 1.02961e5, atol=10.0)
-        @test isapprox(df[1,:PtoB], 74.9106, atol=0.001)
-        @test isapprox(df[1,:KCalc], 0.032146, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.02997, atol=0.00002)
-        @test isapprox(df[1,:RefCountsPernAs], 44231.6, atol=0.1)
-        @test isapprox(df[1,:CountsPernAs], 1464.36, atol=0.1)
+        @test isapprox(df[1,:Peak], 1.05367e5, atol=10.0)
+        @test isapprox(df[1,:Back], 1.18592e5, atol=10.0)
+        @test isapprox(df[1,:PtoB], 71.850, atol=0.001)
+        @test isapprox(df[1,:KCalc], 0.032160, atol=0.00001)
+        @test isapprox(df[1,:KoKcalc], 1.029475, atol=0.00002)
+        @test isapprox(df[1,:RefCountsPernAs], 44283.17, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1466.12, atol=0.1)
     end
 end

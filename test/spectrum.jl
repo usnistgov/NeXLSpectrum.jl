@@ -24,7 +24,7 @@ using Dates
     mnk = MnKaResolution(130.0)
 
     @testset "Resolution" begin
-        @test resolution(5898.7, mnk) == 130.0
+        @test resolution(5899.0, mnk) == 130.0
         @test isapprox(resolution(500.0, mnk), 60.0, atol = 1.0)
     end
 
@@ -82,7 +82,7 @@ using Dates
         )
         @test all(ch -> channel(energy(ch, det3), det3) == ch, 1:4096)
         @test resolution(energy(n"Mn K-L3"), det3) == 126.0
-        @test isapprox(resolution(energy(n"C K-L2"), det3), 45.867, atol = 0.001)
+        @test isapprox(resolution(energy(n"C K-L2"), det3), 45.842, atol = 0.001)
         @test isvisible(n"C K-L2", det3)
         @test !isvisible(n"Ca L3-M3", det3)
         @test length(isvisible(characteristic(n"Sc", ltransitions), det3)) >= 7
