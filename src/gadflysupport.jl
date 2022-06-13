@@ -138,7 +138,7 @@ function Gadfly.plot(
             Geom.hair,
             Geom.point,
             Geom.label(position = :above),
-            Theme(default_color = colorant"antiquewhite"),
+            Theme(default_color = colorant"gray55"),
         )
     end
     function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
