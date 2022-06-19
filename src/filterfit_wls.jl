@@ -33,17 +33,6 @@ function _buildmodel(
 end
 
 """
-    covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
-
-Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
-`roi` must be fully contained within the data in `fd`.
-"""
-NeXLUncertainties.covariance(
-    fd::FilteredUnknownW,
-    roi::UnitRange{Int}
-) = view(fd.covariance, roi)
-
-"""
 Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(
@@ -54,7 +43,7 @@ function fitcontiguousww(
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
     dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
-    w = Diagonal([sqrt(one(T) / T(cv)) for cv in covariance(unk, chs)])
+    w = Diagonal([sqrt(one(T) / T(cv)) for cv in view(unk.covariance, chs)])
     genInv = pinv(w * x, rtol = 1.0e-6)
     return scale * uvs(lbls, genInv * w * extract(unk, chs), dcs * (genInv * transpose(genInv)) * dcs)
 end
