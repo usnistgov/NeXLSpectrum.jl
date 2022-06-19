@@ -13,7 +13,7 @@ using Unitful: mm
 using FileIO
 using Mmap
 using EzXML: readxml
-using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
+using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs, Polynomials
 using LinearAlgebra
 using LoopVectorization
 using Statistics

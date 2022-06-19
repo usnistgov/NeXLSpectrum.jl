@@ -74,7 +74,7 @@ Example:
     energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
 """
 NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 = (ch - 1) * sc.width + sc.offset
-
+Polynomials.derivative(_::Int, sc::LinearEnergyScale)::Float64 = sc.width
 
 """
     PolyEnergyScale
@@ -108,6 +108,7 @@ end
 
 NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
     sc.poly(convert(Float64, ch - 1))
+Polynomials.derivative(ch::Int, sc::PolyEnergyScale)::Float64 = derivative(sc.poly,1)(ch-1)
 
 
 """
@@ -309,6 +310,7 @@ resolution(det::Detector) = resolution(enx"Mn K-L3", det)
 
 
 NeXLCore.energy(ch::Int, det::EDSDetector) = energy(ch, det.scale)
+Polynomials.derivative(ch::Int, det::EDSDetector) = derivative(ch, det.scale) 
 
 channel(eV::Float64, det::EDSDetector) = channel(eV, det.scale)
 channel(sf::SpectrumFeature, det::EDSDetector) = channel(energy(sf), det.scale)
@@ -426,7 +428,10 @@ end
     function escapeextents(
         cxrs::AbstractVector{T},
         det::Detector,
-        ampl::Float64
+        ampl::Float64,
+        maxE::Float64,
+        escape::CharXRay = n"Si K-L3",
+        minweight::Float64 = 0.5
     )::Vector{Tuple{Vector{T},UnitRange{Int}}} where T <: SpectrumFeature
 
 Creates a vector containing pairs containing a vector of T <: SpectrumFeature and an interval. The interval represents a
@@ -439,7 +444,7 @@ function escapeextents(
     ampl::Float64,
     maxE::Float64,
     escape::CharXRay = n"Si K-L3",
-    minweight::Float64 = 0.5,
+    minweight::Float64 = 0.5
 )::Vector{Tuple{Vector{EscapeArtifact},UnitRange{Int}}} where {T<:SpectrumFeature}
     escs = map(
         tr -> EscapeArtifact(tr, escape),
