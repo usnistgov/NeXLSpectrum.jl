@@ -695,7 +695,8 @@ function fitcontiguouso(
     chs::UnitRange{Int},
 )::UncertainValues where { T <: AbstractFloat }
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
+    genInv = pinv(x, rtol = 1.0e-6)
+    return scale * uvs(lbls, genInv * extract(unk, chs), genInv * transpose(genInv))
 end
 
 """

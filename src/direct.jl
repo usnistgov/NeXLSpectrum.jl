@@ -126,7 +126,9 @@ function fit_spectrum(unk::Spectrum{T}, drefs::DirectReferences) where { T <: Re
             a[dr.roi.start-full.start+1:dr.roi.stop-full.start+1, i] = dr.data / dr.scale
         end
         # Perform a weighed least squares fit using the pseudo-inverse
-        wlspinv(y, a, cov, [ dr.label for dr in block ])
+        w = Diagonal([sqrt(1.0 / cv) for cv in cov])
+        genInv = pinv(w * a, rtol = 1.0e-6)
+        return uvs(getproperty.(block, :label), genInv * w * y, genInv * transpose(genInv))
     end)
     # Compute the residual spectrum
     function residual(unk, drefs, ks)

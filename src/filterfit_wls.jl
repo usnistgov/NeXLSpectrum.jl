@@ -52,8 +52,11 @@ function fitcontiguousww(
     chs::UnitRange{Int},
 )::UncertainValues where { T <: AbstractFloat }
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    covscales = T[ ff.covscale for ff in ffs ]
-    return scale * wlspinv2(extract(unk, chs), x, covariance(unk, chs), covscales, lbls)
+    # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
+    dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
+    w = Diagonal([sqrt(one(T) / T(cv)) for cv in covariance(unk, chs)])
+    genInv = pinv(w * x, rtol = 1.0e-6)
+    return scale * uvs(lbls, genInv * w * extract(unk, chs), dcs * (genInv * transpose(genInv)) * dcs)
 end
 
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})
