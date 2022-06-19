@@ -1,6 +1,3 @@
-using MultivariateStats: cov_whitening
-using NeXLUncertainties
-
 """
     simple_linear_regression(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})::Tuple{Real, Real}
 
