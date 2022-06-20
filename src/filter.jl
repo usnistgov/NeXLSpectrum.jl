@@ -627,7 +627,7 @@ Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.label)
 
 """
     extract(fd::FilteredReference{T}, roi::UnitRange{Int})::Vector{T} where { T <: AbstractFloat }
-    extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{T} where { T <: AbstractFloat }
+    extract(fd::FilteredUnknown, roi::UnitRange{Int})::Vector{T} where { T <: AbstractFloat }
 
 Extract the filtered data representing the specified range.  `roi` must fully encompass the filtered
 data in `fd`.
@@ -643,11 +643,11 @@ end
 NeXLUncertainties.extract(
     fd::FilteredUnknown,
     roi::UnitRange{Int},
-) = view(fd.filtered, roi)
+) = fd.filtered[roi]
 
 _buildlabels(ffs::AbstractVector{<:FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference{T}}) where { T<: AbstractFloat } =
-    Diagonal([convert(T, unk.scale / ff.scale) for ff in ffs])
+    Diagonal([Float64(unk.scale / ff.scale) for ff in ffs])
 
 # Internal: Computes the residual spectrum based on the fit k-ratios
 function _computeResidual(

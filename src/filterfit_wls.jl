@@ -44,8 +44,10 @@ function fitcontiguousww(
     # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
     dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
     w = Diagonal([sqrt(one(T) / T(cv)) for cv in view(unk.covariance, chs)])
-    genInv = pinv(w * x, rtol = 1.0e-6)
-    return scale * uvs(lbls, genInv * w * extract(unk, chs), dcs * (genInv * transpose(genInv)) * dcs)
+    genInv, ext = pinv(w * x, rtol = 1.0e-6), extract(unk, chs)
+    # @assert all(eltype.((genInv, w, dcs, ext)).==T)
+    # @assert eltype(scale)==Float64
+    return scale * uvs(lbls, genInv * w * ext, dcs * (genInv * transpose(genInv)) * dcs)
 end
 
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})::Vector{UnitRange{Int}}
@@ -68,7 +70,7 @@ end
 
 For filtering the unknown spectrum. Defaults to the weighted fitting model.
 """
-tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::AbstractFloat = 1.0) where { T <: AbstractFloat } = #
+tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::T = one(T)) where { T <: AbstractFloat } = #
     tophatfilter(FilteredUnknownW{T}, spec, filt, scale)
 
 """
@@ -81,7 +83,7 @@ function tophatfilter(
     ::Type{FilteredUnknownW{T}},
     spec::Spectrum,
     thf::TopHatFilter{T},
-    scale::AbstractFloat = 1.0,
+    scale::T = one(T),
 ) where { T<: AbstractFloat }
     data = counts(spec, 1:length(thf), T, true)
     filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
@@ -101,32 +103,30 @@ end
 function _filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
-    forcezeros,
-) where { T <: AbstractFloat }
-    trimmed, refit, removed = copy(ffs), true, UncertainValues[] # start with all the FilteredReference
-    while refit
-        refit = false
-        fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
-        retained = map(fitrois) do fr
+    forcezeros::Bool,
+)::UncertainValues where { T <: AbstractFloat }
+    trimmed, removed = copy(ffs), UncertainValues[] # start with all the FilteredReference
+    while true
+        retained = map(ascontiguous(map(fd -> fd.ffroi, trimmed))) do fr
             # `fitcontiguousww(..) performs the fit
             fitcontiguousww(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr)
         end
-        kr = cat(retained)
         if forcezeros
-            for lbl in keys(kr)
-                if NeXLUncertainties.value(kr, lbl) < 0.0
-                    splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
-                    push!(removed, uvs([lbl], [0.0], reshape([σ(kr, lbl)], (1, 1))))
-                    refit = true
-                end
+            vals  = Dict{Label, UncertainValue}()
+            for kr in retained, lbl in filter(l->value(kr,l) < 0.0, keys(kr))
+                splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
+                vals[lbl] = uv(0.0, σ(kr, lbl))
             end
-        end
-        if !refit
-            return cat(append!(retained, removed))
+            if isempty(vals)
+                return cat(append!(retained, removed))
+            end
+            push!(removed, uvs(vals))
+        else
+            return cat(retained)
         end
     end # while
     @assert false
-    return removed # To maintain type
+    return cat(removed) # To maintain type
 end
 
 """
@@ -161,7 +161,7 @@ function fit_spectrum(
     forcezeros::Bool = true,
 ) where { T <: AbstractFloat }
     bestRefs = selectBestReferences(refs)
-    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, forcezeros)
+    return filterfit(tophatfilter(ty, unk, filt, one(T) / T(dose(unk))), bestRefs, forcezeros)
 end
 
 function fit_spectrum(
@@ -173,7 +173,7 @@ function fit_spectrum(
 ) where { T <: AbstractFloat }
     bestRefs = selectBestReferences(refs)
     return map(unks) do unk
-        fu = tophatfilter(ty, unk, filt, 1.0 / dose(unk))
+        fu = tophatfilter(ty, unk, filt, one(T) / T(dose(unk)))
         filterfit(fu, bestRefs, forcezeros)
     end
 end
