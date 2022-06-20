@@ -439,13 +439,15 @@ function dose(props::Dict{Symbol, Any}, def::Union{Float64,Missing})::Union{Floa
     res = get(props, :LiveTime, missing) * get(props, :ProbeCurrent, missing)
     return isequal(res, missing) ? def : res
 end
-dose(spec::Spectrum, def::Union{Float64,Missing})::Union{Float64,Missing} = dose(spec.properties, def)
-function dose(props::Dict{Symbol, Any})
+dose(spec::Spectrum, def::Union{Float64,Missing})::Union{Float64,Missing} = 
+    get(spec.properties, :LiveTime, missing) * get(spec.properties, :ProbeCurrent, missing)    
+
+function dose(props::Dict{Symbol, Any})::Float64
     res = get(props, :LiveTime, missing) * get(props, :ProbeCurrent, missing)
     ismissing(res) && @error "One or more of the properties necessary to calculate the dose (:ProbeCurrent and :LiveTime) is not available."
     return res
 end
-dose(spec::Spectrum) = dose(spec.properties)
+dose(spec::Spectrum)::Float64 = dose(spec.properties)
 
 """
     NeXLCore.energy(ch::Int, spec::Spectrum)::Float64
@@ -520,8 +522,9 @@ function counts(
         r = max(first(channels), 1):min(last(channels), length(spec))
         res[first(r)-first(channels)+1:last(r)-first(channels)+1] = spec.counts[r]
     end
-    if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
-        fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))
+    lldv = lld(spec)
+    if applyLLD && haskey(spec, :Detector) && (lldv <= first(channels))
+        fill!(view(res, 1:lldv-first(channels)+1), zero(T))
     end
     return res
 end
@@ -543,8 +546,8 @@ end
 
 Gets the low-level discriminator associated with this spectrum if there is one.
 """
-lld(spec::Spectrum) =
-    haskey(spec.properties, :Detector) ? lld(spec.properties[:Detector]) : 1
+lld(spec::Spectrum)::Int =
+    haskey(spec.properties, :Detector) ? lld(EDSDetector(spec.properties[:Detector])) : 1
 
 """
 	Base.findmax(spec::Spectrum, chs::AbstractRange{<:Integer})

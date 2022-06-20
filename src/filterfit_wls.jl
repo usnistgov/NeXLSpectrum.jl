@@ -7,7 +7,7 @@ optimistic resulting covariance matrix.
 """
 struct FilteredUnknownW{T} <: FilteredUnknown where { T<:AbstractFloat}
     label::UnknownLabel # A way of identifying this filtered datum
-    scale::Float64 # A dose or other scale correction factor
+    scale::T # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data (always 1:...)
     data::Vector{T} # Spectrum data over ffroi
     filtered::Vector{T} # Filtered spectrum data over ffroi
@@ -48,11 +48,11 @@ function fitcontiguousww(
     return scale * uvs(lbls, genInv * w * extract(unk, chs), dcs * (genInv * transpose(genInv)) * dcs)
 end
 
-function ascontiguous(rois::AbstractArray{UnitRange{Int}})
+function ascontiguous(rois::AbstractArray{UnitRange{Int}})::Vector{UnitRange{Int}}
     # Join the UnitRanges into contiguous UnitRanges
     join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
     srois = sort(rois)
-    res = [srois[1]]
+    res = UnitRange{Int}[srois[1]]
     for roi in srois[2:end]
         if length(intersect(res[end], roi)) > 0
             res[end] = join(roi, res[end]) # Join UnitRanges
@@ -68,7 +68,7 @@ end
 
 For filtering the unknown spectrum. Defaults to the weighted fitting model.
 """
-tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::Float64 = 1.0) where { T <: AbstractFloat } = #
+tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::AbstractFloat = 1.0) where { T <: AbstractFloat } = #
     tophatfilter(FilteredUnknownW{T}, spec, filt, scale)
 
 """
@@ -81,7 +81,7 @@ function tophatfilter(
     ::Type{FilteredUnknownW{T}},
     spec::Spectrum,
     thf::TopHatFilter{T},
-    scale::Float64 = 1.0,
+    scale::AbstractFloat = 1.0,
 ) where { T<: AbstractFloat }
     data = counts(spec, 1:length(thf), T, true)
     filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
@@ -89,7 +89,7 @@ function tophatfilter(
     covar = T[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
     return FilteredUnknownW{T}(
         UnknownLabel(spec),
-        scale,
+        T(scale),
         1:length(data),
         data,
         filtered,
@@ -146,7 +146,7 @@ would bias the result positive.
 function filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
-    forcezeros = true,
+    forcezeros::Bool = true,
 )::FilterFitResult where { T <: AbstractFloat }
     krs = _filterfit(unk, ffs, forcezeros)
     resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
@@ -158,7 +158,7 @@ function fit_spectrum(
     unk::Spectrum,
     filt::TopHatFilter,
     refs::AbstractVector{FilteredReference{T}},
-    forcezeros = true,
+    forcezeros::Bool = true,
 ) where { T <: AbstractFloat }
     bestRefs = selectBestReferences(refs)
     return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, forcezeros)

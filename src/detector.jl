@@ -303,7 +303,7 @@ energyscale(det::EDSDetector) = energyscale(det.scale, eachindex(det))
 
 Low level detection limit in channels.  Channels at or below this value will be zeroed when the lld is applied.
 """
-lld(det::EDSDetector) = det.lld
+lld(det::EDSDetector)::Int = det.lld
 
 resolution(eV::Float64, det::EDSDetector) = resolution(eV, det.resolution)
 resolution(det::Detector) = resolution(enx"Mn K-L3", det)

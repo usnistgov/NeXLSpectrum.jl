@@ -20,12 +20,12 @@ end
 
 Base.show(io::IO, ffr::FitResult) = print(io, "FitResult($(ffr.label))")
 NeXLUncertainties.NeXLUncertainties.value(ffr::FitResult, label::ReferenceLabel) =
-    NeXLUncertainties.value(ffr.kratios, label)
+    NeXLUncertainties.value(ffr.kratios, Label(label))
 NeXLUncertainties.σ(ffr::FitResult, label::ReferenceLabel) = σ(ffr.kratios, label)
 NeXLUncertainties.uncertainty(ffr::FitResult, label::ReferenceLabel) =
     uncertainty(ffr.kratios, label)
 NeXLUncertainties.getindex(ffr::FitResult, label::ReferenceLabel) =
-    getindex(ffr.kratios, label)
+    getindex(ffr.kratios, Label(label))
 Base.keys(ffr::FitResult) = keys(ffr.kratios)
 NeXLUncertainties.labels(ffr::FitResult) = labels(ffr.kratios)
 function kratio(cxr::CharXRay, ffr::FitResult)
