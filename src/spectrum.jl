@@ -501,11 +501,11 @@ cannot be converted without loss to the type `T`.
 function counts(
     spec::Spectrum,
     ::Type{T} = Float64,
-    applyLLD = false,
-)::Array{T} where {T<:Number}
+    applyLLD = false
+)::Vector{T} where {T<:Number}
     res = T.(spec.counts)
     if applyLLD && haskey(spec, :Detector)
-        fill!(view(res, 1:lld(spec[:Detector])), zero(T))
+        res[1:lld(spec[:Detector])] .= zero(T)
     end
     return res
 end
@@ -514,17 +514,17 @@ function counts(
     channels::AbstractRange{<:Integer},
     ::Type{T} = Float64,
     applyLLD = false,
-)::Array{T} where {T<:Real}
+)::Vector{T} where {T<:Real}
     if (first(channels) >= 1) && (last(channels) <= length(spec))
-        res = T.(spec.counts[channels])
+        res = map(x->T(x), view(spec.counts,channels))
     else
         res = zeros(T, length(channels))
         r = max(first(channels), 1):min(last(channels), length(spec))
-        res[first(r)-first(channels)+1:last(r)-first(channels)+1] = spec.counts[r]
+        res[first(r)-first(channels)+1:last(r)-first(channels)+1] .= view(spec.counts, r)
     end
     lldv = lld(spec)
     if applyLLD && haskey(spec, :Detector) && (lldv <= first(channels))
-        fill!(view(res, 1:lldv-first(channels)+1), zero(T))
+        res[1:lldv-first(channels)+1] .= zero(T)
     end
     return res
 end
@@ -533,7 +533,7 @@ function counts(
     channels::AbstractVector{<:Integer},
     ::Type{T} = Float64,
     applyLLD = false,
-)::Array{T} where {T<:Real}
+)::Vector{T} where {T<:Real}
     res = T.(spec.counts[channels])
     if applyLLD && haskey(spec, :Detector) && (lld(spec) <= first(channels))
         fill!(view(res, 1:lld(spec)-first(channels)+1), zero(T))

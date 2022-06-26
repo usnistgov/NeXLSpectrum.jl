@@ -44,7 +44,8 @@ function fitcontiguousww(
     # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
     dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
     w = Diagonal([sqrt(one(T) / T(cv)) for cv in view(unk.covariance, chs)])
-    genInv, ext = pinv(w * x, rtol = 1.0e-6), extract(unk, chs)
+    genInv = pinv(w * x, rtol = 1.0e-6) # 60% of allocation here
+    ext = extract(unk, chs)
     # @assert all(eltype.((genInv, w, dcs, ext)).==T)
     # @assert eltype(scale)==Float64
     return scale * uvs(lbls, genInv * w * ext, dcs * (genInv * transpose(genInv)) * dcs)
