@@ -199,12 +199,15 @@ references(refs::AbstractVector{ReferencePacket}, fwhm::Float64; ftype::Type{<:A
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
     fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)
 
-fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
+fit_spectra(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
     ThreadsX.map(spec -> fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references), specs)
+fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } = #
+    fit_spectra(specs, ffp)
 
 """
     fit_spectrum(spec::Spectrum, ffp::FilterFitPacket)::FilterFitResult
     fit_spectrum(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket)::Vector{FilterFitResult}
+    fit_spectra(specs::AbstractVector{<:Spectrum}, ffp::FilterFitPacket)::Vector{FilterFitResult}
 
 Fit a `Spectrum` or a vector of `Spectrum` using the specified `FilterFitPacket`.  The result is a
 `FilterFitResult` structure which contains k-ratios, residuals, etc. 
@@ -240,7 +243,7 @@ the memory and take about 4/5 the time.)
 | :Intermediate | 1        | 1064.6        | 13.1 M       | 364.4           | 0.9%     |
 | :Full         | 1        | 2186.2        | 6.2 G        | 862.1           | 2.8%     |
 """
-function fit_spectrum(
+function fit_spectra(
     hs::HyperSpectrum,
     ffp::FilterFitPacket{S, T};
     mode::Symbol = :Fast,
@@ -260,6 +263,14 @@ function fit_spectrum(
     # Should never get here...
     return  Array{KRatio}[]
 end
+
+fit_spectrum(
+    hs::HyperSpectrum,
+    ffp::FilterFitPacket{S, T};
+    kwargs...
+) where { S <: Detector, T <: AbstractFloat } = #
+    fit_spectra(hs, ffp; kwargs...)
+
 
 function fit_spectrum_int(
     hs::HyperSpectrum,

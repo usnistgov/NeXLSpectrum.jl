@@ -303,7 +303,7 @@ using DataFrames
             ],
             det,
         )
-        res = fit_spectrum(unks, ffp)
+        res = fit_spectra(unks, ffp)
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Al K-L3"))),
             0.0279,
@@ -454,7 +454,7 @@ using DataFrames
             reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
             reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
             reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
-        ], 135.0, ftype=Float32) # This line is the only difference with "Example 2"
+        ], 135.0, ftype=Float32) # This line is the only difference from "Example 2"
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)

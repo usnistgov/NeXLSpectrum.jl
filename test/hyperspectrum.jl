@@ -146,7 +146,7 @@ end
         ],
         132.0,
     )
-    res = fit_spectrum(hs, ffp, mode = :Fast)
+    res = fit_spectra(hs, ffp, mode = :Fast)
     # @info "QQ - 64-bit"
     # res = @time fit_spectrum(hs, ffp, mode = :Fast)
 
@@ -213,8 +213,8 @@ end
     end
     @test rr4
 
-    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
-    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
+    resi = fit_spectra(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectra(hs[1:8,1:8], ffp, mode = :Full)
 
     raw = nothing
     GC.gc()
@@ -244,7 +244,7 @@ end
         132.0, 
         ftype=Float32 # Only difference with above...
     )
-    res = fit_spectrum(hs, ffp, mode = :Fast)
+    res = fit_spectra(hs, ffp, mode = :Fast)
     # @info "QQ - 32-bit"
     # res = @time fit_spectrum(hs, ffp, mode = :Fast)
 
@@ -304,8 +304,8 @@ end
     end
     @test rr8
 
-    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
-    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
+    resi = fit_spectra(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectra(hs[1:8,1:8], ffp, mode = :Full)
 
     raw = nothing
     GC.gc()

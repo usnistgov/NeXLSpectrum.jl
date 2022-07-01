@@ -195,7 +195,8 @@ export FitResult
 export BasicFitResult
 export FilterFitResult
 export findlabel
-export fit_spectrum
+export fit_spectrum # Preferred for individual spectra
+export fit_spectra # Preferred for multiple spectra
 export heterogeneity
 export peaktobackground
 export characteristiccounts

@@ -97,7 +97,7 @@ function fit_spectrum(
         peakback
     )
 end
-function fit_spectrum(
+function fit_spectra(
     hs::HyperSpectrum,
     vq::VectorQuant{T},
     zero = x -> max(Base.zero(T), x),
@@ -119,3 +119,9 @@ function fit_spectrum(
     end
     return res
 end
+
+fit_spectrum(
+    hs::HyperSpectrum,
+    vq::VectorQuant{T},
+    zero = x -> max(Base.zero(T), x),
+) where { T<: AbstractFloat } = fit_spectra(hs, vq, zero)

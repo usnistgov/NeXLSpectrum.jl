@@ -165,7 +165,7 @@ function fit_spectrum(
     return filterfit(tophatfilter(ty, unk, filt, one(T) / T(dose(unk))), bestRefs, forcezeros)
 end
 
-function fit_spectrum(
+function fit_spectra(
     ty::Type{FilteredUnknownW{T}},
     unks::AbstractVector{<:Spectrum},
     filt::TopHatFilter{T},
@@ -187,10 +187,16 @@ fit_spectrum(
 ) where { T <: AbstractFloat } = #
     fit_spectrum(FilteredUnknownW{T}, unk, filt, refs, forcezeros)
 
-fit_spectrum(
+fit_spectra(
     unks::AbstractVector{Spectrum},
     filt::TopHatFilter{T},
     refs::AbstractVector{FilteredReference{T}},
     forcezeros = true,
 ) where { T <: AbstractFloat } = # 
     fit_spectra(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+
+fit_spectrum(
+    unks::AbstractVector{Spectrum},
+    filt::TopHatFilter{T},
+    refs::AbstractVector{FilteredReference{T}},
+    forcezeros = true) where { T<: AbstractFloat }= fit_spectra(unks, filt, refs, forcezeros)

@@ -26,8 +26,12 @@ end
         reference(n"Ti", joinpath(basepath,"Ti trimmed.msa"), mat"Ti"),
         reference(n"Zn", joinpath(basepath,"Zn std.msa"), mat"Zn"),
     ], det)
-    q = quantify(sp, refs)
+    k = fit_spectrum(sp, refs)
+    q1, q2 = quantify(k), quantify(k, kro = SimpleKRatioOptimizer(1.5, [ n"Ge L3-M5" ]))
+
+
     eff = SDDEfficiency(ModeledWindow(MoxtekAP33()))
     resp = detectorresponse(det, eff)
-    sim = NeXLSpectrum.simulate(nonneg(q.comp), dose(sp), sp[:BeamEnergy], sp[:TakeOffAngle], 40.0/(72.0^2), det, resp)
+    sim1 = NeXLSpectrum.simulate(nonneg(q1.comp), dose(sp), sp[:BeamEnergy], sp[:TakeOffAngle], 40.0/(72.0^2), det, resp)
+    sim2 = NeXLSpectrum.simulate(nonneg(q1.comp), dose(sp), sp[:BeamEnergy], sp[:TakeOffAngle], 40.0/(72.0^2), det, resp)
 end
