@@ -1,3 +1,4 @@
+using CubicSplines
 # Model and fit the continuum
 
 struct ContinuumModel
@@ -157,23 +158,6 @@ end
 
 Fit the continuum from ROIs determined from the data within the spectrum (:Composition, :BeamEnergy & :TakeOffAngle).
 The ROIs are computed using `continuumrois(...)` and each roi is fit seperately.
-
-
-    fittedcontinuum(
-      spec::Spectrum,
-      det::EDSDetector,
-      resp::AbstractArray{<:Real,2}; #
-      mode = :Global [ | :Local ] # Fit to all ROIs simultaneously (:Global) or to each roi independently (:Local)
-      minE::Float64 = 1.5e3,
-      maxE::Float64 = 0.95 * spec[:BeamEnergy],
-      width::Int = 20, # Width of ROI at each end of each patch of continuum that is matched
-      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-      mc::Type{<:MatrixCorrection} = Riveros1993,
-    )::Spectrum
-
-Fit the continuum under the characteristic peaks by fitting the closest continuum ROIs.  The low energy peaks are
-fit using the continuum immediately higher in energy and the high energy peaks are fit using the continuum on both
-sides.
 """
 function fitcontinuum(
     spec::Spectrum,
@@ -184,7 +168,7 @@ function fitcontinuum(
     width::Int = 20,
     brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
     mc::Type{<:MatrixCorrection} = Riveros1993,
-)::Vector{Float64}
+)
     @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
     @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
     @assert haskey(spec, :TakeOffAngle) "The fitcontinuum(...) function requires the spec[:TakeOffAngle] property."
@@ -219,9 +203,38 @@ function fitcontinuum(
     end
     # Fill the final patch
     result[chlow:length(result)] = k0*model[chlow:length(result)]
-    return result
+    props = Dict{Symbol,Any}(
+        :TakeOffAngle => spec[:TakeOffAngle],
+        :BeamEnergy => spec[:BeamEnergy],
+        :Composition => spec[:Composition],
+        :Name => "Brem[Local][$(spec[:Name])]",
+    )
+    return Spectrum(spec.energy, result, props)
 end
 
+"""
+fittedcontinuum(
+    spec::Spectrum,
+    det::EDSDetector,
+    resp::AbstractArray{<:Real,2}; #
+    mode = :Global [ | :Local ] # Fit to all ROIs simultaneously (:Global) or to each roi independently (:Local)
+    minE::Float64 = 1.5e3,
+    maxE::Float64 = 0.95 * spec[:BeamEnergy],
+    width::Int = 20, # Width of ROI at each end of each patch of continuum that is matched
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
+    mc::Type{<:MatrixCorrection} = Riveros1993,
+  )::Spectrum
+
+Fit the continuum under the characteristic peaks by fitting the closest continuum ROIs.  The low energy peaks are
+fit using the continuum immediately higher in energy and the high energy peaks are fit using the continuum on both
+sides.
+
+  * mode = :Global [ | :Local ] Global fits the model to the data using a single scale factor. :Local tweaks the
+  global model at ROIs above and below the characteristic peaks.
+
+  Typically, :Global produces the overall best fit but :Local fits better around the characteristic peaks and is 
+  better for modeling the continuum under the peaks.
+"""
 function fittedcontinuum(
     spec::Spectrum,
     det::EDSDetector,
@@ -231,26 +244,57 @@ function fittedcontinuum(
     maxE::Float64 = 0.95 * spec[:BeamEnergy],
     brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
     mc::Type{<:MatrixCorrection} = Riveros1993,
-)::Spectrum
-    function localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum
-        res = Spectrum(
-            spec.energy,
-            fitcontinuum(spec, det, resp, minE = minE, maxE = maxE, brem = brem, mc = mc),
-            copy(spec.properties),
-        )
-        res[:Name] = "Brem[Local][$(spec[:Name])]"
-        return res
-    end
-    globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)::Spectrum = fitcontinuum(
-        spec,
-        resp,
-        continuumrois(elms(spec, true), det, minE, maxE),
-        brem = brem,
-        mc = mc,
-    )
+)
     @assert (mode == :Global) || (mode == :Local) "mode must equal :Global | :Local in fitted continuum"
-    return mode == :Global ? globalfittedcontinuum(spec, det, resp, minE, maxE, brem, mc) : #
-           localfittedcontinuum(spec, det, resp, minE, maxE, brem, mc)
+    crois = continuumrois(elms(spec, true), det, minE, maxE)
+    gl = fitcontinuum(spec, resp, crois, brem = brem, mc = mc)
+    return mode == :Global ? gl : tweakcontinuum(spec, gl, crois)
+end
+
+
+
+"""
+    tweakcontinuum(
+        meas::Spectrum{T}, 
+        cont::Spectrum{U}, 
+        crois::Vector{UnitRange{Int}}; 
+        nch=10, 
+        maxSc=1.5
+    ) where { T<: Real, U <: Real }
+
+Takes a measured spectrum and the associated modeled continuum spectrum and tweaks the continuum spectrum to produce
+a better fit to the measured.  It focuses on the ends of the continuum ROIs (in `crois`) to match the continuum at
+these channels.
+
+  * `maxSc` limits how large a tweak is acceptable.
+  * `nch` determines how many channels to match at the end of each ROI in `crois`
+"""
+function tweakcontinuum(meas::Spectrum{T}, cont::Spectrum{U}, crois::Vector{UnitRange{Int}}; nch=10, maxSc=1.5) where { T<: Real, U <: Real }
+    x, y = Float64[ 1.0 ], Float64[ 1.0 ]
+    for croi in crois
+        if (length(croi)>(3*nch)/2) && (croi.start < length(cont))
+        # Add a pivot beginning and end of croi
+            stroi = croi.start:croi.start+nch-1
+            push!(x, stroi.start)
+            push!(y, Base.clamp(integrate(meas,stroi)/integrate(cont, stroi), 1.0/maxSc, maxSc))
+            endroi = croi.stop-nch+1:min(length(cont), croi.stop)
+            push!(x, endroi.stop)
+            push!(y, clamp(integrate(meas,endroi)/integrate(cont, endroi), 1.0/maxSc, maxSc))
+        end
+    end
+    if x[end]<length(cont)
+        push!(x, length(cont))
+        push!(y, 1.0)
+    end
+    spline = CubicSpline(x, y)
+    scale = map(x->spline(x), eachindex(cont.counts))
+    props=Dict(
+        cont.properties..., 
+        :CScale=>scale, 
+        :Parent=>cont,
+        :Name=>"Tweaked[$(cont[:Name])]"
+    )
+    return Spectrum(cont.energy, scale .* cont.counts, props)
 end
 
 """

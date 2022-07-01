@@ -193,4 +193,4 @@ fit_spectrum(
     refs::AbstractVector{FilteredReference{T}},
     forcezeros = true,
 ) where { T <: AbstractFloat } = # 
-    fit_spectrum(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+    fit_spectra(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
