@@ -72,16 +72,26 @@ function fit_spectrum(
     raw = counts(spec, 1:size(vq.vectors, 2), T, true)
     krs = zero.(vq.vectors * raw)
     spsc = T(dose(spec))
-    residual = copy(raw)
-    for (i, vqr) in enumerate(vq.references)
-        residual[vqr.roi] -= krs[i] * vqr.charonly
+    residual = Deferred() do
+        props = copy(properties(spec))
+        props[:Name] = "Residual[$(props[:Name])]"
+        res = copy(counts(spec, 1:size(vq.vectors, 2), T, true))
+        for (i, vqr) in enumerate(vq.references)
+            res[vqr.roi] -= krs[i] * vqr.charonly
+        end
+        return Spectrum(spec.energy, res, props)
     end
-    peakback = Dict{ReferenceLabel,NTuple{3,T}}()
+    peakback = Deferred() do 
+        res, resid = Dict{ReferenceLabel,NTuple{3,T}}(), residual()
+        for (i, vqr) in enumerate(vq.references)
+            ii, bb = krs[i] * vqr.sumchar, sum(resid[vqr.roi])
+            res[vqr.label] = (ii, bb, bb / spsc)
+        end
+        return res
+    end
     dkrs = zeros(T, length(vq.references))
     for (i, vqr) in enumerate(vq.references)
-        ii, bb = krs[i] * vqr.sumchar, sum(residual[vqr.roi])
-        peakback[vqr.label] = (ii, bb, bb / spsc)
-        dkrs[i] = sqrt(max(Base.zero(T), ii + bb)) / vqr.sumchar
+        dkrs[i] = sqrt(max(Base.zero(T), krs[i] * vqr.sumchar)) / vqr.sumchar
     end
     kratios = uvs(
         map(ref -> ref.label, vq.references), #

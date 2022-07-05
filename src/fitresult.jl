@@ -1,5 +1,6 @@
 using Statistics
 using DataAPI
+using Procrastinate
 
 abstract type FitResult end
 """
@@ -210,9 +211,9 @@ Struct elements
     label::UnknownLabel  # Identifies the unknown
     kratios::UncertainValues # Labeled with ReferenceLabel objects
     roi::UnitRange{Int} # Range of channels fit
-    raw::Vector{Float64} # Raw spectrum data
-    residual::Vector{Float64} # Residual spectrum
-    peakback::Dict{ReferenceLabel,NTuple{3,Float64}} # peak counts, background counts and counts/(nAs)
+    raw::Vector{T} # Raw spectrum data
+    residual::Deferred # Residual spectrum
+    peakback::Deferred # {Dict{ReferenceLabel,NTuple{3,Float64}}} with peak counts, background counts and counts/(nAs)
 
 
 Use asa(DataFrame, ffr::FilterFitResult) to summarize in tabular form.
@@ -222,8 +223,8 @@ struct FilterFitResult{T <: AbstractFloat} <: FitResult
     kratios::UncertainValues
     roi::UnitRange{Int}
     raw::Vector{T}
-    residual::Vector{T}
-    peakback::Dict{ReferenceLabel,NTuple{3,T}}
+    residual::Deferred
+    peakback::Deferred
 end
 
 Base.show(io::IO, ffr::FilterFitResult) = print(io, "FitResult($(ffr.label))")
@@ -235,11 +236,7 @@ Base.show(io::IO, ffr::FilterFitResult) = print(io, "FitResult($(ffr.label))")
 A Spectrum containing the histogram representing the unknown spectrum
 minus the fitted characteristic peaks shapes times the best fit coefficient.
 """
-function residual(ffr::FilterFitResult)
-    props = copy(properties(ffr.label.spectrum))
-    props[:Name] = "Residual[$(props[:Name])]"
-    return Spectrum(ffr.label.spectrum.energy, ffr.residual, props)
-end
+residual(ffr::FilterFitResult) = ffr.residual()
 
 """
     spectrum(ffr::FilterFitResult)::Spectrum
@@ -254,7 +251,7 @@ spectrum(ffr::FilterFitResult) = ffr.label.spectrum
 Number of spectrum counts that were accounted for by the fitted elements with the `strip` Element(s) removed.
 """
 characteristiccounts(ffr::FilterFitResult, strip) =
-    sum(element(ref) in strip ? 0.0 : v[1] - v[2] for (ref, v) in ffr.peakback) # sum(ffr.raw[ffr.roi]-ffr.residual[ffr.roi])
+    sum(element(ref) in strip ? 0.0 : v[1] - v[2] for (ref, v) in ffr.peakback())
 
 """
     peaktobackground(ffr::FilterFitResult, backwidth::Float64=10.0)::Float64
@@ -267,8 +264,8 @@ function peaktobackground(
     klabel::ReferenceLabel,
     backwidth::T = convert(T, 10.0),
 ) where { T <: AbstractFloat }
-    unk = spectrum(unknown(ffr))
-    peak, back, _ = ffr.peakback[klabel]
+    unk, pb = spectrum(unknown(ffr)), ffr.peakback()
+    peak, back, _ = pb[klabel]
     return (peak * (energy(klabel.roi.stop, unk) - energy(klabel.roi.start, unk))) /
            (backwidth * back)
 end
@@ -281,7 +278,7 @@ end
         charOnly::Bool=true, 
         material=nothing,
         mc = XPP, fc=ReedFluorescence,
-        columns = () # Selected from ( :roi, :peakback, :counts, :dose )
+        columns = ( :counts, ) # Selected from ( :roi, :peakback, :counts, :dose )
     )::DataFrame
 
 Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
@@ -298,7 +295,7 @@ Columns:
   * dK : Float64 - The 1σ uncertainty in :K
   * :Start : Int - Start index for fit channels (:roi ∈ columns)
   * :Stop : Int - Stop index for fit channels  (:roi ∈ columns)
-  * :Peak : Float64 - Total counts in characteristic peak (:peakback ∈ columns)
+  * :Counts : Float64 - Total counts in characteristic peak (peak-back) (:peakback || :counts ∈ columns)
   * :Back : Float64 - Total counts in background under the characteristic peak (:peakback ∈ columns)
   * :PtoB : Float64 - Peak-to-Background assuming 10 eV/channel (:peakback ∈ columns)
   * :KCalc : Float64 - Computed k-ratio assuming a composition. (Requires `material` argument to be specified.)
@@ -306,7 +303,6 @@ Columns:
   * :LiveTime : Float64 - Acquisiton live time (s) (:dose ∈ columns)
   * :ProbeCurrent : Float64 - Probe current (nA) (:dose ∈ columns)
   * :DeadPct : Float64 - Dead time in ProbeCurrent (:dose ∈ columns)
-  * :Counts : Float64 - Total counts in characteristic peak (:counts ∈ columns)
   * :RefCountsPernAs : Float64 - Estimated counts in :Reference in :Feature per unit dose.  (:counts ∈ columns)
   * :CountsPernAs : Float64 - Estimated counts in :Spectrum in :Feature per unit dose.  (:counts ∈ columns)
 """
@@ -315,7 +311,7 @@ function NeXLUncertainties.asa(
     ffr::FilterFitResult;
     charOnly::Bool = true,
     material::Union{Material,Nothing} = nothing,
-    columns::Tuple = (), # ( :roi, :peakback, :counts, :dose)
+    columns::Tuple = ( :counts, ), # ( :roi, :peakback, :counts, :dose)
     mc = XPP, fc=ReedFluorescence,
 )::DataFrame
     sl = charOnly ? #
@@ -336,8 +332,9 @@ function NeXLUncertainties.asa(
         insertcols!(res, 5, :Stop => [ lbl.roi.stop for lbl in sl])
     end
     if :peakback ∈ columns
-        insertcols!(res, :Peak => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) for lbl in sl] )
-        insertcols!(res, :Back => [ ffr.peakback[lbl][2] for lbl in sl] )
+        pb = ffr.peakback()
+        insertcols!(res, :Counts => [ (pb[lbl][1]-pb[lbl][2]) for lbl in sl] )
+        insertcols!(res, :Back => [ pb[lbl][2] for lbl in sl] )
         insertcols!(res, :PtoB => [ peaktobackground(ffr, lbl) for lbl in sl] )
     end
     if material isa Material
@@ -358,16 +355,17 @@ function NeXLUncertainties.asa(
         insertcols!(res, :KoKcalc => [ r[:K]/r[:KCalc] for r in eachrow(res) ])
     end
     if :dose ∈ columns
-        dt(spec) = 100.0*(spec[:RealTime]-spec[:LiveTime])/spec[:RealTime]
         insertcols!(res, 2, :LiveTime => [ get(unkspec, :LiveTime, missing) for _ in sl ])
-        insertcols!(res, 3, :ProbeCurrent => [ get(unkspec, :ProbeCurrent, missing) for _ in sl ])
-        insertcols!(res, 4, :DeadPct => [ dt(unkspec) for lbl in sl ])
-
+        insertcols!(res, 3, :RealTime => [ get(unkspec, :RealTime, missing) for _ in sl ])
+        insertcols!(res, 4, :ProbeCurrent => [ get(unkspec, :ProbeCurrent, missing) for _ in sl ])
     end
     if :counts ∈ columns
-        insertcols!(res, :Counts => [ ffr.peakback[lbl][1]-ffr.peakback[lbl][2] for lbl in sl] )
-        insertcols!(res, :RefCountsPernAs => [ ffr.peakback[lbl][3] for lbl in sl] )
-        insertcols!(res, :CountsPernAs => [ (ffr.peakback[lbl][1]-ffr.peakback[lbl][2]) / dose(unkspec) for lbl in sl ])
+        pb = ffr.peakback()
+        if !(:peakback ∈ columns)
+            insertcols!(res, :Counts => [ pb[lbl][1]-pb[lbl][2] for lbl in sl] )
+        end
+        insertcols!(res, :RefCountsPernAs => [ pb[lbl][3] for lbl in sl] )
+        insertcols!(res, :CountsPernAs => [ (pb[lbl][1]-pb[lbl][2]) / dose(unkspec) for lbl in sl ])
     end
     return res
 end

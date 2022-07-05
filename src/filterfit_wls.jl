@@ -148,9 +148,30 @@ function filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
     forcezeros::Bool = true,
-)::FilterFitResult where { T <: AbstractFloat }
+) where { T <: AbstractFloat }
     krs = _filterfit(unk, ffs, forcezeros)
-    resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
+    resid = Deferred() do
+        sp = unk.label.spectrum
+        props = copy(properties(sp))
+        props[:Name] = "Residual[$(props[:Name])]"
+        res = copy(sp.counts)
+        for ff in ffs
+            res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+        end
+        return Spectrum(sp.energy, res, props)
+    end
+    pb = Deferred() do 
+        res = Dict{ReferenceLabel,NTuple{3,T}}()
+        for ff in ffs
+            su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
+            res[ff.label] = (
+                su,
+                su - value(krs, ff.label) * sco * ff.scale / unk.scale,
+                sco * ff.scale
+            )
+        end
+        return res
+    end
     return FilterFitResult(unk.label, krs, unk.roi, unk.data, resid, pb)
 end
 

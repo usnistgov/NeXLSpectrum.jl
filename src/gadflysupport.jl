@@ -371,9 +371,9 @@ function Gadfly.plot(
         ):min(tmp[end] + length(ffrr.roi) ÷ 10, ffrr.roi[end])
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
-    roi = something(roi, defroi(ffr))
+    roi, resid = something(roi, defroi(ffr)), residual(ffr).counts
     layers = [
-        layer(x = roi, y = ffr.residual[roi], Geom.step, Theme(default_color = palette[2])),
+        layer(x = roi, y = resid[roi], Geom.step, Theme(default_color = palette[2])),
         layer(x = roi, y = ffr.raw[roi], Geom.step, Theme(default_color = palette[1])),
     ]
     # If the information is available,also model the continuum
@@ -385,7 +385,7 @@ function Gadfly.plot(
     end
     scroi = min(channel(100.0, fspec), length(fspec)):roi.stop
     miny, maxy, prev, i =
-        minimum(ffr.residual[scroi]), 3.0 * yscale * maximum(ffr.residual[scroi]), -1000, -1
+        minimum(resid[scroi]), 3.0 * yscale * maximum(resid[scroi]), -1000, -1
     for lbl in sort(collect(keys(ffr.kratios)), lt = roilt)
         if NeXLUncertainties.value(ffr, lbl) > 0.0
             # This logic keeps the labels on different lines (mostly...)
@@ -685,17 +685,17 @@ function Gadfly.plot(
     dspec = dfr.label.spectrum
     function defroi(ddffrr) # Compute a reasonable default display ROI
         raw = ddffrr.label.spectrum.counts
-        res = ddffrr.residual.counts
+        res = ddffrr.residual().counts
         mx = findlast(i->raw[i]!=res[i], eachindex(raw))
         mx = min(max(mx + mx÷5, 100), length(raw))
         mn = channel(0.0, ddffrr.label.spectrum)
         return mn:mx
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
-    roi = something(roi, defroi(dfr))
+    roi, resid = something(roi, defroi(dfr)), residual(dfr).counts
     layers = [
         layer(x = roi, y = counts(dfr.continuum, roi), Geom.step, Theme(default_color = palette[3])),
-        layer(x = roi, y = counts(dfr.residual, roi), Geom.step, Theme(default_color = palette[2])),
+        layer(x = roi, y = resid[roi], Geom.step, Theme(default_color = palette[2])),
         layer(x = roi, y = counts(dspec, roi), Geom.step, Theme(default_color = palette[1])),
     ]
     # If the information is available,also model the continuum
@@ -707,7 +707,7 @@ function Gadfly.plot(
     end
     scroi = min(channel(100.0, dspec), length(dspec)):roi.stop
     miny, maxy, prev, i =
-        minimum(dfr.residual.counts[scroi]), 3.0 * yscale * maximum(dfr.residual.counts[scroi]), -1000, -1
+        minimum(resid[scroi]), 3.0 * yscale * maximum(resid[scroi]), -1000, -1
     for lbl in sort(collect(keys(dfr.kratios)), lt = roilt)
         if NeXLUncertainties.value(dfr.kratios, lbl) > 0.0
             # This logic keeps the labels on different lines (mostly...)
