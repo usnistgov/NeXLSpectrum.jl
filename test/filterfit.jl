@@ -303,7 +303,7 @@ using DataFrames
             ],
             det,
         )
-        res = fit_spectrum(unks, ffp)
+        res = fit_spectra(unks, ffp)
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Al K-L3"))),
             0.0279,
@@ -434,12 +434,12 @@ using DataFrames
         @test all(r->startswith(repr(r[:Spectrum]),"K412-0[Mon Oct 17 16:11:17 2011]"), eachrow(df))
         @test all(r->r[:LiveTime]==60.0,eachrow(df))
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
-        @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
+        @test all(r->isapprox(r[:RealTime],69.97325,atol=0.0001),eachrow(df))
         @test df[1,:Start]==131
         @test df[1,:Stop]==169
         @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Peak], 1.05366e5, atol=10.0)
+        @test isapprox(df[1,:Counts], 1.05366e5, atol=10.0)
         @test isapprox(df[1,:Back], 1.18593e5, atol=10.0)
         @test isapprox(df[1,:PtoB], 71.849, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032160115, atol=0.00001)
@@ -454,7 +454,7 @@ using DataFrames
             reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
             reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
             reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
-        ], 135.0, ftype=Float32) # This line is the only difference with "Example 2"
+        ], 135.0, ftype=Float32) # This line is the only difference from "Example 2"
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
@@ -486,12 +486,12 @@ using DataFrames
         @test all(r->startswith(repr(r[:Spectrum]),"K412-0[Mon Oct 17 16:11:17 2011]"), eachrow(df))
         @test all(r->r[:LiveTime]==60.0,eachrow(df))
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
-        @test all(r->isapprox(r[:DeadPct],14.2529,atol=0.0001),eachrow(df))
+        @test all(r->isapprox(r[:RealTime], 69.97325,atol=0.0001),eachrow(df))
         @test df[1,:Start]==131
         @test df[1,:Stop]==169
         @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Peak], 1.05367e5, atol=10.0)
+        @test isapprox(df[1,:Counts], 1.05367e5, atol=10.0)
         @test isapprox(df[1,:Back], 1.18592e5, atol=10.0)
         @test isapprox(df[1,:PtoB], 71.850, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032160, atol=0.00001)

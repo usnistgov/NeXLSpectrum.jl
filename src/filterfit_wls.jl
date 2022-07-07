@@ -148,9 +148,30 @@ function filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
     forcezeros::Bool = true,
-)::FilterFitResult where { T <: AbstractFloat }
+) where { T <: AbstractFloat }
     krs = _filterfit(unk, ffs, forcezeros)
-    resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
+    resid = Deferred() do
+        sp = unk.label.spectrum
+        props = copy(properties(sp))
+        props[:Name] = "Residual[$(props[:Name])]"
+        res = copy(sp.counts)
+        for ff in ffs
+            res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+        end
+        return Spectrum(sp.energy, res, props)
+    end
+    pb = Deferred() do 
+        res = Dict{ReferenceLabel,NTuple{3,T}}()
+        for ff in ffs
+            su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
+            res[ff.label] = (
+                su,
+                su - value(krs, ff.label) * sco * ff.scale / unk.scale,
+                sco * ff.scale
+            )
+        end
+        return res
+    end
     return FilterFitResult(unk.label, krs, unk.roi, unk.data, resid, pb)
 end
 
@@ -165,7 +186,7 @@ function fit_spectrum(
     return filterfit(tophatfilter(ty, unk, filt, one(T) / T(dose(unk))), bestRefs, forcezeros)
 end
 
-function fit_spectrum(
+function fit_spectra(
     ty::Type{FilteredUnknownW{T}},
     unks::AbstractVector{<:Spectrum},
     filt::TopHatFilter{T},
@@ -187,10 +208,16 @@ fit_spectrum(
 ) where { T <: AbstractFloat } = #
     fit_spectrum(FilteredUnknownW{T}, unk, filt, refs, forcezeros)
 
-fit_spectrum(
+fit_spectra(
     unks::AbstractVector{Spectrum},
     filt::TopHatFilter{T},
     refs::AbstractVector{FilteredReference{T}},
     forcezeros = true,
 ) where { T <: AbstractFloat } = # 
-    fit_spectrum(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+    fit_spectra(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+
+fit_spectrum(
+    unks::AbstractVector{Spectrum},
+    filt::TopHatFilter{T},
+    refs::AbstractVector{FilteredReference{T}},
+    forcezeros = true) where { T<: AbstractFloat }= fit_spectra(unks, filt, refs, forcezeros)

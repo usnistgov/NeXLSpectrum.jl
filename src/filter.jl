@@ -649,31 +649,18 @@ _buildlabels(ffs::AbstractVector{<:FilteredReference}) = collect(ff.label for ff
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference{T}}) where { T<: AbstractFloat } =
     Diagonal([Float64(unk.scale / ff.scale) for ff in ffs])
 
-# Internal: Computes the residual spectrum based on the fit k-ratios
-function _computeResidual(
-    unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference{T}},
-    kr::UncertainValues,
-) where { T <: AbstractFloat }
-    res = copy(unk.data)
-    for ff in ffs
-        res[ff.roi] -= (value(kr, ff.label) * ff.scale / unk.scale) * ff.charonly
-    end
-    return res
-end
-
 # Internal: Computes the total peak (counts), background (counts) and reference count (c/nAs) based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference{T}}, #
-    kr::UncertainValues, #
+    krs::UncertainValues, #
 ) where { T <: AbstractFloat }
     res = Dict{ReferenceLabel,NTuple{3,T}}()
     for ff in ffs
         su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
         res[ff.label] = (
             su,
-            su - value(kr, ff.label) * sco * ff.scale / unk.scale,
+            su - value(krs, ff.label) * sco * ff.scale / unk.scale,
             sco * ff.scale
         )
     end
