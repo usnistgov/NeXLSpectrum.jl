@@ -193,8 +193,8 @@ function references(
     end
     return FilterFitPacket(det, ff, frefs)
 end
-references(refs::AbstractVector{ReferencePacket}, fwhm::Float64; ftype::Type{<:AbstractFloat}=Float64) =
-    references(refs, matching(first(refs).spectrum, fwhm), ftype=ftype)
+references(refs::AbstractVector{ReferencePacket}, fwhm::Real; ftype::Type{<:AbstractFloat}=Float64) =
+    references(refs, matching(first(refs).spectrum, Float64(fwhm)), ftype=ftype)
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
     fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)
