@@ -63,7 +63,7 @@ Let's take a look at a residual spectrum by plotting one of the `FilterFitResult
 Perform the fit and look at the residual
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 res = map(unks) do unk
-  fit_spectrum(vq, unk)
+  fit_spectrum(unk, vq)
 end
 plot(res[1])
 ```
@@ -88,5 +88,5 @@ Compare the timings (full then fast)
 ```julia
 using BenchmarkTools
 @btime map(unk->fit_spectrum(unk, ffrs), unks)
-@btime map(unk->fit_spectrum(vq, unk), unks)
+@btime map(unk->fit_spectrum(unk, vq), unks)
 ```

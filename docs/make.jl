@@ -20,6 +20,7 @@ end
 pages = [
     "Home" => "index.md",
     "Spectrum Methods" => "spectrum.md",
+    "HyperSpectrum Methods" => "hyperspectrum.md",
     "Fitting K412 (simple API)" => "k412refs.md",
     "Fitting K412 (flexible API)" => "K412fit.md",
     "Fitting K412 (quick fit)" => "K412quick.md",

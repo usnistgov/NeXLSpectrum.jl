@@ -38,7 +38,7 @@ xrays(cl::ReferenceLabel)::Vector{CharXRay} = cl.xrays
 spectrum(cl::ReferenceLabel)::Spectrum = spectrum(cl.spectrum)
 properties(cl::ReferenceLabel)::Dict{Symbol,Any} = properties(cl.spectrum)
 hasspectrum(cl::ReferenceLabel)::Bool = hasspectrum(cl.spectrum)
-composition(cl::ReferenceLabel)::Material = get(properties(cl), :Composition, missing)
+composition(cl::ReferenceLabel) = get(properties(cl), :Composition, missing)
 NeXLCore.element(cl::ReferenceLabel)::Element = element(cl.xrays[1])
 Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
     return isequal(rl1.roi, rl2.roi) ? isless(rl1.spectrum[:Name], rl2.spectrum[:Name]) :
@@ -67,7 +67,7 @@ end
 
 function Base.show(io::IO, cl::CharXRayLabel) 
     comp = composition(cl)
-    compname = isnothing(comp) ? "Unspecified" : name(comp)
+    compname = ismissing(comp) ? "Unspecified" : name(comp)
     print(io,"k[$(name(cl.xrays)), $compname]")
 end
 

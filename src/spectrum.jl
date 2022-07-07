@@ -95,7 +95,6 @@ to associate other data items with a `Spectrum`.
 	:AcquisitionTime # Date and time of acquisition (`DateTime` struct)
 	:Signature     # Dict{Element,Real} with the "particle signature"
     :SolidAngle    # Detector solid angle is steradians (area/dist²)
-    :Detector      # A detector model property like `EDSDetector`
 
 Spectrum Image items:
 
@@ -547,7 +546,7 @@ end
 Gets the low-level discriminator associated with this spectrum if there is one.
 """
 lld(spec::Spectrum)::Int =
-    haskey(spec.properties, :Detector) ? lld(EDSDetector(spec.properties[:Detector])) : 1
+    haskey(spec.properties, :Detector) ? lld(spec.properties[:Detector]) : 1
 
 """
 	Base.findmax(spec::Spectrum, chs::AbstractRange{<:Integer})

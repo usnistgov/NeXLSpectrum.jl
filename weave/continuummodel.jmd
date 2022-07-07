@@ -14,7 +14,7 @@ The `ContinuumModel` handles the generation of Bremsstrahlung within the sample,
 X-rays as they exit the sample and the efficiency of the detector collecting the X-rays.
 ```julia; fig_height=4; fig_width=10; fig_ext=".svg";
 e0 = 15.0e3
-eff = SDDEfficiency(AP33Tabulation(); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
+eff = SDDEfficiency(TabulatedWindow(MoxtekAP33()); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
 #eff = SDDEfficiency(NoWindow(); thickness=100.0, deadlayer=0.0e-7, entrance=Film(pure(n"Al"), 0.0e-7))
 cmod = ContinuumModel(mat"0.8*Fe+0.15*Cr+0.05*Ni", e0, deg2rad(40.0))
 plot([ea->emitted(cmod, ea),ea->generated(cmod, ea)],100.0,e0)
@@ -40,7 +40,7 @@ plot(lyrs..., Coord.cartesian(xmin=0, xmax=e0))
 ## Models!!!
 ```julia; fig_height=3; fig_width=10; fig_ext=".svg";
 model, mc = Castellano2004a, Riveros1993
-eff = SDDEfficiency(AP33Tabulation(); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
+eff = SDDEfficiency(TabulatedWindow(MoxtekAP33()); thickness=0.0370, deadlayer=30.0e-7, entrance=Film(pure(n"Al"), 10.0e-7))
 
 spec = loadspectrum(joinpath(@__DIR__, "K412 spectra","III-E K412[0][4].msa"))
 det=matching(spec, 132.0, 10)
