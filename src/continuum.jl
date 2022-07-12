@@ -282,16 +282,21 @@ function tweakcontinuum(meas::Spectrum{T}, cont::Spectrum{U}, crois::Vector{Unit
         end
         return f
     end
-    x, y = Float64[1.0], Float64[1.0]
+    x, y, chmax = Float64[1.0], Float64[1.0], channel(0.9*meas[:BeamEnergy], meas)
     for croi in crois
-        if (length(croi) > (3 * nch) / 2) && (croi.start < length(cont))
+        if (length(croi) > (3 * nch) / 2) && (croi.start < chmax)
             # Add a pivot beginning and end of croi
             stroi = croi.start:croi.start+nch-1
             push!(x, stroi.start)
-            push!(y, Base.clamp(integrate(meas, stroi) / integrate(cont, stroi), 1.0 / maxSc, maxSc))
-            endroi = croi.stop-nch+1:min(length(cont), croi.stop)
-            push!(x, endroi.stop)
-            push!(y, clamp(integrate(meas, endroi) / integrate(cont, endroi), 1.0 / maxSc, maxSc))
+            push!(y, Base.clamp(integrate(meas, stroi) / max(integrate(cont, stroi),1.0), 1.0 / maxSc, maxSc))
+            if croi.stop < chmax
+                endroi = croi.stop-nch+1:min(length(cont), croi.stop)
+                push!(x, endroi.stop)
+                push!(y, clamp(integrate(meas, endroi) / max(integrate(cont, endroi), 1.0), 1.0 / maxSc, maxSc))
+            else
+                push!(x, chmax)
+                push!(y, 1.0)
+            end
         end
     end
     if x[end] < length(cont)
