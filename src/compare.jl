@@ -6,9 +6,12 @@ Computes the dose corrected reduced χ² metric between `s1` and `s2` over the c
 
 The second form computes a matrix of χ² comparing each spectrum in the array to the others.
 """
-function χ²(s1::Spectrum{T}, s2::Spectrum{U}, chs)::Float64 where {T<:Real, U<:Real}
+function χ²(s1::Spectrum{T}, s2::Spectrum{U}, chs)::Float64 where {T<:Real,U<:Real}
     k1, k2 = 1.0 / dose(s1), 1.0 / dose(s2)
-    return sum(ch->(k1 * s1[ch] - k2 * s2[ch])^2 /  (k1*k1*max(one(T), s1[ch]) + k2*k2*max(one(U), s2[ch])), chs)
+    return sum(chs) do ch
+        s1c, s2c = get(s1, ch, 0.0), get(s2, ch, 0.0)
+        (k1 * s1c - k2 * s2c)^2 / (k1 * k1 * max(one(T), s1c) + k2 * k2 * max(one(U), s2c))
+    end
 end
 function χ²(specs::AbstractVector{<:Spectrum}, chs)::Matrix{Float64}
     χ2s = zeros(Float64, (length(specs), length(specs)))
@@ -35,17 +38,17 @@ larger than one.
 The first version covers all the channels between minE and the nominal beam energy. The third and fourth versions
 considers those channels representing peaks in a spectrum from the `Material` or `Element` on the `Detector`.
 """
-similarity(s1::Spectrum, s2::Spectrum, chs)::Float64 = χ²(s1, s2, chs)/length(chs)
+similarity(s1::Spectrum, s2::Spectrum, chs)::Float64 = χ²(s1, s2, chs) / length(chs)
 function similarity(
     specs::AbstractArray{<:Spectrum},
     chs
 )::Vector{Float64}
-    return [similarity(spec, sum(filter(s->!(s===spec), specs)), chs) for spec in specs]
+    return [similarity(spec, sum(filter(s -> !(s === spec), specs)), chs) for spec in specs]
 end
 
 function similarity(
     specs::AbstractArray{<:Spectrum},
-    minE::Float64 = 100.0,
+    minE::Float64=100.0,
 )::Vector{Float64}
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
     chs =
@@ -98,15 +101,27 @@ end
 
 
 """
-    findsimilar(specs::AbstractArray{Spectrum{T}}; atol = 4.0, rtol=1.5, minspecs=3)::Vector{Spectrum{T}}
-    findsimilar(specs::AbstractArray{Spectrum{T}},det::Detector,elm::Element; atol = 4.0, rtol=1.5, minspecs = 3)::Vector{Spectrum{T}}
+    findsimilar(
+        specs::AbstractArray{Spectrum{T}}; 
+        atol = nothing, 
+        rtol=1.5, 
+        minspecs=3
+    )::Vector{Spectrum{T}}
+    findsimilar(
+        specs::AbstractArray{Spectrum{T}},
+        det::Detector,
+        elm::Element; 
+        atol = nothing, 
+        rtol=1.5, 
+        minspecs = 3
+    )::Vector{Spectrum{T}}
 
 
 Filters a collection of spectra for the ones most similar to the average by
-removing the least similar spectrum sequentially until all the remaining spectra are within either:
+removing the least similar spectrum sequentially until all the remaining spectra are either:
  
-  * atol of the mean
-  * rtol * max(others) of the mean
+  * less than atol (if atol != nothing)
+  * less than rtol * median(others) (if rtol != nothing)
 
 when applying the 'similarity(...)` function to the spectrum and the sum of the other spectra.
 
@@ -115,18 +130,21 @@ to each other.
 """
 function findsimilar(
     specs::AbstractArray{Spectrum{T}};
-    atol = 4.0,
-    rtol = 1.5,
-    minspecs = 3,
+    atol=nothing,
+    rtol=1.5,
+    minspecs=3
 )::Vector{Spectrum{T}} where {T<:Real}
+    function keep(fs, meds)
+        return (isnothing(atol) || (fs < atol)) && #
+                (isnothing(rtol) || (fs < rtol * meds))
+    end
     if length(specs) >= minspecs
-        σs = abs.(similarity(specs))
+        σs = similarity(specs)
         (fmσ, fmi) = findmax(σs)
         # Now perform this recursively until all are within tol or we hit minspecs
-        maxσ = maximum(filter(σ -> σ ≠ fmσ, σs))
-        if (fmσ > atol + maxσ) || (fmσ > rtol*maxσ)
+        if !keep(fmσ, median(filter(σ -> σ ≠ fmσ, σs)))
             rem = filter(s -> !(s === specs[fmi]), specs)
-            return findsimilar(rem, atol = atol, rtol=rtol, minspecs = minspecs)
+            return findsimilar(rem, atol=atol, rtol=rtol, minspecs=minspecs)
         else
             return specs
         end
@@ -137,18 +155,21 @@ function findsimilar(
     specs::AbstractArray{Spectrum{T}},
     det::Detector,
     elm::Element;
-    atol = 4.0,
-    rtol = 1.5,
-    minspecs = 3,
+    atol=nothing,
+    rtol=1.5,
+    minspecs=3
 )::Vector{Spectrum{T}} where {T<:Real}
+    function keep(fs, meds)
+        return (isnothing(atol) || (fs < atol)) && #
+                (isnothing(rtol) || (fs < rtol * meds))
+    end
     if length(specs) >= minspecs
-        σs = abs.(NeXLSpectrum.similarity(specs, det, elm))
+        σs = NeXLSpectrum.similarity(specs, det, elm)
         (fmσ, fmi) = findmax(σs)
         # Now perform this recursively until all are within tol or we hit minspecs
-        maxσ = maximum(filter(σ -> σ ≠ fmσ, σs))
-        if (fmσ > atol) || (fmσ > rtol*maxσ)
+        if !keep(fmσ, median(filter(σ -> σ ≠ fmσ, σs)))
             rem = filter(s -> !(s === specs[fmi]), specs)
-            return findsimilar(rem, det, elm, atol = atol, rtol=rtol, minspecs = minspecs)
+            return findsimilar(rem, det, elm, atol=atol, rtol=rtol, minspecs=minspecs)
         else
             return specs
         end
@@ -166,15 +187,15 @@ from count statistics alone.   Assuming `spec` varies only by count statistics w
 the result values have a mean 0.0 and a standard deviation of 1.0. 
 """
 function sigma(spec::Spectrum, specs::AbstractArray{<:Spectrum}, chs::AbstractRange{<:Integer})::Vector{Float64}
-    function doseaverage(specs, chs) 
-        t = [ uv(spec, chs)/dose(spec) for spec in specs ]
-        return map(j->mean(collect(t[i][j] for i in eachindex(t))), eachindex(t[1]))
+    function doseaverage(specs, chs)
+        t = [uv(spec, chs) / dose(spec) for spec in specs]
+        return map(j -> mean(collect(t[i][j] for i in eachindex(t))), eachindex(t[1]))
     end
     function delta(spec, specs, chs)
-        minus(uv1,uv2) = uv(value(uv1)-value(uv2),sqrt(variance(uv1)+variance(uv2)))
-        return minus.(uv(spec, chs), dose(spec)*doseaverage(filter(s->s!=spec, specs), chs))
+        minus(uv1, uv2) = uv(value(uv1) - value(uv2), sqrt(variance(uv1) + variance(uv2)))
+        return minus.(uv(spec, chs), dose(spec) * doseaverage(filter(s -> s != spec, specs), chs))
     end
-    return map(v->value(v)/σ(v), delta(spec, specs, chs))
+    return map(v -> value(v) / σ(v), delta(spec, specs, chs))
 end
 
 """
@@ -184,7 +205,7 @@ end
 Compute a spectrum which is `spectrum` rescaled to a live time times probe current equal to `dose`.
 Useful for setting spectra on an equivalent acquisition duration scale.
 """
-function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T <: AbstractFloat }
+function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where {T<:AbstractFloat}
     res = copy(spectrum)
     scale = dose / NeXLSpectrum.dose(res)
     res.counts .*= scale
@@ -192,7 +213,7 @@ function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{T} where { T 
     res[:Name] = "N[$(spectrum[:Name]), $dose nA⋅s]"
     return res
 end
-function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where { T <: Integer }
+function dosenormalize(spectrum::Spectrum{T}, dose=60.0)::Spectrum{Float64} where {T<:Integer}
     scale = dose / NeXLSpectrum.dose(spectrum)
     newProps = copy(spectrum.properties)
     newProps[:LiveTime] *= scale
@@ -218,5 +239,5 @@ function shannon_entropy(spec::Spectrum)
     foreach(rr.(counts(spec))) do ci
         d[ci] = get(d, ci, 0.0) + 1.0 / length(spec)
     end
-    return -sum(cx -> cx*log2(cx), values(d))
+    return -sum(cx -> cx * log2(cx), values(d))
 end
