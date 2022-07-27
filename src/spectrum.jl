@@ -198,6 +198,8 @@ Base.setindex!(spec::Spectrum, val::Real, sym::Symbol) =
     setindex!(spec.properties, val, sym)
 Base.setindex!(spec::Spectrum, val::Any, sym::Symbol) = 
     setindex!(spec.properties, val, sym)
+
+Base.checkbounds(::Type{Bool}, spec::Spectrum, ch::Int) = checkbounds(Bool, spec.counts, ch)
     
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
@@ -1075,13 +1077,19 @@ end
 
 
 """
-    Base.sum(specs::AbstractArray{Spectrum{T}}; restype::Type{<:Real}=T, applylld=false, name=Nothing|String)::Spectrum{T}
+    Base.sum(
+        specs::AbstractArray{Spectrum{T}}; 
+        restype::Type{<:Real}=T, 
+        applylld=false, 
+        name=Nothing|String
+        properties=Nothing|Dict{Symbol, Any}
+    )::Spectrum{T}
 
 Computes the sum spectrum over an `AbstractArray{Spectrum}` where the :ProbeCurrent and :LiveTime will be maintained
 in a way that maintains the sum of the individual doses.  This function assumes (but does not check) that the energy
 scales are equivalent for all the spectra.  The resultant energy scale is the scale of the first spectrum.  Other than
 :ProbeCurrent, :LiveTime and :RealTime which are computed to maintain the total sum dose, only those properties that the 
-spectra hold in common will be maintained.
+spectra hold in common will be maintained.  The items in `properties` is merged with the resulting properties.
 
 This function behaves differently from `reduce(+, specs)` which checks whether the energy scales match and fails if 
 they don't.
@@ -1091,6 +1099,7 @@ function Base.sum(
     restype::Type{<:Real} = T;
     applylld = false,
     name = nothing,
+    properties = nothing,
 )::Spectrum where {T<:Real}
     cxs = zeros(restype, maximum(length.(specs)))
     for spec in specs
@@ -1102,6 +1111,9 @@ function Base.sum(
     rt = sum(get(sp, :RealTime, NaN64) for sp in specs)
     (!isnan(rt)) && (props[:RealTime] = rt)
     props[:Name] = something(name, "Sum[$(length(specs)) spectra]")
+    if !isnothing(properties)
+        merge!(props, properties)
+    end
     return Spectrum(specs[1].energy, cxs, props)
 end
 
