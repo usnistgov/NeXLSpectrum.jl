@@ -3,6 +3,7 @@ using NeXLSpectrum
 using NeXLCore
 using Statistics
 using Distributions
+using Dates
 
 @testset "Spectrum" begin
     les = LinearEnergyScale(-495.0, 5.0)
@@ -23,7 +24,7 @@ using Distributions
     mnk = MnKaResolution(130.0)
 
     @testset "Resolution" begin
-        @test resolution(5898.7, mnk) == 130.0
+        @test resolution(5899.0, mnk) == 130.0
         @test isapprox(resolution(500.0, mnk), 60.0, atol = 1.0)
     end
 
@@ -81,7 +82,7 @@ using Distributions
         )
         @test all(ch -> channel(energy(ch, det3), det3) == ch, 1:4096)
         @test resolution(energy(n"Mn K-L3"), det3) == 126.0
-        @test isapprox(resolution(energy(n"C K-L2"), det3), 45.867, atol = 0.001)
+        @test isapprox(resolution(energy(n"C K-L2"), det3), 45.842, atol = 0.001)
         @test isvisible(n"C K-L2", det3)
         @test !isvisible(n"Ca L3-M3", det3)
         @test length(isvisible(characteristic(n"Sc", ltransitions), det3)) >= 7
@@ -153,6 +154,16 @@ using Distributions
         specs = map(fn->loadspectrum(joinpath(@__DIR__,"K412 spectra",fn*".msa")),fns)
         # @show duane_hunt.(specs)
         @test all(isapprox.(duane_hunt.(specs), 20.0e3, atol=100.0))
+    end
+
+    @testset "TESCAN TIMA EMSA" begin
+        sp = loadspectrum(joinpath(@__DIR__,"Other","Spc(Calcite(2))_2.msa"))
+        @test sp[:BeamEnergy]==25000.0
+        @test sp[:AcquisitionTime] == DateTime("2022-04-26T03:26:00")
+        @test sp[52] == 1491.0
+        @test length(sp)==3000
+        @test sp.energy.offset==0.0
+        @test sp.energy.width==10.0
     end
 
     @testset "sigma" begin

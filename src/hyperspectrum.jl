@@ -51,7 +51,7 @@ struct HyperSpectrum{T<:Real, N, NP} <: AbstractArray{Spectrum{T}, N}
     function HyperSpectrum(energy::EnergyScale, props::Dict{Symbol,Any}, arr::Array{<:Real}; 
         axisnames = ( "Y", "X", "Z", "A", "B", "C" ), #
         fov = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ], #
-        offset = 0.0 * collect(fov), #
+        offset = zeros(length(fov)), #
         stagemap::Type{<:StageMapping}=DefaultStageMapping, #
         livetime=fill(get(props, :LiveTime, 1.0), size(arr)[2:end]...)
     )

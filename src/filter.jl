@@ -627,7 +627,7 @@ Base.show(io::IO, fd::FilteredUnknown) = print(io, fd.label)
 
 """
     extract(fd::FilteredReference{T}, roi::UnitRange{Int})::Vector{T} where { T <: AbstractFloat }
-    extract(fd::FilteredUnknown, roi::UnitRange{Int})::AbstractVector{T} where { T <: AbstractFloat }
+    extract(fd::FilteredUnknown, roi::UnitRange{Int})::Vector{T} where { T <: AbstractFloat }
 
 Extract the filtered data representing the specified range.  `roi` must fully encompass the filtered
 data in `fd`.
@@ -643,37 +643,24 @@ end
 NeXLUncertainties.extract(
     fd::FilteredUnknown,
     roi::UnitRange{Int},
-) = view(fd.filtered, roi)
+) = fd.filtered[roi]
 
 _buildlabels(ffs::AbstractVector{<:FilteredReference}) = collect(ff.label for ff in ffs)
 _buildscale(unk::FilteredUnknown, ffs::AbstractVector{FilteredReference{T}}) where { T<: AbstractFloat } =
-    Diagonal([convert(T, unk.scale / ff.scale) for ff in ffs])
-
-# Internal: Computes the residual spectrum based on the fit k-ratios
-function _computeResidual(
-    unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference{T}},
-    kr::UncertainValues,
-) where { T <: AbstractFloat }
-    res = copy(unk.data)
-    for ff in ffs
-        res[ff.roi] -= (value(kr, ff.label) * ff.scale / unk.scale) * ff.charonly
-    end
-    return res
-end
+    Diagonal([Float64(unk.scale / ff.scale) for ff in ffs])
 
 # Internal: Computes the total peak (counts), background (counts) and reference count (c/nAs) based on the fit k-ratios
 function _computecounts( #
     unk::FilteredUnknown, #
     ffs::AbstractVector{FilteredReference{T}}, #
-    kr::UncertainValues, #
+    krs::UncertainValues, #
 ) where { T <: AbstractFloat }
     res = Dict{ReferenceLabel,NTuple{3,T}}()
     for ff in ffs
         su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
         res[ff.label] = (
             su,
-            su - value(kr, ff.label) * sco * ff.scale / unk.scale,
+            su - value(krs, ff.label) * sco * ff.scale / unk.scale,
             sco * ff.scale
         )
     end
@@ -695,7 +682,8 @@ function fitcontiguouso(
     chs::UnitRange{Int},
 )::UncertainValues where { T <: AbstractFloat }
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    return scale * olspinv(extract(unk, chs), x, 1.0, lbls)
+    genInv = pinv(x, rtol = 1.0e-6)
+    return scale * uvs(lbls, genInv * extract(unk, chs), genInv * transpose(genInv))
 end
 
 """
@@ -713,7 +701,7 @@ function selectBestReferences(
         for ref in filter(ref -> element(ref.label) == elm, refs)
             comp = composition(ref.label)
             # Pick the reference with the largest charonly value but prefer pure elements over compounds
-            mrf = sum(ref.charonly) * (ismissing(comp) ? 0.01 : normalized(comp, elm)^2)
+            mrf = sum(ref.charonly) * (ismissing(comp) ? 0.01 : Float64(normalized(comp, elm))^2)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
                 rois[ref.roi] = (ref, mrf)
             end

@@ -53,12 +53,11 @@ refdata = (
 )
 # Some necessary properties are missing from the spectra so provide them.
 xtra = Dict{Symbol,Any}(:BeamEnergy=>40.0e3, :ProbeCurrent=>1.0, :Detector=>det)
-refs = FilteredReference[]
-for rd in refdata
-  append!(refs, filterreference(filt, rd..., props=xtra))
+refs = mapreduce(append!, refdata) do (sp, el, mat)
+  filterreference(filt, sp, el, mat, props=xtra)
 end
 # Merge the missing properties into the unknown too.
-merge!(steel, xtra)
+merge!(steel.properties, xtra)
 res = fit_spectrum(steel, filt, refs, false)
 # Tabulate the results
 ```

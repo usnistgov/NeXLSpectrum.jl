@@ -96,22 +96,6 @@ function NeXLUncertainties.compute(
     return (LabeledValues(outputs, results), jac)
 end
 
-function __remap_peaktoback(pbs::Dict{<:ReferenceLabel,NTuple{3,T}}, sm::StandardizeModel) where { T<: AbstractFloat }
-    res = Dict{ReferenceLabel,NTuple{3,T}}()
-    for (meas, pb) in pbs
-        i = findfirst(std->matches(meas, std), sm.standards)
-        if !isnothing(i)
-            std = sm.standards[i]
-            sp = copy(properties(std))
-            sp[:Composition] = std.standard
-            res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
-        else
-            res[meas] = pb
-        end
-    end
-    return res
-end
-
 """
     NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult{T}, material::Material, els=elms(material))::FilterFitResult{T}
     NeXLCore.standardize(ffrs::Vector{FilterFitResult{T}}, standard::FilterFitResult{T}, material::Material, els=elms(material))::Vector{FilterFitResult{T}}
@@ -129,13 +113,28 @@ function NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult
     # Problem here with equivalent CharXRayLabel(s) for unknown and standard...
     inp = cat(ffr.kratios, rext)
     stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(rext)))
+    ptob = Deferred() do
+        pbs, res = ffr.peakback, Dict{ReferenceLabel,NTuple{3,T}}()
+        for (meas, pb) in pbs()
+            i = findfirst(std->matches(meas, std), sm.standards)
+            if !isnothing(i)
+                std = sm.standards[i]
+                sp = copy(properties(std))
+                sp[:Composition] = std.standard
+                res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
+            else
+                res[meas] = pb
+            end
+        end
+        return res
+    end
     return FilterFitResult{T}(
             ffr.label, # Same
             stdize(inp), # remapped
             ffr.roi, # Same
             ffr.raw, # Same
             ffr.residual, # Same - residual is due to references
-            __remap_peaktoback(ffr.peakback, stdize) # Remapped to standard labels
+            ptob 
         )
 end
 
@@ -155,13 +154,28 @@ function NeXLCore.standardize(ffr::FilterFitResult{T}, standards::AbstractArray{
     return if length(stds)>0
         stdize = StandardizeModel(Vector{CharXRayLabel}(labels(ffr.kratios)), Vector{StandardLabel}(labels(stds)))
         inp = cat(ffr.kratios, stds)
+        ptob = Deferred() do
+            pbs, res = ffr.peakback, Dict{ReferenceLabel,NTuple{3,T}}()
+            for (meas, pb) in pbs()
+                i = findfirst(std->matches(meas, std), sm.standards)
+                if !isnothing(i)
+                    std = sm.standards[i]
+                    sp = copy(properties(std))
+                    sp[:Composition] = std.standard
+                    res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
+                else
+                    res[meas] = pb
+                end
+            end
+            return res
+        end
         FilterFitResult{T}(
             ffr.label,
             stdize(inp),
             ffr.roi,
             ffr.raw,
             ffr.residual,
-            __remap_peaktoback(ffr.peakback, stdize)
+            ptob
         )
     else
         @warn "No suitable standards were provided to standardize this measurement."

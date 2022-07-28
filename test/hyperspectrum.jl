@@ -146,7 +146,7 @@ end
         ],
         132.0,
     )
-    res = fit_spectrum(hs, ffp, mode = :Fast)
+    res = fit_spectra(hs, ffp, mode = :Fast)
     # @info "QQ - 64-bit"
     # res = @time fit_spectrum(hs, ffp, mode = :Fast)
 
@@ -158,14 +158,16 @@ end
     matches(kr1::KRatio, kr2::KRatio) =
         kr1.element == kr2.element && brightest(kr1.xrays) == brightest(kr2.xrays)
 
+    rr1 = true
     for krs in res
         kr1 = krs[12, 23]
         for kr2 in kratios(res12_23)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr1 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr1
 
     nkrs = normalizek(res)
     @test isapprox(sum(p->p[13,17].kratio, nkrs), 1.0, atol=1.0e-5)  
@@ -174,39 +176,45 @@ end
     @test isapprox(sum(p->p[17,13].kratio, nkrs), 1.0, atol=1.0e-5)  
 
     res60_29 = fit_spectrum(hs[60, 29], ffp)
+    rr2 = true
     for krs in res
         kr1 = krs[60, 29]
         for kr2 in kratios(res60_29)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr2 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr2
 
     vq = VectorQuant(ffp)
     # Single spectrum by VectorQuant
     res12_23p = fit_spectrum(hs[12, 23], vq)
+    rr3 = true
     for krs in res
         kr1 = krs[12, 23]
         for kr2 in kratios(res12_23p)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr3 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr3
 
     res60_29p = fit_spectrum(hs[60, 29], vq)
+    rr4 = true
     for krs in res
         kr1 = krs[60, 29]
         for kr2 in kratios(res60_29)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr4 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr4
 
-    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
-    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
+    resi = fit_spectra(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectra(hs[1:8,1:8], ffp, mode = :Full)
 
     raw = nothing
     GC.gc()
@@ -236,7 +244,7 @@ end
         132.0, 
         ftype=Float32 # Only difference with above...
     )
-    res = fit_spectrum(hs, ffp, mode = :Fast)
+    res = fit_spectra(hs, ffp, mode = :Fast)
     # @info "QQ - 32-bit"
     # res = @time fit_spectrum(hs, ffp, mode = :Fast)
 
@@ -247,49 +255,57 @@ end
         kr1.element == kr2.element && brightest(kr1.xrays) == brightest(kr2.xrays)
 
     res12_23 = fit_spectrum(hs[12, 23], ffp)
+    rr5 = true
     for krs in res
         kr1 = krs[12, 23]
         for kr2 in kratios(res12_23)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr5 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr5
 
     res60_29 = fit_spectrum(hs[60, 29], ffp)
+    rr6 = true
     for krs in res
         kr1 = krs[60, 29]
         for kr2 in kratios(res60_29)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr6 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr6
 
     vq = VectorQuant(ffp)
     # Single spectrum by VectorQuant
+    rr7 = true
     res12_23p = fit_spectrum(hs[12, 23], vq)
     for krs in res
         kr1 = krs[12, 23]
         for kr2 in kratios(res12_23p)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr7 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr7
 
     res60_29p = fit_spectrum(hs[60, 29], vq)
+    rr8 = true
     for krs in res
         kr1 = krs[60, 29]
         for kr2 in kratios(res60_29)
             if matches(kr1, kr2)
-                @test equivalent(kr1.kratio, kr2.kratio)
+                rr8 &= equivalent(kr1.kratio, kr2.kratio)
             end
         end
     end
+    @test rr8
 
-    resi = fit_spectrum(hs[1:8,1:8], ffp, mode = :Intermediate)
-    resf = fit_spectrum(hs[1:8,1:8], ffp, mode = :Full)
+    resi = fit_spectra(hs[1:8,1:8], ffp, mode = :Intermediate)
+    resf = fit_spectra(hs[1:8,1:8], ffp, mode = :Full)
 
     raw = nothing
     GC.gc()

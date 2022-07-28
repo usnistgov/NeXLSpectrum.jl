@@ -13,7 +13,7 @@ using Unitful: mm
 using FileIO
 using Mmap
 using EzXML: readxml
-using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs
+using Polynomials: ImmutablePolynomial, fit, printpoly, roots, derivative, coeffs, Polynomials
 using LinearAlgebra
 using LoopVectorization
 using Statistics
@@ -55,24 +55,22 @@ export extents # Determine the energy extents of many x-ray lines on a detector
 export matching # Build a detector to match a spectrum
 export matches # Do the spectrum and detector match
 export lld # Low-level discriminator in eV
-export detectorresponse # Build a matrix that describes the detectors response to X-rays
 export gaussianwidth, fwhm
 
 
 # X-ray window models
 include("window.jl")
 # primary function transmission(wnd, energy, angle)
-export AbstractWindow, LayerWindow, TabulatedWindow
-export AP33Model, AP5Model, AP33Tabulation, AP5Tabulation # Moxtek windows
-export Beryllium # Classic windows
-export AmptekC1, AmptekC2 # Amptek windows
-export NoWindow # 100% transmission
+export AbstractWindow, ModeledWindow, TabulatedWindow, NoWindow
+export WindowType, MoxtekAP33, MoxtekAP5, AmetekC1, AmetekC2, AmptekC1, AmptekC2, BerylliumWindow
 
 include("detefficiency.jl")
 export DetectorEfficiency
 export efficiency
 export SDDEfficiency, SiLiEfficiency # Helpers to build DetectorEfficiency
-export buildresponse # Builds a detector response matrix
+export detectorresponse # Build a matrix that describes the detectors response to X-rays
+export detect # Detect Dict(CharXRay=>Intensity)
+export simulate # Simulate a spectrum as measured on a detector
 
 # Items defined in NeXL/spectrum.jl
 include("spectrum.jl")
@@ -103,18 +101,23 @@ export maxspectrum # Dave Bright's max spectra derived spectrum
 export suitablefor # Which ROIs is a set of elements suitable for as reference for the specified element?
 export missingReferences # A Vector with missing ROIs in a FilterFitPacket
 export dosenormalize # Rescale the channel data to correspond to a different electron dose.
+export offset # Offset the counts data by Δcounts
 
 export maxproperty, minproperty # Min value of a property over a vector of spectra
 export sameproperty # Returns the property value if all the spectra share the same value, errors otherwise
 export textplot # A quick way to visualize a spectrum
+
+include("compare.jl")
 export findsimilar # Find the spectra that are most similar to each other
 export χ² # Compare spectra
-export duane_hunt # Estimate the Duane-Hunt limit
 export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
 
+include("recalibrate.jl")
 export recalibrate # Change the LinearEnergyScale against which a spectrum is calibrated
 export shift # Shift the channels in a spectrum by a specified energy amount.
-export offset # Offset the counts data by Δcounts
+
+include("duanehunt.jl")
+export duane_hunt # Estimate the Duane-Hunt limit
 
 include("hyperspectrum.jl")
 export HyperSpectrum # The wrapper that makes an Array{<:Real,N} look like an Array{Spectrum,N-1}
@@ -192,7 +195,8 @@ export FitResult
 export BasicFitResult
 export FilterFitResult
 export findlabel
-export fit_spectrum
+export fit_spectrum # Preferred for individual spectra
+export fit_spectra # Preferred for multiple spectra
 export heterogeneity
 export peaktobackground
 export characteristiccounts
@@ -241,6 +245,12 @@ export suitability # Tabulates material suitability for use as a fitting referen
 
 include("qquant.jl")
 export VectorQuant
+
+include("direct.jl")
+export DirectReference
+export DirectReferences
+export DirectFitResult
+export direct
 
 include("labeled.jl")
 export labeledimage # Displays an image and caption.

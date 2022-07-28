@@ -1,20 +1,20 @@
 using Test
 
 @testset "Windows" begin
-    ap33 = AP33Model()
-    @test repr(ap33) == "Moxtek AP3.3 model"
-    ap5 = AP5Model()
-    @test repr(ap5) == "Moxtek AP5 model"
-    ap33t = AP33Tabulation()
-    @test repr(ap33t) == "Moxtek AP3.3"
-    ap5t = AP5Tabulation()
-    @test repr(ap5t) == "Moxtek AP5"
-    be = Beryllium()
-    @test repr(be) == "5.0 μm Be window"
-    ac1 = AmptekC1()
-    @test repr(ac1) == "Amptek C1"
-    ac2 = AmptekC2()
-    @test repr(ac2) == "Amptek C2"
+    ap33 = ModeledWindow(MoxtekAP33())
+    @test repr(ap33) == "Moxtek AP3.3 - Modeled"
+    ap5 = ModeledWindow(MoxtekAP5())
+    @test repr(ap5) == "Moxtek AP5 - Modeled"
+    ap33t = TabulatedWindow(MoxtekAP33())
+    @test repr(ap33t) == "Moxtek AP3.3 - Tabulated"
+    ap5t = TabulatedWindow(MoxtekAP5())
+    @test repr(ap5t) == "Moxtek AP5 - Tabulated"
+    be = ModeledWindow(BerylliumWindow(5.0e-4))
+    @test repr(be) == "5.0 μm Beryllium - Modeled"
+    ac1 = ModeledWindow(AmptekC1())
+    @test repr(ac1) == "AMPTEK C1 Si₃N₄ - Modeled"
+    ac2 = ModeledWindow(AmptekC2())
+    @test repr(ac2) == "AMPTEK C2 Si₃N₄ - Modeled"
     now = NoWindow() # 100% transmission
     @test repr(now) == "No window"
 
@@ -34,14 +34,15 @@ using Test
     @test isapprox(transmission(ap5t, 3000.0), 0.772, atol = 0.001)
     @test isapprox(transmission(ap5, 3000.0), 0.773, atol = 0.001)
     @test isapprox(transmission(be, 3000.0), 0.982, atol = 0.001)
-    @test isapprox(transmission(ac1, 3000.0), 0.865, atol = 0.001)
-    @test isapprox(transmission(ac2, 3000.0), 0.928, atol = 0.001)
+    @test isapprox(transmission(ac1, 3000.0), 0.741, atol = 0.001)
+    @test isapprox(transmission(ac2, 3000.0), 0.795, atol = 0.001)
 
     @test isapprox(transmission(ap33, 30000.0), 0.978, atol = 0.001)
     @test isapprox(transmission(ap33t, 30000.0), 0.993, atol = 0.001)
     @test isapprox(transmission(ap5t, 30000.0), 0.999, atol = 0.001)
     @test isapprox(transmission(ap5, 30000.0), 0.999, atol = 0.001)
     @test isapprox(transmission(be, 30000.0), 0.9999, atol = 0.001)
-    @test isapprox(transmission(ac1, 30000.0), 0.9999, atol = 0.0001)
-    @test isapprox(transmission(ac2, 30000.0), 0.9999, atol = 0.0001)
+    @test isapprox(transmission(ac1, 30000.0), 0.9992, atol = 0.0001)
+    @test isapprox(transmission(ac2, 30000.0), 0.9992, atol = 0.0001)
 end
+

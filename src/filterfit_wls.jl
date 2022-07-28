@@ -7,7 +7,7 @@ optimistic resulting covariance matrix.
 """
 struct FilteredUnknownW{T} <: FilteredUnknown where { T<:AbstractFloat}
     label::UnknownLabel # A way of identifying this filtered datum
-    scale::Float64 # A dose or other scale correction factor
+    scale::T # A dose or other scale correction factor
     roi::UnitRange{Int} # ROI for the raw data (always 1:...)
     data::Vector{T} # Spectrum data over ffroi
     filtered::Vector{T} # Filtered spectrum data over ffroi
@@ -33,17 +33,6 @@ function _buildmodel(
 end
 
 """
-    covariance(fd::FilteredUnknownW, roi::UnitRange{Int})
-
-Like extract(fd,roi) except extracts the covariance diagnonal elements over the specified range of channels.
-`roi` must be fully contained within the data in `fd`.
-"""
-NeXLUncertainties.covariance(
-    fd::FilteredUnknownW,
-    roi::UnitRange{Int}
-) = view(fd.covariance, roi)
-
-"""
 Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(
@@ -52,15 +41,21 @@ function fitcontiguousww(
     chs::UnitRange{Int},
 )::UncertainValues where { T <: AbstractFloat }
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    covscales = T[ ff.covscale for ff in ffs ]
-    return scale * wlspinv2(extract(unk, chs), x, covariance(unk, chs), covscales, lbls)
+    # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
+    dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
+    w = Diagonal([sqrt(one(T) / T(cv)) for cv in view(unk.covariance, chs)])
+    genInv = pinv(w * x, rtol = 1.0e-6) # 60% of allocation here
+    ext = extract(unk, chs)
+    # @assert all(eltype.((genInv, w, dcs, ext)).==T)
+    # @assert eltype(scale)==Float64
+    return scale * uvs(lbls, genInv * w * ext, dcs * (genInv * transpose(genInv)) * dcs)
 end
 
-function ascontiguous(rois::AbstractArray{UnitRange{Int}})
+function ascontiguous(rois::AbstractArray{UnitRange{Int}})::Vector{UnitRange{Int}}
     # Join the UnitRanges into contiguous UnitRanges
     join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
     srois = sort(rois)
-    res = [srois[1]]
+    res = UnitRange{Int}[srois[1]]
     for roi in srois[2:end]
         if length(intersect(res[end], roi)) > 0
             res[end] = join(roi, res[end]) # Join UnitRanges
@@ -76,7 +71,7 @@ end
 
 For filtering the unknown spectrum. Defaults to the weighted fitting model.
 """
-tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::Float64 = 1.0) where { T <: AbstractFloat } = #
+tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::T = one(T)) where { T <: AbstractFloat } = #
     tophatfilter(FilteredUnknownW{T}, spec, filt, scale)
 
 """
@@ -89,7 +84,7 @@ function tophatfilter(
     ::Type{FilteredUnknownW{T}},
     spec::Spectrum,
     thf::TopHatFilter{T},
-    scale::Float64 = 1.0,
+    scale::T = one(T),
 ) where { T<: AbstractFloat }
     data = counts(spec, 1:length(thf), T, true)
     filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
@@ -97,7 +92,7 @@ function tophatfilter(
     covar = T[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
     return FilteredUnknownW{T}(
         UnknownLabel(spec),
-        scale,
+        T(scale),
         1:length(data),
         data,
         filtered,
@@ -109,32 +104,30 @@ end
 function _filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
-    forcezeros,
-) where { T <: AbstractFloat }
-    trimmed, refit, removed = copy(ffs), true, UncertainValues[] # start with all the FilteredReference
-    while refit
-        refit = false
-        fitrois = ascontiguous(map(fd -> fd.ffroi, trimmed))
-        retained = map(fitrois) do fr
+    forcezeros::Bool,
+)::UncertainValues where { T <: AbstractFloat }
+    trimmed, removed = copy(ffs), UncertainValues[] # start with all the FilteredReference
+    while true
+        retained = map(ascontiguous(map(fd -> fd.ffroi, trimmed))) do fr
             # `fitcontiguousww(..) performs the fit
             fitcontiguousww(unk, filter(ff -> length(intersect(fr, ff.ffroi)) > 0, trimmed), fr)
         end
-        kr = cat(retained)
         if forcezeros
-            for lbl in keys(kr)
-                if NeXLUncertainties.value(kr, lbl) < 0.0
-                    splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
-                    push!(removed, uvs([lbl], [0.0], reshape([σ(kr, lbl)], (1, 1))))
-                    refit = true
-                end
+            vals  = Dict{Label, UncertainValue}()
+            for kr in retained, lbl in filter(l->value(kr,l) < 0.0, keys(kr))
+                splice!(trimmed, findfirst(ff -> ff.label == lbl, trimmed))
+                vals[lbl] = uv(0.0, σ(kr, lbl))
             end
-        end
-        if !refit
-            return cat(append!(retained, removed))
+            if isempty(vals)
+                return cat(append!(retained, removed))
+            end
+            push!(removed, uvs(vals))
+        else
+            return cat(retained)
         end
     end # while
     @assert false
-    return removed # To maintain type
+    return cat(removed) # To maintain type
 end
 
 """
@@ -154,10 +147,31 @@ would bias the result positive.
 function filterfit(
     unk::FilteredUnknownW{T},
     ffs::AbstractVector{FilteredReference{T}},
-    forcezeros = true,
-)::FilterFitResult where { T <: AbstractFloat }
+    forcezeros::Bool = true,
+) where { T <: AbstractFloat }
     krs = _filterfit(unk, ffs, forcezeros)
-    resid, pb = _computeResidual(unk, ffs, krs), _computecounts(unk, ffs, krs)
+    resid = Deferred() do
+        sp = unk.label.spectrum
+        props = copy(properties(sp))
+        props[:Name] = "Residual[$(props[:Name])]"
+        res = copy(sp.counts)
+        for ff in ffs
+            res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+        end
+        return Spectrum(sp.energy, res, props)
+    end
+    pb = Deferred() do 
+        res = Dict{ReferenceLabel,NTuple{3,T}}()
+        for ff in ffs
+            su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
+            res[ff.label] = (
+                su,
+                su - value(krs, ff.label) * sco * ff.scale / unk.scale,
+                sco * ff.scale
+            )
+        end
+        return res
+    end
     return FilterFitResult(unk.label, krs, unk.roi, unk.data, resid, pb)
 end
 
@@ -166,13 +180,13 @@ function fit_spectrum(
     unk::Spectrum,
     filt::TopHatFilter,
     refs::AbstractVector{FilteredReference{T}},
-    forcezeros = true,
+    forcezeros::Bool = true,
 ) where { T <: AbstractFloat }
     bestRefs = selectBestReferences(refs)
-    return filterfit(tophatfilter(ty, unk, filt, 1.0 / dose(unk)), bestRefs, forcezeros)
+    return filterfit(tophatfilter(ty, unk, filt, one(T) / T(dose(unk))), bestRefs, forcezeros)
 end
 
-function fit_spectrum(
+function fit_spectra(
     ty::Type{FilteredUnknownW{T}},
     unks::AbstractVector{<:Spectrum},
     filt::TopHatFilter{T},
@@ -181,7 +195,7 @@ function fit_spectrum(
 ) where { T <: AbstractFloat }
     bestRefs = selectBestReferences(refs)
     return map(unks) do unk
-        fu = tophatfilter(ty, unk, filt, 1.0 / dose(unk))
+        fu = tophatfilter(ty, unk, filt, one(T) / T(dose(unk)))
         filterfit(fu, bestRefs, forcezeros)
     end
 end
@@ -194,10 +208,16 @@ fit_spectrum(
 ) where { T <: AbstractFloat } = #
     fit_spectrum(FilteredUnknownW{T}, unk, filt, refs, forcezeros)
 
-fit_spectrum(
+fit_spectra(
     unks::AbstractVector{Spectrum},
     filt::TopHatFilter{T},
     refs::AbstractVector{FilteredReference{T}},
     forcezeros = true,
 ) where { T <: AbstractFloat } = # 
-    fit_spectrum(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+    fit_spectra(FilteredUnknownW{T}, unks, filt, refs, forcezeros)
+
+fit_spectrum(
+    unks::AbstractVector{Spectrum},
+    filt::TopHatFilter{T},
+    refs::AbstractVector{FilteredReference{T}},
+    forcezeros = true) where { T<: AbstractFloat }= fit_spectra(unks, filt, refs, forcezeros)

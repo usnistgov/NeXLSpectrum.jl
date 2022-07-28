@@ -15,6 +15,7 @@ register(DataDep("map[15]Artifact",
 ))
 ENV["DATADEPS_ALWAYS_ACCEPT"]="true"
 
+@testset "NeXLSpectrum" begin
 include("window.jl")
 include("detefficiency.jl")
 include("spectrum.jl")
@@ -26,3 +27,5 @@ include("line.jl")
 include("multikev.jl")
 include("standardize.jl")
 include("multidet.jl")
+include("direct.jl")
+end
