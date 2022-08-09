@@ -1,10 +1,10 @@
 """
     NeXLMatrixCorrection.quantify(
-      ffr::FitResult;
-      strip::AbstractVector{Element} = [],
-      mc::Type{<:MatrixCorrection} = XPP,
-      fl::Type{<:FluorescenceCorrection} = ReedFluorescence,
-      kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
+        ffr::FitResult;
+        strip::AbstractVector{Element} = Element[],
+        iteration::Iteration = Iteration(mc=XPP, fc=ReedFluorescence, cc=Coating),
+        kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
+        coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
     )::IterationResult
 
 Facilitates converting `FilterFitResult` or `BasicFitResult` objects into estimates of composition by extracting
@@ -13,37 +13,38 @@ k-ratios from measured spectra and applying matrix correction algorithms.
 function NeXLMatrixCorrection.quantify(
     ffr::FitResult;
     strip::AbstractVector{Element} = Element[],
-    mc::Type{<:MatrixCorrection} = XPP,
-    fc::Type{<:FluorescenceCorrection} = ReedFluorescence,
-    cc::Type{<:CoatingCorrection} = Coating,
+    iteration::Iteration = Iteration(),
     kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
-    unmeasured::UnmeasuredElementRule = NullUnmeasuredRule(),
     coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
 )::IterationResult
-    iter = Iteration(mc, fc, cc, unmeasured = unmeasured)
     krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
-    return quantify(iter, ffr.label, krs, coating=coating)
+    return quantify(ffr.label, krs, iteration, coating=coating)
 end
 
 """
     NeXLMatrixCorrection.quantify(
         spec::Union{Spectrum,AbstractVector{<:Spectrum}},
         ffp::FilterFitPacket;
-        kwargs...
+        strip::AbstractVector{Element} = Element[],
+        iteration::Iteration = Iteration(mc=XPP, fc=ReedFluorescence, cc=Coating),
+        kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
+        coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
     )::IterationResult
 
 Failitates quantifying spectra.  First filter fits and then matrix corrects.
 """
 function NeXLMatrixCorrection.quantify(
     spec::Spectrum,
-    ffp::FilterFitPacket;
+    ffp::FilterFitPacket,
+    iteration::Iteration = Iteration();
     kwargs...,
 )::IterationResult
     return quantify(fit_spectrum(spec, ffp); kwargs...)
 end
 NeXLMatrixCorrection.quantify(
     specs::AbstractVector{<:Spectrum},
-    ffp::FilterFitPacket;
+    ffp::FilterFitPacket,
+    iteration::Iteration = Iteration();
     kwargs...,
 )::Vector{IterationResult} = #
-    map(spec->quantify(fit_spectrum(spec, ffp); kwargs...), specs)
+    map(spec->quantify(fit_spectrum(spec, ffp), iteration; kwargs...), specs)

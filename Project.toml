@@ -2,7 +2,7 @@ name = "NeXLSpectrum"
 uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
 authors = ["Nicholas W.M. Ritchie <nicholas.ritchie@nist.gov>"]
 repo-url = "https://github.com/usnistgov/NeXLSpectrum.jl"
-version = "0.3.3"
+version = "0.3.4-dev"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
