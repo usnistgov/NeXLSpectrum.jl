@@ -67,7 +67,7 @@ In Windows, this operation looks like:
 julia> using NeXLSpectrum, DataFrames, Gadfly # Load the basic libraries
 julia> using PackageCompiler 
 julia> PackageCompiler.create_sysimage(
-    [ "Gadfly", "DataFrames", "BoteSalvatICX", "FFAST", "NeXLUncertainties", "NeXLCore", "NeXLMatrixCorrection", "NeXLSpectrum" ]; 
+    [ "Gadfly", "DataFrames", "BoteSalvatICX", "NeXLUncertainties", "NeXLCore", "NeXLMatrixCorrection", "NeXLSpectrum" ]; 
     sysimage_path=joinpath(homedir(), ".julia", "NeXLSysimage.dll"),
     precompile_execution_file=joinpath(pkgdir(NeXLSpectrum),"scripts", "precompile.jl"))
 ```
