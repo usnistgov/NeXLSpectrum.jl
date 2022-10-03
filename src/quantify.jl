@@ -24,27 +24,24 @@ end
 """
     NeXLMatrixCorrection.quantify(
         spec::Union{Spectrum,AbstractVector{<:Spectrum}},
-        ffp::FilterFitPacket,
-        iteration::Iteration = Iteration(mc=XPP, fc=ReedFluorescence, cc=Coating);
+        ffp::FilterFitPacket;
         strip::AbstractVector{Element} = Element[],
+        iteration::Iteration = Iteration(mc=XPP, fc=ReedFluorescence, cc=Coating),
         kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
         coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
     )::IterationResult
 
 Failitates quantifying spectra.  First filter fits and then matrix corrects.
 """
-function NeXLMatrixCorrection.quantify(
+NeXLMatrixCorrection.quantify(
     spec::Spectrum,
-    ffp::FilterFitPacket,
-    iteration::Iteration = Iteration();
+    ffp::FilterFitPacket;
     kwargs...,
-)::IterationResult
-    return quantify(fit_spectrum(spec, ffp); kwargs...)
-end
+) = quantify(fit_spectrum(spec, ffp); kwargs...)
+
 NeXLMatrixCorrection.quantify(
     specs::AbstractVector{<:Spectrum},
-    ffp::FilterFitPacket,
-    iteration::Iteration = Iteration();
+    ffp::FilterFitPacket;
     kwargs...,
 )::Vector{IterationResult} = #
-    map(spec->quantify(fit_spectrum(spec, ffp), iteration; kwargs...), specs)
+    map(spec->quantify(fit_spectrum(spec, ffp); kwargs...), specs)

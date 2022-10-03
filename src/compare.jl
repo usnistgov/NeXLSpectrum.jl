@@ -64,9 +64,13 @@ function similarity(
 )::Vector{Float64}
     e0 = maximum(spec[:BeamEnergy] for spec in specs)
     rois = extents(characteristic(elm, alltransitions, 0.01, e0), det, 0.001)
-    chs = mapreduce(collect, append!, rois)
-    return similarity(specs, chs)
+    if !isempty(rois)
+        similarity(specs, mapreduce(collect, append!, rois; init=[]))
+    else
+        zeros(Float64, size(specs))
+    end
 end
+
 function similarity(
     specs::AbstractArray{<:Spectrum},
     det::Detector,

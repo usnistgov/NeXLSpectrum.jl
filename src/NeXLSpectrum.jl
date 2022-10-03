@@ -111,6 +111,7 @@ include("compare.jl")
 export findsimilar # Find the spectra that are most similar to each other
 export χ² # Compare spectra
 export sigma # Computes the channel-by-channel dose corrected difference from the mean. 
+export similarity # Computes the similarity metric
 
 include("recalibrate.jl")
 export recalibrate # Change the LinearEnergyScale against which a spectrum is calibrated
