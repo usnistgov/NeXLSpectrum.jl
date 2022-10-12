@@ -45,10 +45,10 @@ Required:
 
 Named:
 
-    klms = [ Element &| CharXRay ]
-	edges = [ Element &| AtomicSubShell ]
-	escapes = [ CharXRay ],
-	coincidences = [ CharXRay ]
+    klms = Union{Element, CharXRay}[ ]
+	edges = Union{Element, AtomicSubShell}[ ]
+	escapes = Union{Element, CharXRay}[ ],
+	coincidences = CharXRay[ ],
 	autoklms = false # Add KLMs based on elements in spectra
 	xmin = 0.0 # Min energy (eV)
 	xmax = missing # Max energy (eV) (defaults to max(:BeamEnergy))
@@ -63,40 +63,17 @@ Plot a multiple spectra on a single plot using Gadfly.
 """
 Gadfly.plot( #
     specs::AbstractVector{Spectrum{<:Real}};
-    klms=Union{Element,CharXRay}[],
-    edges=AtomicSubShell[],
-    escapes=CharXRay[],
-    coincidences=CharXRay[],
-    autoklms=false,
-    xmin=0.0,
-    xmax=missing,
-    norm=:None,
-    yscale=1.05,
-    ytransform=identity,
-    style=NeXLSpectrumStyle,
-    palette=NeXLPalette
-)::Plot = plot( #
-    specs...,
-    klms=klms,
-    edges=edges,
-    escapes=escapes,
-    coincidences=coincidences,
-    autoklms=autoklms,
-    xmin=xmin,
-    xmax=xmax,
-    norm=norm,
-    yscale=yscale,
-    ytransform=ytransform,
-    style=style,
-    palette=palette,
+    kwargs...
+) = plot( #
+    specs...;
+    kwargs...
 )
-
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
-    klms=Union{Element,CharXRay}[],
-    edges::AbstractArray{AtomicSubShell}=AtomicSubShell[],
-    escapes::Union{AbstractVector{Element},AbstractVector{CharXRay}}=CharXRay[],
-    coincidences::AbstractArray{CharXRay}=CharXRay[],
+    klms::AbstractVector=CharXRay[],
+    edges::AbstractVector=AtomicSubShell[],
+    escapes::AbstractVector=CharXRay[],
+    coincidences::AbstractVector{CharXRay}=CharXRay[],
     autoklms=false,
     xmin=0.0,
     xmax=missing,
@@ -111,7 +88,7 @@ function Gadfly.plot(
     title=nothing,
     minklmweight=1.0e-3
 )::Plot
-    function klmLayer(specdata, cxrs::AbstractArray{CharXRay})
+    function klmLayer(specdata, cxrs::AbstractArray{CharXRay})  
         d = Dict{Any,Vector{CharXRay}}()
         for cxr in cxrs
             d[(element(cxr), shell(cxr))] =
@@ -554,7 +531,7 @@ function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
 end
 
 """
-    Gadfly.plot(deteff::DetectorEfficiency, emax = 20.0e3)
+    Gadfly.plot(deteff::Union{DetectorEfficiency,AbstractVector{DetectorEfficiency}}, emax = 20.0e3)
 
 Plots the detector efficiency function assuming the detector is perpendicular to the incident X-rays.
 """
@@ -562,6 +539,10 @@ function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)
     eff(ee) = efficiency(deteff, ee, π / 2)
     plot(eff, 100.0, emax)
 end
+function Gadfly.plot(deteff::AbstractVector{DetectorEfficiency}, emax=20.0e3)
+    plot(map(ee->efficiency(deteff, ee, π / 2), deteff), 100.0, emax)
+end
+
 
 function plotandimage(plot::Gadfly.Plot, image::Array)
     io = IOBuffer(maxsize=10 * 1024 * 1024)
