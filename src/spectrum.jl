@@ -572,7 +572,8 @@ end
     integrate(spec::Spectrum, channels::AbstractUnitRange{<:Integer})
     integrate(spec::Spectrum, energyRange::StepRangeLen{Float64})
 
-Sums all the counts in the specified channels.  No background correction.
+Sums all the counts in the specified channels.  No background correction.  The `energyRange` version includes the fractional contributions
+from partial channels when the energies don't perfectly map to channels.
 
     integrate(spec::Spectrum, back1::AbstractUnitRange{<:Integer}, peak::AbstractUnitRange{<:Integer}, back2::AbstractUnitRange{<:Integer})::UncertainValue
     integrate(spec::Spectrum, back1::StepRangeLen{Float64}, peak::StepRangeLen{Float64}, back2::StepRangeLen{Float64})::UncertainValue
@@ -587,8 +588,13 @@ Total integral of all counts from the LLD to the beam energy
 integrate(spec::Spectrum, channels::AbstractUnitRange{<:Integer}) =
     sum(spec.counts[channels])
 
-integrate(spec::Spectrum, energyRange::StepRangeLen{Float64}) =
-    sum(spec.counts[channel(energyRange[1], spec):channel(energyRange[end], spec)])
+function integrate(spec::Spectrum, energyRange::StepRangeLen{Float64})
+    low, high = channel(Float64, energyRange[1], spec), channel(Float64, energyRange[end], spec)
+    li, hi = ceil(Int, low), trunc(Int, high)
+    sum(spec.counts[li:hi]) + # full channels between low and high
+        (ceil(low) - low)*get(spec.counts, li-1, zero(eltype(spec.counts))) + # partial channel low
+        (high - trunc(high))*get(spec.counts, hi+1, zero(eltype(spec.counts))) # partial channel high
+end
 
 function integrate(
     spec::Spectrum,
