@@ -1,11 +1,15 @@
 using DataFrames
 using Gadfly
-using BoteSalvatICX
-using FFAST
 using NeXLUncertainties
 using NeXLCore
 using NeXLMatrixCorrection
 using NeXLSpectrum
+
+# These are required for tests but not for day-to-day operation
+using Pkg
+Pkg.add("DataDeps")
+Pkg.add("Distributions")
+
 
 include(joinpath(pkgdir(NeXLSpectrum), "test", "runtests.jl"))
 
