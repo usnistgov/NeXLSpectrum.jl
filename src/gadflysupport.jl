@@ -678,14 +678,14 @@ function Gadfly.plot(
     dspec = dfr.label.spectrum
     function defroi(ddffrr) # Compute a reasonable default display ROI
         raw = ddffrr.label.spectrum.counts
-        res = ddffrr.residual().counts
+        res = ddffrr.residual.counts
         mx = findlast(i -> raw[i] != res[i], eachindex(raw))
         mx = min(max(mx + mx ÷ 5, 100), length(raw))
         mn = channel(0.0, ddffrr.label.spectrum)
         return mn:mx
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])
-    roi, resid = something(roi, defroi(dfr)), residual(dfr).counts
+    roi, resid = something(roi, defroi(dfr)), dfr.residual.counts
     layers = [
         layer(x=roi, y=counts(dfr.continuum, roi), Geom.step, Theme(default_color=palette[3])),
         layer(x=roi, y=resid[roi], Geom.step, Theme(default_color=palette[2])),
