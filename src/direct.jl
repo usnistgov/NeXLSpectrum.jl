@@ -85,6 +85,8 @@ struct DirectFitResult{T <: AbstractFloat} <: FitResult
 end
 
 Base.show(io::IO, dfr::DirectFitResult) = print(io, "DirectFitResult($(dfr.label))")
+residual(dfr::DirectFitResult) = dfr.residual
+continuum(dfr::DirectFitResult) = dfr.continuum
 
 """
     fit_spectrum(unk::Spectrum{T}, drefs::DirectReferences)::DirectFitResult{T} where { T <: Real }
