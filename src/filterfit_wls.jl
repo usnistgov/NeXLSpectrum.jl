@@ -152,7 +152,7 @@ function filterfit(
     krs = _filterfit(unk, ffs, forcezeros)
     resid = Deferred() do
         sp = unk.label.spectrum
-        props = copy(properties(sp))
+        props = copy(NeXLCore.properties(sp))
         props[:Name] = "Residual[$(props[:Name])]"
         res = copy(sp.counts)
         for ff in ffs

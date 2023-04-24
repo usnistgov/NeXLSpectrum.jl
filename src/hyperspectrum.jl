@@ -323,7 +323,7 @@ channel(energy::Real, hss::HyperSpectrum) = channel(energy, hss.energy)
 channelwidth(ch::Int, hss::HyperSpectrum) = energy(ch + 1, hss) - energy(ch, hss)
 rangeofenergies(ch::Integer, hss::HyperSpectrum) =
     (energy(ch, hss.energy), energy(ch + 1, hss.energy))
-properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
+NeXLCore.properties(hss::HyperSpectrum)::Dict{Symbol,Any} = hss.properties
 
 """
 	matching(spec::HyperSpectrum, resMnKa::Float64, lld::Int=1)::BasicEDS

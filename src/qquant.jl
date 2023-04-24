@@ -73,7 +73,7 @@ function fit_spectrum(
     krs = zero.(vq.vectors * raw)
     spsc = T(dose(spec))
     residual = Deferred() do
-        props = copy(properties(spec))
+        props = copy(NeXLCore.properties(spec))
         props[:Name] = "Residual[$(props[:Name])]"
         res = copy(counts(spec, 1:size(vq.vectors, 2), T, true))
         for (i, vqr) in enumerate(vq.references)
@@ -124,8 +124,8 @@ function fit_spectra(
     map!(zero, krs, krs)
     res = map(filter(ii -> vq.references[ii].label isa CharXRayLabel, eachindex(vq.references))) do i
         lbl = vq.references[i].label
-        rprops = properties(spectrum(lbl))
-        KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
+        rprops = NeXLCore.properties(spectrum(lbl))
+        KRatios(xrays(lbl), NeXLCore.properties(hs), rprops, rprops[:Composition], krs[i, :, :])
     end
     return res
 end

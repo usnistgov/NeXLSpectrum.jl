@@ -203,7 +203,7 @@ Base.checkbounds(::Type{Bool}, spec::Spectrum, ch::Int) = checkbounds(Bool, spec
     
 Base.copy(spec::Spectrum) = Spectrum(spec.energy, copy(spec.counts), copy(spec.properties))
 Base.merge!(spec::Spectrum, props::Dict{Symbol,Any}) = merge!(spec.properties, props)
-properties(spec::Spectrum) = spec.properties
+NeXLCore.properties(spec::Spectrum) = spec.properties
 NeXLCore.name(spec::Spectrum) = spec[:Name]
 Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Real } = spec
 Base.convert(::Type{Spectrum{T}}, spec::Spectrum{T}) where { T <: Integer } = spec
