@@ -4,7 +4,7 @@ function spectrum(sop::SpectrumOrProperties)::Spectrum
     @assert sop isa Spectrum "The spectrum is not available."
     sop # Fails fast
 end
-properties(sop::SpectrumOrProperties)::Dict{Symbol, Any} = sop isa Spectrum ? properties(sop) : sop
+NeXLCore.properties(sop::SpectrumOrProperties)::Dict{Symbol, Any} = sop isa Spectrum ? NeXLCore.properties(sop) : sop
 hasspectrum(sop::SpectrumOrProperties) = sop isa Spectrum
 
 """
@@ -36,9 +36,9 @@ Base.isequal(c1::ReferenceLabel, c2::ReferenceLabel) =
     isequal(c1.spectrum, c2.spectrum)
 xrays(cl::ReferenceLabel)::Vector{CharXRay} = cl.xrays
 spectrum(cl::ReferenceLabel)::Spectrum = spectrum(cl.spectrum)
-properties(cl::ReferenceLabel)::Dict{Symbol,Any} = properties(cl.spectrum)
+NeXLCore.properties(cl::ReferenceLabel)::Dict{Symbol,Any} = NeXLCore.properties(cl.spectrum)
 hasspectrum(cl::ReferenceLabel)::Bool = hasspectrum(cl.spectrum)
-composition(cl::ReferenceLabel) = get(properties(cl), :Composition, missing)
+composition(cl::ReferenceLabel) = get(NeXLCore.properties(cl), :Composition, missing)
 NeXLCore.element(cl::ReferenceLabel)::Element = element(cl.xrays[1])
 Base.isless(rl1::ReferenceLabel, rl2::ReferenceLabel) =
     return isequal(rl1.roi, rl2.roi) ? isless(rl1.spectrum[:Name], rl2.spectrum[:Name]) :
@@ -107,7 +107,7 @@ end
 Base.show(io::IO, unk::UnknownLabel) = print(io, unk.spectrum[:Name])
 Base.isequal(ul1::UnknownLabel, ul2::UnknownLabel) = (ul1.hash==ul2.hash) && isequal(ul1.spectrum, ul2.spectrum)
 spectrum(unkl::UnknownLabel) = unkl.spectrum
-properties(unkl::UnknownLabel) = properties(unkl.spectrum)
+NeXLCore.properties(unkl::UnknownLabel) = NeXLCore.properties(unkl.spectrum)
 
 """
     HyperSpectrumLabel
@@ -125,4 +125,4 @@ Base.show(io::IO, unk::HyperSpectrumLabel) =
 Base.isequal(ul1::HyperSpectrumLabel, ul2::HyperSpectrumLabel) =
     (ul1.hyperspectrum === ul2.hyperspec) && isequal(ul1.index, ul2.index)
 spectrum(unkl::HyperSpectrumLabel) = unkl.hyperspectrum[unkl.index]
-properties(unkl::HyperSpectrumLabel) = properties(unkl.hyperspectrum[unkl.index])
+NeXLCore.properties(unkl::HyperSpectrumLabel) = NeXLCore.properties(unkl.hyperspectrum[unkl.index])

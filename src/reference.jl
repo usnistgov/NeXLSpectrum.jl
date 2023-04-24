@@ -309,8 +309,8 @@ function fit_spectrum_int(
     end
     return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
         lbl = ffp.references[i].label
-        rprops = properties(spectrum(lbl))
-        KRatios(xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
+        rprops = NeXLCore.properties(spectrum(lbl))
+        KRatios(xrays(lbl), NeXLCore.properties(hs), rprops, rprops[:Composition], krs[i, :, :])
     end
 end
 
@@ -343,7 +343,7 @@ function fit_spectrum_full(
     end
     return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
         lbl = ffp.references[i].label
-        rprops = properties(spectrum(lbl))
-        KRatios( xrays(lbl), properties(hs), rprops, rprops[:Composition], krs[i, :, :])
+        rprops = NeXLCore.properties(spectrum(lbl))
+        KRatios( xrays(lbl), NeXLCore.properties(hs), rprops, rprops[:Composition], krs[i, :, :])
     end
 end

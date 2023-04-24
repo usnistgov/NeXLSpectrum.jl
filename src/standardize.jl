@@ -29,14 +29,14 @@ end
 Does the measured `CharXRayLabel` match the standard?
 """
 function matches(cxrl::CharXRayLabel, std::KRatio)::Bool
-    cp, sp = properties(cxrl), std.stdProps
+    cp, sp = NeXLCore.properties(cxrl), std.stdProps
     return issetequal(cxrl.xrays, std.xrays) && # Same X-rays
         isequal(cp[:Composition], sp[:Composition]) && # Same reference material
         isapprox(cp[:BeamEnergy], sp[:BeamEnergy], rtol=0.001) && # Same beam energy
         isapprox(cp[:TakeOffAngle], sp[:TakeOffAngle], atol=deg2rad(0.1)) # Same take-off-angle
 end
 function matches(cxrl::CharXRayLabel, std::StandardLabel)::Bool
-    cp, sp = properties(cxrl), properties(std)
+    cp, sp = NeXLCore.properties(cxrl), NeXLCore.properties(std)
     return issetequal(cxrl.xrays, std.xrays) && # Same X-rays
         isequal(cp[:Composition], sp[:Composition]) && # Same reference material
         isapprox(cp[:BeamEnergy], sp[:BeamEnergy], rtol=0.001) && # Same beam energy
@@ -71,7 +71,7 @@ function NeXLUncertainties.compute(
         j = findfirst(std->matches(meas, std), sm.standards)
         if (!isnothing(j)) && (inputs[sm.standards[j]] > 0.0) # Re-standardized
             std = sm.standards[j] 
-            sp = copy(properties(std))
+            sp = copy(NeXLCore.properties(std))
             sp[:Composition] = std.standard
             outputs[i] = CharXRayLabel(sp, meas.roi, meas.xrays) # restandardized label
             results[i] = inputs[meas] / inputs[std] 
@@ -119,7 +119,7 @@ function NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult
             i = findfirst(std->matches(meas, std), sm.standards)
             if !isnothing(i)
                 std = sm.standards[i]
-                sp = copy(properties(std))
+                sp = copy(NeXLCore.properties(std))
                 sp[:Composition] = std.standard
                 res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
             else
@@ -160,7 +160,7 @@ function NeXLCore.standardize(ffr::FilterFitResult{T}, standards::AbstractArray{
                 i = findfirst(std->matches(meas, std), sm.standards)
                 if !isnothing(i)
                     std = sm.standards[i]
-                    sp = copy(properties(std))
+                    sp = copy(NeXLCore.properties(std))
                     sp[:Composition] = std.standard
                     res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
                 else

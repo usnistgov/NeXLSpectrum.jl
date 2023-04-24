@@ -13,7 +13,7 @@ k-ratios from measured spectra and applying matrix correction algorithms.
 function NeXLMatrixCorrection.quantify(
     ffr::FitResult;
     strip::AbstractVector{Element} = Element[],
-    iteration::Iteration = Iteration(),
+    iteration::Iteration = Iteration(mc=XPP, fc=ReedFluorescence, cc=Coating),
     kro::KRatioOptimizer = SimpleKRatioOptimizer(1.5),
     coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
 )::IterationResult
@@ -45,3 +45,18 @@ NeXLMatrixCorrection.quantify(
     kwargs...,
 )::Vector{IterationResult} = #
     map(spec->quantify(fit_spectrum(spec, ffp); kwargs...), specs)
+
+
+function NeXLMatrixCorrection.quantify(
+    hs::HyperSpectrum, 
+    ffp::FilterFitPacket;
+    mode=:Fast,
+    strip::AbstractVector{Element} = Element[],
+    iteration::Iteration = Iteration(mc=XPP, fc=NullFluorescence, cc=NullCoating),
+    kro::KRatioOptimizer = SimpleKRatioOptimizer(2.0),
+    coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
+)::Materials{UncertainValue, Float64}
+    ffr = fit_spectrum(hs, ffp, mode=mode)
+    krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
+    quantify(krs, iteration, name=hs[:Name], kro=NullKRatioOptimizer, coating=coating)
+end

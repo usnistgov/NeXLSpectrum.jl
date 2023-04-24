@@ -46,11 +46,11 @@ The k-ratios associated with each `CharXRayLabel` as a vector 'KRatio' objects.
 """
 function kratios(ffr::FitResult)::Vector{KRatio}
     lbls = filter(labels(ffr.kratios)) do l
-        (l isa CharXRayLabel) && haskey(properties(l)[:Composition], element(l))
+        (l isa CharXRayLabel) && haskey(NeXLCore.properties(l)[:Composition], element(l))
     end
     return map(lbls) do lbl
-        props = properties(lbl)
-        KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+        props = NeXLCore.properties(lbl)
+        KRatio(lbl.xrays, NeXLCore.properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
     end
 end
 
@@ -63,7 +63,7 @@ function kratio(ffr::FitResult, cxr::CharXRay)
     lbls = labels(ffr.kratios)
     i = findfirst(lbl->(lbl isa CharXRayLabel) && (cxr in lbl.xrays), lbls)
     @assert !isnothing(i) "There is no k-ratio associated with $cxr."
-    lbl, props = lbls[i], properties(lbls[i])
+    lbl, props = lbls[i], NeXLCore.properties(lbls[i])
     KRatio(lbl.xrays, unknown(ffr).spectrum.properties, props, props[:Composition], ffr.kratios[lbl])
   end
 
@@ -78,8 +78,8 @@ function extractStandards(ffr::FitResult, elm::Element, mat::Material)::Vector{K
         (l isa CharXRayLabel) && (elm == element(l))
     end
     krs = map(lbls) do lbl
-        props = properties(lbl)
-        kr = KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+        props = NeXLCore.properties(lbl)
+        kr = KRatio(lbl.xrays, NeXLCore.properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
         kr.unkProps[:Composition] = mat
         kr
     end
@@ -98,8 +98,8 @@ function extractStandards(ffr::FitResult, cxrs::AbstractVector{CharXRay}, mat::M
         (lbl isa CharXRayLabel) && any(cxr->cxr in xrays(lbl), cxrs)
     end
     krs = map(lbls) do lbl
-        props = properties(lbl)
-        kr = KRatio(lbl.xrays, properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
+        props = NeXLCore.properties(lbl)
+        kr = KRatio(lbl.xrays, NeXLCore.properties(unknown(ffr)), props, props[:Composition], ffr.kratios[lbl])
         kr.unkProps[:Composition] = mat
         kr
     end
@@ -322,7 +322,7 @@ function NeXLUncertainties.asa(
     res = DataFrame(
         Spectrum = [ ffr.label for _ in sl ],
         Feature = sl,
-        Reference = [properties(lbl)[:Name] for lbl in sl],
+        Reference = [NeXLCore.properties(lbl)[:Name] for lbl in sl],
         K = [ NeXLUncertainties.value(ffr.kratios, lbl) for lbl in sl],
         dK = [ NeXLUncertainties.σ(ffr.kratios, lbl) for lbl in sl]
     ) 
@@ -395,5 +395,5 @@ assigned to the properties of `fr` so that it can be account for in the matrix c
 This method is intended for use on standards where the substrate composition is known a priori.
 """
 function NeXLMatrixCorrection.estimatecoating(fr::FitResult, substrate::Material, coating::Material, cxr::CharXRay, mc::Type{<:MatrixCorrection}=XPP)::Film
-    properties(fr.label.spectrum)[:Coating] = estimatecoating(substrate, coating, kratio(fr, cxr), mc)
+    NeXLCore.properties(fr.label.spectrum)[:Coating] = estimatecoating(substrate, coating, kratio(fr, cxr), mc)
 end
