@@ -20,7 +20,7 @@ using Statistics
 using DataAPI
 using CSV
 using DataFrames
-using Interpolations: LinearInterpolation, AbstractInterpolation, bounds
+using Interpolations: linear_interpolation, AbstractInterpolation, bounds
 using LsqFit: curve_fit
 using ThreadsX
 

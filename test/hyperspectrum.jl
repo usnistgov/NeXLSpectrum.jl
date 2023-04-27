@@ -39,7 +39,7 @@ rrpath = datadep"map[15]Artifact"
     @test channel(1009.9, hs) == 100 + 1
     @test energy(100, hs) == 99.0 * 10.0
     @test rangeofenergies(100, hs) == (990.0, 1000.0)
-    @test NeXLSpectrum.properties(hs)[:BeamEnergy] == hs[:BeamEnergy]
+    @test NeXLCore.properties(hs)[:BeamEnergy] == hs[:BeamEnergy]
 
     mp = maxpixel(hs)
     @test mp isa Spectrum{UInt16}

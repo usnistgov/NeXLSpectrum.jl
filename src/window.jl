@@ -160,7 +160,7 @@ end
 
 function TabulatedWindow(wt::MoxtekAP33)
     data = CSV.read(joinpath(@__DIR__, "data", "AP3_3_mod.csv"), DataFrame, header=3, comment="//")
-    inter = LinearInterpolation(data[:, 1], data[:, 2])
+    inter = linear_interpolation(data[:, 1], data[:, 2])
     extra = ModeledWindow(wt)
     match = inter(data[end, 1]) / transmission(extra, data[end, 1], π / 2)
     TabulatedWindow(wt, inter, extra, match)
@@ -168,7 +168,7 @@ end
 
 function TabulatedWindow(wt::MoxtekAP5)
     data = CSV.read(joinpath(@__DIR__, "data", "AP5.csv"), DataFrame)
-    inter = LinearInterpolation(data[:, 1], data[:, 2])
+    inter = linear_interpolation(data[:, 1], data[:, 2])
     extra = ModeledWindow(wt)
     match = inter(data[end, 1]) / transmission(extra, data[end, 1], π / 2)
     TabulatedWindow(wt, inter, extra, match)
@@ -176,7 +176,7 @@ end
 
 function TabulatedWindow(wt::AmptekC1)
     data = CSV.read(joinpath(@__DIR__, "data", "AMETEK Si3N4 C1.csv"), DataFrame, header=2)
-    inter = LinearInterpolation(1000.0 * data[:, 1], data[:, 2])
+    inter = linear_interpolation(1000.0 * data[:, 1], data[:, 2])
     extra = ModeledWindow(wt)
     match = inter(1000.0 * data[end, 1]) / transmission(extra, 1000.0 * data[end, 1], π / 2)
     TabulatedWindow(wt, inter, extra, match)
@@ -184,7 +184,7 @@ end
 
 function TabulatedWindow(wt::AmptekC2)
     data = CSV.read(joinpath(@__DIR__, "data", "AMETEK Si3N4 C2.csv"), DataFrame, header=2)
-    inter = LinearInterpolation(1000.0 * data[:, 1], data[:, 2])
+    inter = linear_interpolation(1000.0 * data[:, 1], data[:, 2])
     extra = ModeledWindow(wt)
     match = inter(1000.0 * data[end, 1]) / transmission(extra, 1000.0 * data[end, 1], π / 2)
     TabulatedWindow(wt, inter, extra, match)
