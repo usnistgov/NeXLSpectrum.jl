@@ -489,6 +489,8 @@ channelwidth(spec::Spectrum) = (energy(length(spec), spec) - energy(1, spec))/le
 
 channel(eV::Float64, spec::Spectrum)::Int = channel(eV, spec.energy)
 channel(::Type{Float64}, eV::Float64, spec::Spectrum)::Float64 = channel(Float64, eV, spec.energy)
+channel(cxr::CharXRay, spec::Spectrum)::Int = channel(energy(cxr), spec.energy)
+channel(::Type{Float64}, cxr::CharXRay, spec::Spectrum)::Float64 = channel(Float64, energy(cxr), spec.energy)
 
 """
     counts(spec::Spectrum, ::Type{T}, applyLLD=false)::Vector{T} where {T<:Number}

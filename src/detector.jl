@@ -15,7 +15,7 @@ Implements:
 abstract type EnergyScale end
 
 channel(eV::AbstractFloat, sc::EnergyScale)::Int =
-    1 + floor(Int, channel(Float64, eV, sc))
+    floor(Int, channel(Float64, eV, sc))
 
 """
     LinearEnergyScale
@@ -53,7 +53,7 @@ Returns the fractional-channel index of the specified energy X-ray (in eV).
 
 Returns the integer index of the channel for the specified energy X-ray (in eV).
 """
-channel(::Type{Float64}, eV::AbstractFloat, sc::LinearEnergyScale) = (eV - sc.offset) / sc.width
+channel(::Type{Float64}, eV::AbstractFloat, sc::LinearEnergyScale) = 1.0 + (eV - sc.offset) / sc.width
 
 
 """
@@ -103,7 +103,7 @@ function channel(::Type{Float64}, eV::AbstractFloat, sc::PolyEnergyScale)::Float
             best = (rrt >= -1000.0) && (rrt < best) ? rrt : best
         end
     end
-    return best
+    return 1.0+best
 end
 
 NeXLCore.energy(ch::Integer, sc::PolyEnergyScale)::Float64 =
