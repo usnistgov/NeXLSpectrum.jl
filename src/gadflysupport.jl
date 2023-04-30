@@ -70,7 +70,7 @@ Gadfly.plot( #
 )
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
-    klms::AbstractVector=CharXRay[],
+    klms::Union{AbstractVector,AbstractSet,Tuple,NTuple,Material}=CharXRay[],
     edges::AbstractVector=AtomicSubShell[],
     escapes::AbstractVector=CharXRay[],
     coincidences::AbstractVector{CharXRay}=CharXRay[],
@@ -244,12 +244,16 @@ function Gadfly.plot(
         )
         append!(layers, ly)
     end
+    klm2v(klms::Material) = collect(keys(klms))
+    klm2v(klms) = collect(klms)
+    klms = klm2v(klms)
     autoklms && append!(klms, mapreduce(s -> elms(s, true), union!, specs))
     if length(klms) > 0
         tr(elm::Element) =
             filter(characteristic(elm, alltransitions, minklmweight, maxE0)) do cxr
                 energy(cxr) > min(200.0, maxE0 / 25)
             end
+        tr(mat::Material) = tr.(collect(keys(mat)))
         tr(cxr::CharXRay) = [cxr]
         pklms = mapreduce(klm -> tr(klm), append!, klms)
         if length(pklms) > 0

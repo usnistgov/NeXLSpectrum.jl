@@ -54,9 +54,10 @@ function NeXLMatrixCorrection.quantify(
     strip::AbstractVector{Element} = Element[],
     iteration::Iteration = Iteration(mc=XPP, fc=NullFluorescence, cc=NullCoating),
     kro::KRatioOptimizer = SimpleKRatioOptimizer(2.0),
-    coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing
+    coating::Union{Nothing, Pair{CharXRay, <:Material}}=nothing,
+    sigma::AbstractFloat=0.0
 )::Materials{UncertainValue, Float64}
-    ffr = fit_spectrum(hs, ffp, mode=mode)
+    ffr = fit_spectrum(hs, ffp, mode=mode, sigma=sigma)
     krs = optimizeks(kro, filter(kr -> !(element(kr) in strip), kratios(ffr)))
     quantify(krs, iteration, name=hs[:Name], kro=NullKRatioOptimizer, coating=coating)
 end
