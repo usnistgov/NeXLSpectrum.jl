@@ -279,10 +279,10 @@ function fit_spectrum_int(
 )::Array{KRatios} where { S <: Detector, T <: AbstractFloat }
     unklabel = UnknownLabel(hs)
     function _tophatfilterhs(unklabel, data, thf, scale) 
-        @assert length(data) <= length(thf) "The reference spectra must have more channels than the hyperspectrum data."
-        filtered = [filtereddatum(thf, data, i) for i in eachindex(data)]
-        dp = [max(x, one(T)) for x in data] # To ensure covariance isn't zero or infinite precision
-        covar = [filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+        @assert length(data) == length(thf) "The reference spectra must have more channels than the hyperspectrum data."
+        filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
+        dp = T[T(max(x, one(eltype(x)))) for x in data] # To ensure covariance isn't zero or infinite precision
+        covar = T[T(filteredcovar(thf, dp, i, i)) for i in eachindex(data)]
         FilteredUnknownW{T}(unklabel, scale, 1:length(data), data, filtered, covar)
     end
     fitcontiguousx(unk, ffs, chs) = #
@@ -299,12 +299,10 @@ function fit_spectrum_int(
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
     krs = zeros(Float32, length(ffp.references), size(hs)...)
     len = 1:min(depth(hs),length(ffp.filter))
-    data = zeros(T, length(ffp.filter))
     fitrois = ascontiguous(map(fd -> fd.ffroi, ffp.references))
-    cdata = counts(hs)
+    cdata = T.(counts(hs))
     ThreadsX.foreach(CartesianIndices(hs)) do ci
-        data[len] .= T.(cdata[len,ci])
-        unk = _tophatfilterhs(unklabel, data, ffp.filter, convert(T,1/dose(hs,ci)))
+        unk = _tophatfilterhs(unklabel, view(cdata, len, ci), ffp.filter, T(1/dose(hs,ci)))
         krs[:, ci] .= zero.(_filterfitx(unk, ffp.references, fitrois))
     end
     return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
@@ -323,22 +321,20 @@ function fit_spectrum_full(
     function _tophatfilterhs(unklabel, data, thf, scale) 
         @assert length(data) <= length(thf) "The reference spectra must have more channels than the hyperspectrum data."
         filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
-        dp = T[max(x, one(T)) for x in data] # To ensure covariance isn't zero or infinite precision
-        covar = T[filteredcovar(thf, dp, i, i) for i in eachindex(data)]
+        dp = T[T(max(x, one(eltype(x)))) for x in data] # To ensure covariance isn't zero or infinite precision
+        covar = T[T(filteredcovar(thf, dp, i, i)) for i in eachindex(data)]
         FilteredUnknownW{T}(unklabel, scale, 1:length(data), data, filtered, covar)
     end
     @assert matches(hs[CartesianIndices(hs)[1]], ffp.detector) "The detector for the hyper-spectrum must match the detector for the filtered references."
-    krs = zeros(Float32, length(ffp.references), size(hs)...)
-    len = 1:depth(hs)
-    data = zeros(T, length(ffp.filter))
-    cdata = counts(hs)
+    crefs = ffp.references[filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))]
+    krs = Array{T}(undef, length(crefs), size(hs)...)
+    len, cdata = 1:depth(hs), T.(counts(hs))
     ThreadsX.foreach(CartesianIndices(hs)) do ci
-        data[len] .= view(cdata, len, ci)
-        unk = _tophatfilterhs(unklabel, data, ffp.filter, convert(T,1/dose(hs,ci)))
+        unk = _tophatfilterhs(unklabel, view(cdata, len, ci), ffp.filter, T(1/dose(hs,ci)))
         uvs = _filterfit(unk, ffp.references, true)
-        krs[:, ci] = map(ffp.references) do ref
+        krs[:, ci] = map(crefs) do ref
             id = ref.label
-            isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? Base.zero(eltype(krs)) : convert(eltype(krs), value(uvs, id))
+            isnan(uvs, id) || (value(uvs, id) < sigma*σ(uvs, id)) ? Base.zero(T) : convert(T, value(uvs, id))
         end
     end
     return ThreadsX.map(filter(ii -> ffp.references[ii].label isa CharXRayLabel, eachindex(ffp.references))) do i
