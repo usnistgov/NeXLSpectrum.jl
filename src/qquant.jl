@@ -118,11 +118,14 @@ function fit_spectra(
     data = T.(counts(hs))  # One large allocation over many smaller????
     # In my testing, ThreadsX produces about a 2.7x speedup for 4 threads on 4 cores
     ThreadsX.foreach(CartesianIndices(hs)) do ci
-        krs[:, ci] .= (vecs * view(data, :, ci)) / T(dose(hs, ci))
+        ds, vw = T(dose(hs, ci)), view(data, :, ci)
+        krs[:, ci] .= (vecs * vw) / ds
     end
     # ensure positive...
     map!(zero, krs, krs)
-    res = map(filter(ii -> vq.references[ii].label isa CharXRayLabel, eachindex(vq.references))) do i
+    # get the indices of relevant k-ratios
+    cxri = filter(ii -> vq.references[ii].label isa CharXRayLabel, eachindex(vq.references))
+    res = map(cxri) do i
         lbl = vq.references[i].label
         rprops = NeXLCore.properties(spectrum(lbl))
         KRatios(xrays(lbl), NeXLCore.properties(hs), rprops, rprops[:Composition], krs[i, :, :])
