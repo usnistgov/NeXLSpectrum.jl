@@ -31,7 +31,21 @@ struct DirectRefInit
     material::Material
 end
 
-direct(elm::Element, spec::Spectrum, mat::Material) = DirectRefInit(elm, spec, mat)
+"""
+    direct(elm::Element, spec::Spectrum, mat::Material=spec[:Composition])
+    direct(elm::Element, specfile::String, mat::Material)
+    direct(elm::Element, specfile::String)
+
+Construct a struct to represent a direct-fit reference. Use with `references(...)`
+to construct a reference set which may be used to fit multiple references to an
+unknown spectrum using a "direct" linear fit.
+"""
+direct(elm::Element, spec::Spectrum, mat::Material=spec[:Composition]) = DirectRefInit(elm, spec, mat)
+direct(elm::Element, specfile::String, mat::Material) = DirectRefInit(elm, loadspectrum(specfile) , mat)
+function direct(elm::Element, specfile::String)
+    spec = loadspectrum(specfile)
+    DirectRefInit(elm, spec, spec[:Composition])
+end
 
 """
     references(refs::Vector{DirectRefInit}, det::Detector, resp::Matrix{Float64}; minE=0.5e3 )
@@ -42,7 +56,6 @@ Example:
 
     > detu = matching(unk, 132.0, 110)
     > resp = detectorresponse(detu, SDDEfficiency(ModeledWindow(MoxtekAP33())))
-
     > drefs = references([ 
           direct(n"O", stds[1], mat"Al2O3"),
           direct(n"Al", stds[1], mat"Al2O3"),
