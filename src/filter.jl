@@ -138,7 +138,7 @@ function filteredcovar(
         return sum
     end
     fi, fl, oi, ol = filt.filters[i], filt.filters[l], filt.offsets[i], filt.offsets[l]
-    roi = max(oi, ol):min(oi + length(fi) - 1, ol + length(fl) - 1) # The ROI over which both filters are non-zero.
+    roi = max(oi, ol):min(length(specdata), oi + length(fi) - 1, ol + length(fl) - 1) # The ROI over which both filters are non-zero.
     return length(roi) > 0 ? #
            dot3(
         view(fi, roi.start-oi+1:roi.stop-oi+1),
@@ -152,8 +152,10 @@ end
 
 Compute a single channel in the filtered spectrum.
 """
-filtereddatum(filt::TopHatFilter{T}, specdata::AbstractVector{T}, i::Int) where { T } = #
-    dot(filt.filters[i], view(specdata, filt.offsets[i]:filt.offsets[i]+length(filt.filters[i])-1))
+function filtereddatum(filt::TopHatFilter{T}, specdata::AbstractVector{T}, i::Int) where { T }
+    r = filt.offsets[i]:min((filt.offsets[i]+length(filt.filters[i])-1), length(specdata))
+    length(r)>0 ? dot(view(filt.filters[i],1:length(r)), view(specdata, r)) : zero(T)
+end
 
 
 Base.size(filt::TopHatFilter) = (length(filt.filters), length(filt.filters))
