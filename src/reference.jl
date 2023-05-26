@@ -279,7 +279,7 @@ function fit_spectrum_int(
 )::Array{KRatios} where { S <: Detector, T <: AbstractFloat }
     unklabel = UnknownLabel(hs)
     function _tophatfilterhs(unklabel, data, thf, scale) 
-        @assert length(data) == length(thf) "The reference spectra must have more channels than the hyperspectrum data."
+        @assert length(data) <= length(thf) "The reference spectra must have more channels than the hyperspectrum data."
         filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
         dp = T[T(max(x, one(eltype(x)))) for x in data] # To ensure covariance isn't zero or infinite precision
         covar = T[T(filteredcovar(thf, dp, i, i)) for i in eachindex(data)]
