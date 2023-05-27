@@ -638,8 +638,7 @@ function NeXLUncertainties.extract(fd::FilteredReference{T}, roi::UnitRange{Int}
     @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
     @assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
     data = zeros(T, length(roi))
-    nz = fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1
-    data[nz] .= fd.filtered
+    data[fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1] .= fd.filtered
     return data
 end
 NeXLUncertainties.extract(
@@ -667,25 +666,6 @@ function _computecounts( #
         )
     end
     return res
-end
-
-"""
-    fitcontiguouso(
-        unk::FilteredUnknown,
-        ffs::AbstractVector{FilteredReference{T}},
-        chs::UnitRange{Int},
-    )::UncertainValues
-    
-Ordinary least squares for either FilteredUnknown[G|W]
-"""
-function fitcontiguouso(
-    unk::FilteredUnknown,
-    ffs::AbstractVector{FilteredReference{T}},
-    chs::UnitRange{Int},
-)::UncertainValues where { T <: AbstractFloat }
-    x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
-    genInv = pinv(x, rtol = 1.0e-6)
-    return scale * uvs(lbls, genInv * extract(unk, chs), genInv * transpose(genInv))
 end
 
 """

@@ -20,19 +20,22 @@ function _buildmodel(
     roi::UnitRange{Int},
 ) where { T<: AbstractFloat }
     x = zeros(T, length(roi), length(ffs))
-    data = zeros(T, length(roi))
     for (i,fd) in enumerate(ffs)
         #@assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
         #@assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
-        fill!(data, zero(T))
-        data[fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1] .= fd.filtered
-        x[:, i] .= data
+        x[fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1, i] .= fd.filtered
         # @assert x[:, i] == extract(fd, roi)
     end
     return x
 end
 
 """
+    fitcontiguousww(
+        unk::FilteredUnknownW{T},
+        ffs::AbstractVector{FilteredReference{T}},
+        chs::UnitRange{Int},
+    )::UncertainValues
+
 Weighted least squares for FilteredUnknownW
 """
 function fitcontiguousww(
@@ -51,6 +54,25 @@ function fitcontiguousww(
     return scale * uvs(lbls, genInv * w * ext, dcs * (genInv * transpose(genInv)) * dcs)
 end
 
+"""
+    fitcontiguouso(
+        unk::FilteredUnknown,
+        ffs::AbstractVector{FilteredReference{T}},
+        chs::UnitRange{Int},
+    )::UncertainValues
+    
+Ordinary least squares for either FilteredUnknown[G|W]
+"""
+function fitcontiguouso(
+    unk::FilteredUnknown,
+    ffs::AbstractVector{FilteredReference{T}},
+    chs::UnitRange{Int},
+)::UncertainValues where { T <: AbstractFloat }
+    x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
+    genInv = pinv(x, rtol = 1.0e-6)
+    return scale * uvs(lbls, genInv * extract(unk, chs), genInv * transpose(genInv))
+end
+
 function ascontiguous(rois::AbstractArray{UnitRange{Int}})::Vector{UnitRange{Int}}
     # Join the UnitRanges into contiguous UnitRanges
     join(roi1, roi2) = min(roi1.start, roi2.start):max(roi1.stop, roi2.stop)
@@ -67,7 +89,7 @@ function ascontiguous(rois::AbstractArray{UnitRange{Int}})::Vector{UnitRange{Int
 end
 
 """
-    tophatfilter(spec::Spectrum, thf::TopHatFilter, scale::Float64=1.0, tol::Float64 = 1.0e-4)::FilteredUnknown
+    tophatfilter(spec::Spectrum, filt::TopHatFilter{T}, scale::T = one(T))::FilteredUnknown where { T <: AbstractFloat }
 
 For filtering the unknown spectrum. Defaults to the weighted fitting model.
 """
