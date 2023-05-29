@@ -683,7 +683,7 @@ function selectBestReferences(
         for ref in filter(ref -> element(ref.label) == elm, refs)
             comp = composition(ref.label)
             # Pick the reference with the largest charonly value but prefer pure elements over compounds
-            mrf = sum(ref.charonly) * (ismissing(comp) ? 0.01 : Float64(normalized(comp, elm))^2)
+            mrf = sum(ref.charonly) * (ismissing(comp) ? 0.01 : value(normalized(comp, elm))^2)
             if (!haskey(rois, ref.roi)) || (mrf > rois[ref.roi][2])
                 rois[ref.roi] = (ref, mrf)
             end
