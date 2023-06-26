@@ -154,7 +154,7 @@ Compute a single channel in the filtered spectrum.
 """
 function filtereddatum(filt::TopHatFilter{T}, specdata::AbstractVector{T}, i::Int) where { T }
     r = filt.offsets[i]:min((filt.offsets[i]+length(filt.filters[i])-1), length(specdata))
-    length(r)>0 ? dot(view(filt.filters[i],1:length(r)), view(specdata, r)) : zero(T)
+    length(r)>0 ? dot(view(filt.filters[i], eachindex(r)), view(specdata, r)) : zero(T)
 end
 
 
