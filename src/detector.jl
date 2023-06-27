@@ -155,7 +155,7 @@ resolution_to_fwhm(::Type{MnKaResolution}, res::Float64, eV::Float64) =
     sqrt(2.45 * (eV - enx"Mn K-L3") + res^2)
 
 
-""""
+"""
     resolution(eV::Float64, res::Resolution)
     resolution(eV::Float64, det::EDSDetector)
 
@@ -177,7 +177,7 @@ Converts Gaussian width to full-width half-max.  See also gaussianwidth
 """
 fwhm(gauss::Float64) = gauss*(2.0*sqrt(2.0*log(2.0)))
 
-""""
+"""
     profile(energy::Float64, xrayE::Float64, res::Resolution)
 
 Calculates a Gaussian profile for an X-ray of xrayE (eV) for a detector
@@ -321,7 +321,7 @@ channelwidth(ch::Int64, det::EDSDetector) = energy(ch + 1, det) - energy(ch, det
 channelwidth(det::EDSDetector) = (energy(channelcount(det), det) - energy(1, det))/channelcount(det)
 
 
-""""
+"""
     profile(ch::Int, xrayE::Float64, det::EDSDetector)
 
 Calculates the profile for an X-ray of xrayE (eV) for a detector
