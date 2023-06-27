@@ -14,15 +14,15 @@
     <path d="M0,0 L15,3.5 L0,7 z" stroke="context-stroke" fill="context-stroke"/>
   </marker>
 </defs>
-<g class="plotroot xscalable yscalable" id="img-1b94e7a7-1">
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-1b94e7a7-2">
+<g class="plotroot xscalable yscalable" id="img-40907474-1">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-40907474-2">
     <g transform="translate(137.53,69.54)">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">Channels</text>
       </g>
     </g>
   </g>
-  <g class="guide xlabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-1b94e7a7-3">
+  <g class="guide xlabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-40907474-3">
     <g transform="translate(122.35,62.87)">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">500</text>
@@ -34,656 +34,800 @@
       </g>
     </g>
   </g>
-  <g clip-path="url(#img-1b94e7a7-4)">
-    <g id="img-1b94e7a7-5">
-      <g pointer-events="visible" stroke-width="0.3" fill="#FDFDF1" stroke="#202020" class="guide background" id="img-1b94e7a7-6">
-        <g transform="translate(137.53,33.76)" id="img-1b94e7a7-7">
+  <g clip-path="url(#img-40907474-4)">
+    <g id="img-40907474-5">
+      <g pointer-events="visible" stroke-width="0.3" fill="#FDFDF1" stroke="#202020" class="guide background" id="img-40907474-6">
+        <g transform="translate(137.53,33.76)" id="img-40907474-7">
           <path d="M-115.76,-28.1 L115.76,-28.1 115.76,28.1 -115.76,28.1  z" class="primitive"/>
         </g>
       </g>
-      <g class="guide ygridlines xfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-1b94e7a7-8">
-        <g transform="translate(137.53,59.87)" id="img-1b94e7a7-9">
+      <g class="guide ygridlines xfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-40907474-8">
+        <g transform="translate(137.53,59.87)" id="img-40907474-9">
           <path fill="none" d="M-115.76,0 L115.76,0 " class="primitive"/>
         </g>
-        <g transform="translate(137.53,39.37)" id="img-1b94e7a7-10">
+        <g transform="translate(137.53,39.92)" id="img-40907474-10">
           <path fill="none" d="M-115.76,0 L115.76,0 " class="primitive"/>
         </g>
-        <g transform="translate(137.53,18.88)" id="img-1b94e7a7-11">
+        <g transform="translate(137.53,19.98)" id="img-40907474-11">
           <path fill="none" d="M-115.76,0 L115.76,0 " class="primitive"/>
         </g>
       </g>
-      <g class="guide xgridlines yfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-1b94e7a7-12">
-        <g transform="translate(122.35,33.76)" id="img-1b94e7a7-13">
+      <g class="guide xgridlines yfixed" stroke-dasharray="none" stroke-width="0.2" stroke="#FFDFDF" id="img-40907474-12">
+        <g transform="translate(122.35,33.76)" id="img-40907474-13">
           <path fill="none" d="M0,-28.1 L0,28.1 " class="primitive"/>
         </g>
-        <g transform="translate(222.93,33.76)" id="img-1b94e7a7-14">
+        <g transform="translate(222.93,33.76)" id="img-40907474-14">
           <path fill="none" d="M0,-28.1 L0,28.1 " class="primitive"/>
         </g>
       </g>
-      <g class="plotpanel" id="img-1b94e7a7-15">
+      <g class="plotpanel" id="img-40907474-15">
         <metadata>
           <boundingbox value="21.773888888888912mm 5.660555555555554mm 231.52055555555557mm 56.20555555555556mm"/>
-          <unitbox value="0.058041153790744815 26449.37067471502 1150.8839176924184 -27425.26218264752"/>
+          <unitbox value="0.058041153790744815 27177.36325987581 1150.8839176924184 -28180.115209609874"/>
         </metadata>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-16">
-          <g class="marker" id="img-1b94e7a7-17">
-            <g transform="translate(163.79,33.76)" id="img-1b94e7a7-18">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-16">
+          <g class="marker" id="img-40907474-17">
+            <g transform="translate(163.79,33.76)" id="img-40907474-18">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0668</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0674</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-19">
-          <g class="marker" id="img-1b94e7a7-20">
-            <g transform="translate(158.56,33.76)" id="img-1b94e7a7-21">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-19">
+          <g class="marker" id="img-40907474-20">
+            <g transform="translate(158.56,33.76)" id="img-40907474-21">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(169.02,33.76)" id="img-1b94e7a7-22">
+            <g transform="translate(169.02,33.76)" id="img-40907474-22">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe K-M3 + 3 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-23">
-          <g stroke-width="0.3" id="img-1b94e7a7-24">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-25">
-              <g class="marker" id="img-1b94e7a7-26">
-                <g transform="translate(169.02,33.76)" id="img-1b94e7a7-27">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-23">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-24">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-25">
+              <g transform="translate(169.02,33.76)" id="img-40907474-26">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-27">
+              <g transform="translate(169.02,33.76)" id="img-40907474-28">
+                <g class="primitive">
+                  <text dy="-1.2em">732<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-28">
-              <g class="marker" id="img-1b94e7a7-29">
-                <g transform="translate(158.56,33.76)" id="img-1b94e7a7-30">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-29">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-30">
+              <g transform="translate(158.56,33.76)" id="img-40907474-31">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-32">
+              <g transform="translate(158.56,33.76)" id="img-40907474-33">
+                <g class="primitive">
+                  <text dy="-1.2em">680<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-31">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-32">
-            <g transform="translate(163.79,33.76)" id="img-1b94e7a7-33">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-34">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-35">
+            <g transform="translate(163.79,33.76)" id="img-40907474-36">
               <path fill="none" d="M-5.23,0 L5.23,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-34">
-          <g class="marker" id="img-1b94e7a7-35">
-            <g transform="translate(150.71,38.98)" id="img-1b94e7a7-36">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-37">
+          <g class="marker" id="img-40907474-38">
+            <g transform="translate(150.71,38.98)" id="img-40907474-39">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0668</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0671</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-37">
-          <g class="marker" id="img-1b94e7a7-38">
-            <g transform="translate(145.08,38.98)" id="img-1b94e7a7-39">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-40">
+          <g class="marker" id="img-40907474-41">
+            <g transform="translate(145.08,38.98)" id="img-40907474-42">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(156.34,38.98)" id="img-1b94e7a7-40">
+            <g transform="translate(156.34,38.98)" id="img-40907474-43">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-41">
-          <g stroke-width="0.3" id="img-1b94e7a7-42">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-43">
-              <g class="marker" id="img-1b94e7a7-44">
-                <g transform="translate(156.34,38.98)" id="img-1b94e7a7-45">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-44">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-45">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-46">
+              <g transform="translate(156.34,38.98)" id="img-40907474-47">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-48">
+              <g transform="translate(156.34,38.98)" id="img-40907474-49">
+                <g class="primitive">
+                  <text dy="-1.2em">669<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-46">
-              <g class="marker" id="img-1b94e7a7-47">
-                <g transform="translate(145.08,38.98)" id="img-1b94e7a7-48">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-50">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-51">
+              <g transform="translate(145.08,38.98)" id="img-40907474-52">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-53">
+              <g transform="translate(145.08,38.98)" id="img-40907474-54">
+                <g class="primitive">
+                  <text dy="-1.2em">613<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-49">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-50">
-            <g transform="translate(150.71,38.98)" id="img-1b94e7a7-51">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-55">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-56">
+            <g transform="translate(150.71,38.98)" id="img-40907474-57">
               <path fill="none" d="M-5.63,0 L5.63,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-52">
-          <g class="marker" id="img-1b94e7a7-53">
-            <g transform="translate(129.39,28.54)" id="img-1b94e7a7-54">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-58">
+          <g class="marker" id="img-40907474-59">
+            <g transform="translate(129.39,28.54)" id="img-40907474-60">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.3935</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0519</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-55">
-          <g class="marker" id="img-1b94e7a7-56">
-            <g transform="translate(125.56,28.54)" id="img-1b94e7a7-57">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-61">
+          <g class="marker" id="img-40907474-62">
+            <g transform="translate(125.56,28.54)" id="img-40907474-63">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(133.21,28.54)" id="img-1b94e7a7-58">
+            <g transform="translate(133.21,28.54)" id="img-40907474-64">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Esc[Fe K-M2,Fe K-M3,Fe K-M4,Fe K-M5]</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-59">
-          <g stroke-width="0.3" id="img-1b94e7a7-60">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-61">
-              <g class="marker" id="img-1b94e7a7-62">
-                <g transform="translate(133.21,28.54)" id="img-1b94e7a7-63">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-65">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-66">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-67">
+              <g transform="translate(133.21,28.54)" id="img-40907474-68">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-69">
+              <g transform="translate(133.21,28.54)" id="img-40907474-70">
+                <g class="primitive">
+                  <text dy="-1.2em">554<tspan x="0" dy="1.1000em">15704.766786085049</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-64">
-              <g class="marker" id="img-1b94e7a7-65">
-                <g transform="translate(125.56,28.54)" id="img-1b94e7a7-66">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-71">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-72">
+              <g transform="translate(125.56,28.54)" id="img-40907474-73">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-74">
+              <g transform="translate(125.56,28.54)" id="img-40907474-75">
+                <g class="primitive">
+                  <text dy="-1.2em">516<tspan x="0" dy="1.1000em">15704.766786085049</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-67">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-68">
-            <g transform="translate(129.39,28.54)" id="img-1b94e7a7-69">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-76">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-77">
+            <g transform="translate(129.39,28.54)" id="img-40907474-78">
               <path fill="none" d="M-3.82,0 L3.82,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-70">
-          <g class="marker" id="img-1b94e7a7-71">
-            <g transform="translate(115.51,33.76)" id="img-1b94e7a7-72">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-79">
+          <g class="marker" id="img-40907474-80">
+            <g transform="translate(115.51,33.76)" id="img-40907474-81">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0907</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0190</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-73">
-          <g class="marker" id="img-1b94e7a7-74">
-            <g transform="translate(112.29,33.76)" id="img-1b94e7a7-75">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-82">
+          <g class="marker" id="img-40907474-83">
+            <g transform="translate(112.29,33.76)" id="img-40907474-84">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(118.72,33.76)" id="img-1b94e7a7-76">
+            <g transform="translate(118.72,33.76)" id="img-40907474-85">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Esc[Fe K-L2,Fe K-L3]</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-77">
-          <g stroke-width="0.3" id="img-1b94e7a7-78">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-79">
-              <g class="marker" id="img-1b94e7a7-80">
-                <g transform="translate(118.72,33.76)" id="img-1b94e7a7-81">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-86">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-87">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-88">
+              <g transform="translate(118.72,33.76)" id="img-40907474-89">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-90">
+              <g transform="translate(118.72,33.76)" id="img-40907474-91">
+                <g class="primitive">
+                  <text dy="-1.2em">482<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-82">
-              <g class="marker" id="img-1b94e7a7-83">
-                <g transform="translate(112.29,33.76)" id="img-1b94e7a7-84">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-92">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-93">
+              <g transform="translate(112.29,33.76)" id="img-40907474-94">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-95">
+              <g transform="translate(112.29,33.76)" id="img-40907474-96">
+                <g class="primitive">
+                  <text dy="-1.2em">450<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-85">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-86">
-            <g transform="translate(115.51,33.76)" id="img-1b94e7a7-87">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-97">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-98">
+            <g transform="translate(115.51,33.76)" id="img-40907474-99">
               <path fill="none" d="M-3.22,0 L3.22,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-88">
-          <g class="marker" id="img-1b94e7a7-89">
-            <g transform="translate(99.11,38.98)" id="img-1b94e7a7-90">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-100">
+          <g class="marker" id="img-40907474-101">
+            <g transform="translate(99.11,38.98)" id="img-40907474-102">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1922</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1925</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-91">
-          <g class="marker" id="img-1b94e7a7-92">
-            <g transform="translate(91.57,38.98)" id="img-1b94e7a7-93">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-103">
+          <g class="marker" id="img-40907474-104">
+            <g transform="translate(91.57,38.98)" id="img-40907474-105">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(106.65,38.98)" id="img-1b94e7a7-94">
+            <g transform="translate(106.65,38.98)" id="img-40907474-106">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Ca K-L3 + 3 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-95">
-          <g stroke-width="0.3" id="img-1b94e7a7-96">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-97">
-              <g class="marker" id="img-1b94e7a7-98">
-                <g transform="translate(106.65,38.98)" id="img-1b94e7a7-99">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-107">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-108">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-109">
+              <g transform="translate(106.65,38.98)" id="img-40907474-110">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-111">
+              <g transform="translate(106.65,38.98)" id="img-40907474-112">
+                <g class="primitive">
+                  <text dy="-1.2em">422<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-100">
-              <g class="marker" id="img-1b94e7a7-101">
-                <g transform="translate(91.57,38.98)" id="img-1b94e7a7-102">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-113">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-114">
+              <g transform="translate(91.57,38.98)" id="img-40907474-115">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-116">
+              <g transform="translate(91.57,38.98)" id="img-40907474-117">
+                <g class="primitive">
+                  <text dy="-1.2em">347<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-103">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-104">
-            <g transform="translate(99.11,38.98)" id="img-1b94e7a7-105">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-118">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-119">
+            <g transform="translate(99.11,38.98)" id="img-40907474-120">
               <path fill="none" d="M-7.54,0 L7.54,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-106">
-          <g class="marker" id="img-1b94e7a7-107">
-            <g transform="translate(67.63,33.76)" id="img-1b94e7a7-108">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-121">
+          <g class="marker" id="img-40907474-122">
+            <g transform="translate(67.63,33.76)" id="img-40907474-123">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.9584</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.4325</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-109">
-          <g class="marker" id="img-1b94e7a7-110">
-            <g transform="translate(65.21,33.76)" id="img-1b94e7a7-111">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-124">
+          <g class="marker" id="img-40907474-125">
+            <g transform="translate(65.21,33.76)" id="img-40907474-126">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(70.04,33.76)" id="img-1b94e7a7-112">
+            <g transform="translate(70.04,33.76)" id="img-40907474-127">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Esc[Ca K-M2,Ca K-M3]</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-113">
-          <g stroke-width="0.3" id="img-1b94e7a7-114">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-115">
-              <g class="marker" id="img-1b94e7a7-116">
-                <g transform="translate(70.04,33.76)" id="img-1b94e7a7-117">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-128">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-129">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-130">
+              <g transform="translate(70.04,33.76)" id="img-40907474-131">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-132">
+              <g transform="translate(70.04,33.76)" id="img-40907474-133">
+                <g class="primitive">
+                  <text dy="-1.2em">240<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-118">
-              <g class="marker" id="img-1b94e7a7-119">
-                <g transform="translate(65.21,33.76)" id="img-1b94e7a7-120">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-134">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-135">
+              <g transform="translate(65.21,33.76)" id="img-40907474-136">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-137">
+              <g transform="translate(65.21,33.76)" id="img-40907474-138">
+                <g class="primitive">
+                  <text dy="-1.2em">216<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-121">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-122">
-            <g transform="translate(67.63,33.76)" id="img-1b94e7a7-123">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-139">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-140">
+            <g transform="translate(67.63,33.76)" id="img-40907474-141">
               <path fill="none" d="M-2.41,0 L2.41,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-124">
-          <g class="marker" id="img-1b94e7a7-125">
-            <g transform="translate(61.09,38.98)" id="img-1b94e7a7-126">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-142">
+          <g class="marker" id="img-40907474-143">
+            <g transform="translate(61.09,38.98)" id="img-40907474-144">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0553</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1132</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-127">
-          <g class="marker" id="img-1b94e7a7-128">
-            <g transform="translate(58.78,38.98)" id="img-1b94e7a7-129">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-145">
+          <g class="marker" id="img-40907474-146">
+            <g transform="translate(58.78,38.98)" id="img-40907474-147">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(63.4,38.98)" id="img-1b94e7a7-130">
+            <g transform="translate(63.4,38.98)" id="img-40907474-148">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Esc[Ca K-L2,Ca K-L3]</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-131">
-          <g stroke-width="0.3" id="img-1b94e7a7-132">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-133">
-              <g class="marker" id="img-1b94e7a7-134">
-                <g transform="translate(63.4,38.98)" id="img-1b94e7a7-135">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-149">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-150">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-151">
+              <g transform="translate(63.4,38.98)" id="img-40907474-152">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-153">
+              <g transform="translate(63.4,38.98)" id="img-40907474-154">
+                <g class="primitive">
+                  <text dy="-1.2em">207<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-136">
-              <g class="marker" id="img-1b94e7a7-137">
-                <g transform="translate(58.78,38.98)" id="img-1b94e7a7-138">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-155">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-156">
+              <g transform="translate(58.78,38.98)" id="img-40907474-157">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-158">
+              <g transform="translate(58.78,38.98)" id="img-40907474-159">
+                <g class="primitive">
+                  <text dy="-1.2em">184<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-139">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-140">
-            <g transform="translate(61.09,38.98)" id="img-1b94e7a7-141">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-160">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-161">
+            <g transform="translate(61.09,38.98)" id="img-40907474-162">
               <path fill="none" d="M-2.31,0 L2.31,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-142">
-          <g class="marker" id="img-1b94e7a7-143">
-            <g transform="translate(57.37,18.1)" id="img-1b94e7a7-144">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-163">
+          <g class="marker" id="img-40907474-164">
+            <g transform="translate(57.47,18.1)" id="img-40907474-165">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.3508</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.3506</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-145">
-          <g class="marker" id="img-1b94e7a7-146">
-            <g transform="translate(53.35,18.1)" id="img-1b94e7a7-147">
-              <g class="primitive">
-                <text dy="0.35em" transform="translate(1.9,0)"></text>
-              </g>
-            </g>
-            <g transform="translate(61.39,18.1)" id="img-1b94e7a7-148">
-              <g class="primitive">
-                <text dy="0.35em" transform="translate(1.9,0)">Si K-L3 + 2 others</text>
-              </g>
-            </g>
-          </g>
-        </g>
-        <g class="geometry" id="img-1b94e7a7-149">
-          <g stroke-width="0.3" id="img-1b94e7a7-150">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-151">
-              <g class="marker" id="img-1b94e7a7-152">
-                <g transform="translate(61.39,18.1)" id="img-1b94e7a7-153">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
-                </g>
-              </g>
-            </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-154">
-              <g class="marker" id="img-1b94e7a7-155">
-                <g transform="translate(53.35,18.1)" id="img-1b94e7a7-156">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
-                </g>
-              </g>
-            </g>
-          </g>
-        </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-157">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-158">
-            <g transform="translate(57.37,18.1)" id="img-1b94e7a7-159">
-              <path fill="none" d="M-4.02,0 L4.02,0 " class="primitive"/>
-            </g>
-          </g>
-        </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-160">
-          <g class="marker" id="img-1b94e7a7-161">
-            <g transform="translate(51.94,23.32)" id="img-1b94e7a7-162">
-              <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0670</text>
-              </g>
-            </g>
-          </g>
-        </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-163">
-          <g class="marker" id="img-1b94e7a7-164">
-            <g transform="translate(48.32,23.32)" id="img-1b94e7a7-165">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-166">
+          <g class="marker" id="img-40907474-167">
+            <g transform="translate(53.35,18.1)" id="img-40907474-168">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(55.56,23.32)" id="img-1b94e7a7-166">
+            <g transform="translate(61.59,18.1)" id="img-40907474-169">
               <g class="primitive">
-                <text dy="0.35em" transform="translate(1.9,0)">Al K-L3 + 2 others</text>
+                <text dy="0.35em" transform="translate(1.9,0)">Si K-L3 + 3 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-167">
-          <g stroke-width="0.3" id="img-1b94e7a7-168">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-169">
-              <g class="marker" id="img-1b94e7a7-170">
-                <g transform="translate(55.56,23.32)" id="img-1b94e7a7-171">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-170">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-171">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-172">
+              <g transform="translate(61.59,18.1)" id="img-40907474-173">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-174">
+              <g transform="translate(61.59,18.1)" id="img-40907474-175">
+                <g class="primitive">
+                  <text dy="-1.2em">198<tspan x="0" dy="1.1000em">20939.689048113396</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-172">
-              <g class="marker" id="img-1b94e7a7-173">
-                <g transform="translate(48.32,23.32)" id="img-1b94e7a7-174">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-176">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-177">
+              <g transform="translate(53.35,18.1)" id="img-40907474-178">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-179">
+              <g transform="translate(53.35,18.1)" id="img-40907474-180">
+                <g class="primitive">
+                  <text dy="-1.2em">157<tspan x="0" dy="1.1000em">20939.689048113396</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-175">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-176">
-            <g transform="translate(51.94,23.32)" id="img-1b94e7a7-177">
-              <path fill="none" d="M-3.62,0 L3.62,0 " class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-181">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-182">
+            <g transform="translate(57.47,18.1)" id="img-40907474-183">
+              <path fill="none" d="M-4.12,0 L4.12,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-178">
-          <g class="marker" id="img-1b94e7a7-179">
-            <g transform="translate(47.11,28.54)" id="img-1b94e7a7-180">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-184">
+          <g class="marker" id="img-40907474-185">
+            <g transform="translate(52.04,23.32)" id="img-40907474-186">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1475</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0672</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-181">
-          <g class="marker" id="img-1b94e7a7-182">
-            <g transform="translate(43.89,28.54)" id="img-1b94e7a7-183">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-187">
+          <g class="marker" id="img-40907474-188">
+            <g transform="translate(48.32,23.32)" id="img-40907474-189">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(50.33,28.54)" id="img-1b94e7a7-184">
+            <g transform="translate(55.76,23.32)" id="img-40907474-190">
+              <g class="primitive">
+                <text dy="0.35em" transform="translate(1.9,0)">Al K-L3 + 3 others</text>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-191">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-192">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-193">
+              <g transform="translate(55.76,23.32)" id="img-40907474-194">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-195">
+              <g transform="translate(55.76,23.32)" id="img-40907474-196">
+                <g class="primitive">
+                  <text dy="-1.2em">169<tspan x="0" dy="1.1000em">18322.227917099222</tspan></text>
+                </g>
+              </g>
+            </g>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-197">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-198">
+              <g transform="translate(48.32,23.32)" id="img-40907474-199">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-200">
+              <g transform="translate(48.32,23.32)" id="img-40907474-201">
+                <g class="primitive">
+                  <text dy="-1.2em">132<tspan x="0" dy="1.1000em">18322.227917099222</tspan></text>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-202">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-203">
+            <g transform="translate(52.04,23.32)" id="img-40907474-204">
+              <path fill="none" d="M-3.72,0 L3.72,0 " class="primitive"/>
+            </g>
+          </g>
+        </g>
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-205">
+          <g class="marker" id="img-40907474-206">
+            <g transform="translate(47.11,28.54)" id="img-40907474-207">
+              <g class="primitive">
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.1469</text>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-208">
+          <g class="marker" id="img-40907474-209">
+            <g transform="translate(43.89,28.54)" id="img-40907474-210">
+              <g class="primitive">
+                <text dy="0.35em" transform="translate(1.9,0)"></text>
+              </g>
+            </g>
+            <g transform="translate(50.33,28.54)" id="img-40907474-211">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Mg K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-185">
-          <g stroke-width="0.3" id="img-1b94e7a7-186">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-187">
-              <g class="marker" id="img-1b94e7a7-188">
-                <g transform="translate(50.33,28.54)" id="img-1b94e7a7-189">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-212">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-213">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-214">
+              <g transform="translate(50.33,28.54)" id="img-40907474-215">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-216">
+              <g transform="translate(50.33,28.54)" id="img-40907474-217">
+                <g class="primitive">
+                  <text dy="-1.2em">142<tspan x="0" dy="1.1000em">15704.766786085049</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-190">
-              <g class="marker" id="img-1b94e7a7-191">
-                <g transform="translate(43.89,28.54)" id="img-1b94e7a7-192">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-218">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-219">
+              <g transform="translate(43.89,28.54)" id="img-40907474-220">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-221">
+              <g transform="translate(43.89,28.54)" id="img-40907474-222">
+                <g class="primitive">
+                  <text dy="-1.2em">110<tspan x="0" dy="1.1000em">15704.766786085049</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-193">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-194">
-            <g transform="translate(47.11,28.54)" id="img-1b94e7a7-195">
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-223">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-224">
+            <g transform="translate(47.11,28.54)" id="img-40907474-225">
               <path fill="none" d="M-3.22,0 L3.22,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-196">
-          <g class="marker" id="img-1b94e7a7-197">
-            <g transform="translate(36.05,33.76)" id="img-1b94e7a7-198">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-226">
+          <g class="marker" id="img-40907474-227">
+            <g transform="translate(36.05,33.76)" id="img-40907474-228">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0424</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.0393</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-199">
-          <g class="marker" id="img-1b94e7a7-200">
-            <g transform="translate(31.62,33.76)" id="img-1b94e7a7-201">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-229">
+          <g class="marker" id="img-40907474-230">
+            <g transform="translate(31.82,33.76)" id="img-40907474-231">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(40.47,33.76)" id="img-1b94e7a7-202">
+            <g transform="translate(40.27,33.76)" id="img-40907474-232">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">Fe L3-M5 + 13 others</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-203">
-          <g stroke-width="0.3" id="img-1b94e7a7-204">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-205">
-              <g class="marker" id="img-1b94e7a7-206">
-                <g transform="translate(40.47,33.76)" id="img-1b94e7a7-207">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-233">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-234">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-235">
+              <g transform="translate(40.27,33.76)" id="img-40907474-236">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-237">
+              <g transform="translate(40.27,33.76)" id="img-40907474-238">
+                <g class="primitive">
+                  <text dy="-1.2em">92<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-208">
-              <g class="marker" id="img-1b94e7a7-209">
-                <g transform="translate(31.62,33.76)" id="img-1b94e7a7-210">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-239">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-240">
+              <g transform="translate(31.82,33.76)" id="img-40907474-241">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-242">
+              <g transform="translate(31.82,33.76)" id="img-40907474-243">
+                <g class="primitive">
+                  <text dy="-1.2em">50<tspan x="0" dy="1.1000em">13087.305655070872</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-211">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-212">
-            <g transform="translate(36.05,33.76)" id="img-1b94e7a7-213">
-              <path fill="none" d="M-4.43,0 L4.43,0 " class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-244">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-245">
+            <g transform="translate(36.05,33.76)" id="img-40907474-246">
+              <path fill="none" d="M-4.22,0 L4.22,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-214">
-          <g class="marker" id="img-1b94e7a7-215">
-            <g transform="translate(32.42,38.98)" id="img-1b94e7a7-216">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-247">
+          <g class="marker" id="img-40907474-248">
+            <g transform="translate(32.32,38.98)" id="img-40907474-249">
               <g class="primitive">
-                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.6520</text>
+                <text text-anchor="middle" dy="-0em" transform="translate(0,-1.9)">0.6422</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-1b94e7a7-217">
-          <g class="marker" id="img-1b94e7a7-218">
-            <g transform="translate(29.81,38.98)" id="img-1b94e7a7-219">
+        <g class="geometry" stroke="#000000" stroke-opacity="0.000" fill="#4C404B" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" id="img-40907474-250">
+          <g class="marker" id="img-40907474-251">
+            <g transform="translate(29.61,38.98)" id="img-40907474-252">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)"></text>
               </g>
             </g>
-            <g transform="translate(35.04,38.98)" id="img-1b94e7a7-220">
+            <g transform="translate(35.04,38.98)" id="img-40907474-253">
               <g class="primitive">
                 <text dy="0.35em" transform="translate(1.9,0)">O K-L3 + 1 other</text>
               </g>
             </g>
           </g>
         </g>
-        <g class="geometry" id="img-1b94e7a7-221">
-          <g stroke-width="0.3" id="img-1b94e7a7-222">
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-223">
-              <g class="marker" id="img-1b94e7a7-224">
-                <g transform="translate(35.04,38.98)" id="img-1b94e7a7-225">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+        <g class="geometry" stroke-width="0.3" id="img-40907474-254">
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-255">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-256">
+              <g transform="translate(35.04,38.98)" id="img-40907474-257">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="2RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-258">
+              <g transform="translate(35.04,38.98)" id="img-40907474-259">
+                <g class="primitive">
+                  <text dy="-1.2em">66<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
-            <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" fill-opacity="1" stroke="#FFFFFF" fill="#808080" id="img-1b94e7a7-226">
-              <g class="marker" id="img-1b94e7a7-227">
-                <g transform="translate(29.81,38.98)" id="img-1b94e7a7-228">
-                  <circle cx="0" cy="0" r="0.9" class="primitive"/>
+          </g>
+          <g class="color_RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" id="img-40907474-260">
+            <g fill-opacity="1" stroke="#FFFFFF" fill="#808080" class="marker" id="img-40907474-261">
+              <g transform="translate(29.61,38.98)" id="img-40907474-262">
+                <circle cx="0" cy="0" r="0.9" class="primitive"/>
+              </g>
+            </g>
+            <g fill-opacity="0" ilabel="1RGBA{Float32}(0.5019608f0,0.5019608f0,0.5019608f0,1.0f0)" class="datatip" id="img-40907474-263">
+              <g transform="translate(29.61,38.98)" id="img-40907474-264">
+                <g class="primitive">
+                  <text dy="-1.2em">39<tspan x="0" dy="1.1000em">10469.844524056698</tspan></text>
                 </g>
               </g>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-229">
-          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke="#808080" id="img-1b94e7a7-230">
-            <g transform="translate(32.42,38.98)" id="img-1b94e7a7-231">
-              <path fill="none" d="M-2.62,0 L2.62,0 " class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-265">
+          <g class="color_RGB{N0f8}(0.502,0.502,0.502)" stroke-dasharray="none" stroke-opacity="1" stroke="#808080" id="img-40907474-266">
+            <g transform="translate(32.32,38.98)" id="img-40907474-267">
+              <path fill="none" d="M-2.72,0 L2.72,0 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-232">
-          <g class="color_RGB{N0f8}(0.063,0.306,0.545)" stroke-dasharray="none" stroke="#104E8B" id="img-1b94e7a7-233">
-            <g transform="translate(137.58,45.43)" id="img-1b94e7a7-234">
-              <path fill="none" d="M-113.81,14.44 L-113.61,14.44 -113.61,14.44 -113.41,14.44 -113.41,14.43 -113.21,14.43 -113.21,14.43 -113.01,14.43 -113.01,14.43 -112.8,14.43 -112.8,14.42 -112.6,14.42 -112.6,14.41 -112.4,14.41 -112.4,14.38 -112.2,14.38 -112.2,14.34 -112,14.34 -112,14.27 -111.8,14.27 -111.8,14.1 -111.6,14.1 -111.6,13.82 -111.4,13.82 -111.4,13.27 -111.2,13.27 -111.2,12.21 -110.99,12.21 -110.99,10.38 -110.79,10.38 -110.79,7.53 -110.59,7.53 -110.59,4.66 -110.39,4.66 -110.39,2.1 -110.19,2.1 -110.19,1 -109.99,1 -109.99,1.98 -109.79,1.98 -109.79,4.3 -109.59,4.3 -109.59,7.07 -109.38,7.07 -109.38,8.88 -109.18,8.88 -109.18,10.34 -108.98,10.34 -108.98,10.93 -108.78,10.93 -108.78,11.03 -108.58,11.03 -108.58,11.07 -108.38,11.07 -108.38,10.96 -108.18,10.96 -108.18,11.04 -107.98,11.04 -107.98,10.58 -107.78,10.58 -107.78,10.46 -107.57,10.46 -107.57,9.97 -107.37,9.97 -107.37,9.38 -107.17,9.38 -107.17,8.17 -106.97,8.17 -106.97,6.12 -106.77,6.12 -106.77,1.45 -106.57,1.45 -106.57,-7.32 -106.37,-7.32 -106.37,-23.01 -106.17,-23.01 -106.17,-50.01 -105.97,-50.01 -105.97,-91.54 -105.76,-91.54 -105.76,-143.29 -105.56,-143.29 -105.56,-197.55 -105.36,-197.55 -105.36,-236.8 -105.16,-236.8 -105.16,-244.53 -104.96,-244.53 -104.96,-219.95 -104.76,-219.95 -104.76,-171.34 -104.56,-171.34 -104.56,-113.93 -104.36,-113.93 -104.36,-64.06 -104.15,-64.06 -104.15,-28.13 -103.95,-28.13 -103.95,-8.25 -103.75,-8.25 -103.75,1.82 -103.55,1.82 -103.55,6.44 -103.35,6.44 -103.35,7.9 -103.15,7.9 -103.15,8.48 -102.95,8.48 -102.95,8.72 -102.75,8.72 -102.75,8.09 -102.55,8.09 -102.55,7.28 -102.34,7.28 -102.34,5.82 -102.14,5.82 -102.14,3.51 -101.94,3.51 -101.94,0.89 -101.74,0.89 -101.74,-1.81 -101.54,-1.81 -101.54,-3.28 -101.34,-3.28 -101.34,-3.38 -101.14,-3.38 -101.14,-2.28 -100.94,-2.28 -100.94,0.41 -100.73,0.41 -100.73,3.03 -100.53,3.03 -100.53,5.12 -100.33,5.12 -100.33,6.83 -100.13,6.83 -100.13,8.01 -99.93,8.01 -99.93,8.33 -99.73,8.33 -99.73,8.41 -99.53,8.41 -99.53,8.62 -99.33,8.62 -99.33,8.69 -99.13,8.69 -99.13,8.69 -98.92,8.69 -98.92,8.36 -98.72,8.36 -98.72,8.41 -98.52,8.41 -98.52,8.17 -98.32,8.17 -98.32,7.91 -98.12,7.91 -98.12,8.09 -97.92,8.09 -97.92,7.93 -97.72,7.93 -97.72,7.6 -97.52,7.6 -97.52,7.62 -97.31,7.62 -97.31,7.69 -97.11,7.69 -97.11,7.39 -96.91,7.39 -96.91,7.22 -96.71,7.22 -96.71,6.92 -96.51,6.92 -96.51,6.9 -96.31,6.9 -96.31,6.34 -96.11,6.34 -96.11,6.55 -95.91,6.55 -95.91,6.22 -95.71,6.22 -95.71,5.81 -95.5,5.81 -95.5,5.61 -95.3,5.61 -95.3,5.08 -95.1,5.08 -95.1,4.63 -94.9,4.63 -94.9,4.56 -94.7,4.56 -94.7,4.53 -94.5,4.53 -94.5,4.44 -94.3,4.44 -94.3,3.9 -94.1,3.9 -94.1,3.9 -93.89,3.9 -93.89,3.64 -93.69,3.64 -93.69,3.92 -93.49,3.92 -93.49,3.44 -93.29,3.44 -93.29,3.18 -93.09,3.18 -93.09,3.1 -92.89,3.1 -92.89,2.74 -92.69,2.74 -92.69,1.78 -92.49,1.78 -92.49,0.76 -92.29,0.76 -92.29,-1.63 -92.08,-1.63 -92.08,-6.58 -91.88,-6.58 -91.88,-16.08 -91.68,-16.08 -91.68,-31.81 -91.48,-31.81 -91.48,-58.37 -91.28,-58.37 -91.28,-94.97 -91.08,-94.97 -91.08,-140.89 -90.88,-140.89 -90.88,-186.76 -90.68,-186.76 -90.68,-223.61 -90.48,-223.61 -90.48,-242.49 -90.27,-242.49 -90.27,-237.57 -90.07,-237.57 -90.07,-211.8 -89.87,-211.8 -89.87,-170.55 -89.67,-170.55 -89.67,-124.82 -89.47,-124.82 -89.47,-83.13 -89.27,-83.13 -89.27,-50.96 -89.07,-50.96 -89.07,-27.36 -88.87,-27.36 -88.87,-13.45 -88.66,-13.45 -88.66,-4.8 -88.46,-4.8 -88.46,-0.81 -88.26,-0.81 -88.26,1.35 -88.06,1.35 -88.06,1.81 -87.86,1.81 -87.86,2.2 -87.66,2.2 -87.66,1.31 -87.46,1.31 -87.46,-0.46 -87.26,-0.46 -87.26,-3.76 -87.06,-3.76 -87.06,-10.46 -86.85,-10.46 -86.85,-20.75 -86.65,-20.75 -86.65,-35.45 -86.45,-35.45 -86.45,-53.11 -86.25,-53.11 -86.25,-72.33 -86.05,-72.33 -86.05,-88.39 -85.85,-88.39 -85.85,-98.3 -85.65,-98.3 -85.65,-99.91 -85.45,-99.91 -85.45,-93.07 -85.24,-93.07 -85.24,-77.66 -85.04,-77.66 -85.04,-60.37 -84.84,-60.37 -84.84,-42.5 -84.64,-42.5 -84.64,-27.93 -84.44,-27.93 -84.44,-16.34 -84.24,-16.34 -84.24,-9.7 -84.04,-9.7 -84.04,-4.62 -83.84,-4.62 -83.84,-1.54 -83.64,-1.54 -83.64,-0.31 -83.43,-0.31 -83.43,0.87 -83.23,0.87 -83.23,1.54 -83.03,1.54 -83.03,0.45 -82.83,0.45 -82.83,-1.12 -82.63,-1.12 -82.63,-5.39 -82.43,-5.39 -82.43,-13.97 -82.23,-13.97 -82.23,-29.85 -82.03,-29.85 -82.03,-59.24 -81.82,-59.24 -81.82,-101.72 -81.62,-101.72 -81.62,-162.31 -81.42,-162.31 -81.42,-237.6 -81.22,-237.6 -81.22,-317.91 -81.02,-317.91 -81.02,-388.86 -80.82,-388.86 -80.82,-445.61 -80.62,-445.61 -80.62,-462.38 -80.42,-462.38 -80.42,-441.7 -80.22,-441.7 -80.22,-388.61 -80.01,-388.61 -80.01,-316.26 -79.81,-316.26 -79.81,-240.32 -79.61,-240.32 -79.61,-170.57 -79.41,-170.57 -79.41,-114.82 -79.21,-114.82 -79.21,-73.87 -79.01,-73.87 -79.01,-47.15 -78.81,-47.15 -78.81,-30.97 -78.61,-30.97 -78.61,-21.18 -78.41,-21.18 -78.41,-14.41 -78.2,-14.41 -78.2,-9.16 -78,-9.16 -78,-4.69 -77.8,-4.69 -77.8,-1.42 -77.6,-1.42 -77.6,1.21 -77.4,1.21 -77.4,2.81 -77.2,2.81 -77.2,3.5 -77,3.5 -77,3.99 -76.8,3.99 -76.8,4.73 -76.59,4.73 -76.59,5.05 -76.39,5.05 -76.39,4.89 -76.19,4.89 -76.19,5.11 -75.99,5.11 -75.99,5.35 -75.79,5.35 -75.79,5.56 -75.59,5.56 -75.59,5.57 -75.39,5.57 -75.39,5.88 -75.19,5.88 -75.19,6.21 -74.99,6.21 -74.99,6.11 -74.78,6.11 -74.78,6.58 -74.58,6.58 -74.58,6.62 -74.38,6.62 -74.38,6.6 -74.18,6.6 -74.18,6.53 -73.98,6.53 -73.98,6.65 -73.78,6.65 -73.78,6.77 -73.58,6.77 -73.58,6.51 -73.38,6.51 -73.38,6.52 -73.17,6.52 -73.17,6.61 -72.97,6.61 -72.97,6.59 -72.77,6.59 -72.77,6.9 -72.57,6.9 -72.57,6.34 -72.37,6.34 -72.37,6.57 -72.17,6.57 -72.17,6.4 -71.97,6.4 -71.97,6.61 -71.77,6.61 -71.77,6.63 -71.57,6.63 -71.57,6.28 -71.36,6.28 -71.36,6.18 -71.16,6.18 -71.16,6.01 -70.96,6.01 -70.96,5.95 -70.76,5.95 -70.76,5.85 -70.56,5.85 -70.56,5.75 -70.36,5.75 -70.36,5.69 -70.16,5.69 -70.16,5.77 -69.96,5.77 -69.96,5.63 -69.75,5.63 -69.75,5.54 -69.55,5.54 -69.55,5.94 -69.35,5.94 -69.35,6.08 -69.15,6.08 -69.15,6.17 -68.95,6.17 -68.95,6.09 -68.75,6.09 -68.75,6.18 -68.55,6.18 -68.55,6.26 -68.35,6.26 -68.35,6.19 -68.15,6.19 -68.15,6.47 -67.94,6.47 -67.94,6.44 -67.74,6.44 -67.74,6.46 -67.54,6.46 -67.54,6.46 -67.34,6.46 -67.34,6.48 -67.14,6.48 -67.14,6.5 -66.94,6.5 -66.94,6.59 -66.74,6.59 -66.74,6.26 -66.54,6.26 -66.54,6.53 -66.33,6.53 -66.33,6.5 -66.13,6.5 -66.13,6.24 -65.93,6.24 -65.93,6.43 -65.73,6.43 -65.73,6.43 -65.53,6.43 -65.53,6.35 -65.33,6.35 -65.33,6.55 -65.13,6.55 -65.13,6.37 -64.93,6.37 -64.93,6.46 -64.73,6.46 -64.73,6.16 -64.52,6.16 -64.52,6.57 -64.32,6.57 -64.32,6.34 -64.12,6.34 -64.12,6.24 -63.92,6.24 -63.92,6.91 -63.72,6.91 -63.72,6.38 -63.52,6.38 -63.52,6.62 -63.32,6.62 -63.32,6.48 -63.12,6.48 -63.12,6.58 -62.92,6.58 -62.92,6.57 -62.71,6.57 -62.71,6.4 -62.51,6.4 -62.51,6.67 -62.31,6.67 -62.31,6.56 -62.11,6.56 -62.11,6.58 -61.91,6.58 -61.91,6.59 -61.71,6.59 -61.71,6.71 -61.51,6.71 -61.51,6.6 -61.31,6.6 -61.31,6.7 -61.1,6.7 -61.1,6.73 -60.9,6.73 -60.9,6.42 -60.7,6.42 -60.7,6.69 -60.5,6.69 -60.5,6.69 -60.3,6.69 -60.3,6.72 -60.1,6.72 -60.1,6.85 -59.9,6.85 -59.9,6.67 -59.7,6.67 -59.7,6.59 -59.5,6.59 -59.5,6.97 -59.29,6.97 -59.29,6.88 -59.09,6.88 -59.09,6.87 -58.89,6.87 -58.89,6.79 -58.69,6.79 -58.69,6.7 -58.49,6.7 -58.49,6.77 -58.29,6.77 -58.29,7 -58.09,7 -58.09,6.89 -57.89,6.89 -57.89,6.65 -57.68,6.65 -57.68,6.93 -57.48,6.93 -57.48,6.74 -57.28,6.74 -57.28,6.67 -57.08,6.67 -57.08,6.64 -56.88,6.64 -56.88,6.72 -56.68,6.72 -56.68,6.92 -56.48,6.92 -56.48,6.67 -56.28,6.67 -56.28,6.59 -56.08,6.59 -56.08,6.4 -55.87,6.4 -55.87,6.43 -55.67,6.43 -55.67,6.46 -55.47,6.46 -55.47,6.49 -55.27,6.49 -55.27,6.66 -55.07,6.66 -55.07,6.61 -54.87,6.61 -54.87,6.82 -54.67,6.82 -54.67,6.8 -54.47,6.8 -54.47,6.83 -54.26,6.83 -54.26,7.08 -54.06,7.08 -54.06,6.89 -53.86,6.89 -53.86,7.04 -53.66,7.04 -53.66,7.1 -53.46,7.1 -53.46,7.12 -53.26,7.12 -53.26,7.09 -53.06,7.09 -53.06,7.28 -52.86,7.28 -52.86,7.31 -52.66,7.31 -52.66,7.05 -52.45,7.05 -52.45,7.23 -52.25,7.23 -52.25,7.09 -52.05,7.09 -52.05,6.94 -51.85,6.94 -51.85,7.07 -51.65,7.07 -51.65,7.08 -51.45,7.08 -51.45,7.1 -51.25,7.1 -51.25,7.24 -51.05,7.24 -51.05,7.08 -50.85,7.08 -50.85,6.97 -50.64,6.97 -50.64,7.28 -50.44,7.28 -50.44,7.13 -50.24,7.13 -50.24,6.87 -50.04,6.87 -50.04,7.47 -49.84,7.47 -49.84,7.13 -49.64,7.13 -49.64,7.42 -49.44,7.42 -49.44,7.25 -49.24,7.25 -49.24,7.22 -49.03,7.22 -49.03,7.26 -48.83,7.26 -48.83,7.48 -48.63,7.48 -48.63,7.72 -48.43,7.72 -48.43,7.66 -48.23,7.66 -48.23,7.54 -48.03,7.54 -48.03,7.43 -47.83,7.43 -47.83,7.46 -47.63,7.46 -47.63,7.59 -47.43,7.59 -47.43,7.72 -47.22,7.72 -47.22,7.43 -47.02,7.43 -47.02,7.66 -46.82,7.66 -46.82,7.73 -46.62,7.73 -46.62,7.6 -46.42,7.6 -46.42,7.4 -46.22,7.4 -46.22,7.28 -46.02,7.28 -46.02,7.43 -45.82,7.43 -45.82,7.36 -45.61,7.36 -45.61,7.24 -45.41,7.24 -45.41,7.04 -45.21,7.04 -45.21,7.17 -45.01,7.17 -45.01,6.76 -44.81,6.76 -44.81,6.66 -44.61,6.66 -44.61,6.52 -44.41,6.52 -44.41,6.23 -44.21,6.23 -44.21,5.5 -44.01,5.5 -44.01,4.46 -43.8,4.46 -43.8,2.99 -43.6,2.99 -43.6,-0.27 -43.4,-0.27 -43.4,-4.52 -43.2,-4.52 -43.2,-10.91 -43,-10.91 -43,-20.46 -42.8,-20.46 -42.8,-32.79 -42.6,-32.79 -42.6,-48.86 -42.4,-48.86 -42.4,-67.41 -42.19,-67.41 -42.19,-87.3 -41.99,-87.3 -41.99,-105.66 -41.79,-105.66 -41.79,-123.67 -41.59,-123.67 -41.59,-135.8 -41.39,-135.8 -41.39,-140.78 -41.19,-140.78 -41.19,-140.8 -40.99,-140.8 -40.99,-132.15 -40.79,-132.15 -40.79,-118 -40.59,-118 -40.59,-101.66 -40.38,-101.66 -40.38,-81 -40.18,-81 -40.18,-62.15 -39.98,-62.15 -39.98,-43.15 -39.78,-43.15 -39.78,-28.65 -39.58,-28.65 -39.58,-16.94 -39.38,-16.94 -39.38,-8.27 -39.18,-8.27 -39.18,-2.39 -38.98,-2.39 -38.98,1.94 -38.78,1.94 -38.78,4.63 -38.57,4.63 -38.57,5.8 -38.37,5.8 -38.37,7.2 -38.17,7.2 -38.17,7.39 -37.97,7.39 -37.97,7.81 -37.77,7.81 -37.77,7.76 -37.57,7.76 -37.57,7.76 -37.37,7.76 -37.37,7.34 -37.17,7.34 -37.17,7.34 -36.96,7.34 -36.96,6.5 -36.76,6.5 -36.76,5.82 -36.56,5.82 -36.56,4.71 -36.36,4.71 -36.36,2.95 -36.16,2.95 -36.16,1.39 -35.96,1.39 -35.96,-0.72 -35.76,-0.72 -35.76,-3.1 -35.56,-3.1 -35.56,-5.06 -35.36,-5.06 -35.36,-7.03 -35.15,-7.03 -35.15,-7.93 -34.95,-7.93 -34.95,-9.26 -34.75,-9.26 -34.75,-9.12 -34.55,-9.12 -34.55,-8.38 -34.35,-8.38 -34.35,-7.1 -34.15,-7.1 -34.15,-5.32 -33.95,-5.32 -33.95,-3.12 -33.75,-3.12 -33.75,-0.64 -33.54,-0.64 -33.54,1.62 -33.34,1.62 -33.34,3.48 -33.14,3.48 -33.14,5.26 -32.94,5.26 -32.94,6.45 -32.74,6.45 -32.74,7.41 -32.54,7.41 -32.54,7.9 -32.34,7.9 -32.34,8.52 -32.14,8.52 -32.14,9.09 -31.94,9.09 -31.94,8.89 -31.73,8.89 -31.73,9.03 -31.53,9.03 -31.53,8.97 -31.33,8.97 -31.33,9.23 -31.13,9.23 -31.13,9.26 -30.93,9.26 -30.93,9.18 -30.73,9.18 -30.73,9.26 -30.53,9.26 -30.53,9.16 -30.33,9.16 -30.33,9.32 -30.12,9.32 -30.12,9.27 -29.92,9.27 -29.92,9.45 -29.72,9.45 -29.72,9.23 -29.52,9.23 -29.52,9.62 -29.32,9.62 -29.32,9.57 -29.12,9.57 -29.12,9.53 -28.92,9.53 -28.92,9.5 -28.72,9.5 -28.72,9.53 -28.52,9.53 -28.52,9.45 -28.31,9.45 -28.31,9.77 -28.11,9.77 -28.11,9.49 -27.91,9.49 -27.91,9.64 -27.71,9.64 -27.71,9.68 -27.51,9.68 -27.51,9.51 -27.31,9.51 -27.31,9.64 -27.11,9.64 -27.11,9.85 -26.91,9.85 -26.91,9.63 -26.7,9.63 -26.7,9.58 -26.5,9.58 -26.5,9.82 -26.3,9.82 -26.3,9.62 -26.1,9.62 -26.1,9.66 -25.9,9.66 -25.9,9.91 -25.7,9.91 -25.7,9.75 -25.5,9.75 -25.5,9.74 -25.3,9.74 -25.3,9.78 -25.1,9.78 -25.1,9.66 -24.89,9.66 -24.89,9.8 -24.69,9.8 -24.69,9.6 -24.49,9.6 -24.49,9.87 -24.29,9.87 -24.29,9.85 -24.09,9.85 -24.09,9.9 -23.89,9.9 -23.89,9.8 -23.69,9.8 -23.69,9.97 -23.49,9.97 -23.49,9.77 -23.29,9.77 -23.29,9.81 -23.08,9.81 -23.08,9.89 -22.88,9.89 -22.88,9.72 -22.68,9.72 -22.68,9.59 -22.48,9.59 -22.48,9.84 -22.28,9.84 -22.28,9.86 -22.08,9.86 -22.08,9.7 -21.88,9.7 -21.88,9.94 -21.68,9.94 -21.68,10.06 -21.47,10.06 -21.47,9.96 -21.27,9.96 -21.27,9.89 -21.07,9.89 -21.07,9.92 -20.87,9.92 -20.87,9.77 -20.67,9.77 -20.67,9.96 -20.47,9.96 -20.47,9.95 -20.27,9.95 -20.27,10.15 -20.07,10.15 -20.07,10.14 -19.87,10.14 -19.87,10.1 -19.66,10.1 -19.66,10.14 -19.46,10.14 -19.46,10.11 -19.26,10.11 -19.26,10.01 -19.06,10.01 -19.06,10.2 -18.86,10.2 -18.86,10.23 -18.66,10.23 -18.66,10.23 -18.46,10.23 -18.46,10.42 -18.26,10.42 -18.26,10.14 -18.05,10.14 -18.05,10.09 -17.85,10.09 -17.85,10.16 -17.65,10.16 -17.65,10.3 -17.45,10.3 -17.45,10.2 -17.25,10.2 -17.25,10.08 -17.05,10.08 -17.05,10.21 -16.85,10.21 -16.85,10.09 -16.65,10.09 -16.65,10.14 -16.45,10.14 -16.45,10.17 -16.24,10.17 -16.24,10.19 -16.04,10.19 -16.04,10.09 -15.84,10.09 -15.84,10.3 -15.64,10.3 -15.64,10.19 -15.44,10.19 -15.44,10.14 -15.24,10.14 -15.24,10.13 -15.04,10.13 -15.04,10.18 -14.84,10.18 -14.84,10.18 -14.63,10.18 -14.63,10.44 -14.43,10.44 -14.43,10.43 -14.23,10.43 -14.23,10.34 -14.03,10.34 -14.03,10.44 -13.83,10.44 -13.83,10.37 -13.63,10.37 -13.63,10.58 -13.43,10.58 -13.43,10.37 -13.23,10.37 -13.23,10.4 -13.03,10.4 -13.03,10.3 -12.82,10.3 -12.82,10.41 -12.62,10.41 -12.62,10.43 -12.42,10.43 -12.42,10.42 -12.22,10.42 -12.22,10.45 -12.02,10.45 -12.02,10.56 -11.82,10.56 -11.82,10.51 -11.62,10.51 -11.62,10.35 -11.42,10.35 -11.42,10.43 -11.22,10.43 -11.22,10.33 -11.01,10.33 -11.01,10.44 -10.81,10.44 -10.81,10.5 -10.61,10.5 -10.61,10.48 -10.41,10.48 -10.41,10.51 -10.21,10.51 -10.21,10.4 -10.01,10.4 -10.01,10.57 -9.81,10.57 -9.81,10.49 -9.61,10.49 -9.61,10.53 -9.4,10.53 -9.4,10.48 -9.2,10.48 -9.2,10.66 -9,10.66 -9,10.59 -8.8,10.59 -8.8,10.42 -8.6,10.42 -8.6,10.59 -8.4,10.59 -8.4,10.69 -8.2,10.69 -8.2,10.66 -8,10.66 -8,10.52 -7.8,10.52 -7.8,10.55 -7.59,10.55 -7.59,10.48 -7.39,10.48 -7.39,10.43 -7.19,10.43 -7.19,10.26 -6.99,10.26 -6.99,10.36 -6.79,10.36 -6.79,10.33 -6.59,10.33 -6.59,10.47 -6.39,10.47 -6.39,10.45 -6.19,10.45 -6.19,10.46 -5.98,10.46 -5.98,10.43 -5.78,10.43 -5.78,10.46 -5.58,10.46 -5.58,10.47 -5.38,10.47 -5.38,10.43 -5.18,10.43 -5.18,10.73 -4.98,10.73 -4.98,10.73 -4.78,10.73 -4.78,10.65 -4.58,10.65 -4.58,10.69 -4.38,10.69 -4.38,10.81 -4.17,10.81 -4.17,10.75 -3.97,10.75 -3.97,10.86 -3.77,10.86 -3.77,10.8 -3.57,10.8 -3.57,10.71 -3.37,10.71 -3.37,10.8 -3.17,10.8 -3.17,10.9 -2.97,10.9 -2.97,10.83 -2.77,10.83 -2.77,10.87 -2.56,10.87 -2.56,10.84 -2.36,10.84 -2.36,10.83 -2.16,10.83 -2.16,11.1 -1.96,11.1 -1.96,10.95 -1.76,10.95 -1.76,11.05 -1.56,11.05 -1.56,11.05 -1.36,11.05 -1.36,10.94 -1.16,10.94 -1.16,11.02 -0.96,11.02 -0.96,10.9 -0.75,10.9 -0.75,10.94 -0.55,10.94 -0.55,11.08 -0.35,11.08 -0.35,10.88 -0.15,10.88 -0.15,11.09 0.05,11.09 0.05,10.87 0.25,10.87 0.25,11.11 0.45,11.11 0.45,11.08 0.65,11.08 0.65,11.06 0.85,11.06 0.85,10.97 1.06,10.97 1.06,11.03 1.26,11.03 1.26,10.86 1.46,10.86 1.46,10.94 1.66,10.94 1.66,10.9 1.86,10.9 1.86,10.75 2.06,10.75 2.06,10.86 2.26,10.86 2.26,10.88 2.46,10.88 2.46,10.63 2.67,10.63 2.67,10.73 2.87,10.73 2.87,10.81 3.07,10.81 3.07,10.68 3.27,10.68 3.27,10.85 3.47,10.85 3.47,10.85 3.67,10.85 3.67,10.87 3.87,10.87 3.87,10.96 4.07,10.96 4.07,11.05 4.27,11.05 4.27,11.04 4.48,11.04 4.48,10.98 4.68,10.98 4.68,11.03 4.88,11.03 4.88,11.3 5.08,11.3 5.08,11.08 5.28,11.08 5.28,11.22 5.48,11.22 5.48,11.23 5.68,11.23 5.68,11.21 5.88,11.21 5.88,11.13 6.09,11.13 6.09,11.2 6.29,11.2 6.29,11.22 6.49,11.22 6.49,11.39 6.69,11.39 6.69,11.27 6.89,11.27 6.89,11.33 7.09,11.33 7.09,11.35 7.29,11.35 7.29,11.28 7.49,11.28 7.49,11.32 7.69,11.32 7.69,11.17 7.9,11.17 7.9,11.5 8.1,11.5 8.1,11.34 8.3,11.34 8.3,11.34 8.5,11.34 8.5,11.14 8.7,11.14 8.7,11.12 8.9,11.12 8.9,11.16 9.1,11.16 9.1,11.28 9.3,11.28 9.3,11.27 9.51,11.27 9.51,10.89 9.71,10.89 9.71,10.82 9.91,10.82 9.91,10.44 10.11,10.44 10.11,9.96 10.31,9.96 10.31,9.28 10.51,9.28 10.51,8.57 10.71,8.57 10.71,7.06 10.91,7.06 10.91,5.06 11.11,5.06 11.11,3.02 11.32,3.02 11.32,0.29 11.52,0.29 11.52,-3.03 11.72,-3.03 11.72,-6.76 11.92,-6.76 11.92,-10.38 12.12,-10.38 12.12,-14.63 12.32,-14.63 12.32,-18.88 12.52,-18.88 12.52,-22.13 12.72,-22.13 12.72,-24.56 12.93,-24.56 12.93,-26.76 13.13,-26.76 13.13,-27.19 13.33,-27.19 13.33,-26.06 13.53,-26.06 13.53,-24.89 13.73,-24.89 13.73,-21.61 13.93,-21.61 13.93,-17.62 14.13,-17.62 14.13,-14.83 14.33,-14.83 14.33,-10.61 14.53,-10.61 14.53,-6.86 14.74,-6.86 14.74,-2.58 14.94,-2.58 14.94,0.36 15.14,0.36 15.14,3.09 15.34,3.09 15.34,5.4 15.54,5.4 15.54,7.29 15.74,7.29 15.74,8.67 15.94,8.67 15.94,9.6 16.14,9.6 16.14,10.34 16.34,10.34 16.34,10.87 16.55,10.87 16.55,11.09 16.75,11.09 16.75,11.26 16.95,11.26 16.95,11.38 17.15,11.38 17.15,11.6 17.35,11.6 17.35,11.49 17.55,11.49 17.55,11.69 17.75,11.69 17.75,11.78 17.95,11.78 17.95,11.7 18.16,11.7 18.16,11.63 18.36,11.63 18.36,11.64 18.56,11.64 18.56,11.55 18.76,11.55 18.76,11.73 18.96,11.73 18.96,11.77 19.16,11.77 19.16,11.79 19.36,11.79 19.36,11.65 19.56,11.65 19.56,11.8 19.76,11.8 19.76,11.65 19.97,11.65 19.97,11.72 20.17,11.72 20.17,11.61 20.37,11.61 20.37,11.84 20.57,11.84 20.57,11.8 20.77,11.8 20.77,11.82 20.97,11.82 20.97,11.89 21.17,11.89 21.17,11.8 21.37,11.8 21.37,11.79 21.58,11.79 21.58,11.83 21.78,11.83 21.78,11.77 21.98,11.77 21.98,11.84 22.18,11.84 22.18,11.71 22.38,11.71 22.38,11.8 22.58,11.8 22.58,11.6 22.78,11.6 22.78,11.63 22.98,11.63 22.98,11.57 23.18,11.57 23.18,11.53 23.39,11.53 23.39,11.48 23.59,11.48 23.59,11.21 23.79,11.21 23.79,11.09 23.99,11.09 23.99,11.08 24.19,11.08 24.19,10.6 24.39,10.6 24.39,10.45 24.59,10.45 24.59,9.92 24.79,9.92 24.79,9.73 25,9.73 25,9.08 25.2,9.08 25.2,8.81 25.4,8.81 25.4,8.21 25.6,8.21 25.6,7.88 25.8,7.88 25.8,7.45 26,7.45 26,7.17 26.2,7.17 26.2,7.17 26.4,7.17 26.4,6.96 26.6,6.96 26.6,7.27 26.81,7.27 26.81,7.58 27.01,7.58 27.01,7.9 27.21,7.9 27.21,8.27 27.41,8.27 27.41,8.76 27.61,8.76 27.61,9.4 27.81,9.4 27.81,9.77 28.01,9.77 28.01,10.3 28.21,10.3 28.21,10.69 28.41,10.69 28.41,10.98 28.62,10.98 28.62,11.24 28.82,11.24 28.82,11.46 29.02,11.46 29.02,11.68 29.22,11.68 29.22,11.89 29.42,11.89 29.42,11.96 29.62,11.96 29.62,11.88 29.82,11.88 29.82,12.09 30.02,12.09 30.02,12.17 30.23,12.17 30.23,12.13 30.43,12.13 30.43,12.17 30.63,12.17 30.63,12.04 30.83,12.04 30.83,12.24 31.03,12.24 31.03,12.12 31.23,12.12 31.23,12.2 31.43,12.2 31.43,12.15 31.63,12.15 31.63,12.16 31.83,12.16 31.83,12.22 32.04,12.22 32.04,12.04 32.24,12.04 32.24,12.17 32.44,12.17 32.44,12.29 32.64,12.29 32.64,12.18 32.84,12.18 32.84,12.11 33.04,12.11 33.04,12.04 33.24,12.04 33.24,12.17 33.44,12.17 33.44,12.24 33.65,12.24 33.65,12.11 33.85,12.11 33.85,12.19 34.05,12.19 34.05,12.09 34.25,12.09 34.25,12.28 34.45,12.28 34.45,12.24 34.65,12.24 34.65,12.22 34.85,12.22 34.85,12.11 35.05,12.11 35.05,12.22 35.25,12.22 35.25,12.17 35.46,12.17 35.46,12.17 35.66,12.17 35.66,12.19 35.86,12.19 35.86,12.28 36.06,12.28 36.06,12.27 36.26,12.27 36.26,12.23 36.46,12.23 36.46,12.22 36.66,12.22 36.66,12.34 36.86,12.34 36.86,12.26 37.07,12.26 37.07,12.32 37.27,12.32 37.27,12.29 37.47,12.29 37.47,12.41 37.67,12.41 37.67,12.28 37.87,12.28 37.87,12.22 38.07,12.22 38.07,12.36 38.27,12.36 38.27,12.33 38.47,12.33 38.47,12.39 38.67,12.39 38.67,12.27 38.88,12.27 38.88,12.39 39.08,12.39 39.08,12.3 39.28,12.3 39.28,12.26 39.48,12.26 39.48,12.3 39.68,12.3 39.68,12.44 39.88,12.44 39.88,12.34 40.08,12.34 40.08,12.37 40.28,12.37 40.28,12.4 40.49,12.4 40.49,12.46 40.69,12.46 40.69,12.43 40.89,12.43 40.89,12.44 41.09,12.44 41.09,12.3 41.29,12.3 41.29,12.36 41.49,12.36 41.49,12.39 41.69,12.39 41.69,12.48 41.89,12.48 41.89,12.43 42.09,12.43 42.09,12.42 42.3,12.42 42.3,12.39 42.5,12.39 42.5,12.5 42.7,12.5 42.7,12.38 42.9,12.38 42.9,12.53 43.1,12.53 43.1,12.44 43.3,12.44 43.3,12.44 43.5,12.44 43.5,12.44 43.7,12.44 43.7,12.48 43.9,12.48 43.9,12.45 44.11,12.45 44.11,12.55 44.31,12.55 44.31,12.46 44.51,12.46 44.51,12.47 44.71,12.47 44.71,12.62 44.91,12.62 44.91,12.49 45.11,12.49 45.11,12.48 45.31,12.48 45.31,12.45 45.51,12.45 45.51,12.48 45.72,12.48 45.72,12.5 45.92,12.5 45.92,12.5 46.12,12.5 46.12,12.4 46.32,12.4 46.32,12.55 46.52,12.55 46.52,12.4 46.72,12.4 46.72,12.46 46.92,12.46 46.92,12.55 47.12,12.55 47.12,12.49 47.32,12.49 47.32,12.46 47.53,12.46 47.53,12.48 47.73,12.48 47.73,12.62 47.93,12.62 47.93,12.51 48.13,12.51 48.13,12.52 48.33,12.52 48.33,12.56 48.53,12.56 48.53,12.56 48.73,12.56 48.73,12.61 48.93,12.61 48.93,12.6 49.14,12.6 49.14,12.73 49.34,12.73 49.34,12.31 49.54,12.31 49.54,12.61 49.74,12.61 49.74,12.5 49.94,12.5 49.94,12.51 50.14,12.51 50.14,12.6 50.34,12.6 50.34,12.53 50.54,12.53 50.54,12.64 50.74,12.64 50.74,12.66 50.95,12.66 50.95,12.68 51.15,12.68 51.15,12.62 51.35,12.62 51.35,12.66 51.55,12.66 51.55,12.63 51.75,12.63 51.75,12.59 51.95,12.59 51.95,12.75 52.15,12.75 52.15,12.67 52.35,12.67 52.35,12.61 52.56,12.61 52.56,12.67 52.76,12.67 52.76,12.67 52.96,12.67 52.96,12.73 53.16,12.73 53.16,12.67 53.36,12.67 53.36,12.73 53.56,12.73 53.56,12.59 53.76,12.59 53.76,12.74 53.96,12.74 53.96,12.64 54.16,12.64 54.16,12.82 54.37,12.82 54.37,12.84 54.57,12.84 54.57,12.7 54.77,12.7 54.77,12.71 54.97,12.71 54.97,12.83 55.17,12.83 55.17,12.75 55.37,12.75 55.37,12.74 55.57,12.74 55.57,12.71 55.77,12.71 55.77,12.89 55.97,12.89 55.97,12.79 56.18,12.79 56.18,12.8 56.38,12.8 56.38,12.68 56.58,12.68 56.58,12.84 56.78,12.84 56.78,12.93 56.98,12.93 56.98,12.73 57.18,12.73 57.18,12.77 57.38,12.77 57.38,12.75 57.58,12.75 57.58,12.72 57.79,12.72 57.79,12.86 57.99,12.86 57.99,12.75 58.19,12.75 58.19,12.81 58.39,12.81 58.39,12.71 58.59,12.71 58.59,12.79 58.79,12.79 58.79,12.85 58.99,12.85 58.99,12.76 59.19,12.76 59.19,12.79 59.39,12.79 59.39,12.87 59.6,12.87 59.6,12.75 59.8,12.75 59.8,12.74 60,12.74 60,12.85 60.2,12.85 60.2,12.88 60.4,12.88 60.4,12.8 60.6,12.8 60.6,12.92 60.8,12.92 60.8,12.79 61,12.79 61,12.87 61.21,12.87 61.21,12.89 61.41,12.89 61.41,12.9 61.61,12.9 61.61,12.75 61.81,12.75 61.81,12.79 62.01,12.79 62.01,12.93 62.21,12.93 62.21,12.81 62.41,12.81 62.41,12.84 62.61,12.84 62.61,12.9 62.81,12.9 62.81,12.89 63.02,12.89 63.02,12.87 63.22,12.87 63.22,12.89 63.42,12.89 63.42,12.83 63.62,12.83 63.62,12.94 63.82,12.94 63.82,12.85 64.02,12.85 64.02,12.89 64.22,12.89 64.22,12.9 64.42,12.9 64.42,12.88 64.63,12.88 64.63,12.82 64.83,12.82 64.83,12.89 65.03,12.89 65.03,13.02 65.23,13.02 65.23,12.88 65.43,12.88 65.43,12.83 65.63,12.83 65.63,12.88 65.83,12.88 65.83,12.9 66.03,12.9 66.03,12.9 66.23,12.9 66.23,12.91 66.44,12.91 66.44,12.94 66.64,12.94 66.64,12.93 66.84,12.93 66.84,12.91 67.04,12.91 67.04,12.95 67.24,12.95 67.24,12.9 67.44,12.9 67.44,12.98 67.64,12.98 67.64,13.06 67.84,13.06 67.84,13.07 68.04,13.07 68.04,12.96 68.25,12.96 68.25,12.95 68.45,12.95 68.45,12.92 68.65,12.92 68.65,12.91 68.85,12.91 68.85,12.97 69.05,12.97 69.05,12.88 69.25,12.88 69.25,13.08 69.45,13.08 69.45,13.09 69.65,13.09 69.65,13 69.86,13 69.86,13.03 70.06,13.03 70.06,12.97 70.26,12.97 70.26,13 70.46,13 70.46,13.1 70.66,13.1 70.66,13.11 70.86,13.11 70.86,12.94 71.06,12.94 71.06,12.96 71.26,12.96 71.26,13.09 71.46,13.09 71.46,12.99 71.67,12.99 71.67,13.07 71.87,13.07 71.87,13.01 72.07,13.01 72.07,12.96 72.27,12.96 72.27,13.02 72.47,13.02 72.47,13.05 72.67,13.05 72.67,13.05 72.87,13.05 72.87,13.07 73.07,13.07 73.07,12.98 73.28,12.98 73.28,13.11 73.48,13.11 73.48,13.06 73.68,13.06 73.68,13.08 73.88,13.08 73.88,13.17 74.08,13.17 74.08,13.15 74.28,13.15 74.28,13.1 74.48,13.1 74.48,13.1 74.68,13.1 74.68,13.13 74.88,13.13 74.88,13.15 75.09,13.15 75.09,13.01 75.29,13.01 75.29,13.1 75.49,13.1 75.49,13.08 75.69,13.08 75.69,13.15 75.89,13.15 75.89,13.03 76.09,13.03 76.09,13.07 76.29,13.07 76.29,13.12 76.49,13.12 76.49,13.15 76.7,13.15 76.7,12.99 76.9,12.99 76.9,13.03 77.1,13.03 77.1,13.22 77.3,13.22 77.3,13.17 77.5,13.17 77.5,13.2 77.7,13.2 77.7,13.04 77.9,13.04 77.9,13.18 78.1,13.18 78.1,13.13 78.3,13.13 78.3,13.17 78.51,13.17 78.51,13.21 78.71,13.21 78.71,13.09 78.91,13.09 78.91,13.27 79.11,13.27 79.11,13.18 79.31,13.18 79.31,13.15 79.51,13.15 79.51,13.1 79.71,13.1 79.71,13.14 79.91,13.14 79.91,13.2 80.12,13.2 80.12,13.25 80.32,13.25 80.32,13.18 80.52,13.18 80.52,13.11 80.72,13.11 80.72,13.24 80.92,13.24 80.92,13.15 81.12,13.15 81.12,13.17 81.32,13.17 81.32,13.16 81.52,13.16 81.52,13.22 81.72,13.22 81.72,13.23 81.93,13.23 81.93,13.21 82.13,13.21 82.13,13.22 82.33,13.22 82.33,13.23 82.53,13.23 82.53,13.16 82.73,13.16 82.73,13.26 82.93,13.26 82.93,13.2 83.13,13.2 83.13,13.19 83.33,13.19 83.33,13.19 83.53,13.19 83.53,13.23 83.74,13.23 83.74,13.17 83.94,13.17 83.94,13.24 84.14,13.24 84.14,13.15 84.34,13.15 84.34,13.22 84.54,13.22 84.54,13.27 84.74,13.27 84.74,13.3 84.94,13.3 84.94,13.34 85.14,13.34 85.14,13.17 85.35,13.17 85.35,13.26 85.55,13.26 85.55,13.33 85.75,13.33 85.75,13.26 85.95,13.26 85.95,13.26 86.15,13.26 86.15,13.29 86.35,13.29 86.35,13.27 86.55,13.27 86.55,13.23 86.75,13.23 86.75,13.34 86.95,13.34 86.95,13.27 87.16,13.27 87.16,13.3 87.36,13.3 87.36,13.22 87.56,13.22 87.56,13.19 87.76,13.19 87.76,13.26 87.96,13.26 87.96,13.3 88.16,13.3 88.16,13.27 88.36,13.27 88.36,13.24 88.56,13.24 88.56,13.29 88.77,13.29 88.77,13.26 88.97,13.26 88.97,13.28 89.17,13.28 89.17,13.42 89.37,13.42 89.37,13.29 89.57,13.29 89.57,13.31 89.77,13.31 89.77,13.41 89.97,13.41 89.97,13.31 90.17,13.31 90.17,13.31 90.37,13.31 90.37,13.27 90.58,13.27 90.58,13.36 90.78,13.36 90.78,13.28 90.98,13.28 90.98,13.39 91.18,13.39 91.18,13.28 91.38,13.28 91.38,13.37 91.58,13.37 91.58,13.31 91.78,13.31 91.78,13.31 91.98,13.31 91.98,13.26 92.19,13.26 92.19,13.33 92.39,13.33 92.39,13.34 92.59,13.34 92.59,13.4 92.79,13.4 92.79,13.4 92.99,13.4 92.99,13.32 93.19,13.32 93.19,13.35 93.39,13.35 93.39,13.33 93.59,13.33 93.59,13.38 93.79,13.38 93.79,13.38 94,13.38 94,13.42 94.2,13.42 94.2,13.37 94.4,13.37 94.4,13.27 94.6,13.27 94.6,13.29 94.8,13.29 94.8,13.41 95,13.41 95,13.33 95.2,13.33 95.2,13.42 95.4,13.42 95.4,13.38 95.6,13.38 95.6,13.4 95.81,13.4 95.81,13.49 96.01,13.49 96.01,13.37 96.21,13.37 96.21,13.33 96.41,13.33 96.41,13.36 96.61,13.36 96.61,13.39 96.81,13.39 96.81,13.32 97.01,13.32 97.01,13.44 97.21,13.44 97.21,13.33 97.42,13.33 97.42,13.36 97.62,13.36 97.62,13.45 97.82,13.45 97.82,13.39 98.02,13.39 98.02,13.4 98.22,13.4 98.22,13.46 98.42,13.46 98.42,13.37 98.62,13.37 98.62,13.41 98.82,13.41 98.82,13.45 99.02,13.45 99.02,13.48 99.23,13.48 99.23,13.44 99.43,13.44 99.43,13.45 99.63,13.45 99.63,13.49 99.83,13.49 99.83,13.46 100.03,13.46 100.03,13.49 100.23,13.49 100.23,13.45 100.43,13.45 100.43,13.51 100.63,13.51 100.63,13.46 100.84,13.46 100.84,13.51 101.04,13.51 101.04,13.46 101.24,13.46 101.24,13.43 101.44,13.43 101.44,13.48 101.64,13.48 101.64,13.49 101.84,13.49 101.84,13.56 102.04,13.56 102.04,13.45 102.24,13.45 102.24,13.55 102.44,13.55 102.44,13.4 102.65,13.4 102.65,13.55 102.85,13.55 102.85,13.56 103.05,13.56 103.05,13.45 103.25,13.45 103.25,13.52 103.45,13.52 103.45,13.52 103.65,13.52 103.65,13.49 103.85,13.49 103.85,13.52 104.05,13.52 104.05,13.51 104.26,13.51 104.26,13.53 104.46,13.53 104.46,13.57 104.66,13.57 104.66,13.54 104.86,13.54 104.86,13.45 105.06,13.45 105.06,13.62 105.26,13.62 105.26,13.51 105.46,13.51 105.46,13.54 105.66,13.54 105.66,13.55 105.86,13.55 105.86,13.51 106.07,13.51 106.07,13.52 106.27,13.52 106.27,13.57 106.47,13.57 106.47,13.5 106.67,13.5 106.67,13.51 106.87,13.51 106.87,13.53 107.07,13.53 107.07,13.5 107.27,13.5 107.27,13.57 107.47,13.57 107.47,13.58 107.67,13.58 107.67,13.62 107.88,13.62 107.88,13.55 108.08,13.55 108.08,13.55 108.28,13.55 108.28,13.6 108.48,13.6 108.48,13.59 108.68,13.59 108.68,13.61 108.88,13.61 108.88,13.58 109.08,13.58 109.08,13.55 109.28,13.55 109.28,13.55 109.49,13.55 109.49,13.5 109.69,13.5 109.69,13.6 109.89,13.6 109.89,13.57 110.09,13.57 110.09,13.64 110.29,13.64 110.29,13.58 110.49,13.58 110.49,13.59 110.69,13.59 110.69,13.62 110.89,13.62 110.89,13.56 111.09,13.56 111.09,13.65 111.3,13.65 111.3,13.53 111.5,13.53 111.5,13.55 111.7,13.55 111.7,13.6 111.9,13.6 111.9,13.65 112.1,13.65 112.1,13.65 112.3,13.65 112.3,13.59 112.5,13.59 112.5,13.67 112.7,13.67 112.7,13.6 112.91,13.6 112.91,13.61 113.11,13.61 113.11,13.62 113.31,13.62 113.31,13.61 113.51,13.61 113.51,13.67 113.71,13.67 113.71,13.63 " class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-268">
+          <g class="color_RGB{N0f8}(0.063,0.306,0.545)" stroke-dasharray="none" stroke-opacity="1" stroke="#104E8B" id="img-40907474-269">
+            <g transform="translate(137.58,45.81)" id="img-40907474-270">
+              <path fill="none" d="M-113.81,14.05 L-113.61,14.05 -113.61,14.05 -113.41,14.05 -113.41,14.05 -113.21,14.05 -113.21,14.05 -113.01,14.05 -113.01,14.04 -112.8,14.04 -112.8,14.04 -112.6,14.04 -112.6,14.03 -112.4,14.03 -112.4,14 -112.2,14 -112.2,13.95 -112,13.95 -112,13.88 -111.8,13.88 -111.8,13.72 -111.6,13.72 -111.6,13.45 -111.4,13.45 -111.4,12.91 -111.2,12.91 -111.2,11.88 -110.99,11.88 -110.99,10.1 -110.79,10.1 -110.79,7.33 -110.59,7.33 -110.59,4.54 -110.39,4.54 -110.39,2.04 -110.19,2.04 -110.19,0.98 -109.99,0.98 -109.99,1.93 -109.79,1.93 -109.79,4.19 -109.59,4.19 -109.59,6.88 -109.38,6.88 -109.38,8.65 -109.18,8.65 -109.18,10.06 -108.98,10.06 -108.98,10.64 -108.78,10.64 -108.78,10.74 -108.58,10.74 -108.58,10.78 -108.38,10.78 -108.38,10.67 -108.18,10.67 -108.18,10.74 -107.98,10.74 -107.98,10.3 -107.78,10.3 -107.78,10.18 -107.57,10.18 -107.57,9.7 -107.37,9.7 -107.37,9.13 -107.17,9.13 -107.17,7.95 -106.97,7.95 -106.97,5.96 -106.77,5.96 -106.77,1.41 -106.57,1.41 -106.57,-7.13 -106.37,-7.13 -106.37,-22.39 -106.17,-22.39 -106.17,-48.67 -105.97,-48.67 -105.97,-89.09 -105.76,-89.09 -105.76,-139.45 -105.56,-139.45 -105.56,-192.26 -105.36,-192.26 -105.36,-230.46 -105.16,-230.46 -105.16,-237.98 -104.96,-237.98 -104.96,-214.05 -104.76,-214.05 -104.76,-166.75 -104.56,-166.75 -104.56,-110.88 -104.36,-110.88 -104.36,-62.34 -104.15,-62.34 -104.15,-27.38 -103.95,-27.38 -103.95,-8.02 -103.75,-8.02 -103.75,1.77 -103.55,1.77 -103.55,6.27 -103.35,6.27 -103.35,7.69 -103.15,7.69 -103.15,8.25 -102.95,8.25 -102.95,8.49 -102.75,8.49 -102.75,7.88 -102.55,7.88 -102.55,7.08 -102.34,7.08 -102.34,5.67 -102.14,5.67 -102.14,3.41 -101.94,3.41 -101.94,0.87 -101.74,0.87 -101.74,-1.76 -101.54,-1.76 -101.54,-3.19 -101.34,-3.19 -101.34,-3.29 -101.14,-3.29 -101.14,-2.22 -100.94,-2.22 -100.94,0.4 -100.73,0.4 -100.73,2.95 -100.53,2.95 -100.53,4.99 -100.33,4.99 -100.33,6.64 -100.13,6.64 -100.13,7.8 -99.93,7.8 -99.93,8.11 -99.73,8.11 -99.73,8.18 -99.53,8.18 -99.53,8.39 -99.33,8.39 -99.33,8.46 -99.13,8.46 -99.13,8.45 -98.92,8.45 -98.92,8.14 -98.72,8.14 -98.72,8.19 -98.52,8.19 -98.52,7.95 -98.32,7.95 -98.32,7.69 -98.12,7.69 -98.12,7.87 -97.92,7.87 -97.92,7.71 -97.72,7.71 -97.72,7.39 -97.52,7.39 -97.52,7.42 -97.31,7.42 -97.31,7.48 -97.11,7.48 -97.11,7.2 -96.91,7.2 -96.91,7.03 -96.71,7.03 -96.71,6.74 -96.51,6.74 -96.51,6.71 -96.31,6.71 -96.31,6.17 -96.11,6.17 -96.11,6.37 -95.91,6.37 -95.91,6.05 -95.71,6.05 -95.71,5.65 -95.5,5.65 -95.5,5.46 -95.3,5.46 -95.3,4.94 -95.1,4.94 -95.1,4.5 -94.9,4.5 -94.9,4.44 -94.7,4.44 -94.7,4.41 -94.5,4.41 -94.5,4.32 -94.3,4.32 -94.3,3.79 -94.1,3.79 -94.1,3.79 -93.89,3.79 -93.89,3.55 -93.69,3.55 -93.69,3.81 -93.49,3.81 -93.49,3.35 -93.29,3.35 -93.29,3.1 -93.09,3.1 -93.09,3.02 -92.89,3.02 -92.89,2.67 -92.69,2.67 -92.69,1.73 -92.49,1.73 -92.49,0.74 -92.29,0.74 -92.29,-1.59 -92.08,-1.59 -92.08,-6.4 -91.88,-6.4 -91.88,-15.65 -91.68,-15.65 -91.68,-30.96 -91.48,-30.96 -91.48,-56.81 -91.28,-56.81 -91.28,-92.42 -91.08,-92.42 -91.08,-137.12 -90.88,-137.12 -90.88,-181.75 -90.68,-181.75 -90.68,-217.62 -90.48,-217.62 -90.48,-235.99 -90.27,-235.99 -90.27,-231.21 -90.07,-231.21 -90.07,-206.12 -89.87,-206.12 -89.87,-165.98 -89.67,-165.98 -89.67,-121.48 -89.47,-121.48 -89.47,-80.9 -89.27,-80.9 -89.27,-49.59 -89.07,-49.59 -89.07,-26.63 -88.87,-26.63 -88.87,-13.09 -88.66,-13.09 -88.66,-4.67 -88.46,-4.67 -88.46,-0.79 -88.26,-0.79 -88.26,1.32 -88.06,1.32 -88.06,1.77 -87.86,1.77 -87.86,2.14 -87.66,2.14 -87.66,1.28 -87.46,1.28 -87.46,-0.45 -87.26,-0.45 -87.26,-3.66 -87.06,-3.66 -87.06,-10.18 -86.85,-10.18 -86.85,-20.2 -86.65,-20.2 -86.65,-34.5 -86.45,-34.5 -86.45,-51.69 -86.25,-51.69 -86.25,-70.39 -86.05,-70.39 -86.05,-86.02 -85.85,-86.02 -85.85,-95.67 -85.65,-95.67 -85.65,-97.23 -85.45,-97.23 -85.45,-90.58 -85.24,-90.58 -85.24,-75.58 -85.04,-75.58 -85.04,-58.75 -84.84,-58.75 -84.84,-41.36 -84.64,-41.36 -84.64,-27.18 -84.44,-27.18 -84.44,-15.9 -84.24,-15.9 -84.24,-9.44 -84.04,-9.44 -84.04,-4.49 -83.84,-4.49 -83.84,-1.5 -83.64,-1.5 -83.64,-0.3 -83.43,-0.3 -83.43,0.84 -83.23,0.84 -83.23,1.5 -83.03,1.5 -83.03,0.44 -82.83,0.44 -82.83,-1.09 -82.63,-1.09 -82.63,-5.24 -82.43,-5.24 -82.43,-13.59 -82.23,-13.59 -82.23,-29.06 -82.03,-29.06 -82.03,-57.65 -81.82,-57.65 -81.82,-98.99 -81.62,-98.99 -81.62,-157.97 -81.42,-157.97 -81.42,-231.23 -81.22,-231.23 -81.22,-309.39 -81.02,-309.39 -81.02,-378.44 -80.82,-378.44 -80.82,-433.68 -80.62,-433.68 -80.62,-449.99 -80.42,-449.99 -80.42,-429.87 -80.22,-429.87 -80.22,-378.2 -80.01,-378.2 -80.01,-307.78 -79.81,-307.78 -79.81,-233.88 -79.61,-233.88 -79.61,-166 -79.41,-166 -79.41,-111.75 -79.21,-111.75 -79.21,-71.9 -79.01,-71.9 -79.01,-45.89 -78.81,-45.89 -78.81,-30.14 -78.61,-30.14 -78.61,-20.61 -78.41,-20.61 -78.41,-14.03 -78.2,-14.03 -78.2,-8.91 -78,-8.91 -78,-4.56 -77.8,-4.56 -77.8,-1.39 -77.6,-1.39 -77.6,1.18 -77.4,1.18 -77.4,2.74 -77.2,2.74 -77.2,3.4 -77,3.4 -77,3.88 -76.8,3.88 -76.8,4.6 -76.59,4.6 -76.59,4.91 -76.39,4.91 -76.39,4.76 -76.19,4.76 -76.19,4.97 -75.99,4.97 -75.99,5.21 -75.79,5.21 -75.79,5.41 -75.59,5.41 -75.59,5.42 -75.39,5.42 -75.39,5.72 -75.19,5.72 -75.19,6.05 -74.99,6.05 -74.99,5.94 -74.78,5.94 -74.78,6.4 -74.58,6.4 -74.58,6.45 -74.38,6.45 -74.38,6.43 -74.18,6.43 -74.18,6.35 -73.98,6.35 -73.98,6.48 -73.78,6.48 -73.78,6.59 -73.58,6.59 -73.58,6.34 -73.38,6.34 -73.38,6.35 -73.17,6.35 -73.17,6.44 -72.97,6.44 -72.97,6.42 -72.77,6.42 -72.77,6.72 -72.57,6.72 -72.57,6.17 -72.37,6.17 -72.37,6.4 -72.17,6.4 -72.17,6.22 -71.97,6.22 -71.97,6.44 -71.77,6.44 -71.77,6.45 -71.57,6.45 -71.57,6.11 -71.36,6.11 -71.36,6.02 -71.16,6.02 -71.16,5.85 -70.96,5.85 -70.96,5.79 -70.76,5.79 -70.76,5.7 -70.56,5.7 -70.56,5.6 -70.36,5.6 -70.36,5.54 -70.16,5.54 -70.16,5.62 -69.96,5.62 -69.96,5.48 -69.75,5.48 -69.75,5.39 -69.55,5.39 -69.55,5.78 -69.35,5.78 -69.35,5.91 -69.15,5.91 -69.15,6 -68.95,6 -68.95,5.93 -68.75,5.93 -68.75,6.01 -68.55,6.01 -68.55,6.09 -68.35,6.09 -68.35,6.02 -68.15,6.02 -68.15,6.3 -67.94,6.3 -67.94,6.27 -67.74,6.27 -67.74,6.29 -67.54,6.29 -67.54,6.29 -67.34,6.29 -67.34,6.31 -67.14,6.31 -67.14,6.33 -66.94,6.33 -66.94,6.41 -66.74,6.41 -66.74,6.09 -66.54,6.09 -66.54,6.35 -66.33,6.35 -66.33,6.33 -66.13,6.33 -66.13,6.07 -65.93,6.07 -65.93,6.26 -65.73,6.26 -65.73,6.25 -65.53,6.25 -65.53,6.18 -65.33,6.18 -65.33,6.38 -65.13,6.38 -65.13,6.2 -64.93,6.2 -64.93,6.29 -64.73,6.29 -64.73,5.99 -64.52,5.99 -64.52,6.4 -64.32,6.4 -64.32,6.17 -64.12,6.17 -64.12,6.07 -63.92,6.07 -63.92,6.72 -63.72,6.72 -63.72,6.21 -63.52,6.21 -63.52,6.44 -63.32,6.44 -63.32,6.3 -63.12,6.3 -63.12,6.4 -62.92,6.4 -62.92,6.39 -62.71,6.39 -62.71,6.23 -62.51,6.23 -62.51,6.49 -62.31,6.49 -62.31,6.38 -62.11,6.38 -62.11,6.4 -61.91,6.4 -61.91,6.41 -61.71,6.41 -61.71,6.53 -61.51,6.53 -61.51,6.42 -61.31,6.42 -61.31,6.52 -61.1,6.52 -61.1,6.55 -60.9,6.55 -60.9,6.25 -60.7,6.25 -60.7,6.51 -60.5,6.51 -60.5,6.51 -60.3,6.51 -60.3,6.54 -60.1,6.54 -60.1,6.67 -59.9,6.67 -59.9,6.49 -59.7,6.49 -59.7,6.42 -59.5,6.42 -59.5,6.79 -59.29,6.79 -59.29,6.69 -59.09,6.69 -59.09,6.69 -58.89,6.69 -58.89,6.61 -58.69,6.61 -58.69,6.52 -58.49,6.52 -58.49,6.59 -58.29,6.59 -58.29,6.81 -58.09,6.81 -58.09,6.71 -57.89,6.71 -57.89,6.48 -57.68,6.48 -57.68,6.75 -57.48,6.75 -57.48,6.56 -57.28,6.56 -57.28,6.49 -57.08,6.49 -57.08,6.46 -56.88,6.46 -56.88,6.54 -56.68,6.54 -56.68,6.74 -56.48,6.74 -56.48,6.5 -56.28,6.5 -56.28,6.41 -56.08,6.41 -56.08,6.23 -55.87,6.23 -55.87,6.26 -55.67,6.26 -55.67,6.29 -55.47,6.29 -55.47,6.32 -55.27,6.32 -55.27,6.48 -55.07,6.48 -55.07,6.44 -54.87,6.44 -54.87,6.63 -54.67,6.63 -54.67,6.62 -54.47,6.62 -54.47,6.65 -54.26,6.65 -54.26,6.89 -54.06,6.89 -54.06,6.71 -53.86,6.71 -53.86,6.85 -53.66,6.85 -53.66,6.91 -53.46,6.91 -53.46,6.93 -53.26,6.93 -53.26,6.9 -53.06,6.9 -53.06,7.09 -52.86,7.09 -52.86,7.12 -52.66,7.12 -52.66,6.86 -52.45,6.86 -52.45,7.04 -52.25,7.04 -52.25,6.9 -52.05,6.9 -52.05,6.76 -51.85,6.76 -51.85,6.88 -51.65,6.88 -51.65,6.89 -51.45,6.89 -51.45,6.91 -51.25,6.91 -51.25,7.05 -51.05,7.05 -51.05,6.89 -50.85,6.89 -50.85,6.78 -50.64,6.78 -50.64,7.08 -50.44,7.08 -50.44,6.94 -50.24,6.94 -50.24,6.68 -50.04,6.68 -50.04,7.27 -49.84,7.27 -49.84,6.94 -49.64,6.94 -49.64,7.22 -49.44,7.22 -49.44,7.06 -49.24,7.06 -49.24,7.03 -49.03,7.03 -49.03,7.07 -48.83,7.07 -48.83,7.28 -48.63,7.28 -48.63,7.52 -48.43,7.52 -48.43,7.45 -48.23,7.45 -48.23,7.34 -48.03,7.34 -48.03,7.23 -47.83,7.23 -47.83,7.26 -47.63,7.26 -47.63,7.38 -47.43,7.38 -47.43,7.51 -47.22,7.51 -47.22,7.24 -47.02,7.24 -47.02,7.45 -46.82,7.45 -46.82,7.52 -46.62,7.52 -46.62,7.39 -46.42,7.39 -46.42,7.21 -46.22,7.21 -46.22,7.09 -46.02,7.09 -46.02,7.24 -45.82,7.24 -45.82,7.17 -45.61,7.17 -45.61,7.05 -45.41,7.05 -45.41,6.85 -45.21,6.85 -45.21,6.98 -45.01,6.98 -45.01,6.58 -44.81,6.58 -44.81,6.48 -44.61,6.48 -44.61,6.35 -44.41,6.35 -44.41,6.06 -44.21,6.06 -44.21,5.35 -44.01,5.35 -44.01,4.34 -43.8,4.34 -43.8,2.91 -43.6,2.91 -43.6,-0.26 -43.4,-0.26 -43.4,-4.4 -43.2,-4.4 -43.2,-10.62 -43,-10.62 -43,-19.91 -42.8,-19.91 -42.8,-31.91 -42.6,-31.91 -42.6,-47.55 -42.4,-47.55 -42.4,-65.6 -42.19,-65.6 -42.19,-84.96 -41.99,-84.96 -41.99,-102.83 -41.79,-102.83 -41.79,-120.36 -41.59,-120.36 -41.59,-132.16 -41.39,-132.16 -41.39,-137.01 -41.19,-137.01 -41.19,-137.03 -40.99,-137.03 -40.99,-128.61 -40.79,-128.61 -40.79,-114.84 -40.59,-114.84 -40.59,-98.93 -40.38,-98.93 -40.38,-78.83 -40.18,-78.83 -40.18,-60.48 -39.98,-60.48 -39.98,-42 -39.78,-42 -39.78,-27.88 -39.58,-27.88 -39.58,-16.49 -39.38,-16.49 -39.38,-8.05 -39.18,-8.05 -39.18,-2.32 -38.98,-2.32 -38.98,1.89 -38.78,1.89 -38.78,4.5 -38.57,4.5 -38.57,5.65 -38.37,5.65 -38.37,7.01 -38.17,7.01 -38.17,7.19 -37.97,7.19 -37.97,7.6 -37.77,7.6 -37.77,7.56 -37.57,7.56 -37.57,7.56 -37.37,7.56 -37.37,7.14 -37.17,7.14 -37.17,7.14 -36.96,7.14 -36.96,6.33 -36.76,6.33 -36.76,5.66 -36.56,5.66 -36.56,4.59 -36.36,4.59 -36.36,2.87 -36.16,2.87 -36.16,1.35 -35.96,1.35 -35.96,-0.7 -35.76,-0.7 -35.76,-3.01 -35.56,-3.01 -35.56,-4.92 -35.36,-4.92 -35.36,-6.84 -35.15,-6.84 -35.15,-7.71 -34.95,-7.71 -34.95,-9.01 -34.75,-9.01 -34.75,-8.87 -34.55,-8.87 -34.55,-8.16 -34.35,-8.16 -34.35,-6.91 -34.15,-6.91 -34.15,-5.18 -33.95,-5.18 -33.95,-3.04 -33.75,-3.04 -33.75,-0.63 -33.54,-0.63 -33.54,1.58 -33.34,1.58 -33.34,3.39 -33.14,3.39 -33.14,5.11 -32.94,5.11 -32.94,6.28 -32.74,6.28 -32.74,7.21 -32.54,7.21 -32.54,7.69 -32.34,7.69 -32.34,8.29 -32.14,8.29 -32.14,8.84 -31.94,8.84 -31.94,8.65 -31.73,8.65 -31.73,8.79 -31.53,8.79 -31.53,8.72 -31.33,8.72 -31.33,8.99 -31.13,8.99 -31.13,9.01 -30.93,9.01 -30.93,8.93 -30.73,8.93 -30.73,9.01 -30.53,9.01 -30.53,8.91 -30.33,8.91 -30.33,9.07 -30.12,9.07 -30.12,9.02 -29.92,9.02 -29.92,9.2 -29.72,9.2 -29.72,8.99 -29.52,8.99 -29.52,9.37 -29.32,9.37 -29.32,9.31 -29.12,9.31 -29.12,9.28 -28.92,9.28 -28.92,9.25 -28.72,9.25 -28.72,9.27 -28.52,9.27 -28.52,9.19 -28.31,9.19 -28.31,9.51 -28.11,9.51 -28.11,9.24 -27.91,9.24 -27.91,9.38 -27.71,9.38 -27.71,9.42 -27.51,9.42 -27.51,9.26 -27.31,9.26 -27.31,9.39 -27.11,9.39 -27.11,9.58 -26.91,9.58 -26.91,9.37 -26.7,9.37 -26.7,9.32 -26.5,9.32 -26.5,9.55 -26.3,9.55 -26.3,9.37 -26.1,9.37 -26.1,9.4 -25.9,9.4 -25.9,9.64 -25.7,9.64 -25.7,9.49 -25.5,9.49 -25.5,9.48 -25.3,9.48 -25.3,9.52 -25.1,9.52 -25.1,9.41 -24.89,9.41 -24.89,9.53 -24.69,9.53 -24.69,9.35 -24.49,9.35 -24.49,9.61 -24.29,9.61 -24.29,9.58 -24.09,9.58 -24.09,9.63 -23.89,9.63 -23.89,9.54 -23.69,9.54 -23.69,9.71 -23.49,9.71 -23.49,9.5 -23.29,9.5 -23.29,9.54 -23.08,9.54 -23.08,9.62 -22.88,9.62 -22.88,9.46 -22.68,9.46 -22.68,9.33 -22.48,9.33 -22.48,9.57 -22.28,9.57 -22.28,9.6 -22.08,9.6 -22.08,9.44 -21.88,9.44 -21.88,9.68 -21.68,9.68 -21.68,9.79 -21.47,9.79 -21.47,9.69 -21.27,9.69 -21.27,9.62 -21.07,9.62 -21.07,9.65 -20.87,9.65 -20.87,9.51 -20.67,9.51 -20.67,9.69 -20.47,9.69 -20.47,9.68 -20.27,9.68 -20.27,9.88 -20.07,9.88 -20.07,9.87 -19.87,9.87 -19.87,9.83 -19.66,9.83 -19.66,9.87 -19.46,9.87 -19.46,9.84 -19.26,9.84 -19.26,9.74 -19.06,9.74 -19.06,9.93 -18.86,9.93 -18.86,9.95 -18.66,9.95 -18.66,9.96 -18.46,9.96 -18.46,10.14 -18.26,10.14 -18.26,9.87 -18.05,9.87 -18.05,9.82 -17.85,9.82 -17.85,9.88 -17.65,9.88 -17.65,10.02 -17.45,10.02 -17.45,9.93 -17.25,9.93 -17.25,9.81 -17.05,9.81 -17.05,9.93 -16.85,9.93 -16.85,9.82 -16.65,9.82 -16.65,9.87 -16.45,9.87 -16.45,9.9 -16.24,9.9 -16.24,9.92 -16.04,9.92 -16.04,9.82 -15.84,9.82 -15.84,10.03 -15.64,10.03 -15.64,9.92 -15.44,9.92 -15.44,9.87 -15.24,9.87 -15.24,9.86 -15.04,9.86 -15.04,9.91 -14.84,9.91 -14.84,9.9 -14.63,9.9 -14.63,10.16 -14.43,10.16 -14.43,10.15 -14.23,10.15 -14.23,10.06 -14.03,10.06 -14.03,10.16 -13.83,10.16 -13.83,10.09 -13.63,10.09 -13.63,10.3 -13.43,10.3 -13.43,10.09 -13.23,10.09 -13.23,10.12 -13.03,10.12 -13.03,10.02 -12.82,10.02 -12.82,10.13 -12.62,10.13 -12.62,10.15 -12.42,10.15 -12.42,10.14 -12.22,10.14 -12.22,10.17 -12.02,10.17 -12.02,10.28 -11.82,10.28 -11.82,10.23 -11.62,10.23 -11.62,10.08 -11.42,10.08 -11.42,10.15 -11.22,10.15 -11.22,10.06 -11.01,10.06 -11.01,10.16 -10.81,10.16 -10.81,10.22 -10.61,10.22 -10.61,10.2 -10.41,10.2 -10.41,10.23 -10.21,10.23 -10.21,10.13 -10.01,10.13 -10.01,10.28 -9.81,10.28 -9.81,10.21 -9.61,10.21 -9.61,10.25 -9.4,10.25 -9.4,10.2 -9.2,10.2 -9.2,10.37 -9,10.37 -9,10.31 -8.8,10.31 -8.8,10.14 -8.6,10.14 -8.6,10.3 -8.4,10.3 -8.4,10.41 -8.2,10.41 -8.2,10.37 -8,10.37 -8,10.24 -7.8,10.24 -7.8,10.26 -7.59,10.26 -7.59,10.2 -7.39,10.2 -7.39,10.15 -7.19,10.15 -7.19,9.99 -6.99,9.99 -6.99,10.08 -6.79,10.08 -6.79,10.06 -6.59,10.06 -6.59,10.19 -6.39,10.19 -6.39,10.17 -6.19,10.17 -6.19,10.18 -5.98,10.18 -5.98,10.15 -5.78,10.15 -5.78,10.18 -5.58,10.18 -5.58,10.18 -5.38,10.18 -5.38,10.15 -5.18,10.15 -5.18,10.44 -4.98,10.44 -4.98,10.44 -4.78,10.44 -4.78,10.36 -4.58,10.36 -4.58,10.4 -4.38,10.4 -4.38,10.52 -4.17,10.52 -4.17,10.46 -3.97,10.46 -3.97,10.57 -3.77,10.57 -3.77,10.51 -3.57,10.51 -3.57,10.43 -3.37,10.43 -3.37,10.51 -3.17,10.51 -3.17,10.61 -2.97,10.61 -2.97,10.54 -2.77,10.54 -2.77,10.58 -2.56,10.58 -2.56,10.55 -2.36,10.55 -2.36,10.54 -2.16,10.54 -2.16,10.8 -1.96,10.8 -1.96,10.66 -1.76,10.66 -1.76,10.75 -1.56,10.75 -1.56,10.75 -1.36,10.75 -1.36,10.65 -1.16,10.65 -1.16,10.73 -0.96,10.73 -0.96,10.61 -0.75,10.61 -0.75,10.64 -0.55,10.64 -0.55,10.78 -0.35,10.78 -0.35,10.59 -0.15,10.59 -0.15,10.79 0.05,10.79 0.05,10.58 0.25,10.58 0.25,10.81 0.45,10.81 0.45,10.78 0.65,10.78 0.65,10.77 0.85,10.77 0.85,10.67 1.06,10.67 1.06,10.73 1.26,10.73 1.26,10.57 1.46,10.57 1.46,10.64 1.66,10.64 1.66,10.61 1.86,10.61 1.86,10.46 2.06,10.46 2.06,10.57 2.26,10.57 2.26,10.59 2.46,10.59 2.46,10.35 2.67,10.35 2.67,10.44 2.87,10.44 2.87,10.52 3.07,10.52 3.07,10.4 3.27,10.4 3.27,10.56 3.47,10.56 3.47,10.56 3.67,10.56 3.67,10.58 3.87,10.58 3.87,10.67 4.07,10.67 4.07,10.76 4.27,10.76 4.27,10.75 4.48,10.75 4.48,10.69 4.68,10.69 4.68,10.74 4.88,10.74 4.88,11 5.08,11 5.08,10.79 5.28,10.79 5.28,10.92 5.48,10.92 5.48,10.93 5.68,10.93 5.68,10.91 5.88,10.91 5.88,10.84 6.09,10.84 6.09,10.9 6.29,10.9 6.29,10.92 6.49,10.92 6.49,11.08 6.69,11.08 6.69,10.97 6.89,10.97 6.89,11.02 7.09,11.02 7.09,11.05 7.29,11.05 7.29,10.98 7.49,10.98 7.49,11.02 7.69,11.02 7.69,10.87 7.9,10.87 7.9,11.2 8.1,11.2 8.1,11.04 8.3,11.04 8.3,11.04 8.5,11.04 8.5,10.85 8.7,10.85 8.7,10.82 8.9,10.82 8.9,10.86 9.1,10.86 9.1,10.98 9.3,10.98 9.3,10.97 9.51,10.97 9.51,10.59 9.71,10.59 9.71,10.53 9.91,10.53 9.91,10.16 10.11,10.16 10.11,9.69 10.31,9.69 10.31,9.03 10.51,9.03 10.51,8.34 10.71,8.34 10.71,6.87 10.91,6.87 10.91,4.92 11.11,4.92 11.11,2.94 11.32,2.94 11.32,0.28 11.52,0.28 11.52,-2.95 11.72,-2.95 11.72,-6.58 11.92,-6.58 11.92,-10.11 12.12,-10.11 12.12,-14.24 12.32,-14.24 12.32,-18.37 12.52,-18.37 12.52,-21.54 12.72,-21.54 12.72,-23.9 12.93,-23.9 12.93,-26.04 13.13,-26.04 13.13,-26.46 13.33,-26.46 13.33,-25.36 13.53,-25.36 13.53,-24.22 13.73,-24.22 13.73,-21.03 13.93,-21.03 13.93,-17.14 14.13,-17.14 14.13,-14.43 14.33,-14.43 14.33,-10.32 14.53,-10.32 14.53,-6.68 14.74,-6.68 14.74,-2.51 14.94,-2.51 14.94,0.35 15.14,0.35 15.14,3 15.34,3 15.34,5.26 15.54,5.26 15.54,7.1 15.74,7.1 15.74,8.44 15.94,8.44 15.94,9.34 16.14,9.34 16.14,10.07 16.34,10.07 16.34,10.58 16.55,10.58 16.55,10.79 16.75,10.79 16.75,10.96 16.95,10.96 16.95,11.08 17.15,11.08 17.15,11.29 17.35,11.29 17.35,11.18 17.55,11.18 17.55,11.38 17.75,11.38 17.75,11.46 17.95,11.46 17.95,11.39 18.16,11.39 18.16,11.32 18.36,11.32 18.36,11.32 18.56,11.32 18.56,11.24 18.76,11.24 18.76,11.41 18.96,11.41 18.96,11.45 19.16,11.45 19.16,11.47 19.36,11.47 19.36,11.34 19.56,11.34 19.56,11.49 19.76,11.49 19.76,11.34 19.97,11.34 19.97,11.41 20.17,11.41 20.17,11.3 20.37,11.3 20.37,11.53 20.57,11.53 20.57,11.49 20.77,11.49 20.77,11.51 20.97,11.51 20.97,11.57 21.17,11.57 21.17,11.48 21.37,11.48 21.37,11.48 21.58,11.48 21.58,11.52 21.78,11.52 21.78,11.46 21.98,11.46 21.98,11.52 22.18,11.52 22.18,11.39 22.38,11.39 22.38,11.48 22.58,11.48 22.58,11.29 22.78,11.29 22.78,11.32 22.98,11.32 22.98,11.26 23.18,11.26 23.18,11.22 23.39,11.22 23.39,11.17 23.59,11.17 23.59,10.91 23.79,10.91 23.79,10.8 23.99,10.8 23.99,10.79 24.19,10.79 24.19,10.32 24.39,10.32 24.39,10.17 24.59,10.17 24.59,9.66 24.79,9.66 24.79,9.47 25,9.47 25,8.83 25.2,8.83 25.2,8.57 25.4,8.57 25.4,7.99 25.6,7.99 25.6,7.67 25.8,7.67 25.8,7.25 26,7.25 26,6.98 26.2,6.98 26.2,6.98 26.4,6.98 26.4,6.78 26.6,6.78 26.6,7.08 26.81,7.08 26.81,7.38 27.01,7.38 27.01,7.68 27.21,7.68 27.21,8.05 27.41,8.05 27.41,8.53 27.61,8.53 27.61,9.14 27.81,9.14 27.81,9.51 28.01,9.51 28.01,10.03 28.21,10.03 28.21,10.4 28.41,10.4 28.41,10.69 28.62,10.69 28.62,10.94 28.82,10.94 28.82,11.16 29.02,11.16 29.02,11.36 29.22,11.36 29.22,11.58 29.42,11.58 29.42,11.63 29.62,11.63 29.62,11.57 29.82,11.57 29.82,11.77 30.02,11.77 30.02,11.84 30.23,11.84 30.23,11.81 30.43,11.81 30.43,11.84 30.63,11.84 30.63,11.71 30.83,11.71 30.83,11.92 31.03,11.92 31.03,11.79 31.23,11.79 31.23,11.87 31.43,11.87 31.43,11.83 31.63,11.83 31.63,11.84 31.83,11.84 31.83,11.9 32.04,11.9 32.04,11.72 32.24,11.72 32.24,11.85 32.44,11.85 32.44,11.96 32.64,11.96 32.64,11.86 32.84,11.86 32.84,11.79 33.04,11.79 33.04,11.72 33.24,11.72 33.24,11.84 33.44,11.84 33.44,11.92 33.65,11.92 33.65,11.79 33.85,11.79 33.85,11.87 34.05,11.87 34.05,11.77 34.25,11.77 34.25,11.95 34.45,11.95 34.45,11.91 34.65,11.91 34.65,11.89 34.85,11.89 34.85,11.78 35.05,11.78 35.05,11.89 35.25,11.89 35.25,11.85 35.46,11.85 35.46,11.85 35.66,11.85 35.66,11.87 35.86,11.87 35.86,11.95 36.06,11.95 36.06,11.95 36.26,11.95 36.26,11.91 36.46,11.91 36.46,11.89 36.66,11.89 36.66,12.01 36.86,12.01 36.86,11.93 37.07,11.93 37.07,11.99 37.27,11.99 37.27,11.96 37.47,11.96 37.47,12.07 37.67,12.07 37.67,11.95 37.87,11.95 37.87,11.89 38.07,11.89 38.07,12.03 38.27,12.03 38.27,12 38.47,12 38.47,12.06 38.67,12.06 38.67,11.94 38.88,11.94 38.88,12.05 39.08,12.05 39.08,11.97 39.28,11.97 39.28,11.93 39.48,11.93 39.48,11.97 39.68,11.97 39.68,12.11 39.88,12.11 39.88,12.01 40.08,12.01 40.08,12.04 40.28,12.04 40.28,12.07 40.49,12.07 40.49,12.12 40.69,12.12 40.69,12.1 40.89,12.1 40.89,12.1 41.09,12.1 41.09,11.97 41.29,11.97 41.29,12.03 41.49,12.03 41.49,12.06 41.69,12.06 41.69,12.15 41.89,12.15 41.89,12.1 42.09,12.1 42.09,12.08 42.3,12.08 42.3,12.06 42.5,12.06 42.5,12.16 42.7,12.16 42.7,12.05 42.9,12.05 42.9,12.19 43.1,12.19 43.1,12.11 43.3,12.11 43.3,12.11 43.5,12.11 43.5,12.11 43.7,12.11 43.7,12.14 43.9,12.14 43.9,12.12 44.11,12.12 44.11,12.21 44.31,12.21 44.31,12.12 44.51,12.12 44.51,12.14 44.71,12.14 44.71,12.28 44.91,12.28 44.91,12.15 45.11,12.15 45.11,12.15 45.31,12.15 45.31,12.12 45.51,12.12 45.51,12.14 45.72,12.14 45.72,12.17 45.92,12.17 45.92,12.17 46.12,12.17 46.12,12.07 46.32,12.07 46.32,12.22 46.52,12.22 46.52,12.07 46.72,12.07 46.72,12.13 46.92,12.13 46.92,12.21 47.12,12.21 47.12,12.16 47.32,12.16 47.32,12.13 47.53,12.13 47.53,12.14 47.73,12.14 47.73,12.28 47.93,12.28 47.93,12.18 48.13,12.18 48.13,12.18 48.33,12.18 48.33,12.23 48.53,12.23 48.53,12.22 48.73,12.22 48.73,12.27 48.93,12.27 48.93,12.26 49.14,12.26 49.14,12.39 49.34,12.39 49.34,11.98 49.54,11.98 49.54,12.27 49.74,12.27 49.74,12.16 49.94,12.16 49.94,12.17 50.14,12.17 50.14,12.26 50.34,12.26 50.34,12.2 50.54,12.2 50.54,12.3 50.74,12.3 50.74,12.32 50.95,12.32 50.95,12.34 51.15,12.34 51.15,12.28 51.35,12.28 51.35,12.33 51.55,12.33 51.55,12.29 51.75,12.29 51.75,12.25 51.95,12.25 51.95,12.41 52.15,12.41 52.15,12.33 52.35,12.33 52.35,12.27 52.56,12.27 52.56,12.33 52.76,12.33 52.76,12.33 52.96,12.33 52.96,12.38 53.16,12.38 53.16,12.33 53.36,12.33 53.36,12.39 53.56,12.39 53.56,12.25 53.76,12.25 53.76,12.4 53.96,12.4 53.96,12.3 54.16,12.3 54.16,12.48 54.37,12.48 54.37,12.5 54.57,12.5 54.57,12.36 54.77,12.36 54.77,12.37 54.97,12.37 54.97,12.49 55.17,12.49 55.17,12.4 55.37,12.4 55.37,12.4 55.57,12.4 55.57,12.37 55.77,12.37 55.77,12.54 55.97,12.54 55.97,12.45 56.18,12.45 56.18,12.45 56.38,12.45 56.38,12.34 56.58,12.34 56.58,12.5 56.78,12.5 56.78,12.58 56.98,12.58 56.98,12.39 57.18,12.39 57.18,12.43 57.38,12.43 57.38,12.41 57.58,12.41 57.58,12.38 57.79,12.38 57.79,12.52 57.99,12.52 57.99,12.41 58.19,12.41 58.19,12.46 58.39,12.46 58.39,12.37 58.59,12.37 58.59,12.45 58.79,12.45 58.79,12.5 58.99,12.5 58.99,12.42 59.19,12.42 59.19,12.44 59.39,12.44 59.39,12.53 59.6,12.53 59.6,12.4 59.8,12.4 59.8,12.4 60,12.4 60,12.51 60.2,12.51 60.2,12.54 60.4,12.54 60.4,12.46 60.6,12.46 60.6,12.57 60.8,12.57 60.8,12.44 61,12.44 61,12.52 61.21,12.52 61.21,12.54 61.41,12.54 61.41,12.56 61.61,12.56 61.61,12.41 61.81,12.41 61.81,12.45 62.01,12.45 62.01,12.59 62.21,12.59 62.21,12.47 62.41,12.47 62.41,12.49 62.61,12.49 62.61,12.55 62.81,12.55 62.81,12.55 63.02,12.55 63.02,12.52 63.22,12.52 63.22,12.54 63.42,12.54 63.42,12.49 63.62,12.49 63.62,12.6 63.82,12.6 63.82,12.5 64.02,12.5 64.02,12.54 64.22,12.54 64.22,12.56 64.42,12.56 64.42,12.54 64.63,12.54 64.63,12.48 64.83,12.48 64.83,12.54 65.03,12.54 65.03,12.67 65.23,12.67 65.23,12.53 65.43,12.53 65.43,12.49 65.63,12.49 65.63,12.54 65.83,12.54 65.83,12.55 66.03,12.55 66.03,12.55 66.23,12.55 66.23,12.57 66.44,12.57 66.44,12.59 66.64,12.59 66.64,12.59 66.84,12.59 66.84,12.56 67.04,12.56 67.04,12.6 67.24,12.6 67.24,12.55 67.44,12.55 67.44,12.63 67.64,12.63 67.64,12.71 67.84,12.71 67.84,12.72 68.04,12.72 68.04,12.62 68.25,12.62 68.25,12.61 68.45,12.61 68.45,12.57 68.65,12.57 68.65,12.57 68.85,12.57 68.85,12.63 69.05,12.63 69.05,12.53 69.25,12.53 69.25,12.73 69.45,12.73 69.45,12.74 69.65,12.74 69.65,12.65 69.86,12.65 69.86,12.68 70.06,12.68 70.06,12.63 70.26,12.63 70.26,12.65 70.46,12.65 70.46,12.75 70.66,12.75 70.66,12.76 70.86,12.76 70.86,12.6 71.06,12.6 71.06,12.61 71.26,12.61 71.26,12.74 71.46,12.74 71.46,12.64 71.67,12.64 71.67,12.72 71.87,12.72 71.87,12.66 72.07,12.66 72.07,12.61 72.27,12.61 72.27,12.68 72.47,12.68 72.47,12.7 72.67,12.7 72.67,12.7 72.87,12.7 72.87,12.72 73.07,12.72 73.07,12.63 73.28,12.63 73.28,12.76 73.48,12.76 73.48,12.71 73.68,12.71 73.68,12.73 73.88,12.73 73.88,12.82 74.08,12.82 74.08,12.8 74.28,12.8 74.28,12.75 74.48,12.75 74.48,12.75 74.68,12.75 74.68,12.77 74.88,12.77 74.88,12.79 75.09,12.79 75.09,12.66 75.29,12.66 75.29,12.75 75.49,12.75 75.49,12.73 75.69,12.73 75.69,12.8 75.89,12.8 75.89,12.68 76.09,12.68 76.09,12.72 76.29,12.72 76.29,12.76 76.49,12.76 76.49,12.8 76.7,12.8 76.7,12.64 76.9,12.64 76.9,12.68 77.1,12.68 77.1,12.87 77.3,12.87 77.3,12.81 77.5,12.81 77.5,12.85 77.7,12.85 77.7,12.69 77.9,12.69 77.9,12.83 78.1,12.83 78.1,12.78 78.3,12.78 78.3,12.82 78.51,12.82 78.51,12.85 78.71,12.85 78.71,12.74 78.91,12.74 78.91,12.92 79.11,12.92 79.11,12.82 79.31,12.82 79.31,12.8 79.51,12.8 79.51,12.75 79.71,12.75 79.71,12.79 79.91,12.79 79.91,12.84 80.12,12.84 80.12,12.9 80.32,12.9 80.32,12.82 80.52,12.82 80.52,12.76 80.72,12.76 80.72,12.88 80.92,12.88 80.92,12.8 81.12,12.8 81.12,12.82 81.32,12.82 81.32,12.81 81.52,12.81 81.52,12.86 81.72,12.86 81.72,12.88 81.93,12.88 81.93,12.86 82.13,12.86 82.13,12.86 82.33,12.86 82.33,12.87 82.53,12.87 82.53,12.81 82.73,12.81 82.73,12.9 82.93,12.9 82.93,12.85 83.13,12.85 83.13,12.84 83.33,12.84 83.33,12.83 83.53,12.83 83.53,12.88 83.74,12.88 83.74,12.82 83.94,12.82 83.94,12.89 84.14,12.89 84.14,12.8 84.34,12.8 84.34,12.87 84.54,12.87 84.54,12.92 84.74,12.92 84.74,12.94 84.94,12.94 84.94,12.98 85.14,12.98 85.14,12.82 85.35,12.82 85.35,12.9 85.55,12.9 85.55,12.98 85.75,12.98 85.75,12.91 85.95,12.91 85.95,12.9 86.15,12.9 86.15,12.94 86.35,12.94 86.35,12.92 86.55,12.92 86.55,12.88 86.75,12.88 86.75,12.99 86.95,12.99 86.95,12.91 87.16,12.91 87.16,12.95 87.36,12.95 87.36,12.87 87.56,12.87 87.56,12.84 87.76,12.84 87.76,12.9 87.96,12.9 87.96,12.95 88.16,12.95 88.16,12.91 88.36,12.91 88.36,12.89 88.56,12.89 88.56,12.93 88.77,12.93 88.77,12.91 88.97,12.91 88.97,12.92 89.17,12.92 89.17,13.06 89.37,13.06 89.37,12.94 89.57,12.94 89.57,12.96 89.77,12.96 89.77,13.06 89.97,13.06 89.97,12.96 90.17,12.96 90.17,12.95 90.37,12.95 90.37,12.92 90.58,12.92 90.58,13 90.78,13 90.78,12.93 90.98,12.93 90.98,13.04 91.18,13.04 91.18,12.93 91.38,12.93 91.38,13.02 91.58,13.02 91.58,12.95 91.78,12.95 91.78,12.96 91.98,12.96 91.98,12.91 92.19,12.91 92.19,12.97 92.39,12.97 92.39,12.98 92.59,12.98 92.59,13.04 92.79,13.04 92.79,13.04 92.99,13.04 92.99,12.96 93.19,12.96 93.19,13 93.39,13 93.39,12.97 93.59,12.97 93.59,13.02 93.79,13.02 93.79,13.02 94,13.02 94,13.06 94.2,13.06 94.2,13.02 94.4,13.02 94.4,12.91 94.6,12.91 94.6,12.94 94.8,12.94 94.8,13.05 95,13.05 95,12.98 95.2,12.98 95.2,13.06 95.4,13.06 95.4,13.02 95.6,13.02 95.6,13.04 95.81,13.04 95.81,13.12 96.01,13.12 96.01,13.01 96.21,13.01 96.21,12.97 96.41,12.97 96.41,13.01 96.61,13.01 96.61,13.03 96.81,13.03 96.81,12.96 97.01,12.96 97.01,13.08 97.21,13.08 97.21,12.97 97.42,12.97 97.42,13.01 97.62,13.01 97.62,13.09 97.82,13.09 97.82,13.03 98.02,13.03 98.02,13.04 98.22,13.04 98.22,13.09 98.42,13.09 98.42,13.01 98.62,13.01 98.62,13.05 98.82,13.05 98.82,13.09 99.02,13.09 99.02,13.12 99.23,13.12 99.23,13.08 99.43,13.08 99.43,13.09 99.63,13.09 99.63,13.13 99.83,13.13 99.83,13.1 100.03,13.1 100.03,13.13 100.23,13.13 100.23,13.09 100.43,13.09 100.43,13.15 100.63,13.15 100.63,13.1 100.84,13.1 100.84,13.15 101.04,13.15 101.04,13.09 101.24,13.09 101.24,13.07 101.44,13.07 101.44,13.12 101.64,13.12 101.64,13.12 101.84,13.12 101.84,13.19 102.04,13.19 102.04,13.08 102.24,13.08 102.24,13.19 102.44,13.19 102.44,13.04 102.65,13.04 102.65,13.19 102.85,13.19 102.85,13.2 103.05,13.2 103.05,13.09 103.25,13.09 103.25,13.16 103.45,13.16 103.45,13.16 103.65,13.16 103.65,13.12 103.85,13.12 103.85,13.16 104.05,13.16 104.05,13.14 104.26,13.14 104.26,13.17 104.46,13.17 104.46,13.2 104.66,13.2 104.66,13.18 104.86,13.18 104.86,13.09 105.06,13.09 105.06,13.25 105.26,13.25 105.26,13.15 105.46,13.15 105.46,13.18 105.66,13.18 105.66,13.19 105.86,13.19 105.86,13.15 106.07,13.15 106.07,13.16 106.27,13.16 106.27,13.21 106.47,13.21 106.47,13.14 106.67,13.14 106.67,13.15 106.87,13.15 106.87,13.16 107.07,13.16 107.07,13.14 107.27,13.14 107.27,13.21 107.47,13.21 107.47,13.21 107.67,13.21 107.67,13.26 107.88,13.26 107.88,13.19 108.08,13.19 108.08,13.18 108.28,13.18 108.28,13.24 108.48,13.24 108.48,13.23 108.68,13.23 108.68,13.24 108.88,13.24 108.88,13.21 109.08,13.21 109.08,13.19 109.28,13.19 109.28,13.18 109.49,13.18 109.49,13.14 109.69,13.14 109.69,13.24 109.89,13.24 109.89,13.21 110.09,13.21 110.09,13.27 110.29,13.27 110.29,13.22 110.49,13.22 110.49,13.23 110.69,13.23 110.69,13.25 110.89,13.25 110.89,13.19 111.09,13.19 111.09,13.28 111.3,13.28 111.3,13.17 111.5,13.17 111.5,13.19 111.7,13.19 111.7,13.23 111.9,13.23 111.9,13.29 112.1,13.29 112.1,13.28 112.3,13.28 112.3,13.23 112.5,13.23 112.5,13.31 112.7,13.31 112.7,13.24 112.91,13.24 112.91,13.25 113.11,13.25 113.11,13.25 113.31,13.25 113.31,13.24 113.51,13.24 113.51,13.31 113.71,13.31 113.71,13.27 " class="primitive"/>
             </g>
           </g>
         </g>
-        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-1b94e7a7-235">
-          <g class="color_RGB{N0f8}(0.718,0.0,0.008)" stroke-dasharray="none" stroke="#B70002" id="img-1b94e7a7-236">
-            <g transform="translate(137.58,55.54)" id="img-1b94e7a7-237">
-              <path fill="none" d="M-113.81,4.33 L-113.61,4.33 -113.61,4.33 -113.41,4.33 -113.41,4.32 -113.21,4.32 -113.21,4.32 -113.01,4.32 -113.01,4.32 -112.8,4.32 -112.8,4.31 -112.6,4.31 -112.6,4.3 -112.4,4.3 -112.4,4.27 -112.2,4.27 -112.2,4.23 -112,4.23 -112,4.16 -111.8,4.16 -111.8,3.99 -111.6,3.99 -111.6,3.71 -111.4,3.71 -111.4,3.16 -111.2,3.16 -111.2,2.09 -110.99,2.09 -110.99,0.26 -110.79,0.26 -110.79,-2.58 -110.59,-2.58 -110.59,-5.45 -110.39,-5.45 -110.39,-8.01 -110.19,-8.01 -110.19,-9.11 -109.99,-9.11 -109.99,-8.13 -109.79,-8.13 -109.79,-5.81 -109.59,-5.81 -109.59,-3.04 -109.38,-3.04 -109.38,-1.23 -109.18,-1.23 -109.18,0.23 -108.98,0.23 -108.98,0.82 -108.78,0.82 -108.78,0.92 -108.58,0.92 -108.58,0.96 -108.38,0.96 -108.38,0.85 -108.18,0.85 -108.18,0.93 -107.98,0.93 -107.98,0.47 -107.78,0.47 -107.78,0.65 -107.57,0.65 -107.57,-0.18 -107.37,-0.18 -107.37,-0.85 -107.17,-0.85 -107.17,-1.6 -106.97,-1.6 -106.97,-2.18 -106.77,-2.18 -106.77,-3.18 -106.57,-3.18 -106.57,-3.91 -106.37,-3.91 -106.37,-4.13 -106.17,-4.13 -106.17,-4.32 -105.97,-4.32 -105.97,-4.83 -105.76,-4.83 -105.76,-3.74 -105.56,-3.74 -105.56,-4.15 -105.36,-4.15 -105.36,-4.57 -105.16,-4.57 -105.16,-4.01 -104.96,-4.01 -104.96,-1.73 -104.76,-1.73 -104.76,2.14 -104.56,2.14 -104.56,1.05 -104.36,1.05 -104.36,0.5 -104.15,0.5 -104.15,1.63 -103.95,1.63 -103.95,1.68 -103.75,1.68 -103.75,2.47 -103.55,2.47 -103.55,3.45 -103.35,3.45 -103.35,3.7 -103.15,3.7 -103.15,3.77 -102.95,3.77 -102.95,3.73 -102.75,3.73 -102.75,3.24 -102.55,3.24 -102.55,3.16 -102.34,3.16 -102.34,2.93 -102.14,2.93 -102.14,2.79 -101.94,2.79 -101.94,2.59 -101.74,2.59 -101.74,1.78 -101.54,1.78 -101.54,0.91 -101.34,0.91 -101.34,-0.25 -101.14,-0.25 -101.14,-1.45 -100.94,-1.45 -100.94,-1.71 -100.73,-1.71 -100.73,-1.84 -100.53,-1.84 -100.53,-1.93 -100.33,-1.93 -100.33,-1.65 -100.13,-1.65 -100.13,-1.3 -99.93,-1.3 -99.93,-1.42 -99.73,-1.42 -99.73,-1.55 -99.53,-1.55 -99.53,-1.44 -99.33,-1.44 -99.33,-1.43 -99.13,-1.43 -99.13,-1.47 -98.92,-1.47 -98.92,-1.81 -98.72,-1.81 -98.72,-1.76 -98.52,-1.76 -98.52,-2.01 -98.32,-2.01 -98.32,-2.27 -98.12,-2.27 -98.12,-2.09 -97.92,-2.09 -97.92,-2.24 -97.72,-2.24 -97.72,-2.56 -97.52,-2.56 -97.52,-2.52 -97.31,-2.52 -97.31,-2.44 -97.11,-2.44 -97.11,-2.73 -96.91,-2.73 -96.91,-2.89 -96.71,-2.89 -96.71,-3.19 -96.51,-3.19 -96.51,-3.21 -96.31,-3.21 -96.31,-3.77 -96.11,-3.77 -96.11,-3.56 -95.91,-3.56 -95.91,-3.89 -95.71,-3.89 -95.71,-4.3 -95.5,-4.3 -95.5,-4.5 -95.3,-4.5 -95.3,-5.04 -95.1,-5.04 -95.1,-5.48 -94.9,-5.48 -94.9,-5.55 -94.7,-5.55 -94.7,-5.58 -94.5,-5.58 -94.5,-5.67 -94.3,-5.67 -94.3,-6.21 -94.1,-6.21 -94.1,-6.21 -93.89,-6.21 -93.89,-6.47 -93.69,-6.47 -93.69,-6.16 -93.49,-6.16 -93.49,-6.68 -93.29,-6.68 -93.29,-6.91 -93.09,-6.91 -93.09,-6.94 -92.89,-6.94 -92.89,-7.14 -92.69,-7.14 -92.69,-7.67 -92.49,-7.67 -92.49,-7.78 -92.29,-7.78 -92.29,-8.12 -92.08,-8.12 -92.08,-8.5 -91.88,-8.5 -91.88,-8.94 -91.68,-8.94 -91.68,-8.49 -91.48,-8.49 -91.48,-8.97 -91.28,-8.97 -91.28,-8.71 -91.08,-8.71 -91.08,-9.89 -90.88,-9.89 -90.88,-9.72 -90.68,-9.72 -90.68,-9.5 -90.48,-9.5 -90.48,-10.04 -90.27,-10.04 -90.27,-10.26 -90.07,-10.26 -90.07,-12 -89.87,-12 -89.87,-12.32 -89.67,-12.32 -89.67,-13.07 -89.47,-13.07 -89.47,-11.04 -89.27,-11.04 -89.27,-9.18 -89.07,-9.18 -89.07,-8.15 -88.87,-8.15 -88.87,-8.24 -88.66,-8.24 -88.66,-7.47 -88.46,-7.47 -88.46,-7.58 -88.26,-7.58 -88.26,-7.37 -88.06,-7.37 -88.06,-7.63 -87.86,-7.63 -87.86,-7.22 -87.66,-7.22 -87.66,-7.36 -87.46,-7.36 -87.46,-7.21 -87.26,-7.21 -87.26,-6.74 -87.06,-6.74 -87.06,-7.04 -86.85,-7.04 -86.85,-7.05 -86.65,-7.05 -86.65,-7.38 -86.45,-7.38 -86.45,-7.18 -86.25,-7.18 -86.25,-7.74 -86.05,-7.74 -86.05,-7.56 -85.85,-7.56 -85.85,-7.62 -85.65,-7.62 -85.65,-7.85 -85.45,-7.85 -85.45,-8.98 -85.24,-8.98 -85.24,-8.21 -85.04,-8.21 -85.04,-8.82 -84.84,-8.82 -84.84,-8.67 -84.64,-8.67 -84.64,-9.16 -84.44,-9.16 -84.44,-8.13 -84.24,-8.13 -84.24,-8.24 -84.04,-8.24 -84.04,-7.96 -83.84,-7.96 -83.84,-7.82 -83.64,-7.82 -83.64,-8.23 -83.43,-8.23 -83.43,-7.89 -83.23,-7.89 -83.23,-7.59 -83.03,-7.59 -83.03,-8.22 -82.83,-8.22 -82.83,-8.08 -82.63,-8.08 -82.63,-8.22 -82.43,-8.22 -82.43,-8.17 -82.23,-8.17 -82.23,-7.64 -82.03,-7.64 -82.03,-9.07 -81.82,-9.07 -81.82,-8.16 -81.62,-8.16 -81.62,-8.9 -81.42,-8.9 -81.42,-9.03 -81.22,-9.03 -81.22,-8.76 -81.02,-8.76 -81.02,-6.31 -80.82,-6.31 -80.82,-11.4 -80.62,-11.4 -80.62,-10.9 -80.42,-10.9 -80.42,-9.68 -80.22,-9.68 -80.22,-8.26 -80.01,-8.26 -80.01,-7.7 -79.81,-7.7 -79.81,-9.65 -79.61,-9.65 -79.61,-10.58 -79.41,-10.58 -79.41,-10.91 -79.21,-10.91 -79.21,-10.31 -79.01,-10.31 -79.01,-10.05 -78.81,-10.05 -78.81,-8.52 -78.61,-8.52 -78.61,-7.02 -78.41,-7.02 -78.41,-6.88 -78.2,-6.88 -78.2,-6.49 -78,-6.49 -78,-5.82 -77.8,-5.82 -77.8,-5.52 -77.6,-5.52 -77.6,-5.05 -77.4,-5.05 -77.4,-5 -77.2,-5 -77.2,-5.3 -77,-5.3 -77,-5.33 -76.8,-5.33 -76.8,-4.85 -76.59,-4.85 -76.59,-4.67 -76.39,-4.67 -76.39,-4.79 -76.19,-4.79 -76.19,-4.52 -75.99,-4.52 -75.99,-4.37 -75.79,-4.37 -75.79,-4.23 -75.59,-4.23 -75.59,-4.31 -75.39,-4.31 -75.39,-4.07 -75.19,-4.07 -75.19,-3.8 -74.99,-3.8 -74.99,-3.95 -74.78,-3.95 -74.78,-3.5 -74.58,-3.5 -74.58,-3.47 -74.38,-3.47 -74.38,-3.5 -74.18,-3.5 -74.18,-3.59 -73.98,-3.59 -73.98,-3.46 -73.78,-3.46 -73.78,-3.34 -73.58,-3.34 -73.58,-3.6 -73.38,-3.6 -73.38,-3.59 -73.17,-3.59 -73.17,-3.5 -72.97,-3.5 -72.97,-3.52 -72.77,-3.52 -72.77,-3.21 -72.57,-3.21 -72.57,-3.77 -72.37,-3.77 -72.37,-3.57 -72.17,-3.57 -72.17,-3.61 -71.97,-3.61 -71.97,-3.45 -71.77,-3.45 -71.77,-3.41 -71.57,-3.41 -71.57,-3.69 -71.36,-3.69 -71.36,-3.86 -71.16,-3.86 -71.16,-3.83 -70.96,-3.83 -70.96,-3.73 -70.76,-3.73 -70.76,-3.77 -70.56,-3.77 -70.56,-3.6 -70.36,-3.6 -70.36,-3.58 -70.16,-3.58 -70.16,-3.46 -69.96,-3.46 -69.96,-3.64 -69.75,-3.64 -69.75,-3.73 -69.55,-3.73 -69.55,-3.31 -69.35,-3.31 -69.35,-3.4 -69.15,-3.4 -69.15,-3.48 -68.95,-3.48 -68.95,-3.6 -68.75,-3.6 -68.75,-3.72 -68.55,-3.72 -68.55,-3.76 -68.35,-3.76 -68.35,-3.76 -68.15,-3.76 -68.15,-3.55 -67.94,-3.55 -67.94,-3.61 -67.74,-3.61 -67.74,-3.58 -67.54,-3.58 -67.54,-3.7 -67.34,-3.7 -67.34,-3.63 -67.14,-3.63 -67.14,-3.61 -66.94,-3.61 -66.94,-3.52 -66.74,-3.52 -66.74,-3.85 -66.54,-3.85 -66.54,-3.58 -66.33,-3.58 -66.33,-3.61 -66.13,-3.61 -66.13,-3.87 -65.93,-3.87 -65.93,-3.68 -65.73,-3.68 -65.73,-3.68 -65.53,-3.68 -65.53,-3.76 -65.33,-3.76 -65.33,-3.56 -65.13,-3.56 -65.13,-3.74 -64.93,-3.74 -64.93,-3.65 -64.73,-3.65 -64.73,-3.96 -64.52,-3.96 -64.52,-3.54 -64.32,-3.54 -64.32,-3.77 -64.12,-3.77 -64.12,-3.88 -63.92,-3.88 -63.92,-3.2 -63.72,-3.2 -63.72,-3.73 -63.52,-3.73 -63.52,-3.49 -63.32,-3.49 -63.32,-3.64 -63.12,-3.64 -63.12,-3.53 -62.92,-3.53 -62.92,-3.54 -62.71,-3.54 -62.71,-3.71 -62.51,-3.71 -62.51,-3.44 -62.31,-3.44 -62.31,-3.55 -62.11,-3.55 -62.11,-3.53 -61.91,-3.53 -61.91,-3.52 -61.71,-3.52 -61.71,-3.4 -61.51,-3.4 -61.51,-3.51 -61.31,-3.51 -61.31,-3.41 -61.1,-3.41 -61.1,-3.38 -60.9,-3.38 -60.9,-3.69 -60.7,-3.69 -60.7,-3.42 -60.5,-3.42 -60.5,-3.42 -60.3,-3.42 -60.3,-3.39 -60.1,-3.39 -60.1,-3.26 -59.9,-3.26 -59.9,-3.44 -59.7,-3.44 -59.7,-3.52 -59.5,-3.52 -59.5,-3.14 -59.29,-3.14 -59.29,-3.23 -59.09,-3.23 -59.09,-3.24 -58.89,-3.24 -58.89,-3.32 -58.69,-3.32 -58.69,-3.41 -58.49,-3.41 -58.49,-3.34 -58.29,-3.34 -58.29,-3.11 -58.09,-3.11 -58.09,-3.22 -57.89,-3.22 -57.89,-3.46 -57.68,-3.46 -57.68,-3.18 -57.48,-3.18 -57.48,-3.37 -57.28,-3.37 -57.28,-3.44 -57.08,-3.44 -57.08,-3.47 -56.88,-3.47 -56.88,-3.39 -56.68,-3.39 -56.68,-3.19 -56.48,-3.19 -56.48,-3.44 -56.28,-3.44 -56.28,-3.52 -56.08,-3.52 -56.08,-3.71 -55.87,-3.71 -55.87,-3.68 -55.67,-3.68 -55.67,-3.65 -55.47,-3.65 -55.47,-3.62 -55.27,-3.62 -55.27,-3.45 -55.07,-3.45 -55.07,-3.5 -54.87,-3.5 -54.87,-3.29 -54.67,-3.29 -54.67,-3.31 -54.47,-3.31 -54.47,-3.28 -54.26,-3.28 -54.26,-3.03 -54.06,-3.03 -54.06,-3.22 -53.86,-3.22 -53.86,-3.07 -53.66,-3.07 -53.66,-3.01 -53.46,-3.01 -53.46,-2.99 -53.26,-2.99 -53.26,-3.02 -53.06,-3.02 -53.06,-2.83 -52.86,-2.83 -52.86,-2.8 -52.66,-2.8 -52.66,-3.06 -52.45,-3.06 -52.45,-2.88 -52.25,-2.88 -52.25,-3.02 -52.05,-3.02 -52.05,-3.17 -51.85,-3.17 -51.85,-3.04 -51.65,-3.04 -51.65,-3.03 -51.45,-3.03 -51.45,-3.01 -51.25,-3.01 -51.25,-2.87 -51.05,-2.87 -51.05,-3.03 -50.85,-3.03 -50.85,-3.14 -50.64,-3.14 -50.64,-2.83 -50.44,-2.83 -50.44,-2.98 -50.24,-2.98 -50.24,-3.24 -50.04,-3.24 -50.04,-2.64 -49.84,-2.64 -49.84,-2.98 -49.64,-2.98 -49.64,-2.69 -49.44,-2.69 -49.44,-2.86 -49.24,-2.86 -49.24,-2.89 -49.03,-2.89 -49.03,-2.85 -48.83,-2.85 -48.83,-2.63 -48.63,-2.63 -48.63,-2.39 -48.43,-2.39 -48.43,-2.45 -48.23,-2.45 -48.23,-2.57 -48.03,-2.57 -48.03,-2.68 -47.83,-2.68 -47.83,-2.65 -47.63,-2.65 -47.63,-2.52 -47.43,-2.52 -47.43,-2.39 -47.22,-2.39 -47.22,-2.68 -47.02,-2.68 -47.02,-2.45 -46.82,-2.45 -46.82,-2.38 -46.62,-2.38 -46.62,-2.51 -46.42,-2.51 -46.42,-2.71 -46.22,-2.71 -46.22,-2.83 -46.02,-2.83 -46.02,-2.68 -45.82,-2.68 -45.82,-2.68 -45.61,-2.68 -45.61,-2.73 -45.41,-2.73 -45.41,-2.81 -45.21,-2.81 -45.21,-2.56 -45.01,-2.56 -45.01,-2.82 -44.81,-2.82 -44.81,-2.73 -44.61,-2.73 -44.61,-2.57 -44.41,-2.57 -44.41,-2.42 -44.21,-2.42 -44.21,-2.46 -44.01,-2.46 -44.01,-2.38 -43.8,-2.38 -43.8,-2.01 -43.6,-2.01 -43.6,-2.39 -43.4,-2.39 -43.4,-2.16 -43.2,-2.16 -43.2,-1.83 -43,-1.83 -43,-2.05 -42.8,-2.05 -42.8,-1.84 -42.6,-1.84 -42.6,-2.2 -42.4,-2.2 -42.4,-2.58 -42.19,-2.58 -42.19,-2.7 -41.99,-2.7 -41.99,-1.6 -41.79,-1.6 -41.79,-2.57 -41.59,-2.57 -41.59,-2.24 -41.39,-2.24 -41.39,-1 -41.19,-1 -41.19,-2.19 -40.99,-2.19 -40.99,-1.27 -40.79,-1.27 -40.79,-0.81 -40.59,-0.81 -40.59,-2.38 -40.38,-2.38 -40.38,-1.32 -40.18,-1.32 -40.18,-1.95 -39.98,-1.95 -39.98,-0.68 -39.78,-0.68 -39.78,-1.14 -39.58,-1.14 -39.58,-1.33 -39.38,-1.33 -39.38,-1.44 -39.18,-1.44 -39.18,-1.7 -38.98,-1.7 -38.98,-1.52 -38.78,-1.52 -38.78,-1.43 -38.57,-1.43 -38.57,-1.78 -38.37,-1.78 -38.37,-1.28 -38.17,-1.28 -38.17,-1.56 -37.97,-1.56 -37.97,-1.28 -37.77,-1.28 -37.77,-1.4 -37.57,-1.4 -37.57,-1.26 -37.37,-1.26 -37.37,-1.45 -37.17,-1.45 -37.17,-1.08 -36.96,-1.08 -36.96,-1.33 -36.76,-1.33 -36.76,-1.24 -36.56,-1.24 -36.56,-1.2 -36.36,-1.2 -36.36,-1.49 -36.16,-1.49 -36.16,-1.33 -35.96,-1.33 -35.96,-1.33 -35.76,-1.33 -35.76,-1.58 -35.56,-1.58 -35.56,-1.39 -35.36,-1.39 -35.36,-1.47 -35.15,-1.47 -35.15,-0.76 -34.95,-0.76 -34.95,-1.32 -34.75,-1.32 -34.75,-1.08 -34.55,-1.08 -34.55,-1.05 -34.35,-1.05 -34.35,-1.06 -34.15,-1.06 -34.15,-1.2 -33.95,-1.2 -33.95,-1.2 -33.75,-1.2 -33.75,-1.06 -33.54,-1.06 -33.54,-0.95 -33.34,-0.95 -33.34,-1.01 -33.14,-1.01 -33.14,-0.83 -32.94,-0.83 -32.94,-0.94 -32.74,-0.94 -32.74,-0.91 -32.54,-0.91 -32.54,-1.09 -32.34,-1.09 -32.34,-0.91 -32.14,-0.91 -32.14,-0.63 -31.94,-0.63 -31.94,-1.02 -31.73,-1.02 -31.73,-1 -31.53,-1 -31.53,-1.11 -31.33,-1.11 -31.33,-0.88 -31.13,-0.88 -31.13,-0.85 -30.93,-0.85 -30.93,-0.94 -30.73,-0.94 -30.73,-0.85 -30.53,-0.85 -30.53,-0.95 -30.33,-0.95 -30.33,-0.79 -30.12,-0.79 -30.12,-0.84 -29.92,-0.84 -29.92,-0.66 -29.72,-0.66 -29.72,-0.88 -29.52,-0.88 -29.52,-0.49 -29.32,-0.49 -29.32,-0.54 -29.12,-0.54 -29.12,-0.58 -28.92,-0.58 -28.92,-0.61 -28.72,-0.61 -28.72,-0.58 -28.52,-0.58 -28.52,-0.66 -28.31,-0.66 -28.31,-0.34 -28.11,-0.34 -28.11,-0.62 -27.91,-0.62 -27.91,-0.48 -27.71,-0.48 -27.71,-0.43 -27.51,-0.43 -27.51,-0.6 -27.31,-0.6 -27.31,-0.47 -27.11,-0.47 -27.11,-0.26 -26.91,-0.26 -26.91,-0.48 -26.7,-0.48 -26.7,-0.53 -26.5,-0.53 -26.5,-0.29 -26.3,-0.29 -26.3,-0.49 -26.1,-0.49 -26.1,-0.45 -25.9,-0.45 -25.9,-0.2 -25.7,-0.2 -25.7,-0.36 -25.5,-0.36 -25.5,-0.37 -25.3,-0.37 -25.3,-0.33 -25.1,-0.33 -25.1,-0.45 -24.89,-0.45 -24.89,-0.31 -24.69,-0.31 -24.69,-0.49 -24.49,-0.49 -24.49,-0.23 -24.29,-0.23 -24.29,-0.25 -24.09,-0.25 -24.09,-0.19 -23.89,-0.19 -23.89,-0.26 -23.69,-0.26 -23.69,-0.08 -23.49,-0.08 -23.49,-0.26 -23.29,-0.26 -23.29,-0.22 -23.08,-0.22 -23.08,-0.13 -22.88,-0.13 -22.88,-0.27 -22.68,-0.27 -22.68,-0.37 -22.48,-0.37 -22.48,-0.11 -22.28,-0.11 -22.28,-0.06 -22.08,-0.06 -22.08,-0.22 -21.88,-0.22 -21.88,0.02 -21.68,0.02 -21.68,0.13 -21.47,0.13 -21.47,0.01 -21.27,0.01 -21.27,-0.06 -21.07,-0.06 -21.07,-0.07 -20.87,-0.07 -20.87,-0.24 -20.67,-0.24 -20.67,-0.08 -20.47,-0.08 -20.47,-0.11 -20.27,-0.11 -20.27,0.09 -20.07,0.09 -20.07,0.07 -19.87,0.07 -19.87,0.01 -19.66,0.01 -19.66,0.04 -19.46,0.04 -19.46,0.01 -19.26,0.01 -19.26,-0.1 -19.06,-0.1 -19.06,0.08 -18.86,0.08 -18.86,0.12 -18.66,0.12 -18.66,0.12 -18.46,0.12 -18.46,0.31 -18.26,0.31 -18.26,0.03 -18.05,0.03 -18.05,-0.02 -17.85,-0.02 -17.85,0.05 -17.65,0.05 -17.65,0.19 -17.45,0.19 -17.45,0.09 -17.25,0.09 -17.25,-0.03 -17.05,-0.03 -17.05,0.1 -16.85,0.1 -16.85,-0.02 -16.65,-0.02 -16.65,0.03 -16.45,0.03 -16.45,0.06 -16.24,0.06 -16.24,0.08 -16.04,0.08 -16.04,-0.02 -15.84,-0.02 -15.84,0.19 -15.64,0.19 -15.64,0.08 -15.44,0.08 -15.44,0.03 -15.24,0.03 -15.24,0.02 -15.04,0.02 -15.04,0.07 -14.84,0.07 -14.84,0.07 -14.63,0.07 -14.63,0.33 -14.43,0.33 -14.43,0.32 -14.23,0.32 -14.23,0.23 -14.03,0.23 -14.03,0.33 -13.83,0.33 -13.83,0.26 -13.63,0.26 -13.63,0.47 -13.43,0.47 -13.43,0.26 -13.23,0.26 -13.23,0.29 -13.03,0.29 -13.03,0.19 -12.82,0.19 -12.82,0.3 -12.62,0.3 -12.62,0.32 -12.42,0.32 -12.42,0.31 -12.22,0.31 -12.22,0.34 -12.02,0.34 -12.02,0.45 -11.82,0.45 -11.82,0.4 -11.62,0.4 -11.62,0.25 -11.42,0.25 -11.42,0.33 -11.22,0.33 -11.22,0.21 -11.01,0.21 -11.01,0.31 -10.81,0.31 -10.81,0.34 -10.61,0.34 -10.61,0.35 -10.41,0.35 -10.41,0.37 -10.21,0.37 -10.21,0.31 -10.01,0.31 -10.01,0.49 -9.81,0.49 -9.81,0.41 -9.61,0.41 -9.61,0.53 -9.4,0.53 -9.4,0.44 -9.2,0.44 -9.2,0.61 -9,0.61 -9,0.52 -8.8,0.52 -8.8,0.4 -8.6,0.4 -8.6,0.54 -8.4,0.54 -8.4,0.67 -8.2,0.67 -8.2,0.63 -8,0.63 -8,0.5 -7.8,0.5 -7.8,0.51 -7.59,0.51 -7.59,0.38 -7.39,0.38 -7.39,0.42 -7.19,0.42 -7.19,0.21 -6.99,0.21 -6.99,0.37 -6.79,0.37 -6.79,0.29 -6.59,0.29 -6.59,0.4 -6.39,0.4 -6.39,0.42 -6.19,0.42 -6.19,0.41 -5.98,0.41 -5.98,0.38 -5.78,0.38 -5.78,0.37 -5.58,0.37 -5.58,0.4 -5.38,0.4 -5.38,0.33 -5.18,0.33 -5.18,0.64 -4.98,0.64 -4.98,0.64 -4.78,0.64 -4.78,0.5 -4.58,0.5 -4.58,0.57 -4.38,0.57 -4.38,0.68 -4.17,0.68 -4.17,0.64 -3.97,0.64 -3.97,0.75 -3.77,0.75 -3.77,0.68 -3.57,0.68 -3.57,0.6 -3.37,0.6 -3.37,0.69 -3.17,0.69 -3.17,0.79 -2.97,0.79 -2.97,0.72 -2.77,0.72 -2.77,0.76 -2.56,0.76 -2.56,0.73 -2.36,0.73 -2.36,0.72 -2.16,0.72 -2.16,0.99 -1.96,0.99 -1.96,0.84 -1.76,0.84 -1.76,0.94 -1.56,0.94 -1.56,0.94 -1.36,0.94 -1.36,0.83 -1.16,0.83 -1.16,0.91 -0.96,0.91 -0.96,0.79 -0.75,0.79 -0.75,0.83 -0.55,0.83 -0.55,0.97 -0.35,0.97 -0.35,0.77 -0.15,0.77 -0.15,0.98 0.05,0.98 0.05,0.76 0.25,0.76 0.25,1 0.45,1 0.45,0.97 0.65,0.97 0.65,0.95 0.85,0.95 0.85,0.86 1.06,0.86 1.06,0.92 1.26,0.92 1.26,0.75 1.46,0.75 1.46,0.83 1.66,0.83 1.66,0.79 1.86,0.79 1.86,0.64 2.06,0.64 2.06,0.75 2.26,0.75 2.26,0.77 2.46,0.77 2.46,0.52 2.67,0.52 2.67,0.62 2.87,0.62 2.87,0.7 3.07,0.7 3.07,0.57 3.27,0.57 3.27,0.74 3.47,0.74 3.47,0.74 3.67,0.74 3.67,0.76 3.87,0.76 3.87,0.85 4.07,0.85 4.07,0.94 4.27,0.94 4.27,0.93 4.48,0.93 4.48,0.87 4.68,0.87 4.68,0.92 4.88,0.92 4.88,1.19 5.08,1.19 5.08,0.97 5.28,0.97 5.28,1.11 5.48,1.11 5.48,1.12 5.68,1.12 5.68,1.1 5.88,1.1 5.88,1.02 6.09,1.02 6.09,1.09 6.29,1.09 6.29,1.11 6.49,1.11 6.49,1.28 6.69,1.28 6.69,1.16 6.89,1.16 6.89,1.22 7.09,1.22 7.09,1.24 7.29,1.24 7.29,1.17 7.49,1.17 7.49,1.21 7.69,1.21 7.69,1.07 7.9,1.07 7.9,1.42 8.1,1.42 8.1,1.26 8.3,1.26 8.3,1.28 8.5,1.28 8.5,1.1 8.7,1.1 8.7,1.1 8.9,1.1 8.9,1.18 9.1,1.18 9.1,1.36 9.3,1.36 9.3,1.43 9.51,1.43 9.51,1.17 9.71,1.17 9.71,1.32 9.91,1.32 9.91,1.26 10.11,1.26 10.11,1.27 10.31,1.27 10.31,1.27 10.51,1.27 10.51,1.56 10.71,1.56 10.71,1.38 10.91,1.38 10.91,1.2 11.11,1.2 11.11,1.42 11.32,1.42 11.32,1.48 11.52,1.48 11.52,1.46 11.72,1.46 11.72,1.41 11.92,1.41 11.92,1.76 12.12,1.76 12.12,1.54 12.32,1.54 12.32,1.12 12.52,1.12 12.52,1.3 12.72,1.3 12.72,1.51 12.93,1.51 12.93,0.98 13.13,0.98 13.13,1.13 13.33,1.13 13.33,1.68 13.53,1.68 13.53,1.2 13.73,1.2 13.73,1.83 13.93,1.83 13.93,2.48 14.13,2.48 14.13,1.49 14.33,1.49 14.33,1.67 14.53,1.67 14.53,1.46 14.74,1.46 14.74,2.04 14.94,2.04 14.94,1.7 15.14,1.7 15.14,1.59 15.34,1.59 15.34,1.64 15.54,1.64 15.54,1.71 15.74,1.71 15.74,1.69 15.94,1.69 15.94,1.61 16.14,1.61 16.14,1.64 16.34,1.64 16.34,1.67 16.55,1.67 16.55,1.56 16.75,1.56 16.75,1.51 16.95,1.51 16.95,1.49 17.15,1.49 17.15,1.62 17.35,1.62 17.35,1.45 17.55,1.45 17.55,1.63 17.75,1.63 17.75,1.69 17.95,1.69 17.95,1.61 18.16,1.61 18.16,1.53 18.36,1.53 18.36,1.53 18.56,1.53 18.56,1.44 18.76,1.44 18.76,1.62 18.96,1.62 18.96,1.66 19.16,1.66 19.16,1.68 19.36,1.68 19.36,1.54 19.56,1.54 19.56,1.69 19.76,1.69 19.76,1.54 19.97,1.54 19.97,1.61 20.17,1.61 20.17,1.5 20.37,1.5 20.37,1.73 20.57,1.73 20.57,1.69 20.77,1.69 20.77,1.71 20.97,1.71 20.97,1.77 21.17,1.77 21.17,1.7 21.37,1.7 21.37,1.7 21.58,1.7 21.58,1.76 21.78,1.76 21.78,1.7 21.98,1.7 21.98,1.79 22.18,1.79 22.18,1.67 22.38,1.67 22.38,1.78 22.58,1.78 22.58,1.61 22.78,1.61 22.78,1.69 22.98,1.69 22.98,1.68 23.18,1.68 23.18,1.71 23.39,1.71 23.39,1.76 23.59,1.76 23.59,1.62 23.79,1.62 23.79,1.67 23.99,1.67 23.99,1.88 24.19,1.88 24.19,1.67 24.39,1.67 24.39,1.86 24.59,1.86 24.59,1.72 24.79,1.72 24.79,1.95 25,1.95 25,1.77 25.2,1.77 25.2,1.98 25.4,1.98 25.4,1.84 25.6,1.84 25.6,1.92 25.8,1.92 25.8,1.85 26,1.85 26,1.82 26.2,1.82 26.2,1.95 26.4,1.95 26.4,1.72 26.6,1.72 26.6,1.94 26.81,1.94 26.81,1.98 27.01,1.98 27.01,1.95 27.21,1.95 27.21,1.91 27.41,1.91 27.41,1.94 27.61,1.94 27.61,2.11 27.81,2.11 27.81,2 28.01,2 28.01,2.09 28.21,2.09 28.21,2.08 28.41,2.08 28.41,2.02 28.62,2.02 28.62,2.01 28.82,2.01 28.82,1.99 29.02,1.99 29.02,2.01 29.22,2.01 29.22,2.09 29.42,2.09 29.42,2.05 29.62,2.05 29.62,1.9 29.82,1.9 29.82,2.07 30.02,2.07 30.02,2.11 30.23,2.11 30.23,2.04 30.43,2.04 30.43,2.06 30.63,2.06 30.63,1.93 30.83,1.93 30.83,2.13 31.03,2.13 31.03,2 31.23,2 31.23,2.09 31.43,2.09 31.43,2.04 31.63,2.04 31.63,2.05 31.83,2.05 31.83,2.11 32.04,2.11 32.04,1.93 32.24,1.93 32.24,2.06 32.44,2.06 32.44,2.18 32.64,2.18 32.64,2.07 32.84,2.07 32.84,2 33.04,2 33.04,1.93 33.24,1.93 33.24,2.06 33.44,2.06 33.44,2.13 33.65,2.13 33.65,2 33.85,2 33.85,2.08 34.05,2.08 34.05,1.98 34.25,1.98 34.25,2.17 34.45,2.17 34.45,2.13 34.65,2.13 34.65,2.11 34.85,2.11 34.85,2 35.05,2 35.05,2.11 35.25,2.11 35.25,2.06 35.46,2.06 35.46,2.06 35.66,2.06 35.66,2.08 35.86,2.08 35.86,2.17 36.06,2.17 36.06,2.16 36.26,2.16 36.26,2.12 36.46,2.12 36.46,2.11 36.66,2.11 36.66,2.23 36.86,2.23 36.86,2.15 37.07,2.15 37.07,2.21 37.27,2.21 37.27,2.18 37.47,2.18 37.47,2.3 37.67,2.3 37.67,2.17 37.87,2.17 37.87,2.11 38.07,2.11 38.07,2.25 38.27,2.25 38.27,2.22 38.47,2.22 38.47,2.28 38.67,2.28 38.67,2.16 38.88,2.16 38.88,2.28 39.08,2.28 39.08,2.19 39.28,2.19 39.28,2.15 39.48,2.15 39.48,2.19 39.68,2.19 39.68,2.33 39.88,2.33 39.88,2.23 40.08,2.23 40.08,2.26 40.28,2.26 40.28,2.29 40.49,2.29 40.49,2.34 40.69,2.34 40.69,2.32 40.89,2.32 40.89,2.33 41.09,2.33 41.09,2.18 41.29,2.18 41.29,2.25 41.49,2.25 41.49,2.28 41.69,2.28 41.69,2.37 41.89,2.37 41.89,2.32 42.09,2.32 42.09,2.31 42.3,2.31 42.3,2.28 42.5,2.28 42.5,2.39 42.7,2.39 42.7,2.27 42.9,2.27 42.9,2.42 43.1,2.42 43.1,2.33 43.3,2.33 43.3,2.33 43.5,2.33 43.5,2.33 43.7,2.33 43.7,2.37 43.9,2.37 43.9,2.34 44.11,2.34 44.11,2.44 44.31,2.44 44.31,2.35 44.51,2.35 44.51,2.36 44.71,2.36 44.71,2.51 44.91,2.51 44.91,2.38 45.11,2.38 45.11,2.37 45.31,2.37 45.31,2.34 45.51,2.34 45.51,2.37 45.72,2.37 45.72,2.39 45.92,2.39 45.92,2.39 46.12,2.39 46.12,2.29 46.32,2.29 46.32,2.44 46.52,2.44 46.52,2.29 46.72,2.29 46.72,2.35 46.92,2.35 46.92,2.44 47.12,2.44 47.12,2.38 47.32,2.38 47.32,2.35 47.53,2.35 47.53,2.37 47.73,2.37 47.73,2.5 47.93,2.5 47.93,2.4 48.13,2.4 48.13,2.41 48.33,2.41 48.33,2.45 48.53,2.45 48.53,2.45 48.73,2.45 48.73,2.5 48.93,2.5 48.93,2.49 49.14,2.49 49.14,2.62 49.34,2.62 49.34,2.2 49.54,2.2 49.54,2.5 49.74,2.5 49.74,2.39 49.94,2.39 49.94,2.4 50.14,2.4 50.14,2.49 50.34,2.49 50.34,2.42 50.54,2.42 50.54,2.53 50.74,2.53 50.74,2.55 50.95,2.55 50.95,2.57 51.15,2.57 51.15,2.5 51.35,2.5 51.35,2.55 51.55,2.55 51.55,2.52 51.75,2.52 51.75,2.48 51.95,2.48 51.95,2.64 52.15,2.64 52.15,2.56 52.35,2.56 52.35,2.5 52.56,2.5 52.56,2.56 52.76,2.56 52.76,2.56 52.96,2.56 52.96,2.62 53.16,2.62 53.16,2.56 53.36,2.56 53.36,2.62 53.56,2.62 53.56,2.48 53.76,2.48 53.76,2.63 53.96,2.63 53.96,2.53 54.16,2.53 54.16,2.71 54.37,2.71 54.37,2.73 54.57,2.73 54.57,2.59 54.77,2.59 54.77,2.6 54.97,2.6 54.97,2.72 55.17,2.72 55.17,2.64 55.37,2.64 55.37,2.63 55.57,2.63 55.57,2.6 55.77,2.6 55.77,2.78 55.97,2.78 55.97,2.68 56.18,2.68 56.18,2.69 56.38,2.69 56.38,2.57 56.58,2.57 56.58,2.73 56.78,2.73 56.78,2.82 56.98,2.82 56.98,2.62 57.18,2.62 57.18,2.66 57.38,2.66 57.38,2.64 57.58,2.64 57.58,2.61 57.79,2.61 57.79,2.75 57.99,2.75 57.99,2.64 58.19,2.64 58.19,2.7 58.39,2.7 58.39,2.6 58.59,2.6 58.59,2.68 58.79,2.68 58.79,2.74 58.99,2.74 58.99,2.65 59.19,2.65 59.19,2.68 59.39,2.68 59.39,2.76 59.6,2.76 59.6,2.64 59.8,2.64 59.8,2.63 60,2.63 60,2.74 60.2,2.74 60.2,2.77 60.4,2.77 60.4,2.69 60.6,2.69 60.6,2.81 60.8,2.81 60.8,2.67 61,2.67 61,2.76 61.21,2.76 61.21,2.78 61.41,2.78 61.41,2.79 61.61,2.79 61.61,2.64 61.81,2.64 61.81,2.68 62.01,2.68 62.01,2.82 62.21,2.82 62.21,2.7 62.41,2.7 62.41,2.73 62.61,2.73 62.61,2.79 62.81,2.79 62.81,2.78 63.02,2.78 63.02,2.76 63.22,2.76 63.22,2.78 63.42,2.78 63.42,2.72 63.62,2.72 63.62,2.83 63.82,2.83 63.82,2.74 64.02,2.74 64.02,2.78 64.22,2.78 64.22,2.79 64.42,2.79 64.42,2.77 64.63,2.77 64.63,2.71 64.83,2.71 64.83,2.78 65.03,2.78 65.03,2.91 65.23,2.91 65.23,2.77 65.43,2.77 65.43,2.72 65.63,2.72 65.63,2.77 65.83,2.77 65.83,2.79 66.03,2.79 66.03,2.79 66.23,2.79 66.23,2.8 66.44,2.8 66.44,2.83 66.64,2.83 66.64,2.82 66.84,2.82 66.84,2.8 67.04,2.8 67.04,2.83 67.24,2.83 67.24,2.79 67.44,2.79 67.44,2.87 67.64,2.87 67.64,2.95 67.84,2.95 67.84,2.96 68.04,2.96 68.04,2.85 68.25,2.85 68.25,2.84 68.45,2.84 68.45,2.81 68.65,2.81 68.65,2.8 68.85,2.8 68.85,2.86 69.05,2.86 69.05,2.77 69.25,2.77 69.25,2.97 69.45,2.97 69.45,2.98 69.65,2.98 69.65,2.89 69.86,2.89 69.86,2.92 70.06,2.92 70.06,2.86 70.26,2.86 70.26,2.89 70.46,2.89 70.46,2.99 70.66,2.99 70.66,3 70.86,3 70.86,2.83 71.06,2.83 71.06,2.84 71.26,2.84 71.26,2.98 71.46,2.98 71.46,2.88 71.67,2.88 71.67,2.96 71.87,2.96 71.87,2.9 72.07,2.9 72.07,2.84 72.27,2.84 72.27,2.91 72.47,2.91 72.47,2.94 72.67,2.94 72.67,2.94 72.87,2.94 72.87,2.96 73.07,2.96 73.07,2.87 73.28,2.87 73.28,3 73.48,3 73.48,2.95 73.68,2.95 73.68,2.97 73.88,2.97 73.88,3.06 74.08,3.06 74.08,3.04 74.28,3.04 74.28,2.99 74.48,2.99 74.48,2.99 74.68,2.99 74.68,3.01 74.88,3.01 74.88,3.04 75.09,3.04 75.09,2.9 75.29,2.9 75.29,2.99 75.49,2.99 75.49,2.97 75.69,2.97 75.69,3.04 75.89,3.04 75.89,2.92 76.09,2.92 76.09,2.96 76.29,2.96 76.29,3 76.49,3 76.49,3.04 76.7,3.04 76.7,2.88 76.9,2.88 76.9,2.92 77.1,2.92 77.1,3.11 77.3,3.11 77.3,3.06 77.5,3.06 77.5,3.09 77.7,3.09 77.7,2.93 77.9,2.93 77.9,3.07 78.1,3.07 78.1,3.02 78.3,3.02 78.3,3.06 78.51,3.06 78.51,3.1 78.71,3.1 78.71,2.98 78.91,2.98 78.91,3.16 79.11,3.16 79.11,3.07 79.31,3.07 79.31,3.04 79.51,3.04 79.51,2.99 79.71,2.99 79.71,3.03 79.91,3.03 79.91,3.09 80.12,3.09 80.12,3.14 80.32,3.14 80.32,3.07 80.52,3.07 80.52,3 80.72,3 80.72,3.13 80.92,3.13 80.92,3.04 81.12,3.04 81.12,3.06 81.32,3.06 81.32,3.05 81.52,3.05 81.52,3.11 81.72,3.11 81.72,3.12 81.93,3.12 81.93,3.1 82.13,3.1 82.13,3.11 82.33,3.11 82.33,3.12 82.53,3.12 82.53,3.05 82.73,3.05 82.73,3.15 82.93,3.15 82.93,3.09 83.13,3.09 83.13,3.08 83.33,3.08 83.33,3.08 83.53,3.08 83.53,3.12 83.74,3.12 83.74,3.06 83.94,3.06 83.94,3.13 84.14,3.13 84.14,3.04 84.34,3.04 84.34,3.11 84.54,3.11 84.54,3.16 84.74,3.16 84.74,3.19 84.94,3.19 84.94,3.23 85.14,3.23 85.14,3.06 85.35,3.06 85.35,3.15 85.55,3.15 85.55,3.22 85.75,3.22 85.75,3.15 85.95,3.15 85.95,3.15 86.15,3.15 86.15,3.18 86.35,3.18 86.35,3.16 86.55,3.16 86.55,3.12 86.75,3.12 86.75,3.23 86.95,3.23 86.95,3.16 87.16,3.16 87.16,3.19 87.36,3.19 87.36,3.11 87.56,3.11 87.56,3.08 87.76,3.08 87.76,3.15 87.96,3.15 87.96,3.19 88.16,3.19 88.16,3.16 88.36,3.16 88.36,3.13 88.56,3.13 88.56,3.18 88.77,3.18 88.77,3.15 88.97,3.15 88.97,3.17 89.17,3.17 89.17,3.31 89.37,3.31 89.37,3.18 89.57,3.18 89.57,3.2 89.77,3.2 89.77,3.3 89.97,3.3 89.97,3.2 90.17,3.2 90.17,3.2 90.37,3.2 90.37,3.16 90.58,3.16 90.58,3.25 90.78,3.25 90.78,3.17 90.98,3.17 90.98,3.28 91.18,3.28 91.18,3.17 91.38,3.17 91.38,3.26 91.58,3.26 91.58,3.2 91.78,3.2 91.78,3.2 91.98,3.2 91.98,3.15 92.19,3.15 92.19,3.22 92.39,3.22 92.39,3.23 92.59,3.23 92.59,3.29 92.79,3.29 92.79,3.29 92.99,3.29 92.99,3.21 93.19,3.21 93.19,3.24 93.39,3.24 93.39,3.22 93.59,3.22 93.59,3.27 93.79,3.27 93.79,3.27 94,3.27 94,3.31 94.2,3.31 94.2,3.26 94.4,3.26 94.4,3.16 94.6,3.16 94.6,3.18 94.8,3.18 94.8,3.3 95,3.3 95,3.22 95.2,3.22 95.2,3.31 95.4,3.31 95.4,3.27 95.6,3.27 95.6,3.29 95.81,3.29 95.81,3.38 96.01,3.38 96.01,3.25 96.21,3.25 96.21,3.22 96.41,3.22 96.41,3.25 96.61,3.25 96.61,3.28 96.81,3.28 96.81,3.21 97.01,3.21 97.01,3.33 97.21,3.33 97.21,3.22 97.42,3.22 97.42,3.25 97.62,3.25 97.62,3.34 97.82,3.34 97.82,3.28 98.02,3.28 98.02,3.29 98.22,3.29 98.22,3.34 98.42,3.34 98.42,3.25 98.62,3.25 98.62,3.3 98.82,3.3 98.82,3.34 99.02,3.34 99.02,3.37 99.23,3.37 99.23,3.33 99.43,3.33 99.43,3.34 99.63,3.34 99.63,3.38 99.83,3.38 99.83,3.35 100.03,3.35 100.03,3.38 100.23,3.38 100.23,3.34 100.43,3.34 100.43,3.4 100.63,3.4 100.63,3.35 100.84,3.35 100.84,3.4 101.04,3.4 101.04,3.34 101.24,3.34 101.24,3.32 101.44,3.32 101.44,3.37 101.64,3.37 101.64,3.38 101.84,3.38 101.84,3.45 102.04,3.45 102.04,3.33 102.24,3.33 102.24,3.44 102.44,3.44 102.44,3.29 102.65,3.29 102.65,3.44 102.85,3.44 102.85,3.45 103.05,3.45 103.05,3.34 103.25,3.34 103.25,3.41 103.45,3.41 103.45,3.41 103.65,3.41 103.65,3.38 103.85,3.38 103.85,3.41 104.05,3.41 104.05,3.4 104.26,3.4 104.26,3.42 104.46,3.42 104.46,3.46 104.66,3.46 104.66,3.43 104.86,3.43 104.86,3.34 105.06,3.34 105.06,3.5 105.26,3.5 105.26,3.4 105.46,3.4 105.46,3.43 105.66,3.43 105.66,3.44 105.86,3.44 105.86,3.4 106.07,3.4 106.07,3.41 106.27,3.41 106.27,3.46 106.47,3.46 106.47,3.39 106.67,3.39 106.67,3.4 106.87,3.4 106.87,3.42 107.07,3.42 107.07,3.39 107.27,3.39 107.27,3.46 107.47,3.46 107.47,3.47 107.67,3.47 107.67,3.51 107.88,3.51 107.88,3.44 108.08,3.44 108.08,3.44 108.28,3.44 108.28,3.49 108.48,3.49 108.48,3.48 108.68,3.48 108.68,3.5 108.88,3.5 108.88,3.47 109.08,3.47 109.08,3.44 109.28,3.44 109.28,3.44 109.49,3.44 109.49,3.39 109.69,3.39 109.69,3.49 109.89,3.49 109.89,3.46 110.09,3.46 110.09,3.53 110.29,3.53 110.29,3.47 110.49,3.47 110.49,3.48 110.69,3.48 110.69,3.51 110.89,3.51 110.89,3.45 111.09,3.45 111.09,3.54 111.3,3.54 111.3,3.42 111.5,3.42 111.5,3.44 111.7,3.44 111.7,3.49 111.9,3.49 111.9,3.54 112.1,3.54 112.1,3.54 112.3,3.54 112.3,3.48 112.5,3.48 112.5,3.56 112.7,3.56 112.7,3.49 112.91,3.49 112.91,3.5 113.11,3.5 113.11,3.51 113.31,3.51 113.31,3.5 113.51,3.5 113.51,3.56 113.71,3.56 113.71,3.52 " class="primitive"/>
+        <g stroke-width="0.3" fill="#000000" fill-opacity="0.000" class="geometry" id="img-40907474-271">
+          <g class="color_RGB{N0f8}(0.718,0.0,0.008)" stroke-dasharray="none" stroke-opacity="1" stroke="#B70002" id="img-40907474-272">
+            <g transform="translate(137.58,55.64)" id="img-40907474-273">
+              <path fill="none" d="M-113.81,4.22 L-113.61,4.22 -113.61,4.23 -113.41,4.23 -113.41,4.22 -113.21,4.22 -113.21,4.22 -113.01,4.22 -113.01,4.22 -112.8,4.22 -112.8,4.21 -112.6,4.21 -112.6,4.2 -112.4,4.2 -112.4,4.17 -112.2,4.17 -112.2,4.13 -112,4.13 -112,4.06 -111.8,4.06 -111.8,3.89 -111.6,3.89 -111.6,3.63 -111.4,3.63 -111.4,3.09 -111.2,3.09 -111.2,2.05 -110.99,2.05 -110.99,0.27 -110.79,0.27 -110.79,-2.49 -110.59,-2.49 -110.59,-5.29 -110.39,-5.29 -110.39,-7.78 -110.19,-7.78 -110.19,-8.85 -109.99,-8.85 -109.99,-7.9 -109.79,-7.9 -109.79,-5.64 -109.59,-5.64 -109.59,-2.95 -109.38,-2.95 -109.38,-1.18 -109.18,-1.18 -109.18,0.24 -108.98,0.24 -108.98,0.81 -108.78,0.81 -108.78,0.91 -108.58,0.91 -108.58,0.95 -108.38,0.95 -108.38,0.84 -108.18,0.84 -108.18,0.92 -107.98,0.92 -107.98,0.68 -107.78,0.68 -107.78,0.36 -107.57,0.36 -107.57,-0.13 -107.37,-0.13 -107.37,-0.48 -107.17,-0.48 -107.17,-0.91 -106.97,-0.91 -106.97,-1.19 -106.77,-1.19 -106.77,-1.89 -106.57,-1.89 -106.57,-2.41 -106.37,-2.41 -106.37,-2.55 -106.17,-2.55 -106.17,-2.82 -105.97,-2.82 -105.97,-3.6 -105.76,-3.6 -105.76,-3.08 -105.56,-3.08 -105.56,-3.95 -105.36,-3.95 -105.36,-4.63 -105.16,-4.63 -105.16,-3.9 -104.96,-3.9 -104.96,-2.92 -104.76,-2.92 -104.76,-0.68 -104.56,-0.68 -104.56,-0.89 -104.36,-0.89 -104.36,-0.72 -104.15,-0.72 -104.15,0.85 -103.95,0.85 -103.95,1.14 -103.75,1.14 -103.75,1.98 -103.55,1.98 -103.55,2.94 -103.35,2.94 -103.35,3.18 -103.15,3.18 -103.15,3.25 -102.95,3.25 -102.95,3.22 -102.75,3.22 -102.75,2.75 -102.55,2.75 -102.55,2.62 -102.34,2.62 -102.34,2.31 -102.14,2.31 -102.14,2.02 -101.94,2.02 -101.94,1.64 -101.74,1.64 -101.74,0.72 -101.54,0.72 -101.54,-0.16 -101.34,-0.16 -101.34,-1.21 -101.14,-1.21 -101.14,-2.21 -100.94,-2.21 -100.94,-2.25 -100.73,-2.25 -100.73,-2.18 -100.53,-2.18 -100.53,-2.1 -100.33,-2.1 -100.33,-1.73 -100.13,-1.73 -100.13,-1.32 -99.93,-1.32 -99.93,-1.41 -99.73,-1.41 -99.73,-1.52 -99.53,-1.52 -99.53,-1.4 -99.33,-1.4 -99.33,-1.38 -99.13,-1.38 -99.13,-1.42 -98.92,-1.42 -98.92,-1.75 -98.72,-1.75 -98.72,-1.7 -98.52,-1.7 -98.52,-1.94 -98.32,-1.94 -98.32,-2.19 -98.12,-2.19 -98.12,-2.01 -97.92,-2.01 -97.92,-2.16 -97.72,-2.16 -97.72,-2.47 -97.52,-2.47 -97.52,-2.43 -97.31,-2.43 -97.31,-2.35 -97.11,-2.35 -97.11,-2.63 -96.91,-2.63 -96.91,-2.8 -96.71,-2.8 -96.71,-3.09 -96.51,-3.09 -96.51,-3.11 -96.31,-3.11 -96.31,-3.66 -96.11,-3.66 -96.11,-3.45 -95.91,-3.45 -95.91,-3.77 -95.71,-3.77 -95.71,-4.17 -95.5,-4.17 -95.5,-4.36 -95.3,-4.36 -95.3,-4.89 -95.1,-4.89 -95.1,-5.32 -94.9,-5.32 -94.9,-5.39 -94.7,-5.39 -94.7,-5.42 -94.5,-5.42 -94.5,-5.51 -94.3,-5.51 -94.3,-6.03 -94.1,-6.03 -94.1,-6.03 -93.89,-6.03 -93.89,-6.28 -93.69,-6.28 -93.69,-5.98 -93.49,-5.98 -93.49,-6.48 -93.29,-6.48 -93.29,-6.71 -93.09,-6.71 -93.09,-6.74 -92.89,-6.74 -92.89,-6.94 -92.69,-6.94 -92.69,-7.46 -92.49,-7.46 -92.49,-7.57 -92.29,-7.57 -92.29,-7.9 -92.08,-7.9 -92.08,-8.29 -91.88,-8.29 -91.88,-8.76 -91.68,-8.76 -91.68,-8.38 -91.48,-8.38 -91.48,-8.95 -91.28,-8.95 -91.28,-8.83 -91.08,-8.83 -91.08,-10.15 -90.88,-10.15 -90.88,-10.16 -90.68,-10.16 -90.68,-10.09 -90.48,-10.09 -90.48,-10.68 -90.27,-10.68 -90.27,-10.88 -90.07,-10.88 -90.07,-12.47 -89.87,-12.47 -89.87,-12.62 -89.67,-12.62 -89.67,-13.17 -89.47,-13.17 -89.47,-11.04 -89.27,-11.04 -89.27,-9.12 -89.07,-9.12 -89.07,-8.03 -88.87,-8.03 -88.87,-8.06 -88.66,-8.06 -88.66,-7.29 -88.46,-7.29 -88.46,-7.38 -88.26,-7.38 -88.26,-7.16 -88.06,-7.16 -88.06,-7.41 -87.86,-7.41 -87.86,-7.01 -87.66,-7.01 -87.66,-7.15 -87.46,-7.15 -87.46,-7 -87.26,-7 -87.26,-6.53 -87.06,-6.53 -87.06,-6.81 -86.85,-6.81 -86.85,-6.79 -86.65,-6.79 -86.65,-7.09 -86.45,-7.09 -86.45,-6.85 -86.25,-6.85 -86.25,-7.35 -86.05,-7.35 -86.05,-7.14 -85.85,-7.14 -85.85,-7.17 -85.65,-7.17 -85.65,-7.4 -85.45,-7.4 -85.45,-8.52 -85.24,-8.52 -85.24,-7.8 -85.04,-7.8 -85.04,-8.43 -84.84,-8.43 -84.84,-8.32 -84.64,-8.32 -84.64,-8.84 -84.44,-8.84 -84.44,-8.62 -84.24,-8.62 -84.24,-8.74 -84.04,-8.74 -84.04,-7.55 -83.84,-7.55 -83.84,-7.44 -83.64,-7.44 -83.64,-7.86 -83.43,-7.86 -83.43,-7.55 -83.23,-7.55 -83.23,-7.27 -83.03,-7.27 -83.03,-7.91 -82.83,-7.91 -82.83,-7.79 -82.63,-7.79 -82.63,-7.95 -82.43,-7.95 -82.43,-7.92 -82.23,-7.92 -82.23,-7.43 -82.03,-7.43 -82.03,-8.86 -81.82,-8.86 -81.82,-7.98 -81.62,-7.98 -81.62,-8.72 -81.42,-8.72 -81.42,-8.89 -81.22,-8.89 -81.22,-8.67 -81.02,-8.67 -81.02,-6.32 -80.82,-6.32 -80.82,-11.29 -80.62,-11.29 -80.62,-10.82 -80.42,-10.82 -80.42,-9.63 -80.22,-9.63 -80.22,-8.22 -80.01,-8.22 -80.01,-7.63 -79.81,-7.63 -79.81,-9.49 -79.61,-9.49 -79.61,-10.37 -79.41,-10.37 -79.41,-10.66 -79.21,-10.66 -79.21,-10.05 -79.01,-10.05 -79.01,-9.79 -78.81,-9.79 -78.81,-9.94 -78.61,-9.94 -78.61,-8.27 -78.41,-8.27 -78.41,-6.08 -78.2,-6.08 -78.2,-5.76 -78,-5.76 -78,-5.13 -77.8,-5.13 -77.8,-4.86 -77.6,-4.86 -77.6,-4.42 -77.4,-4.42 -77.4,-4.36 -77.2,-4.36 -77.2,-4.64 -77,-4.64 -77,-4.64 -76.8,-4.64 -76.8,-4.17 -76.59,-4.17 -76.59,-4.01 -76.39,-4.01 -76.39,-4.17 -76.19,-4.17 -76.19,-3.98 -75.99,-3.98 -75.99,-3.81 -75.79,-3.81 -75.79,-3.78 -75.59,-3.78 -75.59,-3.95 -75.39,-3.95 -75.39,-3.79 -75.19,-3.79 -75.19,-3.59 -74.99,-3.59 -74.99,-3.77 -74.78,-3.77 -74.78,-3.36 -74.58,-3.36 -74.58,-3.35 -74.38,-3.35 -74.38,-3.39 -74.18,-3.39 -74.18,-3.48 -73.98,-3.48 -73.98,-3.35 -73.78,-3.35 -73.78,-3.24 -73.58,-3.24 -73.58,-3.49 -73.38,-3.49 -73.38,-3.48 -73.17,-3.48 -73.17,-3.39 -72.97,-3.39 -72.97,-3.41 -72.77,-3.41 -72.77,-3.11 -72.57,-3.11 -72.57,-3.65 -72.37,-3.65 -72.37,-3.44 -72.17,-3.44 -72.17,-3.56 -71.97,-3.56 -71.97,-3.37 -71.77,-3.37 -71.77,-3.34 -71.57,-3.34 -71.57,-3.65 -71.36,-3.65 -71.36,-3.78 -71.16,-3.78 -71.16,-3.86 -70.96,-3.86 -70.96,-3.85 -70.76,-3.85 -70.76,-3.91 -70.56,-3.91 -70.56,-3.9 -70.36,-3.9 -70.36,-3.92 -70.16,-3.92 -70.16,-3.82 -69.96,-3.82 -69.96,-3.98 -69.75,-3.98 -69.75,-4.06 -69.55,-4.06 -69.55,-3.67 -69.35,-3.67 -69.35,-3.63 -69.15,-3.63 -69.15,-3.62 -68.95,-3.62 -68.95,-3.71 -68.75,-3.71 -68.75,-3.72 -68.55,-3.72 -68.55,-3.7 -68.35,-3.7 -68.35,-3.73 -68.15,-3.73 -68.15,-3.49 -67.94,-3.49 -67.94,-3.53 -67.74,-3.53 -67.74,-3.51 -67.54,-3.51 -67.54,-3.56 -67.34,-3.56 -67.34,-3.52 -67.14,-3.52 -67.14,-3.5 -66.94,-3.5 -66.94,-3.42 -66.74,-3.42 -66.74,-3.73 -66.54,-3.73 -66.54,-3.47 -66.33,-3.47 -66.33,-3.5 -66.13,-3.5 -66.13,-3.75 -65.93,-3.75 -65.93,-3.57 -65.73,-3.57 -65.73,-3.57 -65.53,-3.57 -65.53,-3.65 -65.33,-3.65 -65.33,-3.45 -65.13,-3.45 -65.13,-3.63 -64.93,-3.63 -64.93,-3.53 -64.73,-3.53 -64.73,-3.83 -64.52,-3.83 -64.52,-3.43 -64.32,-3.43 -64.32,-3.65 -64.12,-3.65 -64.12,-3.76 -63.92,-3.76 -63.92,-3.1 -63.72,-3.1 -63.72,-3.61 -63.52,-3.61 -63.52,-3.38 -63.32,-3.38 -63.32,-3.52 -63.12,-3.52 -63.12,-3.42 -62.92,-3.42 -62.92,-3.43 -62.71,-3.43 -62.71,-3.59 -62.51,-3.59 -62.51,-3.33 -62.31,-3.33 -62.31,-3.44 -62.11,-3.44 -62.11,-3.42 -61.91,-3.42 -61.91,-3.41 -61.71,-3.41 -61.71,-3.29 -61.51,-3.29 -61.51,-3.41 -61.31,-3.41 -61.31,-3.3 -61.1,-3.3 -61.1,-3.27 -60.9,-3.27 -60.9,-3.58 -60.7,-3.58 -60.7,-3.31 -60.5,-3.31 -60.5,-3.32 -60.3,-3.32 -60.3,-3.29 -60.1,-3.29 -60.1,-3.16 -59.9,-3.16 -59.9,-3.33 -59.7,-3.33 -59.7,-3.41 -59.5,-3.41 -59.5,-3.04 -59.29,-3.04 -59.29,-3.13 -59.09,-3.13 -59.09,-3.13 -58.89,-3.13 -58.89,-3.21 -58.69,-3.21 -58.69,-3.31 -58.49,-3.31 -58.49,-3.24 -58.29,-3.24 -58.29,-3.02 -58.09,-3.02 -58.09,-3.12 -57.89,-3.12 -57.89,-3.35 -57.68,-3.35 -57.68,-3.08 -57.48,-3.08 -57.48,-3.26 -57.28,-3.26 -57.28,-3.33 -57.08,-3.33 -57.08,-3.37 -56.88,-3.37 -56.88,-3.29 -56.68,-3.29 -56.68,-3.09 -56.48,-3.09 -56.48,-3.33 -56.28,-3.33 -56.28,-3.41 -56.08,-3.41 -56.08,-3.6 -55.87,-3.6 -55.87,-3.57 -55.67,-3.57 -55.67,-3.54 -55.47,-3.54 -55.47,-3.51 -55.27,-3.51 -55.27,-3.34 -55.07,-3.34 -55.07,-3.39 -54.87,-3.39 -54.87,-3.19 -54.67,-3.19 -54.67,-3.2 -54.47,-3.2 -54.47,-3.18 -54.26,-3.18 -54.26,-2.94 -54.06,-2.94 -54.06,-3.12 -53.86,-3.12 -53.86,-2.98 -53.66,-2.98 -53.66,-2.91 -53.46,-2.91 -53.46,-2.9 -53.26,-2.9 -53.26,-2.92 -53.06,-2.92 -53.06,-2.74 -52.86,-2.74 -52.86,-2.71 -52.66,-2.71 -52.66,-2.97 -52.45,-2.97 -52.45,-2.79 -52.25,-2.79 -52.25,-2.93 -52.05,-2.93 -52.05,-3.07 -51.85,-3.07 -51.85,-2.94 -51.65,-2.94 -51.65,-2.94 -51.45,-2.94 -51.45,-2.91 -51.25,-2.91 -51.25,-2.78 -51.05,-2.78 -51.05,-2.94 -50.85,-2.94 -50.85,-3.04 -50.64,-3.04 -50.64,-2.74 -50.44,-2.74 -50.44,-2.88 -50.24,-2.88 -50.24,-3.14 -50.04,-3.14 -50.04,-2.56 -49.84,-2.56 -49.84,-2.89 -49.64,-2.89 -49.64,-2.61 -49.44,-2.61 -49.44,-2.77 -49.24,-2.77 -49.24,-2.8 -49.03,-2.8 -49.03,-2.76 -48.83,-2.76 -48.83,-2.55 -48.63,-2.55 -48.63,-2.31 -48.43,-2.31 -48.43,-2.37 -48.23,-2.37 -48.23,-2.48 -48.03,-2.48 -48.03,-2.6 -47.83,-2.6 -47.83,-2.56 -47.63,-2.56 -47.63,-2.44 -47.43,-2.44 -47.43,-2.31 -47.22,-2.31 -47.22,-2.59 -47.02,-2.59 -47.02,-2.37 -46.82,-2.37 -46.82,-2.3 -46.62,-2.3 -46.62,-2.43 -46.42,-2.43 -46.42,-2.62 -46.22,-2.62 -46.22,-2.74 -46.02,-2.74 -46.02,-2.59 -45.82,-2.59 -45.82,-2.6 -45.61,-2.6 -45.61,-2.65 -45.41,-2.65 -45.41,-2.72 -45.21,-2.72 -45.21,-2.48 -45.01,-2.48 -45.01,-2.73 -44.81,-2.73 -44.81,-2.64 -44.61,-2.64 -44.61,-2.49 -44.41,-2.49 -44.41,-2.34 -44.21,-2.34 -44.21,-2.38 -44.01,-2.38 -44.01,-2.3 -43.8,-2.3 -43.8,-1.94 -43.6,-1.94 -43.6,-2.31 -43.4,-2.31 -43.4,-2.07 -43.2,-2.07 -43.2,-1.74 -43,-1.74 -43,-1.94 -42.8,-1.94 -42.8,-1.73 -42.6,-1.73 -42.6,-2.05 -42.4,-2.05 -42.4,-2.4 -42.19,-2.4 -42.19,-2.5 -41.99,-2.5 -41.99,-1.4 -41.79,-1.4 -41.79,-2.32 -41.59,-2.32 -41.59,-1.98 -41.39,-1.98 -41.39,-0.77 -41.19,-0.77 -41.19,-1.93 -40.99,-1.93 -40.99,-1.05 -40.79,-1.05 -40.79,-0.61 -40.59,-0.61 -40.59,-2.17 -40.38,-2.17 -40.38,-1.15 -40.18,-1.15 -40.18,-1.79 -39.98,-1.79 -39.98,-0.58 -39.78,-0.58 -39.78,-1.05 -39.58,-1.05 -39.58,-1.25 -39.38,-1.25 -39.38,-1.36 -39.18,-1.36 -39.18,-1.62 -38.98,-1.62 -38.98,-1.45 -38.78,-1.45 -38.78,-1.38 -38.57,-1.38 -38.57,-1.72 -38.37,-1.72 -38.37,-1.23 -38.17,-1.23 -38.17,-1.5 -37.97,-1.5 -37.97,-1.23 -37.77,-1.23 -37.77,-1.34 -37.57,-1.34 -37.57,-1.21 -37.37,-1.21 -37.37,-1.39 -37.17,-1.39 -37.17,-1.03 -36.96,-1.03 -36.96,-1.28 -36.76,-1.28 -36.76,-1.19 -36.56,-1.19 -36.56,-1.15 -36.36,-1.15 -36.36,-1.43 -36.16,-1.43 -36.16,-1.27 -35.96,-1.27 -35.96,-1.27 -35.76,-1.27 -35.76,-1.51 -35.56,-1.51 -35.56,-1.32 -35.36,-1.32 -35.36,-1.39 -35.15,-1.39 -35.15,-0.7 -34.95,-0.7 -34.95,-1.25 -34.75,-1.25 -34.75,-1.01 -34.55,-1.01 -34.55,-0.99 -34.35,-0.99 -34.35,-1 -34.15,-1 -34.15,-1.14 -33.95,-1.14 -33.95,-1.13 -33.75,-1.13 -33.75,-1.01 -33.54,-1.01 -33.54,-0.9 -33.34,-0.9 -33.34,-0.96 -33.14,-0.96 -33.14,-0.79 -32.94,-0.79 -32.94,-0.9 -32.74,-0.9 -32.74,-0.87 -32.54,-0.87 -32.54,-1.04 -32.34,-1.04 -32.34,-0.87 -32.14,-0.87 -32.14,-0.6 -31.94,-0.6 -31.94,-0.97 -31.73,-0.97 -31.73,-0.96 -31.53,-0.96 -31.53,-1.06 -31.33,-1.06 -31.33,-0.84 -31.13,-0.84 -31.13,-0.82 -30.93,-0.82 -30.93,-0.9 -30.73,-0.9 -30.73,-0.81 -30.53,-0.81 -30.53,-0.91 -30.33,-0.91 -30.33,-0.76 -30.12,-0.76 -30.12,-0.8 -29.92,-0.8 -29.92,-0.63 -29.72,-0.63 -29.72,-0.84 -29.52,-0.84 -29.52,-0.46 -29.32,-0.46 -29.32,-0.52 -29.12,-0.52 -29.12,-0.55 -28.92,-0.55 -28.92,-0.58 -28.72,-0.58 -28.72,-0.55 -28.52,-0.55 -28.52,-0.63 -28.31,-0.63 -28.31,-0.31 -28.11,-0.31 -28.11,-0.59 -27.91,-0.59 -27.91,-0.45 -27.71,-0.45 -27.71,-0.4 -27.51,-0.4 -27.51,-0.57 -27.31,-0.57 -27.31,-0.44 -27.11,-0.44 -27.11,-0.24 -26.91,-0.24 -26.91,-0.45 -26.7,-0.45 -26.7,-0.5 -26.5,-0.5 -26.5,-0.27 -26.3,-0.27 -26.3,-0.46 -26.1,-0.46 -26.1,-0.43 -25.9,-0.43 -25.9,-0.18 -25.7,-0.18 -25.7,-0.34 -25.5,-0.34 -25.5,-0.34 -25.3,-0.34 -25.3,-0.31 -25.1,-0.31 -25.1,-0.42 -24.89,-0.42 -24.89,-0.29 -24.69,-0.29 -24.69,-0.47 -24.49,-0.47 -24.49,-0.21 -24.29,-0.21 -24.29,-0.24 -24.09,-0.24 -24.09,-0.19 -23.89,-0.19 -23.89,-0.28 -23.69,-0.28 -23.69,-0.11 -23.49,-0.11 -23.49,-0.3 -23.29,-0.3 -23.29,-0.26 -23.08,-0.26 -23.08,-0.18 -22.88,-0.18 -22.88,-0.34 -22.68,-0.34 -22.68,-0.47 -22.48,-0.47 -22.48,-0.22 -22.28,-0.22 -22.28,-0.19 -22.08,-0.19 -22.08,-0.34 -21.88,-0.34 -21.88,-0.11 -21.68,-0.11 -21.68,0 -21.47,0 -21.47,-0.1 -21.27,-0.1 -21.27,-0.17 -21.07,-0.17 -21.07,-0.15 -20.87,-0.15 -20.87,-0.29 -20.67,-0.29 -20.67,-0.12 -20.47,-0.12 -20.47,-0.13 -20.27,-0.13 -20.27,0.06 -20.07,0.06 -20.07,0.05 -19.87,0.05 -19.87,0.01 -19.66,0.01 -19.66,0.05 -19.46,0.05 -19.46,0.02 -19.26,0.02 -19.26,-0.08 -19.06,-0.08 -19.06,0.1 -18.86,0.1 -18.86,0.13 -18.66,0.13 -18.66,0.13 -18.46,0.13 -18.46,0.31 -18.26,0.31 -18.26,0.04 -18.05,0.04 -18.05,-0 -17.85,-0 -17.85,0.06 -17.65,0.06 -17.65,0.2 -17.45,0.2 -17.45,0.1 -17.25,0.1 -17.25,-0.02 -17.05,-0.02 -17.05,0.11 -16.85,0.11 -16.85,-0.01 -16.65,-0.01 -16.65,0.05 -16.45,0.05 -16.45,0.07 -16.24,0.07 -16.24,0.1 -16.04,0.1 -16.04,-0.01 -15.84,-0.01 -15.84,0.2 -15.64,0.2 -15.64,0.09 -15.44,0.09 -15.44,0.04 -15.24,0.04 -15.24,0.03 -15.04,0.03 -15.04,0.09 -14.84,0.09 -14.84,0.08 -14.63,0.08 -14.63,0.33 -14.43,0.33 -14.43,0.32 -14.23,0.32 -14.23,0.24 -14.03,0.24 -14.03,0.33 -13.83,0.33 -13.83,0.27 -13.63,0.27 -13.63,0.47 -13.43,0.47 -13.43,0.27 -13.23,0.27 -13.23,0.29 -13.03,0.29 -13.03,0.2 -12.82,0.2 -12.82,0.3 -12.62,0.3 -12.62,0.32 -12.42,0.32 -12.42,0.31 -12.22,0.31 -12.22,0.35 -12.02,0.35 -12.02,0.45 -11.82,0.45 -11.82,0.41 -11.62,0.41 -11.62,0.25 -11.42,0.25 -11.42,0.33 -11.22,0.33 -11.22,0.23 -11.01,0.23 -11.01,0.33 -10.81,0.33 -10.81,0.39 -10.61,0.39 -10.61,0.37 -10.41,0.37 -10.41,0.4 -10.21,0.4 -10.21,0.3 -10.01,0.3 -10.01,0.46 -9.81,0.46 -9.81,0.39 -9.61,0.39 -9.61,0.44 -9.4,0.44 -9.4,0.38 -9.2,0.38 -9.2,0.56 -9,0.56 -9,0.49 -8.8,0.49 -8.8,0.33 -8.6,0.33 -8.6,0.49 -8.4,0.49 -8.4,0.59 -8.2,0.59 -8.2,0.56 -8,0.56 -8,0.43 -7.8,0.43 -7.8,0.45 -7.59,0.45 -7.59,0.37 -7.39,0.37 -7.39,0.34 -7.19,0.34 -7.19,0.17 -6.99,0.17 -6.99,0.27 -6.79,0.27 -6.79,0.24 -6.59,0.24 -6.59,0.37 -6.39,0.37 -6.39,0.36 -6.19,0.36 -6.19,0.36 -5.98,0.36 -5.98,0.33 -5.78,0.33 -5.78,0.35 -5.58,0.35 -5.58,0.36 -5.38,0.36 -5.38,0.33 -5.18,0.33 -5.18,0.62 -4.98,0.62 -4.98,0.62 -4.78,0.62 -4.78,0.53 -4.58,0.53 -4.58,0.57 -4.38,0.57 -4.38,0.69 -4.17,0.69 -4.17,0.63 -3.97,0.63 -3.97,0.74 -3.77,0.74 -3.77,0.68 -3.57,0.68 -3.57,0.6 -3.37,0.6 -3.37,0.68 -3.17,0.68 -3.17,0.78 -2.97,0.78 -2.97,0.71 -2.77,0.71 -2.77,0.75 -2.56,0.75 -2.56,0.73 -2.36,0.73 -2.36,0.72 -2.16,0.72 -2.16,0.98 -1.96,0.98 -1.96,0.83 -1.76,0.83 -1.76,0.93 -1.56,0.93 -1.56,0.93 -1.36,0.93 -1.36,0.83 -1.16,0.83 -1.16,0.9 -0.96,0.9 -0.96,0.79 -0.75,0.79 -0.75,0.82 -0.55,0.82 -0.55,0.96 -0.35,0.96 -0.35,0.76 -0.15,0.76 -0.15,0.96 0.05,0.96 0.05,0.75 0.25,0.75 0.25,0.98 0.45,0.98 0.45,0.95 0.65,0.95 0.65,0.94 0.85,0.94 0.85,0.85 1.06,0.85 1.06,0.91 1.26,0.91 1.26,0.74 1.46,0.74 1.46,0.82 1.66,0.82 1.66,0.79 1.86,0.79 1.86,0.64 2.06,0.64 2.06,0.75 2.26,0.75 2.26,0.76 2.46,0.76 2.46,0.52 2.67,0.52 2.67,0.62 2.87,0.62 2.87,0.7 3.07,0.7 3.07,0.57 3.27,0.57 3.27,0.73 3.47,0.73 3.47,0.74 3.67,0.74 3.67,0.75 3.87,0.75 3.87,0.84 4.07,0.84 4.07,0.93 4.27,0.93 4.27,0.92 4.48,0.92 4.48,0.86 4.68,0.86 4.68,0.91 4.88,0.91 4.88,1.17 5.08,1.17 5.08,0.96 5.28,0.96 5.28,1.09 5.48,1.09 5.48,1.1 5.68,1.1 5.68,1.08 5.88,1.08 5.88,1.01 6.09,1.01 6.09,1.08 6.29,1.08 6.29,1.09 6.49,1.09 6.49,1.26 6.69,1.26 6.69,1.14 6.89,1.14 6.89,1.2 7.09,1.2 7.09,1.22 7.29,1.22 7.29,1.16 7.49,1.16 7.49,1.2 7.69,1.2 7.69,1.06 7.9,1.06 7.9,1.39 8.1,1.39 8.1,1.24 8.3,1.24 8.3,1.26 8.5,1.26 8.5,1.08 8.7,1.08 8.7,1.09 8.9,1.09 8.9,1.16 9.1,1.16 9.1,1.34 9.3,1.34 9.3,1.41 9.51,1.41 9.51,1.16 9.71,1.16 9.71,1.3 9.91,1.3 9.91,1.25 10.11,1.25 10.11,1.26 10.31,1.26 10.31,1.26 10.51,1.26 10.51,1.54 10.71,1.54 10.71,1.37 10.91,1.37 10.91,1.21 11.11,1.21 11.11,1.43 11.32,1.43 11.32,1.5 11.52,1.5 11.52,1.5 11.72,1.5 11.72,1.46 11.92,1.46 11.92,1.82 12.12,1.82 12.12,1.62 12.32,1.62 12.32,1.23 12.52,1.23 12.52,1.42 12.72,1.42 12.72,1.64 12.93,1.64 12.93,1.13 13.13,1.13 13.13,1.28 13.33,1.28 13.33,1.81 13.53,1.81 13.53,1.33 13.73,1.33 13.73,1.94 13.93,1.94 13.93,2.56 14.13,2.56 14.13,1.58 14.33,1.58 14.33,1.73 14.53,1.73 14.53,1.52 14.74,1.52 14.74,2.07 14.94,2.07 14.94,1.72 15.14,1.72 15.14,1.6 15.34,1.6 15.34,1.64 15.54,1.64 15.54,1.7 15.74,1.7 15.74,1.67 15.94,1.67 15.94,1.59 16.14,1.59 16.14,1.62 16.34,1.62 16.34,1.64 16.55,1.64 16.55,1.53 16.75,1.53 16.75,1.48 16.95,1.48 16.95,1.46 17.15,1.46 17.15,1.59 17.35,1.59 17.35,1.43 17.55,1.43 17.55,1.6 17.75,1.6 17.75,1.66 17.95,1.66 17.95,1.58 18.16,1.58 18.16,1.5 18.36,1.5 18.36,1.5 18.56,1.5 18.56,1.41 18.76,1.41 18.76,1.59 18.96,1.59 18.96,1.63 19.16,1.63 19.16,1.65 19.36,1.65 19.36,1.52 19.56,1.52 19.56,1.66 19.76,1.66 19.76,1.51 19.97,1.51 19.97,1.58 20.17,1.58 20.17,1.47 20.37,1.47 20.37,1.7 20.57,1.7 20.57,1.66 20.77,1.66 20.77,1.68 20.97,1.68 20.97,1.74 21.17,1.74 21.17,1.67 21.37,1.67 21.37,1.67 21.58,1.67 21.58,1.73 21.78,1.73 21.78,1.66 21.98,1.66 21.98,1.76 22.18,1.76 22.18,1.64 22.38,1.64 22.38,1.75 22.58,1.75 22.58,1.59 22.78,1.59 22.78,1.66 22.98,1.66 22.98,1.65 23.18,1.65 23.18,1.68 23.39,1.68 23.39,1.73 23.59,1.73 23.59,1.59 23.79,1.59 23.79,1.65 23.99,1.65 23.99,1.85 24.19,1.85 24.19,1.65 24.39,1.65 24.39,1.84 24.59,1.84 24.59,1.71 24.79,1.71 24.79,1.94 25,1.94 25,1.76 25.2,1.76 25.2,1.98 25.4,1.98 25.4,1.84 25.6,1.84 25.6,1.92 25.8,1.92 25.8,1.86 26,1.86 26,1.83 26.2,1.83 26.2,1.96 26.4,1.96 26.4,1.74 26.6,1.74 26.6,1.95 26.81,1.95 26.81,1.99 27.01,1.99 27.01,1.95 27.21,1.95 27.21,1.91 27.41,1.91 27.41,1.93 27.61,1.93 27.61,2.09 27.81,2.09 27.81,1.98 28.01,1.98 28.01,2.07 28.21,2.07 28.21,2.05 28.41,2.05 28.41,2 28.62,2 28.62,1.97 28.82,1.97 28.82,1.96 29.02,1.96 29.02,1.98 29.22,1.98 29.22,2.06 29.42,2.06 29.42,2.01 29.62,2.01 29.62,1.87 29.82,1.87 29.82,2.03 30.02,2.03 30.02,2.07 30.23,2.07 30.23,2 30.43,2 30.43,2.02 30.63,2.02 30.63,1.89 30.83,1.89 30.83,2.09 31.03,2.09 31.03,1.96 31.23,1.96 31.23,2.05 31.43,2.05 31.43,2 31.63,2 31.63,2.01 31.83,2.01 31.83,2.07 32.04,2.07 32.04,1.89 32.24,1.89 32.24,2.02 32.44,2.02 32.44,2.13 32.64,2.13 32.64,2.03 32.84,2.03 32.84,1.96 33.04,1.96 33.04,1.9 33.24,1.9 33.24,2.02 33.44,2.02 33.44,2.09 33.65,2.09 33.65,1.96 33.85,1.96 33.85,2.04 34.05,2.04 34.05,1.94 34.25,1.94 34.25,2.12 34.45,2.12 34.45,2.08 34.65,2.08 34.65,2.07 34.85,2.07 34.85,1.96 35.05,1.96 35.05,2.06 35.25,2.06 35.25,2.02 35.46,2.02 35.46,2.02 35.66,2.02 35.66,2.04 35.86,2.04 35.86,2.12 36.06,2.12 36.06,2.12 36.26,2.12 36.26,2.08 36.46,2.08 36.46,2.07 36.66,2.07 36.66,2.18 36.86,2.18 36.86,2.1 37.07,2.1 37.07,2.17 37.27,2.17 37.27,2.13 37.47,2.13 37.47,2.25 37.67,2.25 37.67,2.12 37.87,2.12 37.87,2.07 38.07,2.07 38.07,2.2 38.27,2.2 38.27,2.17 38.47,2.17 38.47,2.23 38.67,2.23 38.67,2.12 38.88,2.12 38.88,2.23 39.08,2.23 39.08,2.14 39.28,2.14 39.28,2.11 39.48,2.11 39.48,2.14 39.68,2.14 39.68,2.28 39.88,2.28 39.88,2.18 40.08,2.18 40.08,2.21 40.28,2.21 40.28,2.25 40.49,2.25 40.49,2.3 40.69,2.3 40.69,2.27 40.89,2.27 40.89,2.28 41.09,2.28 41.09,2.14 41.29,2.14 41.29,2.2 41.49,2.2 41.49,2.23 41.69,2.23 41.69,2.32 41.89,2.32 41.89,2.28 42.09,2.28 42.09,2.26 42.3,2.26 42.3,2.23 42.5,2.23 42.5,2.34 42.7,2.34 42.7,2.22 42.9,2.22 42.9,2.37 43.1,2.37 43.1,2.28 43.3,2.28 43.3,2.28 43.5,2.28 43.5,2.28 43.7,2.28 43.7,2.32 43.9,2.32 43.9,2.29 44.11,2.29 44.11,2.39 44.31,2.39 44.31,2.3 44.51,2.3 44.51,2.31 44.71,2.31 44.71,2.46 44.91,2.46 44.91,2.33 45.11,2.33 45.11,2.32 45.31,2.32 45.31,2.29 45.51,2.29 45.51,2.32 45.72,2.32 45.72,2.34 45.92,2.34 45.92,2.34 46.12,2.34 46.12,2.24 46.32,2.24 46.32,2.39 46.52,2.39 46.52,2.24 46.72,2.24 46.72,2.3 46.92,2.3 46.92,2.39 47.12,2.39 47.12,2.33 47.32,2.33 47.32,2.3 47.53,2.3 47.53,2.32 47.73,2.32 47.73,2.45 47.93,2.45 47.93,2.35 48.13,2.35 48.13,2.36 48.33,2.36 48.33,2.4 48.53,2.4 48.53,2.39 48.73,2.39 48.73,2.45 48.93,2.45 48.93,2.43 49.14,2.43 49.14,2.57 49.34,2.57 49.34,2.16 49.54,2.16 49.54,2.45 49.74,2.45 49.74,2.34 49.94,2.34 49.94,2.35 50.14,2.35 50.14,2.43 50.34,2.43 50.34,2.37 50.54,2.37 50.54,2.48 50.74,2.48 50.74,2.5 50.95,2.5 50.95,2.52 51.15,2.52 51.15,2.45 51.35,2.45 51.35,2.5 51.55,2.5 51.55,2.46 51.75,2.46 51.75,2.43 51.95,2.43 51.95,2.58 52.15,2.58 52.15,2.51 52.35,2.51 52.35,2.45 52.56,2.45 52.56,2.51 52.76,2.51 52.76,2.5 52.96,2.5 52.96,2.56 53.16,2.56 53.16,2.51 53.36,2.51 53.36,2.56 53.56,2.56 53.56,2.43 53.76,2.43 53.76,2.58 53.96,2.58 53.96,2.48 54.16,2.48 54.16,2.65 54.37,2.65 54.37,2.68 54.57,2.68 54.57,2.53 54.77,2.53 54.77,2.55 54.97,2.55 54.97,2.66 55.17,2.66 55.17,2.58 55.37,2.58 55.37,2.58 55.57,2.58 55.57,2.55 55.77,2.55 55.77,2.72 55.97,2.72 55.97,2.63 56.18,2.63 56.18,2.63 56.38,2.63 56.38,2.52 56.58,2.52 56.58,2.67 56.78,2.67 56.78,2.75 56.98,2.75 56.98,2.57 57.18,2.57 57.18,2.61 57.38,2.61 57.38,2.59 57.58,2.59 57.58,2.56 57.79,2.56 57.79,2.69 57.99,2.69 57.99,2.59 58.19,2.59 58.19,2.64 58.39,2.64 58.39,2.55 58.59,2.55 58.59,2.63 58.79,2.63 58.79,2.68 58.99,2.68 58.99,2.6 59.19,2.6 59.19,2.62 59.39,2.62 59.39,2.7 59.6,2.7 59.6,2.58 59.8,2.58 59.8,2.58 60,2.58 60,2.68 60.2,2.68 60.2,2.71 60.4,2.71 60.4,2.63 60.6,2.63 60.6,2.75 60.8,2.75 60.8,2.62 61,2.62 61,2.7 61.21,2.7 61.21,2.72 61.41,2.72 61.41,2.73 61.61,2.73 61.61,2.59 61.81,2.59 61.81,2.62 62.01,2.62 62.01,2.76 62.21,2.76 62.21,2.65 62.41,2.65 62.41,2.67 62.61,2.67 62.61,2.73 62.81,2.73 62.81,2.72 63.02,2.72 63.02,2.7 63.22,2.7 63.22,2.72 63.42,2.72 63.42,2.67 63.62,2.67 63.62,2.77 63.82,2.77 63.82,2.68 64.02,2.68 64.02,2.72 64.22,2.72 64.22,2.73 64.42,2.73 64.42,2.71 64.63,2.71 64.63,2.66 64.83,2.66 64.83,2.72 65.03,2.72 65.03,2.85 65.23,2.85 65.23,2.71 65.43,2.71 65.43,2.67 65.63,2.67 65.63,2.71 65.83,2.71 65.83,2.73 66.03,2.73 66.03,2.73 66.23,2.73 66.23,2.74 66.44,2.74 66.44,2.77 66.64,2.77 66.64,2.76 66.84,2.76 66.84,2.74 67.04,2.74 67.04,2.77 67.24,2.77 67.24,2.73 67.44,2.73 67.44,2.81 67.64,2.81 67.64,2.88 67.84,2.88 67.84,2.89 68.04,2.89 68.04,2.79 68.25,2.79 68.25,2.78 68.45,2.78 68.45,2.75 68.65,2.75 68.65,2.74 68.85,2.74 68.85,2.8 69.05,2.8 69.05,2.71 69.25,2.71 69.25,2.9 69.45,2.9 69.45,2.91 69.65,2.91 69.65,2.82 69.86,2.82 69.86,2.86 70.06,2.86 70.06,2.8 70.26,2.8 70.26,2.82 70.46,2.82 70.46,2.92 70.66,2.92 70.66,2.93 70.86,2.93 70.86,2.77 71.06,2.77 71.06,2.78 71.26,2.78 71.26,2.92 71.46,2.92 71.46,2.82 71.67,2.82 71.67,2.89 71.87,2.89 71.87,2.84 72.07,2.84 72.07,2.78 72.27,2.78 72.27,2.85 72.47,2.85 72.47,2.87 72.67,2.87 72.67,2.87 72.87,2.87 72.87,2.89 73.07,2.89 73.07,2.81 73.28,2.81 73.28,2.93 73.48,2.93 73.48,2.89 73.68,2.89 73.68,2.9 73.88,2.9 73.88,2.99 74.08,2.99 74.08,2.98 74.28,2.98 74.28,2.92 74.48,2.92 74.48,2.92 74.68,2.92 74.68,2.95 74.88,2.95 74.88,2.97 75.09,2.97 75.09,2.84 75.29,2.84 75.29,2.92 75.49,2.92 75.49,2.91 75.69,2.91 75.69,2.98 75.89,2.98 75.89,2.85 76.09,2.85 76.09,2.89 76.29,2.89 76.29,2.94 76.49,2.94 76.49,2.98 76.7,2.98 76.7,2.82 76.9,2.82 76.9,2.85 77.1,2.85 77.1,3.04 77.3,3.04 77.3,2.99 77.5,2.99 77.5,3.02 77.7,3.02 77.7,2.87 77.9,2.87 77.9,3 78.1,3 78.1,2.95 78.3,2.95 78.3,3 78.51,3 78.51,3.03 78.71,3.03 78.71,2.92 78.91,2.92 78.91,3.09 79.11,3.09 79.11,3 79.31,3 79.31,2.97 79.51,2.97 79.51,2.93 79.71,2.93 79.71,2.96 79.91,2.96 79.91,3.02 80.12,3.02 80.12,3.07 80.32,3.07 80.32,3 80.52,3 80.52,2.94 80.72,2.94 80.72,3.06 80.92,3.06 80.92,2.97 81.12,2.97 81.12,3 81.32,3 81.32,2.98 81.52,2.98 81.52,3.04 81.72,3.04 81.72,3.05 81.93,3.05 81.93,3.03 82.13,3.03 82.13,3.04 82.33,3.04 82.33,3.05 82.53,3.05 82.53,2.98 82.73,2.98 82.73,3.08 82.93,3.08 82.93,3.02 83.13,3.02 83.13,3.01 83.33,3.01 83.33,3.01 83.53,3.01 83.53,3.05 83.74,3.05 83.74,2.99 83.94,2.99 83.94,3.06 84.14,3.06 84.14,2.97 84.34,2.97 84.34,3.04 84.54,3.04 84.54,3.09 84.74,3.09 84.74,3.12 84.94,3.12 84.94,3.15 85.14,3.15 85.14,2.99 85.35,2.99 85.35,3.08 85.55,3.08 85.55,3.15 85.75,3.15 85.75,3.08 85.95,3.08 85.95,3.08 86.15,3.08 86.15,3.11 86.35,3.11 86.35,3.09 86.55,3.09 86.55,3.05 86.75,3.05 86.75,3.16 86.95,3.16 86.95,3.09 87.16,3.09 87.16,3.12 87.36,3.12 87.36,3.04 87.56,3.04 87.56,3.01 87.76,3.01 87.76,3.08 87.96,3.08 87.96,3.12 88.16,3.12 88.16,3.09 88.36,3.09 88.36,3.06 88.56,3.06 88.56,3.11 88.77,3.11 88.77,3.08 88.97,3.08 88.97,3.1 89.17,3.1 89.17,3.23 89.37,3.23 89.37,3.11 89.57,3.11 89.57,3.13 89.77,3.13 89.77,3.23 89.97,3.23 89.97,3.13 90.17,3.13 90.17,3.13 90.37,3.13 90.37,3.09 90.58,3.09 90.58,3.17 90.78,3.17 90.78,3.1 90.98,3.1 90.98,3.21 91.18,3.21 91.18,3.1 91.38,3.1 91.38,3.19 91.58,3.19 91.58,3.13 91.78,3.13 91.78,3.13 91.98,3.13 91.98,3.08 92.19,3.08 92.19,3.14 92.39,3.14 92.39,3.15 92.59,3.15 92.59,3.22 92.79,3.22 92.79,3.22 92.99,3.22 92.99,3.14 93.19,3.14 93.19,3.17 93.39,3.17 93.39,3.14 93.59,3.14 93.59,3.19 93.79,3.19 93.79,3.19 94,3.19 94,3.24 94.2,3.24 94.2,3.19 94.4,3.19 94.4,3.09 94.6,3.09 94.6,3.11 94.8,3.11 94.8,3.22 95,3.22 95,3.15 95.2,3.15 95.2,3.23 95.4,3.23 95.4,3.19 95.6,3.19 95.6,3.21 95.81,3.21 95.81,3.3 96.01,3.3 96.01,3.18 96.21,3.18 96.21,3.14 96.41,3.14 96.41,3.18 96.61,3.18 96.61,3.21 96.81,3.21 96.81,3.14 97.01,3.14 97.01,3.26 97.21,3.26 97.21,3.14 97.42,3.14 97.42,3.18 97.62,3.18 97.62,3.26 97.82,3.26 97.82,3.21 98.02,3.21 98.02,3.21 98.22,3.21 98.22,3.27 98.42,3.27 98.42,3.18 98.62,3.18 98.62,3.23 98.82,3.23 98.82,3.26 99.02,3.26 99.02,3.29 99.23,3.29 99.23,3.26 99.43,3.26 99.43,3.27 99.63,3.27 99.63,3.3 99.83,3.3 99.83,3.27 100.03,3.27 100.03,3.31 100.23,3.31 100.23,3.26 100.43,3.26 100.43,3.32 100.63,3.32 100.63,3.28 100.84,3.28 100.84,3.33 101.04,3.33 101.04,3.27 101.24,3.27 101.24,3.24 101.44,3.24 101.44,3.3 101.64,3.3 101.64,3.3 101.84,3.3 101.84,3.37 102.04,3.37 102.04,3.26 102.24,3.26 102.24,3.36 102.44,3.36 102.44,3.22 102.65,3.22 102.65,3.36 102.85,3.36 102.85,3.37 103.05,3.37 103.05,3.26 103.25,3.26 103.25,3.33 103.45,3.33 103.45,3.34 103.65,3.34 103.65,3.3 103.85,3.3 103.85,3.34 104.05,3.34 104.05,3.32 104.26,3.32 104.26,3.34 104.46,3.34 104.46,3.38 104.66,3.38 104.66,3.36 104.86,3.36 104.86,3.26 105.06,3.26 105.06,3.43 105.26,3.43 105.26,3.33 105.46,3.33 105.46,3.35 105.66,3.35 105.66,3.36 105.86,3.36 105.86,3.32 106.07,3.32 106.07,3.34 106.27,3.34 106.27,3.39 106.47,3.39 106.47,3.31 106.67,3.31 106.67,3.33 106.87,3.33 106.87,3.34 107.07,3.34 107.07,3.32 107.27,3.32 107.27,3.38 107.47,3.38 107.47,3.39 107.67,3.39 107.67,3.43 107.88,3.43 107.88,3.36 108.08,3.36 108.08,3.36 108.28,3.36 108.28,3.41 108.48,3.41 108.48,3.41 108.68,3.41 108.68,3.42 108.88,3.42 108.88,3.39 109.08,3.39 109.08,3.37 109.28,3.37 109.28,3.36 109.49,3.36 109.49,3.32 109.69,3.32 109.69,3.42 109.89,3.42 109.89,3.38 110.09,3.38 110.09,3.45 110.29,3.45 110.29,3.4 110.49,3.4 110.49,3.41 110.69,3.41 110.69,3.43 110.89,3.43 110.89,3.37 111.09,3.37 111.09,3.46 111.3,3.46 111.3,3.34 111.5,3.34 111.5,3.36 111.7,3.36 111.7,3.41 111.9,3.41 111.9,3.46 112.1,3.46 112.1,3.46 112.3,3.46 112.3,3.4 112.5,3.4 112.5,3.48 112.7,3.48 112.7,3.41 112.91,3.41 112.91,3.42 113.11,3.42 113.11,3.43 113.31,3.43 113.31,3.42 113.51,3.42 113.51,3.48 113.71,3.48 113.71,3.44 " class="primitive"/>
             </g>
           </g>
         </g>
       </g>
     </g>
   </g>
-  <g class="guide ylabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-1b94e7a7-238">
-    <g transform="translate(20.77,59.87)" id="img-1b94e7a7-239">
+  <g class="guide ylabels" font-size="2.82" font-family="'PT Sans Caption','Helvetica Neue','Helvetica',sans-serif" fill="#6C606B" id="img-40907474-274">
+    <g transform="translate(20.77,59.87)" id="img-40907474-275">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">0</text>
       </g>
     </g>
-    <g transform="translate(20.77,39.37)" id="img-1b94e7a7-240">
+    <g transform="translate(20.77,39.92)" id="img-40907474-276">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">1.0×10⁴</text>
       </g>
     </g>
-    <g transform="translate(20.77,18.88)" id="img-1b94e7a7-241">
+    <g transform="translate(20.77,19.98)" id="img-40907474-277">
       <g class="primitive">
         <text text-anchor="end" dy="0.35em">2.0×10⁴</text>
       </g>
     </g>
   </g>
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-1b94e7a7-242">
-    <g transform="translate(4.18,31.76)" id="img-1b94e7a7-243">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-40907474-278">
+    <g transform="translate(4.18,31.76)" id="img-40907474-279">
       <g class="primitive">
         <text text-anchor="middle" dy="0.35em" transform="rotate(-90,0, 2)">Counts</text>
       </g>
     </g>
   </g>
-  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-1b94e7a7-244">
-    <g transform="translate(137.53,0.71)" id="img-1b94e7a7-245">
+  <g font-size="3.18" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" fill="#202020" stroke="#000000" stroke-opacity="0.000" id="img-40907474-280">
+    <g transform="translate(137.53,0.71)" id="img-40907474-281">
       <g class="primitive">
         <text text-anchor="middle" dy="0.6em">III-E K412[0][all]</text>
       </g>
@@ -691,7 +835,7 @@
   </g>
 </g>
 <defs>
-  <clipPath id="img-1b94e7a7-4">
+  <clipPath id="img-40907474-4">
     <path d="M21.77,5.66 L253.29,5.66 253.29,61.87 21.77,61.87 " />
   </clipPath>
 </defs>
