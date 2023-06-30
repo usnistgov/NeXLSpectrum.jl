@@ -58,10 +58,11 @@ struct CharXRayLabel <: ReferenceLabel
     spectrum::SpectrumOrProperties # The spectrum used as the reference for fitting...
     roi::UnitRange{Int}
     xrays::Vector{CharXRay}
+    remove_background::Bool
     hash::UInt
-    function CharXRayLabel(spec::SpectrumOrProperties, roi::UnitRange{Int}, xrays::Vector{CharXRay})
+    function CharXRayLabel(spec::SpectrumOrProperties, roi::UnitRange{Int}, xrays::Vector{CharXRay}, remove_background)
         @assert all(xr -> element(xr) == element(xrays[1]), xrays)
-        new(spec, roi, xrays, hash(spec, hash(roi, hash(xrays))))
+        new(spec, roi, xrays, remove_background, hash(spec, hash(roi, hash(xrays, hash(remove_background)))))
     end
 end
 
@@ -70,6 +71,31 @@ function Base.show(io::IO, cl::CharXRayLabel)
     compname = ismissing(comp) ? "Unspecified" : name(comp)
     print(io,"k[$(name(cl.xrays)), $compname]")
 end
+
+"""
+ContinuumLabel
+
+A ReferenceLabel that represents a reference spectrum or reference properties associated with the 
+continuum behind a set of characteristic x-rays (CharXRay) objects over a contiguous range of 
+spectrum channels.
+"""
+struct ContinuumLabel <: ReferenceLabel
+    spectrum::SpectrumOrProperties # The spectrum used as the reference for fitting...
+    roi::UnitRange{Int}
+    xrays::Vector{CharXRay}
+    hash::UInt
+    function ContinuumLabel(cxrl::CharXRayLabel)
+        @assert all(xr -> element(xr) == element(cxrl.xrays[1]), cxrl.xrays)
+        new(cxrl.spectrum, cxrl.roi, cxrl.xrays, hash(cxrl.spectrum, hash(cxrl.roi, hash(cxrl.xrays))))
+    end
+end
+
+function Base.show(io::IO, cl::ContinuumLabel) 
+    comp = composition(cl)
+    compname = ismissing(comp) ? "Unspecified" : name(comp)
+    print(io,"B[$(name(cl.xrays)), $compname]")
+end
+
 
 """
     EscapeLabel

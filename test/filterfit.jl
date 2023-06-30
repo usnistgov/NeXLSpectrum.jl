@@ -381,10 +381,10 @@ using DataFrames
                    ],
                    132.0,
                )
-        @test properties(efs.references[findfirst(r->n"Fe K-L3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
-        @test properties(efs.references[findfirst(r->n"Fe K-M3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
-        @test properties(efs.references[findfirst(r->n"Fe L3-M5" in r.label.xrays, efs.references)].label)[:Composition] === fe
-        @test properties(efs.references[findfirst(r->n"Ca K-L3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
+        @test NeXLCore.properties(efs.references[findfirst(r->n"Fe K-L3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
+        @test NeXLCore.properties(efs.references[findfirst(r->n"Fe K-M3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
+        @test NeXLCore.properties(efs.references[findfirst(r->n"Fe L3-M5" in r.label.xrays, efs.references)].label)[:Composition] === fe
+        @test NeXLCore.properties(efs.references[findfirst(r->n"Ca K-L3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
     end
 
     @testset "Warnings" begin

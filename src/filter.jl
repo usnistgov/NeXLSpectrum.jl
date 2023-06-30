@@ -362,9 +362,11 @@ labeledextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64 = 1.0e6
       spec::Spectrum, #
       elm::Element, #
       allElms::AbstractSet{Element}, #
+      stripBackground::Bool,
       det::Detector, #
       ampl::Float64, #
-      maxE::Float64=1.0e6)::Vector{SpectrumFeature}
+      maxE::Float64=1.0e6
+    )::Vector{ReferenceLabel}
 
 Creates a vector of CharXRayLabel objects associated with 'elm' for a spectrum containing the elements
 'allElms' assuming that it was collected on 'det'.  ROIs in which other elements from 'allElms'
@@ -374,6 +376,7 @@ function charXRayLabels(#
     spec::Spectrum, #
     elm::Element, #
     allElms::AbstractSet{Element}, #
+    stripBackground::Bool, #
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
@@ -381,16 +384,17 @@ function charXRayLabels(#
     suitable = suitablefor(elm, allElms, det, maxE = maxE, ampl = ampl)
     length(suitable) > 0 || @error "The spectrum $(name(spec)) provides no suitable ROIs for the element $(symbol(elm))."
     # Find all the ROIs associated with other elements
-    return [ CharXRayLabel(spec, roi, xrays) for (xrays, roi) in suitable ]
+    return [ CharXRayLabel(spec, roi, xrays, stripBackground) for (xrays, roi) in suitable ]
 end
 charXRayLabels(#
     spec::Spectrum, #
     elm::Element, #
     allElms::AbstractVector{Element}, #
+    stripBackground::Bool, #
     det::Detector, #
     maxE::Float64 = 1.0e6;
     ampl::Float64 = 1.0e-5, #
-)::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set{Element}(allElms), det, maxE, ampl=ampl)
+)::Vector{ReferenceLabel} = charXRayLabels(spec, elm, Set{Element}(allElms), stripBackground, det, maxE, ampl=ampl)
 
 """
     suitablefor(
@@ -528,15 +532,14 @@ function escapeLabels(#
 end
 
 
-
-
 """
     tophatfilter(
         charLabel::Union{CharXRayLabel,EscapeLabel, ReferenceLabel}
         filt::TopHatFilter{T},
+        resp::Union{Nothing, Matrix}=nothing,
         scale::T = one(T),
         tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
-    )::FilteredReference
+    )::Vector{FilteredReference{T}}
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.  Use a simple
 edge-based background model.
@@ -544,6 +547,7 @@ edge-based background model.
     tophatfilter(
         labels::AbstractVector{ReferenceLabel},
         filt::TopHatFilter{T},
+        resp::Union{Nothing, Matrix}=nothing,
         scale::T = one(T),
         tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
     )::Vector{FilteredReference{T}}
@@ -551,63 +555,91 @@ edge-based background model.
 function tophatfilter(
     charLabel::CharXRayLabel,
     filt::TopHatFilter{T},
+    resp::Union{Nothing, Matrix}=nothing,
     scale::T = one(T),
-    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
-) where {T <: AbstractFloat }
+    tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6),
+)::Vector{FilteredReference{T}} where {T <: AbstractFloat }
     ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
     spec, roi, ashell = spectrum(charLabel), charLabel.roi, ashellof(charLabel.xrays)
-    return FilteredReference{T}(
-        charLabel,
-        scale,
-        roi,
-        _filter(spec, roi, filt, tol)...,
-        spec[roi] - modelBackground(spec, roi, ashell),
-        filt.weights[(roi.start+roi.stop)÷2],
-    )
+    if (charLabel.remove_background) && (energy(ashell) < 1.0e3)
+        cont = fittedcontinuum(spec, filt.detector, resp; mode=:Local, minE=1.0e3, filt=filt)
+        return [
+            # Spectrum minus continuum
+            FilteredReference{T}(
+                charLabel,
+                scale,
+                roi,
+                _filter(spec, roi, filt, tol)...,
+                spec[roi]-cont[roi],
+                filt.weights[(roi.start+roi.stop)÷2],
+            ),
+            # Continuum  only
+            FilteredReference{T}(
+                ContinuumLabel(charLabel),
+                scale,
+                roi,
+                _filter(cont, roi, filt, tol)...,
+                cont[roi],
+                filt.weights[(roi.start+roi.stop)÷2],
+            )
+        ]
+    else
+        return [ FilteredReference{T}(
+            charLabel,
+            scale,
+            roi,
+            _filter(spec, roi, filt, tol)...,
+            spec[roi]- modelBackground(spec, roi, ashell),
+            filt.weights[(roi.start+roi.stop)÷2],
+        ) ]
+    end
 end
 
 function tophatfilter(
     escLabel::EscapeLabel,
     thf::TopHatFilter{T},
-    scale::T,
+    ::Union{Nothing, Matrix} = nothing,
+    scale::T= one(T),
     tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
-) where { T<: AbstractFloat }
+)::Vector{FilteredReference{T}} where { T<: AbstractFloat }
     spec, roi = spectrum(escLabel), escLabel.roi
     charonly = spec[roi] - modelBackground(spec, roi)
     f = _filter(spec, roi, thf, T(tol))
-    return FilteredReference{T}(
+    return [ FilteredReference{T}(
         escLabel,
         T(scale),
         roi,
         f...,
         charonly,
         thf.weights[(roi.start+roi.stop)÷2],
-    )
+    ) ]
 end
 
 function tophatfilter(
     reflabel::ReferenceLabel,
     thf::TopHatFilter{T},
+    ::Union{Nothing, Matrix} = nothing,
     scale::T = one(T),
     tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
-) where { T <: AbstractFloat }
+)::Vector{FilteredReference{T}} where { T <: AbstractFloat }
     spec, roi = spectrum(reflabel), reflabel.roi
-    return FilteredReference{T}(
+    return [ FilteredReference{T}(
         reflabel,
         convert(T, scale),
         roi,
         _filter(spec, roi, thf, convert(T, tol))...,
         spec[roi] - modelBackground(spec, roi),
         thf.weights[(roi.start+roi.stop)÷2],
-    )
+    ) ]
 end
 
 function tophatfilter(
     labels::AbstractVector{ReferenceLabel},
     filt::TopHatFilter{T},
+    resp::Union{Nothing, Matrix} = nothing,
     scale::T = one(T),
     tol::T = (T==Float32 ? 1.0f-5 : 1.0e-6)
-) where { T <: AbstractFloat }
+)::Vector{FilteredReference{T}} where { T <: AbstractFloat }
     lbls = filter(labels) do lbl
         res = (lbl.roi.start >= 1) && (lbl.roi.stop <= length(filt)) 
         (!res) && @warn "The ROI $(lbl.roi) not fully contained on [1, $(length(filt))] for $lbl."
@@ -615,7 +647,9 @@ function tophatfilter(
         (!w) && @warn "No sufficiently bright X-rays for $lbl."
         res && w
     end    
-    return FilteredReference{T}[ tophatfilter(lbl, filt, scale, tol) for lbl in lbls ]
+    return mapreduce(append!, lbls; init=FilteredReference{T}[]) do lbl
+        tophatfilter(lbl, filt, resp, scale, tol)
+    end
 end
 
 """
@@ -716,6 +750,9 @@ function filterreference(
     allElms::AbstractSet{Element};
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
+    stripBackground::Bool = false,
+    minE::AbstractFloat=1.0e3,
+    resp::Union{Nothing, Matrix} = nothing
 ) where { T<: AbstractFloat }
     @assert elm in allElms "$elm not in $allElms"
     cprops = merge(spec.properties, props)
@@ -723,12 +760,12 @@ function filterreference(
         cprops[:Detector] = filt.detector
     end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
-    lbls = charXRayLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy])
+    lbls = charXRayLabels(spec, elm, allElms, stripBackground, cprops[:Detector], cprops[:BeamEnergy])
     if withEsc
         append!(lbls, escapeLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]))
     end
     # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
-    return tophatfilter(lbls, filt, one(T) / convert(T, dose(cprops)))
+    return tophatfilter(lbls, filt, resp, one(T) / convert(T, dose(cprops)))
 end
 
 function filterreference(
@@ -736,11 +773,9 @@ function filterreference(
     spec::Spectrum,
     elm::Element,
     comp::Material;
-    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
-    withEsc::Bool = false,
+    varargs...
 )
-    # spec[:Composition] = get(spec, :Composition, comp)
-    filterreference(filt, spec, elm, keys(comp), props = props, withEsc = withEsc)
+    filterreference(filt, spec, elm, keys(comp); varargs...)
 end
 
 filterreferences(

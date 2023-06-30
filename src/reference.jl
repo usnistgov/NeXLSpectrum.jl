@@ -56,6 +56,7 @@ function NeXLUncertainties.asa(::Type{DataFrame}, ffp::FilterFitPacket)
         sum(fref.charonly) / sqrt(sum(fref.data[croi])-sum(fref.charonly))
     end 
     DataFrame(
+        :Type => [ "$(fr.label)" for fr in ffp.references ],
         :Spectrum => [ name(fr.label.spectrum) for fr in ffp.references ],
         Symbol("Beam Energy (keV)") => [ get(fr.label.spectrum, :BeamEnergy, missing)/1000.0 for fr in ffp.references ],
         Symbol("Probe Current (nA)") => [ get(fr.label.spectrum, :ProbeCurrent, missing) for fr in ffp.references ],
@@ -99,19 +100,40 @@ struct ReferencePacket
     spectrum::Spectrum
     element::Element
     material::Material
+    mode::Symbol
 end
 
 Base.show(io::IO, rp::ReferencePacket) = print(io, "ReferencePacket[$(symbol(rp.element)), $(name(rp.material)), $(name(rp.spectrum))]")
 
 """
-    reference( elm::Element, spec::Spectrum, mat::Material=spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::ReferencePacket
-    reference(els::AbstractVector{Element}, spec::Spectrum, mat::Material = spec[:Composition]; pc = nothing, lt = nothing, e0 = nothing, coating = nothing)::Vector{ReferencePacket}
+    reference( 
+        elm::Element, 
+        spec::Spectrum, 
+        mat::Material=spec[:Composition]; 
+        pc = nothing, 
+        lt = nothing, 
+        e0 = nothing, 
+        coating = nothing,
+        mode = :normal # :normal or :enhanced
+    )::ReferencePacket
+    reference(
+        els::AbstractVector{Element}, 
+        spec::Spectrum, 
+        mat::Material = spec[:Composition]; 
+        pc = nothing, 
+        lt = nothing, 
+        e0 = nothing, 
+        coating = nothing,
+        mode = :normal # :normal or :enhanced
+    )::Vector{ReferencePacket}
     
 Construct a `ReferencePacket` from a `Spectrum` collected from the specified `Material` for the specified `Element`.
 Often used with `references(...)` to build `FilterFitPacket`s.
 
 Optional named arguments `pc`, `lt`, `e0`, `coating` allow you to specify the probe current, live time, beam energy and
 sample coating.
+
+`mode` selects between traditional filter fit and background-corrected filter fit for lines below 1.5 keV
 """
 function reference(
     elm::Element,
@@ -121,6 +143,7 @@ function reference(
     lt = nothing,
     e0 = nothing,
     coating = nothing,
+    mode = :normal # :normal or :enhanced
 )::ReferencePacket
     if !isnothing(lt)
         @assert lt > 0.0 "The live time must be larger than zero for $(spec[:Name])."
@@ -143,7 +166,7 @@ function reference(
     @assert haskey(spec, :ProbeCurrent) "The :ProbeCurrent property must be defined for $(spec[:Name]).  (Use the `pc` keyword argument)"
     @assert haskey(spec, :BeamEnergy) "The :BeamEnergy property must be defined for $(spec[:Name]).  (Use the `e0` keyword argument)"
     @assert haskey(mat, elm) "$(Symbol(elm)) is not present in $mat."
-    return ReferencePacket(spec, elm, mat)
+    return ReferencePacket(spec, elm, mat, mode)
 end
 
 reference(elm::Element, filename::AbstractString, mat::Material; kwargs...) =
@@ -164,6 +187,21 @@ reference(elm::AbstractVector{Element}, filename::AbstractString, mat::Material;
 
 
 """
+    references(
+        refs::AbstractVector{ReferencePacket},
+        det::EDSDetector;
+        ftype::Type{<:AbstractFloat} = Float64,
+        mode::Symbol = :filterfit, # :filterfit or :enhanced (:enhanced requires that resp!=nothing)
+        resp::Union{Nothing, Matrix} = nothing  # Detector response matrix
+    )::FilterFitPacket
+    references(
+        refs::AbstractVector{ReferencePacket},
+        fwhm::Double;
+        ftype::Type{<:AbstractFloat} = Float64,
+        mode::Symbol = :filterfit, # :filterfit or :enhanced (:enhanced requires that resp!=nothing)
+        resp::Union{Nothing, Matrix} = nothing  # Detector response matrix
+    )::FilterFitPacket
+
     references(refs::AbstractVector{ReferencePacket}, det::EDSDetector)::FilterFitPacket
     references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket
 
@@ -178,7 +216,9 @@ in the L-lines with a spectrum from pure Fe.
 function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector;
-    ftype::Type{<:AbstractFloat} = Float64
+    ftype::Type{<:AbstractFloat} = Float64,
+    mode::Symbol = :filterfit, # :filterfit or :enhanced
+    resp::Union{Nothing, Matrix} = nothing
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
@@ -187,14 +227,14 @@ function references(
     ff = buildfilter(ftype, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material; stripBackground=(mode==:enhanced), resp=resp)
         length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
         frefs
     end
     return FilterFitPacket(det, ff, frefs)
 end
-references(refs::AbstractVector{ReferencePacket}, fwhm::Real; ftype::Type{<:AbstractFloat}=Float64) =
-    references(refs, matching(first(refs).spectrum, Float64(fwhm)), ftype=ftype)
+references(refs::AbstractVector{ReferencePacket}, fwhm::Real; varargs...) =
+    references(refs, matching(first(refs).spectrum, Float64(fwhm)), varargs...)
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
     fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)

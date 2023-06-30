@@ -66,12 +66,12 @@ Example:
           detu, resp
       )
 """
-function references(refs::Vector{DirectRefInit}, det::Detector, resp::Matrix{Float64}; minE=0.5e3 )
+function references(refs::Vector{DirectRefInit}, det::Detector, resp::Matrix{Float64}; minE=0.5e3)
     function direct(elm::Element, spec::Spectrum, mat::Material)
         allElms = collect(elms(mat))
         @assert elm in allElms "$elm is not contained in $mat."
         @assert haskey(spec, :BeamEnergy) "The spectrum must define the :BeamEnergy property."
-        lbls = NeXLSpectrum.charXRayLabels(spec, elm, allElms, det, spec[:BeamEnergy])
+        lbls = NeXLSpectrum.charXRayLabels(spec, elm, allElms, false, det, spec[:BeamEnergy])
         map(lbls) do lbl
             charOnly = counts(lbl.spectrum, lbl.roi) - counts(fittedcontinuum(lbl.spectrum, det, resp, mode=:Local, minE=minE), lbl.roi)
             DirectReference(lbl, dose(lbl.spectrum), lbl.roi, charOnly)

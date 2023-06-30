@@ -177,7 +177,7 @@ function filterfit(
         props = copy(NeXLCore.properties(sp))
         props[:Name] = "Residual[$(props[:Name])]"
         res = copy(sp.counts)
-        for ff in ffs
+        for ff in filter(f->!(f.label isa ContinuumLabel), ffs)
             res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
         end
         return Spectrum(sp.energy, res, props)

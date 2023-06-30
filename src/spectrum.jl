@@ -803,7 +803,7 @@ function modelBackground(
     cnts, ec = counts(spec), channel(energy(ash), spec)
     bl, bh = estimatebackground(cnts, first(chs), 5), estimatebackground(cnts, last(chs), 5)
     # bh = ch-> mean(cnts[last(chs):min(length(cnts),last(chs)+5)])
-    if (ec < last(chs)) &&
+    if false # (ec < last(chs)) &&
        (bl(ec - first(chs)) > bh(ec - last(chs))) &&
        (energy(ash) < 2.0e3)  && ( shell(ash.subshell)==KShell )
         res = zeros(Float64, length(chs))
