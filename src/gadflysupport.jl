@@ -118,7 +118,7 @@ function Gadfly.plot(
             Theme(default_color=colorant"gray55"),
         ) : nothing
     end
-    function edgeLayer(maxI, ashs::AbstractArray{AtomicSubShell})
+    function edgeLayer(ashs::AbstractArray{AtomicSubShell})
         d = Dict{Any,Vector{AtomicSubShell}}()
         for ash in ashs
             d[(element(ash), shell(ash))] =
@@ -126,11 +126,14 @@ function Gadfly.plot(
         end
         x, y, label = [], [], []
         for ass in values(d)
-            br = ass[findmax(capacity.(ass))[2]]
             for ash in ass
-                push!(x, energy(ash))
-                push!(y, ytransform(maxI * capacity(ash) / capacity(br)))
-                push!(label, "$(ash)")
+                ee = energy(ash)
+                ich = maximum(
+                    get(specdata[i], channel(ee, specs[i]), 0.0) for i in eachindex(specs)
+                )
+                push!(x, ee)
+                push!(y, ytransform(1.25 * ich))
+                push!(label, "$(ash)\nedge")
             end
         end
         return length(x) > 0 ? layer(
@@ -138,7 +141,7 @@ function Gadfly.plot(
             y=y,
             label=label,
             Geom.hair,
-            Geom.label(position=:right),
+            Geom.label(position=:above),
             Theme(default_color=colorant"lightgray")
         ) : nothing
     end
@@ -266,7 +269,7 @@ function Gadfly.plot(
         shs(ash::AtomicSubShell) = [ash]
         pedges = mapreduce(ash -> shs(ash), append!, edges)
         if length(pedges) > 0
-            l = edgeLayer(0.5 * maxI, pedges)
+            l = edgeLayer(pedges)
             (!isnothing(l)) && append!(layers, l)
         end
     end
@@ -535,16 +538,47 @@ function Gadfly.plot(vq::VectorQuant, chs::UnitRange)
 end
 
 """
-    Gadfly.plot(deteff::Union{DetectorEfficiency,AbstractVector{DetectorEfficiency}}, emax = 20.0e3)
+    Gadfly.plot(deteffs::AbstractVector{DetectorEfficiency}; emax=20.0e3, emin=50.0, ymax = 1.0, edges::Union{Vector{AtomicSubShell}, Vector{Element}}=AtomicSubShell[])
+    Gadfly.plot(deteff::DetectorEfficiency; emax=20.0e3, emin=50.0, ymax = 1.0, edges::Union{Vector{AtomicSubShell}, Vector{Element}}=AtomicSubShell[])
 
 Plots the detector efficiency function assuming the detector is perpendicular to the incident X-rays.
 """
-function Gadfly.plot(deteff::DetectorEfficiency, emax=20.0e3)
-    eff(ee) = efficiency(deteff, ee, π / 2)
-    plot(eff, 100.0, emax)
+function Gadfly.plot(deteffs::AbstractVector{DetectorEfficiency}; emax=20.0e3, emin=50.0, ymax = 1.0, edges::Union{Vector{AtomicSubShell}, Vector{Element}}=AtomicSubShell[])
+    eff(deteff, ee) = efficiency(deteff, ee, π / 2)
+    layers = map(deteffs) do de 
+        layer(e->eff(de, e), emin, emax, Theme(default_color=colorant"black"))
+    end
+    if length(edges) > 0
+        shs(elm::Element) = filter(ass->energy(ass)>emin, atomicsubshells(elm, emax))
+        shs(ash::AtomicSubShell) = [ash]
+        x, y, label = [], [], []
+        for ash in mapreduce(ash -> shs(ash), append!, edges)
+            ee = energy(ash)
+            push!(x, ee)
+            maxdeteff = maximum(
+                ( eff(deteff, ee) for deteff in deteffs )
+            )
+            push!(y, 1.1 * maxdeteff)
+            push!(label, "$(ash)\nedge")
+        end
+        push!(layers, 
+            layer(
+                x=x,
+                y=y,
+                label=label,
+                Geom.hair,
+                Geom.label(position=:right),
+                Theme(default_color=colorant"lightgray")
+            )
+        )
+    end
+    plot(layers..., 
+        Coord.cartesian(xmin = emin<0.1*emax ? 0.0 : emin, xmax = emax, ymin=0.0, ymax=ymax),
+        Guide.xlabel("Energy (eV)"), Guide.ylabel("Efficiency (fractional)")
+    )
 end
-function Gadfly.plot(deteff::AbstractVector{DetectorEfficiency}, emax=20.0e3)
-    plot(map(ee->efficiency(deteff, ee, π / 2), deteff), 100.0, emax)
+function Gadfly.plot(deteff::DetectorEfficiency; varargs...)
+    plot([deteff]; varargs...)
 end
 
 

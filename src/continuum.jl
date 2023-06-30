@@ -8,7 +8,13 @@ struct ContinuumModel
     mc::Type{<:MatrixCorrection}
     br::Type{<:NeXLBremsstrahlung}
     """
-        ContinuumModel(mat::Material, e0::Float64, det::DetectorEfficiency, takeoff::Float64)
+        ContinuumModel(
+            material::Material,
+            e0::Float64,
+            takeoff::Float64;
+            matrixcorrection::Type{<:MatrixCorrection}=Riveros1993,
+            bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b
+        )
 
     Create a continuum model for the specified material, beam energy, detector and take-off angle.  Computes
     the *detected* quantity of continuum generated in the sample.
@@ -21,6 +27,8 @@ struct ContinuumModel
         bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b
     ) = new(material, e0, takeoff, matrixcorrection, bremsstrahlung)
 end
+
+
 
 """
     emitted(cm::ContinuumModel, ea::Float64)
@@ -223,6 +231,9 @@ fittedcontinuum(
     width::Int = 20, # Width of ROI at each end of each patch of continuum that is matched
     brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
     mc::Type{<:MatrixCorrection} = Riveros1993,
+    thresh::AbstractFloat=5.0, # Statistical threshold to be considered continuum
+    width::Integer=10, # Additional width added to peak regions (in channels)
+    filt=buildfilter(eltype(spec), VariableWidthFilter, det) # Filter applied to spectrum
   )::Spectrum
 
 Fit the continuum under the characteristic peaks by fitting the closest continuum ROIs.  The low energy peaks are
@@ -240,18 +251,53 @@ function fittedcontinuum(
     det::EDSDetector,
     resp::AbstractArray{<:Real,2}; #
     mode::Symbol=:Global,
-    minE::Float64=1.5e3,
+    minE::Float64 = 1.5e3,
     maxE::Float64=0.95 * spec[:BeamEnergy],
     brem::Type{<:NeXLBremsstrahlung}=Castellano2004a,
-    mc::Type{<:MatrixCorrection}=Riveros1993
+    mc::Type{<:MatrixCorrection}=Riveros1993,
+    thresh::AbstractFloat=5.0,
+    width::Integer=10,
+    filt=buildfilter(eltype(spec), VariableWidthFilter, det)
 )
+    r = 1:min(channel(maxE, det), length(spec))
+    function thresholdrois(fs1, r; w=width, th=thresh)
+        res = abs.(@view fs1.filtered[r]) .< th*sqrt.(@view fs1.covariance[r])
+        max = r.start
+        for i in r
+            if !res[i]
+                max = i + w
+            end
+            res[i] = (i > max)
+        end
+        min = r.stop
+        for i in reverse(r)
+            if !res[i]
+                min = i - w
+            end
+            res[i] = (i < min)
+        end
+        rois = UnitRange{Int64}[]
+        i=r.start
+        while i < r.stop
+            if res[i]
+                j=i+1
+                while (j<r.stop) && res[j]
+                    j+=1
+                end
+                push!(rois, i:j)
+                i=j
+            end
+            i+=1
+        end
+        return rois
+    end
     @assert (mode == :Global) || (mode == :Local) "mode must equal :Global | :Local in fitted continuum"
-    crois = continuumrois(elms(spec, true), det, minE, maxE)
-    gl = fitcontinuum(spec, resp, crois, brem=brem, mc=mc)
+    fs1=tophatfilter(spec,filt)
+    crois = thresholdrois(fs1, r)
+    gl = fitcontinuum(spec, resp, crois; brem=brem, mc=mc)
     return mode == :Global ? gl : tweakcontinuum(spec, gl, crois)
+    return tweakcontinuum(spec, gl, crois)
 end
-
-
 
 """
     tweakcontinuum(
