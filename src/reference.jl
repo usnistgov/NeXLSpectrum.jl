@@ -218,13 +218,14 @@ function references(
     det::EDSDetector;
     ftype::Type{<:AbstractFloat} = Float64,
     mode::Symbol = :filterfit, # :filterfit or :enhanced
-    resp::Union{Nothing, Matrix} = nothing
+    resp::Union{Nothing, Matrix} = nothing,
+    filter = VariableWidthFilter
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
     # Build the top-hat filter for det
-    ff = buildfilter(ftype, det)
+    ff = buildfilter(ftype, filter, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
         frefs = filterreference(ff, ref.spectrum, ref.element, ref.material; stripBackground=(mode==:enhanced), resp=resp)

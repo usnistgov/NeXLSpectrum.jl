@@ -176,11 +176,11 @@ function filterfit(
         sp = unk.label.spectrum
         props = copy(NeXLCore.properties(sp))
         props[:Name] = "Residual[$(props[:Name])]"
-        res = copy(sp.counts)
+        residual = copy(sp.counts)
         for ff in filter(f->!(f.label isa ContinuumLabel), ffs)
-            res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+            residual[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
         end
-        return Spectrum(sp.energy, res, props)
+        return Spectrum(sp.energy, residual, props)
     end
     pb = Deferred() do 
         res = Dict{ReferenceLabel,NTuple{3,T}}()
