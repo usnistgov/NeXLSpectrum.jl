@@ -562,15 +562,17 @@ function tophatfilter(
     ashellof(xrays) = inner(xrays[argmax(jumpratio.(inner.(xrays)))])
     spec, roi, ashell = spectrum(charLabel), charLabel.roi, ashellof(charLabel.xrays)
     if (charLabel.remove_background) && (energy(ashell) < 1.0e3)
-        cont = fittedcontinuum(spec, filt.detector, resp; mode=:Local, minE=1.0e3, filt=filt)
+        cont = fittedcontinuum(spec, filt.detector, resp; mode=:Local, minE=0.5e3, filt=filt)
+        charonly = spec - cont
+        # Fit the characteristic and continuum portions independently
         return [
             # Spectrum minus continuum
             FilteredReference{T}(
                 charLabel,
                 scale,
                 roi,
-                _filter(spec, roi, filt, tol)...,
-                spec[roi]-cont[roi],
+                _filter(charonly, roi, filt, tol)...,
+                charonly[roi],
                 filt.weights[(roi.start+roi.stop)÷2],
             ),
             # Continuum  only
@@ -579,7 +581,7 @@ function tophatfilter(
                 scale,
                 roi,
                 _filter(cont, roi, filt, tol)...,
-                cont[roi],
+                fill(zero(eltype(cont)), size(roi)),
                 filt.weights[(roi.start+roi.stop)÷2],
             )
         ]
@@ -589,7 +591,7 @@ function tophatfilter(
             scale,
             roi,
             _filter(spec, roi, filt, tol)...,
-            spec[roi]- modelBackground(spec, roi, ashell),
+            spec[roi] - modelBackground(spec, roi, ashell),
             filt.weights[(roi.start+roi.stop)÷2],
         ) ]
     end
@@ -777,14 +779,3 @@ function filterreference(
 )
     filterreference(filt, spec, elm, keys(comp); varargs...)
 end
-
-filterreferences(
-    filt::TopHatFilter,
-    refs::Tuple{Spectrum,Element,Material}...;
-    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
-    withEsc::Bool = false,
-) = mapreduce(
-    ref -> filterreference(filt, ref..., props = props, withEsc = withEsc),
-    append!,
-    refs,
-) 
