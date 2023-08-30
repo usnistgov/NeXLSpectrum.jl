@@ -219,7 +219,8 @@ function references(
     ftype::Type{<:AbstractFloat} = Float64,
     mode::Symbol = :filterfit, # :filterfit or :enhanced
     resp::Union{Nothing, Matrix} = nothing,
-    filter = VariableWidthFilter
+    filter = G2Filter,  # Followed by VariableWidthFilter in performance
+    ampl = 1.0e-7
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
@@ -228,7 +229,7 @@ function references(
     ff = buildfilter(ftype, filter, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material; stripBackground=(mode==:enhanced), resp=resp)
+        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material; stripBackground=(mode==:enhanced), resp=resp, ampl=ampl)
         length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
         frefs
     end

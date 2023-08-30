@@ -31,6 +31,14 @@ sum of the filter elements is zero.
 struct GaussianFilter <: TopHatFilterType end # A variable width Gaussian filter
 
 """
+    G2Filter
+
+A filter shaped like the second derivative of a Gaussian that varies in width with the FWHM of the detector.  
+The filter is offset to ensure the sum of the filter elements is zero.
+"""
+struct G2Filter <: TopHatFilterType end # A variable width Gaussian filter
+
+"""
 The TopHatFilter{T <: AbstractFloat} struct represents a zero-sum symmetric second-derivative-like filter that when 
 applied to spectral data has the property of suppressing constant and slowly varying signals (like the continuum)
 while retaining a linear signal for faster changing signals like the characteristic peaks.
@@ -81,7 +89,10 @@ struct TopHatFilter{T<:AbstractFloat}
             if !isnothing(start)
                 stop = findlast(i -> i ≠ 0.0, row)
                 offsets[r] = start
-                filts[r] = [row[start:stop]...]
+                filts[r] = row[start:stop]
+            else
+                offsets[r]=0
+                filts[r]=T[]
             end
         end
         return new{T}(ty, det, offsets, filts, wgts)
@@ -173,7 +184,6 @@ Base.show(io::IO, thf::TopHatFilter) = print(io, "$(thf.filttype)[$(thf.detector
     )
     buildfilter(::Type{T}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0) where { T<:AbstractFloat }
     buildfilter(det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0)::TopHatFilter{Float64}
-    buildfilter(ty::Type{<:TopHatFilterType}, det::Detector, a::AbstractFloat = 1.0, b::AbstractFloat = 2.0)::TopHatFilter{Float64}
 
 Build a top-hat filter for the specified detector with the specified top and base parameters.  The default element type is `Float64`
 and the default shape model (`TopHatFilterType`) is `VariableWidthFilter`.
@@ -278,6 +288,48 @@ function buildfilter(
         wgts[ch1] = 2.87 + 1.758e-4 * energy(ch1, det)
     end
     @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
+    return TopHatFilter{T}(ty, det, filt, wgts)
+end
+
+"""
+    buildfilter(::Type{G2Filter}, det::Detector, a::AbstractFloat=1.0, b::AbstractFloat=6.0)::TopHatFilter
+
+Build a top-hat filter with 2nd derivative of a Gaussian shape whose width varies with the detector's resolution 
+as a function of X-ray energy for the specified detector with the specified top and base parameters. 
+The `a` parameter corresponds to the filter width relative to the detector resolution expressed as Gaussian width.  
+So `a=1` is a filter whose width equals the detector resolution at each energy.  The `b` parameter is the extent of the
+filter in Gaussian widths.  The default `a=1, b=4` corresponds to a  filter that has the same resolution
+as the detector and an extent of 2 Gaussian widths above and below the center channel.
+"""
+function buildfilter(
+    ::Type{T},
+    ty::Type{G2Filter},
+    det::Detector,
+    a::AbstractFloat = 1.0,
+    b::AbstractFloat = 6.0 # Width
+) where {T<:AbstractFloat}
+    eps(::Type{Float64}) = 1.0e-12
+    eps(::Type{Float32}) = 1.0e-6
+    filtint(center, ee, gw) = exp(-0.5 * ((ee - center) / gw)^2)*(gw^2-(center-ee)^2)/(gw^2) # Normalize to 1 at ee==center
+    cc = channelcount(det)
+    filt = zeros(T, (cc, cc))
+    for ch1 in Base.oneto(cc)
+        center = energy(ch1, det) # midpoint of channel
+        res = a * gaussianwidth(resolution(center, det))
+        chmin, chmax = channel(center - 0.5 * b * res, det), channel(center + 0.5 * b * res, det)
+        if (chmin >= 1) && (chmax <= cc)
+            for i = 0:(chmax-chmin)÷2 # Ensure that it is symmetric
+                filt[ch1, chmax-i] =
+                    (filt[ch1, chmin+i] = convert(T, filtint(center, energy(chmin + i, det), res)))
+            end
+            # Offset the Gaussian to ensure the sum is zero.
+            filt[ch1, chmin:chmax] .-= sum(filt[ch1, chmin:chmax]) / length(chmin:chmax)
+            @assert abs(sum(@view filt[ch1, :])) < eps(T) "Filter $ch1 does not sum to zero."
+            @assert all(i -> filt[ch1, i] == filt[ch1, chmax-(i-chmin)], chmin:chmax) "The $ch1-th filter is not symmetric - G"
+        end
+    end
+    wgts = map(ch1 -> 2.87 + 1.758e-4 * energy(ch1, det), Base.oneto(cc))
+    # @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
     return TopHatFilter{T}(ty, det, filt, wgts)
 end
 
@@ -754,7 +806,8 @@ function filterreference(
     withEsc::Bool = false,
     stripBackground::Bool = false,
     minE::AbstractFloat=1.0e3,
-    resp::Union{Nothing, Matrix} = nothing
+    resp::Union{Nothing, Matrix} = nothing,
+    ampl = 1.0e-7
 ) where { T<: AbstractFloat }
     @assert elm in allElms "$elm not in $allElms"
     cprops = merge(spec.properties, props)
@@ -762,7 +815,7 @@ function filterreference(
         cprops[:Detector] = filt.detector
     end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
-    lbls = charXRayLabels(spec, elm, allElms, stripBackground, cprops[:Detector], cprops[:BeamEnergy])
+    lbls = charXRayLabels(spec, elm, allElms, stripBackground, cprops[:Detector], cprops[:BeamEnergy], ampl=ampl)
     if withEsc
         append!(lbls, escapeLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]))
     end
