@@ -136,5 +136,26 @@ end
 
 loadspectrum(ios::IO) = loadspectrum(sniffspectrum(ios), ios)
 loadspectrum(filename::AbstractString) = loadspectrum(sniffspectrum(filename), filename)
-loadspectrum(filename::AbstractString, det::EDSDetector) =
-    loadspectrum(sniffspectrum(filename), filename, det)
+loadspectrum(filename::AbstractString, det::EDSDetector) = loadspectrum(sniffspectrum(filename), filename, det)
+
+"""
+    NeXLSpectrum.read(filename::AbstractString)
+
+Sniff and read a spectrum file.
+"""
+read(filename::AbstractString) = loadspectrum(filename)
+
+
+"""
+    NeXLSpectrum.write(io::IO, spec::Spectrum)
+    NeXLSpectrum.write(filename::AbstractString, spec::Spectrum)
+
+Sniff and read a spectrum file.
+"""
+write(ios::IO, spec::Spectrum) = writeEMSA(ios, spec)
+
+function write(filename::AbstractString, spec::Spectrum) 
+    open(filename, "w") do ios
+        writeEMSA(ios, spec)
+    end
+end

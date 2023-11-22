@@ -13,7 +13,7 @@ using Statistics
     sio2 = loadspectrum(joinpath(path, "SiO2 std.msa"));
 
     det = matching(unks[1], 132.0)
-    resp = detectorresponse(det, SDDEfficiency(ModeledWindow(MoxtekAP33())));
+    resp = detectorresponse(det, SDDEfficiency(ModeledWindow(MoxtekAP33())))
 
     drefs = references( [
         direct(n"Al", al2o3, mat"Al2O3"),

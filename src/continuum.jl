@@ -12,7 +12,7 @@ struct ContinuumModel
             material::Material,
             e0::Float64,
             takeoff::Float64;
-            matrixcorrection::Type{<:MatrixCorrection}=Riveros1993,
+            matrixcorrection::Type{<:MatrixCorrection}=CitZAF,
             bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b
         )
 
@@ -23,7 +23,7 @@ struct ContinuumModel
         material::Material,
         e0::Float64,
         takeoff::Float64;
-        matrixcorrection::Type{<:MatrixCorrection}=Riveros1993,
+        matrixcorrection::Type{<:MatrixCorrection}=CitZAF,
         bremsstrahlung::Type{<:NeXLBremsstrahlung}=Castellano2004b
     ) = new(material, e0, takeoff, matrixcorrection, bremsstrahlung)
 end
@@ -60,8 +60,8 @@ generated(cm::ContinuumModel, ea::Float64) = #
       spec::Spectrum,
       resp::AbstractArray,
       rois::Vector{UnitRange};
-      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-      mc::Type{<:MatricCorrection} = Riveros1993,
+      brem::Type{<:NeXLBremsstrahlung} = Castellano2004b,
+      mc::Type{<:MatricCorrection} = CitZAF,
     )
 
     Fit a continuum model to the specified range of channels (`rois`).  The `resp` argument is a matrix which describes
@@ -73,8 +73,8 @@ function fitcontinuum(
     spec::Spectrum,
     resp::AbstractArray{<:Real,2},
     rois::AbstractArray{<:UnitRange,1};
-    brem::Type{<:NeXLBremsstrahlung}=Castellano2004a,
-    mc::Type{<:MatrixCorrection}=Riveros1993
+    brem::Type{<:NeXLBremsstrahlung}=Castellano2004b,
+    mc::Type{<:MatrixCorrection}=CitZAF
 )
     @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
     @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
@@ -160,8 +160,8 @@ end
       resp::AbstractArray{<:Real,2}; #
       minE::Float64 = 1.5e3,
       maxE::Float64 = 0.95 * spec[:BeamEnergy],
-      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-      mc::Type{<:MatrixCorrection} = Riveros1993,
+      brem::Type{<:NeXLBremsstrahlung} = Castellano2004b,
+      mc::Type{<:MatrixCorrection} = CitZAF,
     )
 
 Fit the continuum from ROIs determined from the data within the spectrum (:Composition, :BeamEnergy & :TakeOffAngle).
@@ -174,8 +174,8 @@ function fitcontinuum(
     minE::Float64=1.5e3,
     maxE::Float64=0.90 * spec[:BeamEnergy],
     width::Int=20,
-    brem::Type{<:NeXLBremsstrahlung}=Castellano2004a,
-    mc::Type{<:MatrixCorrection}=Riveros1993
+    brem::Type{<:NeXLBremsstrahlung}=Castellano2004b,
+    mc::Type{<:MatrixCorrection}=CitZAF
 )
     @assert haskey(spec, :Composition) "The fitcontinuum(...) function requires the spec[:Composition] property."
     @assert haskey(spec, :BeamEnergy) "The fitcontinuum(...) function requires the spec[:BeamEnergy] property."
@@ -229,8 +229,8 @@ fittedcontinuum(
     minE::Float64 = 1.5e3,
     maxE::Float64 = 0.95 * spec[:BeamEnergy],
     width::Int = 20, # Width of ROI at each end of each patch of continuum that is matched
-    brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-    mc::Type{<:MatrixCorrection} = Riveros1993,
+    brem::Type{<:NeXLBremsstrahlung} = Castellano2004b,
+    mc::Type{<:MatrixCorrection} = CitZAF,
     thresh::AbstractFloat=5.0, # Statistical threshold to be considered continuum
     width::Integer=10, # Additional width added to peak regions (in channels)
     filt=buildfilter(eltype(spec), VariableWidthFilter, det) # Filter applied to spectrum
@@ -253,8 +253,8 @@ function fittedcontinuum(
     mode::Symbol=:Global,
     minE::Float64 = 1.5e3,
     maxE::Float64=0.95 * spec[:BeamEnergy],
-    brem::Type{<:NeXLBremsstrahlung}=Castellano2004a,
-    mc::Type{<:MatrixCorrection}=Riveros1993,
+    brem::Type{<:NeXLBremsstrahlung}=Castellano2004b,
+    mc::Type{<:MatrixCorrection}=CitZAF,
     thresh::AbstractFloat=5.0,
     width::Integer=10,
     filt=buildfilter(eltype(spec), VariableWidthFilter, det)
@@ -296,7 +296,6 @@ function fittedcontinuum(
     crois = thresholdrois(fs1, r)
     gl = fitcontinuum(spec, resp, crois; brem=brem, mc=mc)
     return mode == :Global ? gl : tweakcontinuum(spec, gl, crois)
-    return tweakcontinuum(spec, gl, crois)
 end
 
 """
@@ -315,7 +314,7 @@ these channels.
   * `maxSc` limits how large a tweak is acceptable.
   * `nch` determines how many channels to match at the end of each ROI in `crois`
 """
-function tweakcontinuum(meas::Spectrum{T}, cont::Spectrum{U}, crois::Vector{UnitRange{Int}}; nch=10, maxSc=1.5) where {T<:Real,U<:Real}
+function tweakcontinuum(meas::Spectrum{T}, cont::Spectrum{U}, crois::Vector{UnitRange{Int}}; nch=5, maxSc=2.0) where {T<:Real,U<:Real}
     function LinearSpline(x, y)
         @assert length(x)==length(y)
         function f(xx)
@@ -351,7 +350,7 @@ function tweakcontinuum(meas::Spectrum{T}, cont::Spectrum{U}, crois::Vector{Unit
     end
     # In case there are too few points in the spline for a cubic spline
     spline = length(x) >= 5 ? CubicSpline(x, y) : LinearSpline(x, y)
-    scale = map(x -> spline(x), eachindex(cont.counts))
+    scale = spline.(eachindex(cont.counts))
     props = Dict(
         cont.properties...,
         :CScale => scale,
@@ -368,8 +367,8 @@ end
       resp::AbstractArray{<:Real,2}; #
       minE::Float64 = 1.5e3,
       maxE::Float64 = 0.95 * spec[:BeamEnergy],
-      brem::Type{<:NeXLBremsstrahlung} = Castellano2004a,
-      mc::Type{<:MatrixCorrection} = Riveros1993,
+      brem::Type{<:NeXLBremsstrahlung} = Castellano2004b,
+      mc::Type{<:MatrixCorrection} = CitZAF,
     )::Spectrum
 
 Computes the characteristic-only spectrum by subtracting the continuum.
@@ -380,8 +379,8 @@ function subtractcontinuum(
     resp::AbstractArray{<:Real,2}; #
     minE::Float64=1.5e3,
     maxE::Float64=0.95 * spec[:BeamEnergy],
-    brem::Type{<:NeXLBremsstrahlung}=Castellano2004a,
-    mc::Type{<:MatrixCorrection}=Riveros1993
+    brem::Type{<:NeXLBremsstrahlung}=Castellano2004b,
+    mc::Type{<:MatrixCorrection}=CitZAF
 )::Spectrum
     res = Spectrum(
         spec.energy,

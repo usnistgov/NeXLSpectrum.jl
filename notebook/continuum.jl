@@ -66,7 +66,7 @@ plot(spec,brem,klms=[n"C",n"O",n"Al",n"Si",n"Ca",n"Ti",n"Zn",n"Ge"],yscale=0.05,
 
 # ╔═╡ 16597580-6886-11eb-3675-b5dddf4ed005
 md"""
-The default Bremsstrahlung model is `Castellano2004a`.  You can specify alternative
+The default Bremsstrahlung model is `Castellano2004b`.  You can specify alternative
 models using the `brem` argument.  Available alternatives include `Kramers1923`, `Lifshin1974`, `Reed1975`, `Smith1975`, `Small1987`, `Trincavelli1997`, `Castellano2004a` and `Castellano2004b`.
 """
 
