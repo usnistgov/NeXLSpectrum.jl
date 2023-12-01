@@ -58,12 +58,13 @@ function Base.get(ifd::_TIFFIFD, id::Integer, def)
 end
 
 struct _TIFFInternals
+
     ifds::Vector{_TIFFIFD}
+
     function _TIFFInternals(ios)
         magic = read(ios, UInt16)
         order = magic == 0x4D4D ? ntoh : (magic == 0x4949 ? ltoh : nothing)
-        fortytwo = order(read(ios, UInt16))
-        if isnothing(order) || (fortytwo ≠ 42)
+        if isnothing(order) || (order(read(ios, UInt16)) ≠ 42)
             @error "This file is not a valid TIFF file."
         end
         if order ≠ ltoh
