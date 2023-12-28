@@ -1,4 +1,7 @@
-using .Gadfly
+module NeXLSpectrumGadflyExt
+
+using NeXLSpectrum
+using Gadfly
 using Colors
 using Printf
 """
@@ -808,4 +811,4 @@ function Gadfly.plot(drs::DirectReferences; cols=3)
     gridstack(reshape(plts, length(plts) ÷ cols, cols))
 end
 
-@info "Loading Gadfly support into NeXLSpectrum."
+end # module
