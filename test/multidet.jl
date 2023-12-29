@@ -53,7 +53,7 @@ using Test
     @test isapprox(value(q.comp[n"Fe"]), 0.080, atol = 0.001)
     @test isapprox(value(q.comp[n"Mg"]), 0.117, atol = 0.001)
     @test isapprox(value(q.comp[n"Si"]), 0.206, atol = 0.001)
-    @test isapprox(value(q.comp[n"O"]),  0.459, atol = 0.001)
+    @test isapprox(value(q.comp[n"O"]),  0.4571, atol = 0.001)
 
     @test all(isapprox(ms,v, atol=0.0001) for (ms, v) in zip(multiscore(al2o3), [0.0321, -0.0689, -0.0149, 0.0440 ]))
     @test all(isapprox(ms,v, atol=0.0001) for (ms, v) in zip(multiscore(sio2), [ 0.0478, -0.0473, -0.0287, 0.0196 ]))

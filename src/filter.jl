@@ -31,6 +31,14 @@ sum of the filter elements is zero.
 struct GaussianFilter <: TopHatFilterType end # A variable width Gaussian filter
 
 """
+    G2Filter
+
+A filter shaped like the second derivative of a Gaussian that varies in width with the FWHM of the detector.  
+The filter is offset to ensure the sum of the filter elements is zero.
+"""
+struct G2Filter <: TopHatFilterType end # A variable width Gaussian filter
+
+"""
 The TopHatFilter{T <: AbstractFloat} struct represents a zero-sum symmetric second-derivative-like filter that when 
 applied to spectral data has the property of suppressing constant and slowly varying signals (like the continuum)
 while retaining a linear signal for faster changing signals like the characteristic peaks.
@@ -81,7 +89,10 @@ struct TopHatFilter{T<:AbstractFloat}
             if !isnothing(start)
                 stop = findlast(i -> i ≠ 0.0, row)
                 offsets[r] = start
-                filts[r] = [row[start:stop]...]
+                filts[r] = row[start:stop]
+            else
+                offsets[r]=0
+                filts[r]=T[]
             end
         end
         return new{T}(ty, det, offsets, filts, wgts)
@@ -281,6 +292,49 @@ function buildfilter(
     return TopHatFilter{T}(ty, det, filt, wgts)
 end
 
+"""
+    buildfilter(::Type{G2Filter}, det::Detector, a::AbstractFloat=1.0, b::AbstractFloat=6.0)::TopHatFilter
+
+Build a top-hat filter with 2nd derivative of a Gaussian shape whose width varies with the detector's resolution 
+as a function of X-ray energy for the specified detector with the specified top and base parameters. 
+The `a` parameter corresponds to the filter width relative to the detector resolution expressed as Gaussian width.  
+So `a=1` is a filter whose width equals the detector resolution at each energy.  The `b` parameter is the extent of the
+filter in Gaussian widths.  The default `a=1, b=4` corresponds to a  filter that has the same resolution
+as the detector and an extent of 2 Gaussian widths above and below the center channel.
+"""
+function buildfilter(
+    ::Type{T},
+    ty::Type{G2Filter},
+    det::Detector,
+    a::AbstractFloat = 1.0,
+    b::AbstractFloat = 6.0 # Width
+) where {T<:AbstractFloat}
+    eps(::Type{Float64}) = 1.0e-12
+    eps(::Type{Float32}) = 1.0e-6
+    filtint(center, ee, gw) = exp(-0.5 * ((ee - center) / gw)^2)*(gw^2-(center-ee)^2)/(gw^2) # Normalize to 1 at ee==center
+    cc = channelcount(det)
+    filt = zeros(T, (cc, cc))
+    fullext = Base.oneto(cc)
+    for ch1 in fullext
+        center = energy(ch1, det) # midpoint of channel
+        res = a * gaussianwidth(resolution(center, det))
+        chs = channel(center - 0.5 * b * res, det):channel(center + 0.5 * b * res, det)
+        if issubset(chs, fullext)
+            for i = 0:(length(chs)÷2) # Ensure that it is symmetric
+                v = convert(T, filtint(center, energy(chs[1] + i, det), res))
+                filt[ch1, chs[1]+i] = v
+                filt[ch1, chs[end]-i] = v
+            end
+            # Offset the Gaussian to ensure the sum is zero.
+            filt[ch1, chs] .-= sum(filt[ch1, chs]) / length(chs)
+            #@assert abs(sum(@view filt[ch1, :])) < eps(T) "Filter $ch1 does not sum to zero."
+            #@assert all(i -> filt[ch1, i] == filt[ch1, chs[end]-(i-chs[1])], chs) "The $ch1-th filter is not symmetric - G"
+        end
+    end
+    wgts = map(ch1 -> T(2.87 + 1.758e-4 * energy(ch1, det)), Base.oneto(cc))
+    # @info "The uncertainty estimates will be about a factor of three low for the Gaussian filter."
+    return TopHatFilter{T}(ty, det, filt, wgts)
+end
 
 """
 `FilteredDatum" is the base type for `FilteredReference` and `FilteredUnknown`.
@@ -527,9 +581,6 @@ function escapeLabels(#
     return ReferenceLabel[EscapeLabel(spec, roi, xrays) for (xrays, roi) in lxs]
 end
 
-
-
-
 """
     tophatfilter(
         charLabel::Union{CharXRayLabel,EscapeLabel, ReferenceLabel}
@@ -696,18 +747,11 @@ end
         filt::TopHatFilter{T},
         spec::Spectrum,
         elm::Element,
-        allElms::[AbstractSet{Element}|Material]
+        allElms::AbstractSet{Element};
         props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
         withEsc::Bool = false,
+        ampl = 1.0e-7
     )
-    filterreferences(
-        filt::TopHatFilter,
-        refs::Tuple{Spectrum,Element,Material}...;
-        props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
-        withEsc::Bool = false,
-    )
-
-
 """
 function filterreference(
     filt::TopHatFilter{T},
@@ -716,6 +760,7 @@ function filterreference(
     allElms::AbstractSet{Element};
     props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
     withEsc::Bool = false,
+    ampl = 1.0e-7
 ) where { T<: AbstractFloat }
     @assert elm in allElms "$elm not in $allElms"
     cprops = merge(spec.properties, props)
@@ -723,33 +768,28 @@ function filterreference(
         cprops[:Detector] = filt.detector
     end
     # Creates a list of unobstructed ROIs for elm as CharXRayLabel objects
-    lbls = charXRayLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy])
+    lbls = charXRayLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]; ampl=ampl)
     if withEsc
         append!(lbls, escapeLabels(spec, elm, allElms, cprops[:Detector], cprops[:BeamEnergy]))
     end
     # Filters the spectrum and returns a list of FilteredReference objects, one per ROI
     return tophatfilter(lbls, filt, one(T) / convert(T, dose(cprops)))
 end
-
-function filterreference(
-    filt::TopHatFilter,
-    spec::Spectrum,
-    elm::Element,
-    comp::Material;
-    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
-    withEsc::Bool = false,
-)
-    # spec[:Composition] = get(spec, :Composition, comp)
-    filterreference(filt, spec, elm, keys(comp), props = props, withEsc = withEsc)
-end
-
+"""
+    filterreferences(
+        filt::TopHatFilter,
+        refs::Tuple{Spectrum,Element,Material}...;
+        props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
+        withEsc::Bool = false,
+        ampl = 1.0e-7
+    )
+"""
 filterreferences(
     filt::TopHatFilter,
     refs::Tuple{Spectrum,Element,Material}...;
-    props::Dict{Symbol,<:Any} = Dict{Symbol,Any}(),
-    withEsc::Bool = false,
+    kwargs...
 ) = mapreduce(
-    ref -> filterreference(filt, ref..., props = props, withEsc = withEsc),
+    ref -> filterreference(filt, ref...; kwargs...),
     append!,
     refs,
 ) 

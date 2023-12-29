@@ -305,6 +305,9 @@ Columns:
   * :DeadPct : Float64 - Dead time in ProbeCurrent (:dose ∈ columns)
   * :RefCountsPernAs : Float64 - Estimated counts in :Reference in :Feature per unit dose.  (:counts ∈ columns)
   * :CountsPernAs : Float64 - Estimated counts in :Spectrum in :Feature per unit dose.  (:counts ∈ columns)
+
+  Note: PtoB is defined as "The peak-to-background ratio as determined from the raw and residual spectra integrated over
+  the fit region-of-interest and scaled to 10 eV of continuum." Why? Cause.
 """
 function NeXLUncertainties.asa(
     ::Type{DataFrame},

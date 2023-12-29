@@ -187,7 +187,7 @@ function references(
     ff = buildfilter(ftype, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+        frefs = filterreference(ff, ref.spectrum, ref.element, keys(ref.material))
         length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
         frefs
     end

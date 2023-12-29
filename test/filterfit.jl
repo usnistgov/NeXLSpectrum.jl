@@ -311,22 +311,22 @@ using DataFrames
         )
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Ti K-L3"))),
-            0.0641,
+            0.06399,
             atol = 0.0001,
         )
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Ge K-M3"))),
-            0.2739,
+            0.274786,
             atol = 0.0001,
         )
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Zn K-M3"))),
-            0.1209,
+            0.12103,
             atol = 0.0001,
         )
         @test isapprox(
             mean(values(res, findlabel(res[1], n"Fe L3-M5"))),
-            0.00033,
+            0.000290,
             atol = 0.00001,
         )
         @test isapprox(
@@ -406,46 +406,48 @@ using DataFrames
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
-        @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Al"]), 0.050776, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44725, atol=0.0001)
+        @test isapprox(value(qr.comp[n"Mg"]), 0.117958, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"O"]), 0.446058, atol=0.0001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
         @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
-        @test ncol(df)==17
+        @test ncol(df)==15
         @test nrow(df)==2
-        @test isapprox(df[2,2],0.715218,atol=0.0001)
+        @test isapprox(df[2,2],0.712819,atol=0.0001)
         @test isapprox(df[2,3],0.001413,atol=0.0001)
 
         df = asa(DataFrame, [ fr, ],  charOnly = false, withUnc = true, format = :pivot) 
-        @test ncol(df)==3 && nrow(df)==8
+        @test ncol(df)==3
+        @test nrow(df)==7
         @test repr(df[1,:ROI])=="k[O K-L3 + 1 other, MgO]"
-        @test isapprox(df[2,2], 0.0511086, atol=0.00001)
-        @test isapprox(df[3,3], 0.00323159, atol=0.00001)
+        @test isapprox(df[2,2], 0.0511784, atol=0.00001)
+        @test isapprox(df[3,3], 0.00322127, atol=0.00001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :long)
-        @test ncol(df)==4 && nrow(df)==16
+        @test ncol(df)==4 
+        @test nrow(df)==14
         @test df[2,:ROI]=="k[Fe L3-M5 + 13 others, Fe]"
-        @test isapprox(df[3,3], 1.38384, atol=0.00001)
-        @test isapprox(df[3,4], 0.00323159, atol=0.00001)
+        @test isapprox(df[3,3], 1.3800169, atol=0.00001)
+        @test isapprox(df[3,4],0.00322128, atol=0.00001)
 
         df = asa(DataFrame, fr, charOnly = false, material = srm470_k412, columns = ( :roi, :peakback, :counts, :dose))
         @test all(r->startswith(repr(r[:Spectrum]),"K412-0[Mon Oct 17 16:11:17 2011]"), eachrow(df))
         @test all(r->r[:LiveTime]==60.0,eachrow(df))
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
         @test all(r->isapprox(r[:RealTime],69.97325,atol=0.0001),eachrow(df))
-        @test df[1,:Start]==131
-        @test df[1,:Stop]==169
-        @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
+        @test df[1,:Start]==128
+        @test df[1,:Stop]==173
+        @test isapprox(df[1,:K], 0.0329847, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Counts], 1.05366e5, atol=10.0)
-        @test isapprox(df[1,:Back], 1.18593e5, atol=10.0)
-        @test isapprox(df[1,:PtoB], 71.849, atol=0.001)
+        @test isapprox(df[1,:Counts], 105385.0, atol=10.0)
+        @test isapprox(df[1,:Back], 74516.9, atol=10.0)
+        @test isapprox(df[1,:PtoB], 108.774, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032160115, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.02946, atol=0.00002)
-        @test isapprox(df[1,:RefCountsPernAs], 44283.1, atol=0.1)
-        @test isapprox(df[1,:CountsPernAs], 1466.11, atol=0.1)
+        @test isapprox(df[1,:KoKcalc], 1.0256414, atol=0.00002)
+        @test isapprox(df[1,:RefCountsPernAs], 44455.97, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1466.36, atol=0.1)
     end
     @testset "Example 2 - 32-bit" begin
         path = joinpath(@__DIR__, "Example 2")
@@ -458,45 +460,47 @@ using DataFrames
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
-        @test isapprox(value(qr.comp[n"Al"]), 0.05099, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"Al"]), 0.0507768, atol=0.0001) 
         @test isapprox(value(qr.comp[n"Fe"]), 0.0783, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"Mg"]), 0.1183, atol=0.0001) 
-        @test isapprox(value(qr.comp[n"O"]), 0.44725, atol=0.0001)
+        @test isapprox(value(qr.comp[n"Mg"]), 0.1179591, atol=0.0001) 
+        @test isapprox(value(qr.comp[n"O"]), 0.4460586, atol=0.0001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :normal)
         @test startswith(repr(df[1,:Spectra]),"\"K412-0[Mon Oct 17 16:11:17 2011]")
-        @test ncol(df)==17
+        @test ncol(df)==15
         @test nrow(df)==2
-        @test isapprox(df[2,2],0.715218,atol=0.0001)
+        @test isapprox(df[2,2],0.7128191,atol=0.0001)
         @test isapprox(df[2,3],0.001413,atol=0.0001)
 
         df = asa(DataFrame, [ fr, ],  charOnly = false, withUnc = true, format = :pivot) 
-        @test ncol(df)==3 && nrow(df)==8
+        @test ncol(df)==3 
+        @test nrow(df)==7
         @test repr(df[1,:ROI])=="k[O K-L3 + 1 other, MgO]"
-        @test isapprox(df[2,2], 0.0511086, atol=0.00001)
-        @test isapprox(df[3,3], 0.00323159, atol=0.00001)
+        @test isapprox(df[2,2], 0.051178406, atol=0.00001)
+        @test isapprox(df[3,3], 0.003221281, atol=0.00001)
 
         df = asa(DataFrame, [ fr, fr ],  charOnly = false, withUnc = true, format = :long)
-        @test ncol(df)==4 && nrow(df)==16
+        @test ncol(df)==4 
+        @test nrow(df)==14
         @test df[2,:ROI]=="k[Fe L3-M5 + 13 others, Fe]"
-        @test isapprox(df[3,3], 1.38384, atol=0.00001)
-        @test isapprox(df[3,4], 0.00323159, atol=0.00001)
+        @test isapprox(df[3,3], 1.3800191, atol=0.00001)
+        @test isapprox(df[3,4], 0.0032212, atol=0.00001)
 
         df = asa(DataFrame, fr, charOnly = false, material = srm470_k412, columns = ( :roi, :peakback, :counts, :dose))
         @test all(r->startswith(repr(r[:Spectrum]),"K412-0[Mon Oct 17 16:11:17 2011]"), eachrow(df))
         @test all(r->r[:LiveTime]==60.0,eachrow(df))
         @test all(r->r[:ProbeCurrent]==1.1978,eachrow(df))
         @test all(r->isapprox(r[:RealTime], 69.97325,atol=0.0001),eachrow(df))
-        @test df[1,:Start]==131
-        @test df[1,:Stop]==169
-        @test isapprox(df[1,:K], 0.0331066, atol=0.00001)
+        @test df[1,:Start]==128
+        @test df[1,:Stop]==173
+        @test isapprox(df[1,:K], 0.03298476, atol=0.00001)
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
-        @test isapprox(df[1,:Counts], 1.05367e5, atol=10.0)
-        @test isapprox(df[1,:Back], 1.18592e5, atol=10.0)
-        @test isapprox(df[1,:PtoB], 71.850, atol=0.001)
+        @test isapprox(df[1,:Counts], 105385.09, atol=10.0)
+        @test isapprox(df[1,:Back], 74516.9, atol=10.0)
+        @test isapprox(df[1,:PtoB], 108.774, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032160, atol=0.00001)
-        @test isapprox(df[1,:KoKcalc], 1.029475, atol=0.00002)
-        @test isapprox(df[1,:RefCountsPernAs], 44283.17, atol=0.1)
-        @test isapprox(df[1,:CountsPernAs], 1466.12, atol=0.1)
+        @test isapprox(df[1,:KoKcalc], 1.025642, atol=0.00002)
+        @test isapprox(df[1,:RefCountsPernAs], 44455.9, atol=0.1)
+        @test isapprox(df[1,:CountsPernAs], 1466.37, atol=0.1)
     end
 end

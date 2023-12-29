@@ -4,6 +4,20 @@ using NeXLSpectrum
 using Gadfly
 using Colors
 using Printf
+using FileIO
+
+const NeXLPalette =
+    convert.(
+        RGB{Colors.N0f8},
+        distinguishable_colors(
+            66,
+            [RGB(253 / 255, 253 / 255, 241 / 255), RGB(0, 0, 0), colorant"DodgerBlue4"],
+            transform = deuteranopic,
+        )[3:end],
+    )
+
+const NeXLColorblind = NeXLPalette
+
 """
 `NeXLSpectrumStyle` defines the default look-and-feel for Gadfly.plot(...) as
 applied to EDS spectra using the Gadfly.plot(...) functions implemented in 
