@@ -503,4 +503,33 @@ using DataFrames
         @test isapprox(df[1,:RefCountsPernAs], 44455.9, atol=0.1)
         @test isapprox(df[1,:CountsPernAs], 1466.37, atol=0.1)
     end
+
+    @testset "Example 2 - Var and G2" begin
+        path = joinpath(@__DIR__, "Example 2")
+        refs_g2 = references( [
+            reference( [ n"Mg", n"Si", n"Ca", n"Fe" ], joinpath(path, "K411 std.msa"), srm470_k411)...,
+            reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
+            reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
+            reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
+        ], 135.0; filter = G2Filter)
+        refs_var = references( [
+            reference( [ n"Mg", n"Si", n"Ca", n"Fe" ], joinpath(path, "K411 std.msa"), srm470_k411)...,
+            reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
+            reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
+            reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
+        ], 135.0; filter = VariableWidthFilter)
+        unk = loadspectrum(joinpath(path, "K412 unk.msa"))
+        fr_g2 = fit_spectrum(unk, refs_g2)
+        fr_var = fit_spectrum(unk, refs_var)
+        
+        @test isapprox(value(kratio(fr_g2, n"O K-L3")), value(kratio(fr_var, n"O K-L3")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Mg K-L3")), value(kratio(fr_var, n"Mg K-L3")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Si K-L3")), value(kratio(fr_var, n"Si K-L3")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Al K-L3")), value(kratio(fr_var, n"Al K-L3")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Fe K-L3")), value(kratio(fr_var, n"Fe K-L3")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Fe L3-M5")), value(kratio(fr_var, n"Fe L3-M5")); atol=0.002)
+        @test isapprox(value(kratio(fr_g2, n"Ca K-L3")), value(kratio(fr_var, n"Ca K-L3")); atol=0.003)
+    end
+
+
 end

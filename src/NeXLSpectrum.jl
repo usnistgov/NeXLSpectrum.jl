@@ -178,6 +178,7 @@ export TopHatFilter # Struct representing a fitting filter
 export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
 export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
 export GaussianFilter # An alternative filter definition based on an offset Gaussian
+export G2Filter # Second derivative of Gaussian filter
 export tophatfilter # Apply a top-hat filter to produce a FilteredReference
 export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
 
