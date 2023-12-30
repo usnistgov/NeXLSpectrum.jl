@@ -306,7 +306,7 @@ function Gadfly.plot(
                     length(specs) > 1 ? "Spectra" : "Spectrum",
                     names,
                     palette[1:length(specs)],
-                    pos=[0.8w, 0.0h]  # 80# over, centered
+                    pos=[0.8*Gadfly.w, 0.0*Gadfly.h]  # 80# over, centered
                 ),
             ) : tuple()
         try

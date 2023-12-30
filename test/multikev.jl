@@ -16,7 +16,7 @@ using Test
         reference( n"Fe", fe ),
         reference( n"Ca", caf2 ),
         reference( n"Mg", mgo ),
-    ], 132.0)
+    ], 132.0; filter=VariableWidthFilter)
 
     q20 = map(s->quantify(s, refs20), unk20)
     # show(NeXLMatrixCorrection.describe(q20))
@@ -42,7 +42,7 @@ using Test
         reference( n"Fe", fe ),
         reference( n"Ca", caf2 ),
         reference( n"Mg", mgo ),
-    ], 132.0)
+    ], 132.0; filter=VariableWidthFilter)
 
     q15 = map(s->quantify(s, refs15), unk15)
     # show(NeXLMatrixCorrection.describe(q15))

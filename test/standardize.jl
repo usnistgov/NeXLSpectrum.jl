@@ -11,12 +11,12 @@ using Test
         reference(n"Si", joinpath(path,"Si std.msa"), mat"Si"),
         reference(n"Ba", joinpath(path,"BaCl2 std.msa"), mat"BaCl2"),
         reference(n"O", joinpath(path,"MgO std.msa"), mat"MgO"),
-        reference(n"Ti", joinpath(path,"Ti std.msa"), mat"Ti") ], det)
+        reference(n"Ti", joinpath(path,"Ti std.msa"), mat"Ti") ], det; filter=VariableWidthFilter)
     fs=fit_spectrum(k2496, refs)
     refs2 = references( [
         reference(n"Si", joinpath(path,"Si std.msa"), mat"Si"),
         reference(n"Ba", joinpath(path,"BaCl2 std.msa"), mat"BaCl2"),
-        reference(n"O", joinpath(path,"MgO std.msa"), mat"MgO") ], det);
+        reference(n"O", joinpath(path,"MgO std.msa"), mat"MgO") ], det; filter=VariableWidthFilter);
     sanbornite = loadspectrum(joinpath(path,"Sanbornite std.msa"))
     sanbornite_std = fit_spectrum(sanbornite, refs2)
     fs_stds = standardize(fs, sanbornite_std, mat"BaSi2O5")

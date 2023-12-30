@@ -45,7 +45,7 @@ using Test
         reference(n"Fe", multisum(fe), mat"Fe"),
         reference(n"Mg", multisum(mgo), mat"MgO"),
         reference(n"Ca", multisum(caf2), mat"CaF2"),
-    ], 132.0 )
+    ], 132.0; filter=VariableWidthFilter )
 
     q = quantify(multisum(k412), refs)
     @test isapprox(value(q.comp[n"Al"]), 0.049, atol = 0.001)

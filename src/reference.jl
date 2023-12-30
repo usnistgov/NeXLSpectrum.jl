@@ -164,7 +164,7 @@ reference(elm::AbstractVector{Element}, filename::AbstractString, mat::Material;
 
 
 """
-    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; ftype=Float64, filter=)::FilterFitPacket
+    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; ftype=Float64, filter=G2Filter)::FilterFitPacket
     references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket
 
 Constructs a FilterFitPacket from a vector of `ReferencePackets`.  Each `ReferencePacket` represents a 
@@ -179,7 +179,7 @@ function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector;
     ftype::Type{<:AbstractFloat} = Float64,
-    filter = VariableWidthFilter
+    filter = G2Filter
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."

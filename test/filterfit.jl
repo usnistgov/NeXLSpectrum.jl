@@ -301,7 +301,7 @@ using DataFrames
                 reference(n"Ti", joinpath(path, "Ti trimmed.msa"), mat"Ti"),
                 reference(n"Zn", joinpath(path, "Zn std.msa"), mat"Zn"),
             ],
-            det,
+            det; filter = VariableWidthFilter
         )
         res = fit_spectra(unks, ffp)
         @test isapprox(
@@ -379,7 +379,7 @@ using DataFrames
                        reference(n"Mg", joinpath(path, "MgO std.msa"), mat"MgO"),
                        reference(n"Si", joinpath(path, "SiO2 std.msa"), mat"SiO2"),
                    ],
-                   132.0,
+                   132.0; filter = VariableWidthFilter
                )
         @test properties(efs.references[findfirst(r->n"Fe K-L3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
         @test properties(efs.references[findfirst(r->n"Fe K-M3" in r.label.xrays, efs.references)].label)[:Composition] === srm470_k412
@@ -402,7 +402,7 @@ using DataFrames
             reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
             reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
             reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
-        ], 135.0)
+        ], 135.0; filter = VariableWidthFilter)
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
@@ -456,7 +456,7 @@ using DataFrames
             reference( n"O", joinpath(path,"MgO std.msa"), mat"MgO" ),
             reference( n"Fe", joinpath(path,"Fe std.msa"), mat"Fe" ),
             reference( n"Al", joinpath(path,"Al std.msa"), mat"Al" )
-        ], 135.0, ftype=Float32) # This line is the only difference from "Example 2"
+        ], 135.0; filter = VariableWidthFilter, ftype=Float32) # This line is the only difference from "Example 2"
         unk = loadspectrum(joinpath(path, "K412 unk.msa"))
         fr = fit_spectrum(unk, refs)
         qr = quantify(fr)
