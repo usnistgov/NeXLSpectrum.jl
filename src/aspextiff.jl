@@ -1,86 +1,6 @@
-# Unfortunately, while the standard ImageMagick TIFF reader can read the image data from ASPEX TIFF files,
-# it can't read the spectrum data.  So I've written a lean TIFF tag reader to access the tags and
-# to read the spectral data into a Spectrum object.
-
-struct _ATField
-    tagId::UInt16
-    tagType::UInt16
-    tagCount::UInt32
-    tagData::Any
-
-    function _ATField(ios, order)
-        _TIFF_TYPES = (
-            UInt8, # byte
-            UInt8, # ASCII
-            UInt16, # short
-            UInt32, # long
-            Rational{UInt32}, # rational
-            Int8, # signed byte
-            Int8, # undefined
-            Int16, # signed short
-            Int32, # signed long
-            Rational{Int32}, # signed rational
-            Float32, # float
-            Float64, # double
-        )
-        tagId = order(read(ios, UInt16))
-        tagType = order(read(ios, UInt16))
-        tagCount = order(read(ios, UInt32))
-        if tagCount * sizeof(_TIFF_TYPES[tagType]) <= 4
-            tagData = [ order(read(ios, _TIFF_TYPES[tagType])) for _ in Base.OneTo(tagCount)]
-            extra = 4 - sizeof(_TIFF_TYPES[tagType]) * tagCount
-            seek(ios, position(ios) + extra) # make sure that we have read 4 bytes
-        else
-            tagOffset = order(read(ios, UInt32))
-            ret = position(ios)
-            seek(ios, tagOffset)
-            tagData = [order(read(ios, _TIFF_TYPES[tagType])) for _ in Base.OneTo(tagCount)]
-            seek(ios, ret)
-        end
-        return new(tagId, tagType, tagCount, tagData)
-    end
-end
-
-struct _TIFFIFD
-    ifdTags::Vector{_ATField}
-    ifdNext::UInt
-    function _TIFFIFD(ios, order::Function)
-        sz = order(read(ios, UInt16))
-        ifdTags = [_ATField(ios, order) for _ in Base.OneTo(sz)]
-        ifdNext = order(read(ios, UInt32))
-        return new(ifdTags, ifdNext)
-    end
-end
-
-function Base.get(ifd::_TIFFIFD, id::Integer, def)
-    idx = findfirst(atf -> atf.tagId == id, ifd.ifdTags)
-    return isnothing(idx) ? def : ifd.ifdTags[idx]
-end
-
-struct _TIFFInternals
-
-    ifds::Vector{_TIFFIFD}
-
-    function _TIFFInternals(ios)
-        magic = read(ios, UInt16)
-        order = magic == 0x4D4D ? ntoh : (magic == 0x4949 ? ltoh : nothing)
-        if isnothing(order) || (order(read(ios, UInt16)) ≠ 42)
-            @error "This file is not a valid TIFF file."
-        end
-        if order ≠ ltoh
-            @error "ASPEX Spectrum TIFF files are always little-endian ordered."
-        end
-        offset = order(read(ios, UInt32))
-        ifds = _TIFFIFD[]
-        while offset ≠ 0
-            seek(ios, offset)
-            ifd = _TIFFIFD(ios, order)
-            push!(ifds, ifd)
-            offset = ifd.ifdNext
-        end
-        return new(ifds)
-    end
-end
+using TiffImages
+using AxisArrays
+import Unitful
 
 function _parseDesc(desc::AbstractString)
     number(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
@@ -156,11 +76,16 @@ function isAspexTIFF(filename)
 end
 
 function detectAspexTIFF(ios)
-    TIFF_SPECTRAL_DATA = 0x8352
+    TIFF_SPECTRAL_DATA = UInt16(0x8352)
     try
         seekstart(ios)
-        ti = _TIFFInternals(ios)
-        return any(ifd -> any(fld -> fld.tagId == TIFF_SPECTRAL_DATA, ifd.ifdTags), ti.ifds)
+        ti = TiffImages.load(ios; mmap=true)
+        for ifd in ti.ifds
+            if !ismissing(TiffImages.getdata(ifd, TIFF_SPECTRAL_DATA, missing))
+                return true
+            end
+        end
+        return false;
     catch
         return false
     end
@@ -176,7 +101,7 @@ function readAspexTIFF(
     end
 end
 
-function readAspexTIFF2(ios::IO; withImgs = false, astype::Type{<:Real} = Float64)
+function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64)
     TIFF_SPECTRAL_DATA = UInt16(0x8352)
     TIFF_SPECTRAL_XRES = UInt16(0x8353)
     TIFF_SPECTRAL_XOFF = UInt16(0x8354)
@@ -192,7 +117,7 @@ function readAspexTIFF2(ios::IO; withImgs = false, astype::Type{<:Real} = Float6
         )[1],
     )
     res = missing
-    ti = TiffImages.load(ios)
+    ti = TiffImages.load(ios; mmap=true)
     for ifd in ti.ifds
         id = TiffImages.getdata(ifd, TiffImages.IMAGEDESCRIPTION, missing)
         sw = TiffImages.getdata(ifd, TiffImages.SOFTWARE, missing)
@@ -203,30 +128,28 @@ function readAspexTIFF2(ios::IO; withImgs = false, astype::Type{<:Real} = Float6
         syo = TiffImages.getdata(ifd, TIFF_SPECTRAL_YOFF, missing)
         if !ismissing(sp)
             @assert !(ismissing(sxr) || ismissing(sxo)) "X gain and offset data is missing from ASPEX TIFF spectrum"
-            evperch = floatonly(ismissing(sxr) ? "10 eV/ch" : String(sxr.tagData))
-            offset = floatonly(ismissing(sxo) ? "0 eV" : String(sxo.tagData))
-            yoff = number(ismissing(syo) ? "0 counts" : String(syo.tagData))
-            yres = number(ismissing(syr) ? "1 counts" : String(syr.tagData))
+            evperch = floatonly(ismissing(sxr) ? "10 eV/ch" : String(sxr))
+            offset = floatonly(ismissing(sxo) ? "0 eV" : String(sxo))
+            yoff = number(ismissing(syo) ? "0 counts" : String(syo))
+            yres = number(ismissing(syr) ? "1 counts" : String(syr))
             energy = LinearEnergyScale(offset, evperch)
-            data = map(i -> yoff + yres * convert(astype, i), sp.tagData)
-            props = _parseDesc(String(id.tagData))
+            data = map(i -> yoff + yres * convert(astype, i), sp)
+            props = _parseDesc(String(id))
             if !ismissing(sw)
-                props[:Instrument] = String(sw.tagData)
+                props[:Instrument] = String(sw)
             end
             res = Spectrum(energy, data, props)
-            break
         end
     end
     if withImgs && (!ismissing(res))
         try
-            ti = FileIO.load(Stream{format"TIFF"}(ios))
             nimgs = ndims(ti)>2 ? size(ti,3) : 1
             if haskey(res, :ImageMag) || haskey(res, :FieldOfView)
                 fov = haskey(res, :ImageMag) ? (3.5*25.4)/res[:ImageMag] : 1.0e3*res[:FieldOfView] # X field-of-view in mm
                 off = haskey(res, :StagePosition) ? (res[:StagePosition][:Y], res[:StagePosition][:X]) : (0.0, 0.0)
                 ratio, pix = size(ti,1) / size(ti,2), fov / (size(ti, 2)-1)
-                ax = Axis{:x}((off[2]-0.5*fov)*mm:pix*mm:(off[2]-0.5*fov+pix*(size(ti,2)-1))*mm)
-                ay = Axis{:y}((off[1]+0.5*fov)*ratio*mm:-pix*mm:(off[1]+0.5*fov-pix*(ti(ti,1)-1))*ratio*mm)
+                ax = Axis{:x}((off[2]-0.5*fov)*Unitful.mm:pix*Unitful.mm:(off[2]-0.5*fov+pix*(size(ti,2)-1))*Unitful.mm)
+                ay = Axis{:y}((off[1]+0.5*fov)*ratio*Unitful.mm:-pix*Unitful.mm:(off[1]+0.5*fov-pix*(size(ti,1)-1))*ratio*Unitful.mm)
                 @assert length(ay)==size(ti,1) && length(ax) == size(ti,2)
                 if nimgs == 2
                     # Macro image
@@ -234,8 +157,8 @@ function readAspexTIFF2(ios::IO; withImgs = false, astype::Type{<:Real} = Float6
                     # Micro image
                     imgZoom = get(res, :ImageZoom, 1.0)  # >= 1.0
                     rfov, rpix = fov / imgZoom, fov / (imgZoom * (size(ti, 2)-1))
-                    ay = Axis{:y}(0.5*rfov*ratio*mm:-rpix*mm:(0.5*rfov-rpix*(size(ti,1)-1))*ratio*mm)
-                    ax = Axis{:x}(-0.5*rfov*mm:rpix*mm:(-0.5*rfov+rpix*(size(ti,2)-1))*mm)
+                    ay = Axis{:y}(0.5*rfov*ratio*Unitful.mm:-rpix*Unitful.mm:(0.5*rfov-rpix*(size(ti,1)-1))*ratio*Unitful.mm)
+                    ax = Axis{:x}(-0.5*rfov*Unitful.mm:rpix*Unitful.mm:(-0.5*rfov+rpix*(size(ti,2)-1))*Unitful.mm)
                     @assert length(ay)==size(ti,1) && length(ax) == size(ti,2)
                     res[Symbol("Image1")] = AxisArray(ti[:, :, 1], ay, ax)
                 else
@@ -252,95 +175,6 @@ function readAspexTIFF2(ios::IO; withImgs = false, astype::Type{<:Real} = Float6
                     res[Symbol("Image1")] = ti
                 else
                     foreach(i -> res[Symbol("Image$i")] = ti[:, :, i], 1:nimgs)
-                end
-            end
-        catch err
-            @info err
-            @info "Unable to read images from $(ios)."
-        end
-    end
-    return res
-end
-
-function readAspexTIFF(ios::IO; withImgs = false, astype::Type{<:Real} = Float64)
-    # Special TIFF tags
-    TIFF_SPECTRAL_DATA = 0x8352
-    TIFF_SPECTRAL_XRES = 0x8353
-    TIFF_SPECTRAL_XOFF = 0x8354
-    TIFF_SPECTRAL_YRES = 0x8355
-    TIFF_SPECTRAL_YOFF = 0x8356
-    TIFF_IMAGE_DESCRIPTION = 270 # ASCII
-    TIFF_SOFTWARE = 305 # ASCII
-    floatonly(v) = parse(Float64, match(r"([+-]?[0-9]+[.]?[0-9]*)", v)[1])
-    number(v) = parse(
-        astype,
-        match(
-            astype isa Type{<:Integer} ? r"([+-]?[0-9]+)" : r"([+-]?[0-9]+[.]?[0-9]*)",
-            v,
-        )[1],
-    )
-    res = missing
-    ti = _TIFFInternals(ios)
-    for ifd in ti.ifds
-        id = get(ifd, TIFF_IMAGE_DESCRIPTION, missing)
-        sw = get(ifd, TIFF_SOFTWARE, missing)
-        sp = get(ifd, TIFF_SPECTRAL_DATA, missing)
-        sxr = get(ifd, TIFF_SPECTRAL_XRES, missing)
-        sxo = get(ifd, TIFF_SPECTRAL_XOFF, missing)
-        syr = get(ifd, TIFF_SPECTRAL_YRES, missing)
-        syo = get(ifd, TIFF_SPECTRAL_YOFF, missing)
-        if !ismissing(sp)
-            @assert !(ismissing(sxr) || ismissing(sxo)) "X gain and offset data is missing from ASPEX TIFF spectrum"
-            evperch = floatonly(ismissing(sxr) ? "10 eV/ch" : String(sxr.tagData))
-            offset = floatonly(ismissing(sxo) ? "0 eV" : String(sxo.tagData))
-            yoff = number(ismissing(syo) ? "0 counts" : String(syo.tagData))
-            yres = number(ismissing(syr) ? "1 counts" : String(syr.tagData))
-            energy = LinearEnergyScale(offset, evperch)
-            data = map(i -> yoff + yres * convert(astype, i), sp.tagData)
-            props = _parseDesc(String(id.tagData))
-            if !ismissing(sw)
-                props[:Instrument] = String(sw.tagData)
-            end
-            res = Spectrum(energy, data, props)
-            break
-        end
-    end
-    if withImgs && (!ismissing(res))
-        try
-            seekstart(ios)
-            imgs = FileIO.load(Stream{format"TIFF"}(ios))
-            nimgs = ndims(imgs)>2 ? size(imgs,3) : 1
-            if haskey(res, :ImageMag) || haskey(res, :FieldOfView)
-                fov = haskey(res, :ImageMag) ? (3.5*25.4)/res[:ImageMag] : 1.0e3*res[:FieldOfView] # X field-of-view in mm
-                off = haskey(res, :StagePosition) ? (res[:StagePosition][:Y], res[:StagePosition][:X]) : (0.0, 0.0)
-                ratio, pix = size(imgs,1) / size(imgs,2), fov / (size(imgs, 2)-1)
-                ax = Axis{:x}((off[2]-0.5*fov)*mm:pix*mm:(off[2]-0.5*fov+pix*(size(imgs,2)-1))*mm)
-                ay = Axis{:y}((off[1]+0.5*fov)*ratio*mm:-pix*mm:(off[1]+0.5*fov-pix*(size(imgs,1)-1))*ratio*mm)
-                @assert length(ay)==size(imgs,1) && length(ax) == size(imgs,2)
-                if nimgs == 2
-                    # Macro image
-                    res[Symbol("Image2")] = AxisArray(imgs[:, :, 2], ay, ax)
-                    # Micro image
-                    imgZoom = get(res, :ImageZoom, 1.0)  # >= 1.0
-                    rfov, rpix = fov / imgZoom, fov / (imgZoom * (size(imgs, 2)-1))
-                    ay = Axis{:y}(0.5*rfov*ratio*mm:-rpix*mm:(0.5*rfov-rpix*(size(imgs,1)-1))*ratio*mm)
-                    ax = Axis{:x}(-0.5*rfov*mm:rpix*mm:(-0.5*rfov+rpix*(size(imgs,2)-1))*mm)
-                    @assert length(ay)==size(imgs,1) && length(ax) == size(imgs,2)
-                    res[Symbol("Image1")] = AxisArray(imgs[:, :, 1], ay, ax)
-                else
-                    # All images same FOV
-                    if nimgs == 1
-                        res[Symbol("Image1")] = AxisArray(imgs, ay, ax)
-                    else
-                        foreach(i -> res[Symbol("Image$i")] = AxisArray(imgs[:, :, i], ay, ax), 1:nimgs)
-                    end
-                end
-            else
-                # No scale data
-                if nimgs == 1
-                    res[Symbol("Image1")] = imgs
-                else
-                    foreach(i -> res[Symbol("Image$i")] = imgs[:, :, i], 1:nimgs)
                 end
             end
         catch err
