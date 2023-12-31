@@ -3,7 +3,7 @@
 abstract type SpectrumFileType end
 
 function savespectrum(ty::Type{<:SpectrumFileType}, fio, data)
-    @error "Saving to is not implemented for $ty. Probably never will be."
+    @error "Saving is not implemented for $ty. Probably never will be. 😦"
 end
 
 function loadspectrum(ty::Type{<:SpectrumFileType}, filename::AbstractString; kwargs...)
@@ -75,7 +75,7 @@ sniff(::Type{ASPEXTIFF}, ios::IO) = detectAspexTIFF(ios)
 
 # ---------------------------------------------------------------------------------------------------#
 
-const spectrumfiletypes = (ISOEMSA, BrukerSPX, ASPEXTIFF, BrukerPDZ)
+const spectrumfiletypes = ( ISOEMSA, BrukerSPX, BrukerPDZ, ASPEXTIFF )
 
 
 function sniffspectrum(ios::IO)
