@@ -19,3 +19,5 @@ weave/jl_*
 staging.jl
 test/Artifacts.toml
 /notebook/.ipynb_checkpoints/*
+
+test/Example 2/residual.msa

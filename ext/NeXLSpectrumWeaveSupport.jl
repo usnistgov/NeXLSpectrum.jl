@@ -1,5 +1,8 @@
+module NeXLSpectrumWeaveSupport
+
+import NeXLSpectrum
 import Compose
-import .Weave
+import Weave
 
 Base.showable(m::MIME"application/svg", ctx::Context) = true
 Base.showable(m::MIME"application/png", ctx::Context) = true
@@ -42,4 +45,4 @@ function kill_weave_temporaries(path::AbstractString)
     end
 end
 
-@info "Weave support loaded into NeXLSpectrum"
+end # module

@@ -111,8 +111,18 @@ function detect(emitted::Dict{<:XRay, <:Real}, det::EDSDetector, response::Matri
     return Spectrum(det.scale, meas, Dict{Symbol,Any}(:Detector=>det))
 end
 
-""""
-  simulate(comp::Material, dose::Float64, e0::Float64, θtoa::Float64, Ω::Float64, det::Detector, resp::Matrix{Float64}; noise=false, vargs...)
+"""
+    simulate(
+        comp::Material, 
+        dose::Float64, 
+        e0::Float64, 
+        θtoa::Float64, 
+        Ω::Float64, 
+        det::Detector, 
+        resp::Matrix{Float64}; 
+        noise=false, 
+        vargs...
+    )
 
 Compute a simulated X-ray spectrum for the specified composition material.
 

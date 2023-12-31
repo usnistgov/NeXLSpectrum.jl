@@ -4,7 +4,6 @@ using ThreadsX: maximum
 using NeXLCore: isinside
 using Base: UInt16, UInt64
 using Reexport
-using Requires
 
 using Dates
 using Images
@@ -179,6 +178,7 @@ export TopHatFilter # Struct representing a fitting filter
 export VariableWidthFilter # The default filter definition that varies the filter width with x-ray energy
 export ConstantWidthFilter # An alternative filter definition that holds the filter width constant
 export GaussianFilter # An alternative filter definition based on an offset Gaussian
+export G2Filter # Second derivative of Gaussian filter
 export tophatfilter # Apply a top-hat filter to produce a FilteredReference
 export FilteredReference # A filtered datum representing a contiguous region of filtered reference data
 
@@ -281,10 +281,5 @@ include("semantics_image.jl")
 export readSEManticsImage
 export annotate
 export shannon_entropy
-
-function __init__()
-    @require Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004" include("gadflysupport.jl")
-    @require Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9" include("weavesupport.jl")
-end
 
 end

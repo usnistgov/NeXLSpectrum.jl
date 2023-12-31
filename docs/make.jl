@@ -1,10 +1,10 @@
-using Documenter, NeXLSpectrum, Gadfly, Colors, FixedPointNumbers
+using Documenter, NeXLSpectrum, Gadfly, Colors
 
 weavedocs = ( "continuummodel", "errorbars", "K412fit", "K412quick", "XRFSpectra" )
 
-rebuildweave = !all(map(weavedocs) do name
-    isfile(joinpath(@__DIR__, "src", "$name.md"))
-end)
+rebuildweave = true # !all(map(weavedocs) do name
+#    isfile(joinpath(@__DIR__, "src", "$name.md"))
+#end)
 
 if rebuildweave
     map(name->rm(joinpath(@__DIR__, "src","$name.md")), filter(wd->isfile(joinpath(@__DIR__, "src","$name.md")),weavedocs))

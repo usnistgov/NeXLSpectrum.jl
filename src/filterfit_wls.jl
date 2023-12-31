@@ -176,19 +176,23 @@ function filterfit(
         sp = unk.label.spectrum
         props = copy(NeXLCore.properties(sp))
         props[:Name] = "Residual[$(props[:Name])]"
-        res = copy(sp.counts)
+        residual = copy(sp.counts)
         for ff in ffs
-            res[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+            residual[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
         end
-        return Spectrum(sp.energy, res, props)
+        return Spectrum(sp.energy, residual, props)
     end
     pb = Deferred() do 
+        residual = copy(unk.label.spectrum.counts)
+        for ff in ffs
+            residual[ff.roi] -= (value(krs, ff.label) * ff.scale / unk.scale) * ff.charonly
+        end
         res = Dict{ReferenceLabel,NTuple{3,T}}()
         for ff in ffs
-            su, sco = sum(unk.data[ff.roi]), sum(ff.charonly)
+            sr, sco = sum(residual[ff.roi]), sum(ff.charonly)
             res[ff.label] = (
-                su,
-                su - value(krs, ff.label) * sco * ff.scale / unk.scale,
+                sr + sco*(value(krs, ff.label) * ff.scale / unk.scale), # All fitted counts
+                sr, # Background only
                 sco * ff.scale
             )
         end

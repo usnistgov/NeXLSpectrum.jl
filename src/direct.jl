@@ -23,6 +23,43 @@ struct DirectReferences
     references::Vector{DirectReference}
     detector::Detector
     response::Matrix{Float64}
+    
+    function DirectReferences(refs::Vector{DirectReference}, det::Detector, resp::Matrix) 
+        # Only permit one FilteredReference for each type of label for a set of X-rays 
+        res = DirectReference[]
+        for ref in refs
+            exists = false
+            for fr in res
+                # If a reference already exists of this type for these X-rays reassign it
+                if (typeof(fr.label) == typeof(ref.label))  && (fr.label.xrays==ref.label.xrays)
+                    exists = true
+                    break
+                end
+            end
+            if !exists
+                push!(res, ref)
+            end
+        end
+        new(res, det, resp)
+    end
+end
+    
+"""
+NeXLUncertainties.asa(::Type{DataFrame}, ffp::DirectReferences)
+
+Summarize the `DirectReference` structs within a `DirectReferences` as a `DataFrame`.
+"""
+function NeXLUncertainties.asa(::Type{DataFrame}, ffp::DirectReferences)
+DataFrame(
+    :Type => [ "$(fr.label)" for fr in ffp.references ],
+    :Spectrum => [ name(fr.label.spectrum) for fr in ffp.references ],
+    Symbol("Beam Energy (keV)") => [ get(fr.label.spectrum, :BeamEnergy, missing)/1000.0 for fr in ffp.references ],
+    Symbol("Probe Current (nA)") => [ get(fr.label.spectrum, :ProbeCurrent, missing) for fr in ffp.references ],
+    Symbol("Live Time (s)") => [ get(fr.label.spectrum, :LiveTime, missing) for fr in ffp.references ],
+    :Material => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
+    :Lines => [ fr.label.xrays for fr in ffp.references],
+    :ROI => [ fr.roi for fr in ffp.references],
+)
 end
 
 struct DirectRefInit
@@ -50,7 +87,9 @@ end
 """
     references(refs::Vector{DirectRefInit}, det::Detector, resp::Matrix{Float64}; minE=0.5e3 )
 
-Use along with `direct(...)` to build a collection of direct fitting references.
+Use along with `direct(...)` to build a collection of direct fitting references.  If multiple
+references are provided for a single set of X-ray transitions, the first one is selected. This
+can be used to fill in references for lines for which the first reference might not be suitable.
 
 Example:
 
@@ -59,7 +98,8 @@ Example:
     > drefs = references([ 
           direct(n"O", stds[1], mat"Al2O3"),
           direct(n"Al", stds[1], mat"Al2O3"),
-          direct(n"Ba", stds[2], mat"BaF2"),
+          direct(n"Ba", stds[2], mat"BaCO3"), # Provides Ba L3-M5 +...
+          direct(n"Ba", stds[2], mat"BaCl2"), # Provides Ba M5-N7 +...
           direct(n"Ca", stds[3], mat"CaF2"),
           direct(n"Fe", stds[4], mat"Fe"),
           direct(n"Si", stds[5], mat"Si") ],

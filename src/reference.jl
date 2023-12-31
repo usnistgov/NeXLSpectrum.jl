@@ -164,7 +164,7 @@ reference(elm::AbstractVector{Element}, filename::AbstractString, mat::Material;
 
 
 """
-    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector)::FilterFitPacket
+    references(refs::AbstractVector{ReferencePacket}, det::EDSDetector; ftype=Float64, filter=G2Filter)::FilterFitPacket
     references(refs::AbstractVector{ReferencePacket}, fwhm::Float64)::FilterFitPacket
 
 Constructs a FilterFitPacket from a vector of `ReferencePackets`.  Each `ReferencePacket` represents a 
@@ -178,23 +178,24 @@ in the L-lines with a spectrum from pure Fe.
 function references(
     refs::AbstractVector{ReferencePacket},
     det::EDSDetector;
-    ftype::Type{<:AbstractFloat} = Float64
+    ftype::Type{<:AbstractFloat} = Float64,
+    filter = G2Filter
 )::FilterFitPacket
     chcount = det.channelcount
     @assert all(length(r.spectrum) == chcount for r in refs) "The number of spectrum channels must match the detector for all spectra."
     @assert length(refs) > 0 "Please provide at least one ReferencePacket in references(...)"
     # Build the top-hat filter for det
-    ff = buildfilter(ftype, det)
+    ff = buildfilter(ftype, filter, det)
     # Apply the top-hat filter to all refs. Trying to thread this fails. :-(
     frefs = mapreduce(append!, refs) do ref
-        frefs = filterreference(ff, ref.spectrum, ref.element, ref.material)
+        frefs = filterreference(ff, ref.spectrum, ref.element, keys(ref.material))
         length(frefs)==0 && @warn "Unable to create any filtered ROI references for $(ref.element) from $(name(ref.material))."
         frefs
     end
     return FilterFitPacket(det, ff, frefs)
 end
-references(refs::AbstractVector{ReferencePacket}, fwhm::Real; ftype::Type{<:AbstractFloat}=Float64) =
-    references(refs, matching(first(refs).spectrum, Float64(fwhm)), ftype=ftype)
+references(refs::AbstractVector{ReferencePacket}, fwhm::Real; kwargs...) =
+    references(refs, matching(first(refs).spectrum, Float64(fwhm)); kwargs...)
 
 fit_spectrum(spec::Spectrum, ffp::FilterFitPacket{S, T}) where { S<:Detector, T<: AbstractFloat } =
     fit_spectrum(FilteredUnknownW{T}, spec, ffp.filter, ffp.references)

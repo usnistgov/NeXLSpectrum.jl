@@ -27,7 +27,9 @@ NeXLSpectrum.characteristiccounts
 NeXLSpectrum.scale
 NeXLSpectrum.channelcount
 NeXLSpectrum.sumcounts
-NeXLSpectrum.shannon_entropy(::Spectrum)
+NeXLSpectrum.shannon_entropy
+NeXLSpectrum.similarity
+NeXLSpectrum.fittedcontinuum
 ```
 
 ## Spectrum Plotting
@@ -98,9 +100,9 @@ NeXLSpectrum.FilterFitResult
 NeXLSpectrum.kratios
 NeXLSpectrum.spectrum
 NeXLSpectrum.residual
-NeXLUncertainties.covariance
 NeXLSpectrum.filteredresidual
 NeXLUncertainties.extract
+NeXLSpectrum.fit_spectra
 ```
 
 ## Filter Fit Tabulation
@@ -137,6 +139,10 @@ NeXLSpectrum.CharXRayLabel
 NeXLSpectrum.EscapeLabel
 NeXLSpectrum.UnknownLabel
 NeXLSpectrum.charXRayLabels
+NeXLSpectrum.direct
+NeXLSpectrum.detect
+NeXLSpectrum.filterreference
+
 ```
 
 # Matrix Correction
@@ -149,6 +155,7 @@ NeXLMatrixCorrection.estimatecoating
 ```@docs
 NeXLSpectrum.extractStandards
 NeXLCore.standardize
+
 ```
 
 # EDS Detectors
@@ -159,9 +166,18 @@ NeXLSpectrum.resolution
 NeXLSpectrum.Resolution
 NeXLSpectrum.simpleEDSwICC
 NeXLSpectrum.MnKaResolution
-NeXLSpectrum.Beryllium
-NeXLSpectrum.AP33Tabulation
 NeXLSpectrum.matches
+NeXLSpectrum.TabulatedWindow
+NeXLSpectrum.DirectReference
+NeXLSpectrum.BerylliumWindow
+NeXLSpectrum.AmptekC2
+NeXLSpectrum.DirectFitResult
+NeXLSpectrum.WindowType
+NeXLSpectrum.DirectReferences
+NeXLSpectrum.AbstractWindow
+NeXLSpectrum.NoWindow
+NeXLSpectrum.ModeledWindow
+NeXLSpectrum.AmptekC1
 ```
 
 # EDS Detector Plotting
@@ -212,4 +228,5 @@ NeXLSpectrum.readSEManticsImage
 NeXLCore.requiredbutmissing
 NeXLCore.hasminrequired
 NeXLSpectrum.annotate
+NeXLSpectrum.simulate
 ```
