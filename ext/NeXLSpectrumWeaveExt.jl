@@ -1,13 +1,13 @@
-module NeXLSpectrumWeaveSupport
+module NeXLSpectrumWeaveExt
 
 import NeXLSpectrum
 import Compose
 import Weave
 
-Base.showable(m::MIME"application/svg", ctx::Context) = true
-Base.showable(m::MIME"application/png", ctx::Context) = true
+Base.showable(m::MIME"application/svg", ctx::Compose.Context) = true
+Base.showable(m::MIME"application/png", ctx::Compose.Context) = true
 
-function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Context)
+function Base.display(report::Weave.Report, ::MIME"image/svg+xml", ctx::Compose.Context)
     chunk = report.cur_chunk
 
     w = chunk.options[:fig_width]Compose.inch
