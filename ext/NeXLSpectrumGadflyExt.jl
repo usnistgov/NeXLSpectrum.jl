@@ -87,7 +87,7 @@ Gadfly.plot( #
 )
 function Gadfly.plot(
     specs::Spectrum{<:Real}...;
-    klms::Union{AbstractVector,AbstractSet,Tuple,NTuple,Material}=CharXRay[],
+    klms::Union{AbstractVector,AbstractSet,Tuple,NTuple,Material}=Any[],
     edges::AbstractVector=AtomicSubShell[],
     escapes::AbstractVector=CharXRay[],
     coincidences::AbstractVector{CharXRay}=CharXRay[],
