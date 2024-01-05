@@ -2,7 +2,7 @@ name = "NeXLSpectrum"
 uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
 authors = ["Nicholas W.M. Ritchie <nicholas.ritchie@nist.gov>"]
 repo-url = "https://github.com/usnistgov/NeXLSpectrum.jl"
-version = "0.3.8"
+version = "0.3.9"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
