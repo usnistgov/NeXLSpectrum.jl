@@ -155,7 +155,7 @@ function filteredcovar(
         view(fi, roi.start-oi+1:roi.stop-oi+1),
         view(specdata, roi),
         view(fl, roi.start-ol+1:roi.stop-ol+1),
-    ) : one(T)
+    ) : zero(T)
 end
 
 """

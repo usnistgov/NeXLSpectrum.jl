@@ -497,7 +497,7 @@ using DataFrames
         @test isapprox(df[1,:dK], 0.0001588, atol=0.00001)
         @test isapprox(df[1,:Counts], 105385.09, atol=10.0)
         @test isapprox(df[1,:Back], 74516.9, atol=10.0)
-        @test isapprox(df[1,:PtoB], 108.774, atol=0.001)
+        @test isapprox(df[1,:PtoB], 108.776, atol=0.001)
         @test isapprox(df[1,:KCalc], 0.032160, atol=0.00001)
         @test isapprox(df[1,:KoKcalc], 1.025642, atol=0.00002)
         @test isapprox(df[1,:RefCountsPernAs], 44455.9, atol=0.1)
