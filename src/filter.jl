@@ -155,7 +155,7 @@ function filteredcovar(
         view(fi, roi.start-oi+1:roi.stop-oi+1),
         view(specdata, roi),
         view(fl, roi.start-ol+1:roi.stop-ol+1),
-    ) : zero(T)
+    ) : one(T)
 end
 
 """
@@ -368,7 +368,7 @@ Base.show(io::IO, fd::FilteredReference) = print(io, "Reference[$(fd.label)]")
       roi::UnitRange{Int},
       thf::TopHatFilter,
       tol::Float64
-    )::FilteredReference
+    )
 
 For filtering an ROI on a reference spectrum. Process a portion of a Spectrum with the specified filter.
 """
@@ -376,18 +376,34 @@ function _filter(spec::Spectrum, roi::UnitRange{Int}, thf::TopHatFilter{T}, tol:
     # Extract the spectrum data as T to match the filter
     data = counts(spec, T, true)
     # Determine tangents to the two background end points
-    tangents = map(st -> estimatebackground(data, st, 5, 2), (roi.start, roi.stop))
+    tangents = ( estimatebackground(data, roi.start, 5, 2), estimatebackground(data, roi.stop, 5, 2) )
     # Replace the non-ROI channels with extensions of the tangent functions
     data[1:roi.start-1] = map(tangents[1], 1-roi.start:-1)
     data[roi.stop+1:end] = map(tangents[2], 1:length(data)-roi.stop)
     # Compute the filtered data
-    filtered = T[filtereddatum(thf, data, i) for i in eachindex(data)]
-    maxval = maximum(filtered)
-    ff = findfirst(f -> abs(f) > tol * maxval, filtered)
-    if isnothing(ff)
-        error("There doesn't appear to be any data in $(spec[:Name]))")
+    filtered = map(i->filtereddatum(thf, data, i), eachindex(data))
+    maxval_tol::T = maximum(filtered; init=zero(T))*tol
+    ff = -1
+    for ch in max(1, roi.start-length(roi)):roi.start
+        if abs(filtered[ch]) > maxval_tol
+            break;
+        end
+        ff=ch
     end
-    roiff = ff:findlast(f -> abs(f) > tol * maxval, filtered)
+    if ff==-1
+        error("There doesn't appear to be any data in $(spec[:Name]))[1]")
+    end
+    ffe = -1
+    for ch in min(length(filtered), roi.stop+length(roi)):-1:roi.stop
+        if abs(filtered[ch]) > maxval_tol
+            break;
+        end
+        ffe=ch
+    end
+    if ffe==-1
+        error("There doesn't appear to be any data in $(spec[:Name]))[2]")
+    end
+    roiff = ff:ffe
     return (roiff, data[roiff], filtered[roiff])
 end
 

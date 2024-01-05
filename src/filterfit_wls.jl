@@ -21,8 +21,8 @@ function _buildmodel(
 ) where { T<: AbstractFloat }
     x = zeros(T, length(roi), length(ffs))
     for (i,fd) in enumerate(ffs)
-        #@assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
-        #@assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
+        # @assert fd.ffroi.start >= roi.start "$(fd.ffroi.start) < $(roi.start) in $(fd)"
+        # @assert fd.ffroi.stop <= roi.stop "$(fd.ffroi.stop) > $(roi.stop) in $(fd)"
         x[fd.ffroi.start-roi.start+1:fd.ffroi.stop-roi.start+1, i] .= fd.filtered
         # @assert x[:, i] == extract(fd, roi)
     end
@@ -46,7 +46,7 @@ function fitcontiguousww(
     x, lbls, scale = _buildmodel(ffs, chs), _buildlabels(ffs), _buildscale(unk, ffs)
     # dcs is a factor that accounts for the heteroskedasciscity introduced by the filter
     dcs = Diagonal([ T(ff.covscale) for ff in ffs ])
-    w = Diagonal([sqrt(one(T) / T(cv)) for cv in view(unk.covariance, chs)])
+    w = Diagonal([sqrt(cv > zero(typeof(cv)) ? one(T) / T(cv) : zero(T)) for cv in view(unk.covariance, chs)])
     genInv = pinv(w * x, rtol = 1.0e-6) # 60% of allocation here
     ext = extract(unk, chs)
     # @assert all(eltype.((genInv, w, dcs, ext)).==T)
