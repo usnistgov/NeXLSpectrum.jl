@@ -49,10 +49,12 @@ p7zip_jll = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 [weakdeps]
 Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
 Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
+UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
 
 [extensions]
 NeXLSpectrumGadflyExt = "Gadfly"
+NeXLSpectrumUnicodePlotsExt = "UnicodePlots"
 NeXLSpectrumWeaveExt = "Weave"
 
 [compat]
@@ -86,8 +88,9 @@ Polynomials = "3, 4"
 Procrastinate = "0.1"
 Reexport = "1"
 ThreadsX = "0.1"
-TiffImages = "0.6"
+TiffImages = "0.6, 0.7, 0.8"
 TimeZones = "1"
+UnicodePlots = "3"
 Unitful = "1"
 Weave = "0.10"
 julia = "1.9"
