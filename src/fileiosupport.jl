@@ -94,23 +94,22 @@ function sniffspectrum(ios::IO)
 end
 
 function sniffspectrum(filename::AbstractString)
-    @assert isfile(filename) "$filename is not a file in sniffspectrum(...)."
+    @assert isfile(filename) "$filename does not exist."
     ext = lowercase(splitext(filename)[2])
     for st in spectrumfiletypes
         if ext in extensions(st)
             try
-                res = open(filename, read = true) do ios
-                    sniff(st, ios) ? st : nothing
-                end
-                if !isnothing(res)
-                    return res
+                open(filename, read = true) do ios
+                    if sniff(st, ios)
+                        return st
+                    end
                 end
             catch
-                @info "Error sniffing filetype $st"
+                @info "Error sniffing filetype $st with file $filename."
             end
         end
     end
-    @error "This object does not represent a known spectrum file type."
+    @error "$filename is not in the format of a known spectrum file type."
 end
 
 function isspectrumfile(filename::AbstractString)
@@ -119,22 +118,22 @@ function isspectrumfile(filename::AbstractString)
         for st in spectrumfiletypes
             if ext in extensions(st)
                 try
-                    res = open(filename, read = true) do ios
-                        sniff(st, ios) ? st : nothing
-                    end
-                    if !isnothing(res)
-                        return true
+                    open(filename, read = true) do ios
+                        if sniff(st, ios)
+                            return true
+                        end
                     end
                 catch
-                    @info "Error sniffing filetype $st"
+                    @info "Error sniffing filetype $st with file $filename"
                 end
             end
         end
+    else
+        @info "$filename does not exist."
     end
     return false
 end
 
 loadspectrum(ios::IO) = loadspectrum(sniffspectrum(ios), ios)
 loadspectrum(filename::AbstractString) = loadspectrum(sniffspectrum(filename), filename)
-loadspectrum(filename::AbstractString, det::EDSDetector) =
-    loadspectrum(sniffspectrum(filename), filename, det)
+loadspectrum(filename::AbstractString, det::EDSDetector) = loadspectrum(sniffspectrum(filename), filename, det)
