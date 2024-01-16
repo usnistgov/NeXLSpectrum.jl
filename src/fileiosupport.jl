@@ -94,44 +94,40 @@ function sniffspectrum(ios::IO)
 end
 
 function sniffspectrum(filename::AbstractString)
-    @assert isfile(filename) "$filename does not exist."
-    ext = lowercase(splitext(filename)[2])
-    for st in spectrumfiletypes
-        if ext in extensions(st)
-            try
-                open(filename, read = true) do ios
-                    if sniff(st, ios)
-                        return st
-                    end
-                end
-            catch
-                @info "Error sniffing filetype $st with file $filename."
+    function testfile(st, fn)
+        try
+            open(fn, read = true) do ios
+                sniff(st, ios)
             end
+        catch
+            false
         end
     end
-    @error "$filename is not in the format of a known spectrum file type."
+    @assert isfile(filename) "$filename does not exist."
+    ext = lowercase(splitext(filename)[2])
+    i = findfirst(spectrumfiletypes) do st
+            ext in extensions(st) && testfile(st, filename)
+        end
+    if !isnothing(i)
+        return spectrumfiletypes[i]
+    end
+    @error "`$filename` is not in formatted like a known spectrum file type."
 end
 
 function isspectrumfile(filename::AbstractString)
-    if isfile(filename)
-        ext = lowercase(splitext(filename)[2])
-        for st in spectrumfiletypes
-            if ext in extensions(st)
-                try
-                    open(filename, read = true) do ios
-                        if sniff(st, ios)
-                            return true
-                        end
-                    end
-                catch
-                    @info "Error sniffing filetype $st with file $filename"
-                end
+    function testfile(st, fn)
+        try
+            open(fn, read = true) do ios
+                sniff(st, ios)
             end
+        catch
+            false
         end
-    else
-        @info "$filename does not exist."
     end
-    return false
+    ext = lowercase(splitext(filename)[2])
+    return !isnothing(findfirst(spectrumfiletypes) do st
+            ext in extensions(st) && testfile(st, filename)
+        end)
 end
 
 loadspectrum(ios::IO) = loadspectrum(sniffspectrum(ios), ios)
