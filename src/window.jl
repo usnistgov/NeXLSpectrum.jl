@@ -159,33 +159,33 @@ function NeXLCore.transmission(
 end
 
 function TabulatedWindow(wt::MoxtekAP33)
-    data = CSV.read(joinpath(@__DIR__, "data", "AP3_3_mod.csv"), DataFrame, header=3, comment="//")
-    inter = linear_interpolation(data[:, 1], data[:, 2])
+    data = DataTable(load(joinpath(@__DIR__, "data", "AP3_3_mod.csv"), skiplines_begin=2, header_exists=true, commentchar='#'))
+    inter = linear_interpolation(data.Energy, data.Transmission)
     extra = ModeledWindow(wt)
-    match = inter(data[end, 1]) / transmission(extra, data[end, 1], π / 2)
+    match = inter(data.Energy[end, 1]) / transmission(extra, data.Energy[end], π / 2)
     TabulatedWindow(wt, inter, extra, match)
 end
 
 function TabulatedWindow(wt::MoxtekAP5)
-    data = CSV.read(joinpath(@__DIR__, "data", "AP5.csv"), DataFrame)
-    inter = linear_interpolation(data[:, 1], data[:, 2])
+    data = DataTable(load(joinpath(@__DIR__, "data", "AP5.csv"), skiplines_begin=0, header_exists=true))
+    inter = linear_interpolation(data.Energy, data.Transmission)
     extra = ModeledWindow(wt)
-    match = inter(data[end, 1]) / transmission(extra, data[end, 1], π / 2)
+    match = inter(data.Energy[end, 1]) / transmission(extra, data.Energy[end], π / 2)
     TabulatedWindow(wt, inter, extra, match)
 end
 
 function TabulatedWindow(wt::AmptekC1)
-    data = CSV.read(joinpath(@__DIR__, "data", "AMETEK Si3N4 C1.csv"), DataFrame, header=2)
-    inter = linear_interpolation(1000.0 * data[:, 1], data[:, 2])
+    data = DataTable(load(joinpath(@__DIR__, "data", "AMETEK Si3N4 C1.csv"), skiplines_begin=1, header_exists=true))
+    inter = linear_interpolation(1000.0 * data.keV, data.C1)
     extra = ModeledWindow(wt)
-    match = inter(1000.0 * data[end, 1]) / transmission(extra, 1000.0 * data[end, 1], π / 2)
+    match = inter(1000.0 * data.keV[end]) / transmission(extra, 1000.0 * data.keV[end], π / 2)
     TabulatedWindow(wt, inter, extra, match)
 end
 
 function TabulatedWindow(wt::AmptekC2)
-    data = CSV.read(joinpath(@__DIR__, "data", "AMETEK Si3N4 C2.csv"), DataFrame, header=2)
-    inter = linear_interpolation(1000.0 * data[:, 1], data[:, 2])
+    data = DataTable(load(joinpath(@__DIR__, "data", "AMETEK Si3N4 C2.csv"), skiplines_begin=1, header_exists=true))
+    inter = linear_interpolation(1000.0 * data.keV, data.C2)
     extra = ModeledWindow(wt)
-    match = inter(1000.0 * data[end, 1]) / transmission(extra, 1000.0 * data[end, 1], π / 2)
+    match = inter(1000.0 * data.keV[end]) / transmission(extra, 1000.0 * data.keV[end], π / 2)
     TabulatedWindow(wt, inter, extra, match)
 end

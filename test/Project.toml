@@ -1,17 +1,13 @@
-name = "NeXLSpectrum"
-uuid = "6c578565-ca7f-4012-afc4-b8412d85af92"
-authors = ["Nicholas W.M. Ritchie <nicholas.ritchie@nist.gov>"]
-repo-url = "https://github.com/usnistgov/NeXLSpectrum.jl"
-version = "0.3.11-dev"
-
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 CSVFiles = "5d742f6a-9f54-50ce-8119-2520741973ca"
+Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 CubicSplines = "9c784101-8907-5a6d-9be6-98f00873c89b"
 DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 DataDeps = "124859b0-ceae-595e-8997-d05f6a7a8dfe"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataTables = "743a1d0a-8ebc-4f23-814b-50d006366bc6"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -20,6 +16,7 @@ EzXML = "8f5d6c58-4d21-5cfd-889c-e3ad7ee6a615"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
 FourierTools = "b18b359b-aebc-45ac-a139-9c0ccbb2871e"
+Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 ImageAxes = "2803e5a7-5153-5ecf-9a86-9b4c37f5f5ac"
@@ -42,24 +39,14 @@ Procrastinate = "3362a694-cdb4-48f5-aa9a-ff559879651c"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 TiffImages = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 TimeZones = "f269a46b-ccf7-5d73-abea-4c690281aa53"
-Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-p7zip_jll = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-
-[weakdeps]
-Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
-
-[extensions]
-NeXLSpectrumDataFrameExt = "DataFrames"
-NeXLSpectrumGadflyExt = "Gadfly"
-NeXLSpectrumUnicodePlotsExt = "UnicodePlots"
-NeXLSpectrumWeaveExt = "Weave"
+p7zip_jll = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 
 [compat]
 AxisArrays = "0.4"
@@ -99,14 +86,3 @@ UnicodePlots = "3"
 Unitful = "1"
 Weave = "0.10"
 julia = "1.9"
-
-[extras]
-Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
-Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"
-
-[targets]
-test = ["Test"]

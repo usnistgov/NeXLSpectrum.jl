@@ -117,89 +117,6 @@ appears heterogeneous.
 heterogeneity(ffrs::Vector{<:FitResult}, lbl::ReferenceLabel) =
     std(values(ffrs, lbl)) / mean(σs(ffrs, lbl))
 
-"""
-    NeXLUncertainties.asa(::Type{DataFrame}, ffrs::AbstractVector{<:FitResult}; charOnly = true, withUnc = false, format = :normal # :pivot or :long)
-
-Return generic `FitResult` as a DataFrame.
-
-Format:
-  * :normal - One row per spectrum, one column per k-ratio
-  * :pivot - One row per ROI, one column per spectrum (optional: column for 1σ uncertainty on k-ratio)
-  * :long - One row per spectrum, feature, measured k-ratio
-
-"""
-function NeXLUncertainties.asa(
-    ::Type{DataFrame},
-    ffrs::AbstractVector{<:FitResult};
-    charOnly = true,
-    withUnc = false,
-    format = :normal # :pivot or :long
-)::DataFrame
-    lbls = sort(unique(mapreduce(labels, append!, ffrs)))
-    lbls = charOnly ? filter(lbl -> lbl isa CharXRayLabel, lbls) : lbls
-    if format==:pivot
-        res = DataFrame(ROI = lbls)
-        for ffr in ffrs
-            vals = [ value(ffr.kratios, lbl, missing) for lbl in lbls ]
-            insertcols!(res, ncol(res) + 1, Symbol(repr(ffr.label)) => vals)
-            if withUnc
-                unc = [σ(ffr.kratios, lbl, missing) for lbl in lbls]
-                insertcols!(res, ncol(res) + 1, Symbol('Δ' * repr(ffr.label)) => unc)
-            end
-        end
-    elseif format==:long    
-        if withUnc
-            res = DataFrame(Spectrum=String[], ROI = String[], k = Float64[], dk = Float64[]) 
-            for ffr in ffrs, lbl in lbls
-                push!(res, ( repr(ffr.label), repr(lbl), value(ffr.kratios, lbl, missing), σ(ffr.kratios, lbl, missing) ))
-            end
-        else
-            res = DataFrame(Spectrum=String[], ROI = String[], k = Float64[]) 
-            for ffr in ffrs, lbl in lbls
-                push!(res, ( repr(ffr.label), repr(lbl), value(ffr.kratios, lbl, missing)))
-            end
-        end
-    else
-        rowLbls = [repr(ffr.label) for ffr in ffrs]
-        res = DataFrame(Symbol("Spectra") => rowLbls)
-        for lbl in lbls
-            vals = [value(ffr.kratios, lbl, missing) for ffr in ffrs]
-            insertcols!(res, ncol(res) + 1, Symbol(repr(lbl)) => vals)
-            if withUnc
-                unc = [σ(ffr.kratios, lbl, missing) for ffr in ffrs]
-                insertcols!(res, ncol(res) + 1, Symbol('Δ' * repr(lbl)) => unc)
-            end
-        end
-    end
-    return res
-end
-
-"""
-    NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
-
-Summarize the ROI and k-ratio data within a `FitResult` structure as a `DataFrame`. 
-"""
-function NeXLUncertainties.asa(::Type{DataFrame}, fr::FitResult; withUnc = false)
-    rois = labels(fr)
-    res =  DataFrame(
-        Spectrum = fill(fr.label, length(rois)),
-        Feature = rois,
-        K = map(l -> value(fr.kratios, l), rois),
-    )
-    withUnc && insertcols!(res, :dK => map(l -> σ(fr.kratios, l), rois) )
-    return res
-end
-
-function DataAPI.describe(ffrs::Vector{<:FitResult})::DataFrame
-    df = asa(DataFrame, ffrs)[:, 2:end]
-    desc = describe(df, :mean, :std, :min, :q25, :median, :q75, :max)
-    lbls = filter(
-        lbl -> lbl isa CharXRayLabel,
-        sort(collect(Set(mapreduce(labels, append!, ffrs)))),
-    )
-    insertcols!(desc, 4, :hetero => heterogeneity.(Ref(ffrs), lbls))
-    return desc
-end
 
 """
     FilterFitResult
@@ -216,7 +133,7 @@ Struct elements
     peakback::Deferred # {Dict{ReferenceLabel,NTuple{3,Float64}}} with peak counts, background counts and counts/(nAs)
 
 
-Use asa(DataFrame, ffr::FilterFitResult) to summarize in tabular form.
+Use `import DataFrames; DataFrame(ffr::FilterFitResult)` to summarize in tabular form.
 """
 struct FilterFitResult{T <: AbstractFloat} <: FitResult
     label::UnknownLabel
@@ -270,108 +187,6 @@ function peaktobackground(
            (backwidth * back)
 end
 
-
-"""
-    NeXLUncertainties.asa(
-        ::Type{DataFrame}, 
-        ffr::FilterFitResult; 
-        charOnly::Bool=true, 
-        material=nothing,
-        mc = XPP, fc=ReedFluorescence,
-        columns = ( :counts, ) # Selected from ( :roi, :peakback, :counts, :dose )
-    )::DataFrame
-
-Tabulate details about each region-of-interest in the 'FilterFitResult' in a 'DataFrame'.
-  * If charOnly then only display characteristic X-ray data (not escapes etc.)
-  * If `material` is a Material then the computed k-ratio (KCalc) will also be tabulated along with kmeas/kcalc (KoKCalc).
-  * columns - Select optional column outputs (see below)
-
-Columns:
-
-  * Spectrum : UnknownLabel - Identifies the fit spectrum
-  * Feature  : Label - Identifies the fit feature (Vector{CharXRay} or other)
-  * Reference: String - Name of reference against which :Spectrum was fit over :Feature
-  * K : Float64 - The multiplicative fit constant
-  * dK : Float64 - The 1σ uncertainty in :K
-  * :Start : Int - Start index for fit channels (:roi ∈ columns)
-  * :Stop : Int - Stop index for fit channels  (:roi ∈ columns)
-  * :Counts : Float64 - Total counts in characteristic peak (peak-back) (:peakback || :counts ∈ columns)
-  * :Back : Float64 - Total counts in background under the characteristic peak (:peakback ∈ columns)
-  * :PtoB : Float64 - Peak-to-Background assuming 10 eV/channel (:peakback ∈ columns)
-  * :KCalc : Float64 - Computed k-ratio assuming a composition. (Requires `material` argument to be specified.)
-  * :KoKcalc : Float64 - Ratio of measured/computed k-ratio.  (Requires `material` argument to be specified.)
-  * :LiveTime : Float64 - Acquisiton live time (s) (:dose ∈ columns)
-  * :ProbeCurrent : Float64 - Probe current (nA) (:dose ∈ columns)
-  * :DeadPct : Float64 - Dead time in ProbeCurrent (:dose ∈ columns)
-  * :RefCountsPernAs : Float64 - Estimated counts in :Reference in :Feature per unit dose.  (:counts ∈ columns)
-  * :CountsPernAs : Float64 - Estimated counts in :Spectrum in :Feature per unit dose.  (:counts ∈ columns)
-
-  Note: PtoB is defined as "The peak-to-background ratio as determined from the raw and residual spectra integrated over
-  the fit region-of-interest and scaled to 10 eV of continuum." Why? Cause.
-"""
-function NeXLUncertainties.asa(
-    ::Type{DataFrame},
-    ffr::FilterFitResult;
-    charOnly::Bool = true,
-    material::Union{Material,Nothing} = nothing,
-    columns::Tuple = ( :counts, ), # ( :roi, :peakback, :counts, :dose)
-    mc = XPP, fc=ReedFluorescence,
-)::DataFrame
-    sl = charOnly ? #
-        filter(lbl->lbl isa CharXRayLabel, NeXLUncertainties.sortedlabels(ffr.kratios)) : #
-        NeXLUncertainties.sortedlabels(ffr.kratios)
-    unkspec = ffr.label.spectrum
-    # Build the base result DataFrame
-    res = DataFrame(
-        Spectrum = [ ffr.label for _ in sl ],
-        Feature = sl,
-        Reference = [NeXLCore.properties(lbl)[:Name] for lbl in sl],
-        K = [ NeXLUncertainties.value(ffr.kratios, lbl) for lbl in sl],
-        dK = [ NeXLUncertainties.σ(ffr.kratios, lbl) for lbl in sl]
-    ) 
-    # Add optional columns
-    if :roi ∈ columns
-        insertcols!(res, 4, :Start => [ lbl.roi.start for lbl in sl])
-        insertcols!(res, 5, :Stop => [ lbl.roi.stop for lbl in sl])
-    end
-    if :peakback ∈ columns
-        pb = ffr.peakback()
-        insertcols!(res, :Counts => [ (pb[lbl][1]-pb[lbl][2]) for lbl in sl] )
-        insertcols!(res, :Back => [ pb[lbl][2] for lbl in sl] )
-        insertcols!(res, :PtoB => [ peaktobackground(ffr, lbl) for lbl in sl] )
-    end
-    if material isa Material
-        function kcalc(lbl) 
-            stdspec = lbl.spectrum
-            zc = zafcorrection(
-                mc,
-                fc,
-                NullCoating,
-                material,
-                stdspec[:Composition],
-                lbl.xrays,
-                unkspec[:BeamEnergy],
-            )
-            k(zc..., unkspec[:TakeOffAngle], stdspec[:TakeOffAngle])
-        end
-        insertcols!(res, :KCalc => kcalc.(sl))
-        insertcols!(res, :KoKcalc => [ r[:K]/r[:KCalc] for r in eachrow(res) ])
-    end
-    if :dose ∈ columns
-        insertcols!(res, 2, :LiveTime => [ get(unkspec, :LiveTime, missing) for _ in sl ])
-        insertcols!(res, 3, :RealTime => [ get(unkspec, :RealTime, missing) for _ in sl ])
-        insertcols!(res, 4, :ProbeCurrent => [ get(unkspec, :ProbeCurrent, missing) for _ in sl ])
-    end
-    if :counts ∈ columns
-        pb = ffr.peakback()
-        if !(:peakback ∈ columns)
-            insertcols!(res, :Counts => [ pb[lbl][1]-pb[lbl][2] for lbl in sl] )
-        end
-        insertcols!(res, :RefCountsPernAs => [ pb[lbl][3] for lbl in sl] )
-        insertcols!(res, :CountsPernAs => [ (pb[lbl][1]-pb[lbl][2]) / dose(unkspec) for lbl in sl ])
-    end
-    return res
-end
 
 """
     filteredresidual(fit::FilterFitResult, unk::FilteredUnknown, ffs::AbstractVector{FilteredReference})::Vector{Float64}

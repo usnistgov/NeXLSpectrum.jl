@@ -516,48 +516,6 @@ function suitablefor( #
     suitablefor(elm, keys(mat), det, maxE=maxE, ampl=ampl, warnme=warnme)
 end
 
-"""
-    suitability(elm::Element, mats::AbstractSet{<:Material}, det::Detector; maxE=30.0e3)
-    suitability(elm::Element, det::Detector; maxE=30.0e3, minC=0.1)
-
-Tabulates the characteristic X-ray peaks for the `Element` for which there are suitable materials 
-in `mats` for the specified detector.  The second form uses a default set of Materials in the
-file NeXLCore "standards.txt".
-
-This function is helpful for determining which `Material`s are suitable to act as 
-fitting standards for the specified Element.  It shows how NeXLSpectrum will break up the 
-characteristic peaks associated with `elm` into contiguous regions each of which will be 
-fit independently. NeXLSpectrum attempts to break each element into as many independent 
-regions as possible dependent on the resolution of the specified `EDSDetector`.  If there
-is an interference between one of the other elements in the `Material` and `elm` then
-this peak will not be suitable as a fitting standard.  However, it can be used as a 
-similar standard.
-"""
-function suitability(elm::Element, mats::AbstractSet{<:Material}, det::EDSDetector; maxE=30.0e3, latex=false)
-    wrap(matname, ltx) = ltx ? "\\ce{$matname}" : matname
-    ex, chk = latex ? ( "\\xmark", "\\checkmark" ) : ("✗", "✓")
-    mats = filter(m->value(m[elm])>0.0, mats)
-    # Find all elemental ROIs
-    rois = Dict{Vector{CharXRay}, Vector{Material}}()
-    for (cxrs, _) in NeXLSpectrum.suitablefor(elm, Set( (elm, ) ), det, maxE=maxE, ampl=1.0e-5, warnme=false)
-      rois[cxrs] = Material[]
-    end
-    for mat in mats
-      for (cxrs, _) in NeXLSpectrum.suitablefor(elm, mat, det, maxE=maxE, ampl=1.0e-5, warnme=false)
-        push!(rois[cxrs], mat) 
-      end
-    end
-    cxrss = collect(keys(rois))
-    sort!(cxrss, lt = (a,b) -> energy(brightest(a))<energy(brightest(b)))
-    res = DataFrame(:Material=>String[], :MassFrac =>Float64[], :Count=>Int[], ( Symbol(cxrs)=>String[] for cxrs in cxrss )...)
-    for m in mats
-      push!(res, [wrap(name(m), latex), round(value(m[elm]), digits=3), count(cxrs->m in rois[cxrs], cxrss), (m in rois[cxrs] ? chk : ex for cxrs in cxrss)...])
-    end
-    sort!(res, [ :Count, :MassFrac ], rev=true)
-end
-function suitability(elm::Element, det::EDSDetector; maxE=30.0e3, minC=0.1, latex=false)
-    suitability(elm, getstandards(elm, minC), det, maxE=maxE, latex=latex)
-end
 
 function escapeextents(elm::Element, det::Detector, ampl::Float64, maxE::Float64)
     vis = isvisible(characteristic(elm, alltransitions, ampl, maxE), det)

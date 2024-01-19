@@ -1,4 +1,4 @@
-using FileIO, CSV, ImageAxes, Compose
+using FileIO, ImageAxes, Compose, DataTables, CSVFiles
 
 """
     readSEManticsImage(fn::AbstractString)
@@ -11,24 +11,22 @@ function readSEManticsImage(fn::AbstractString)
     img, sp = load(fn), splitpath(fn)
     img_txt = joinpath(sp[1:end-1]..., "images.txt")
     if isfile(img_txt)
-        imgs = CSV.File(img_txt, delim = "\t") |> DataFrame
+        imgs = DataTable(load(FileIO.File{FileIO.format"TSV"}(img_txt); header_exists=true))
         (nm, _) = splitext(sp[end])
         # Single call to replace fails in 1.6
         rg = Regex(reduce((a,b)->replace(a,b), ( "["=>"\\[", "]"=>"\\]", "_" => "[.\\\\:_]"); init=string(nm[1:end-3])))
-        mimgs = filter(r -> !isnothing(match(rg, r[:Name])), imgs)
-        if nrow(mimgs) > 0
+        r = findlast(n->!isnothing(match(rg, n)), imgs.Name)
+        if !isnothing(r)
             # Since an image can be written more than once, take the last...
-            x, y, fov = mimgs[end, :X], mimgs[end, :Y], mimgs[end, :FOV]
+            x, y, fov = imgs.X[r], imgs.Y[r], imgs.FOV[r]
             pix = fov / size(img, 2) # square pixels determined by horizontal FOV
-            img = AxisArray(
+            return AxisArray(
                 img, #
                 Axis{:y}(StepRangeLen(y, pix, size(img,1), size(img,1)÷2)),
                 Axis{:x}(StepRangeLen(x, -pix, size(img,2), size(img,2)÷2))
             )
-                    
-        else
-            @info "There is no meta-data in images.txt for images matching $rg for $fn."
         end
+        @info "There is no meta-data in images.txt for images matching $rg for $fn."
     else
         @info "There is no meta-data file images.txt for images matching $rg for $fn."
     end

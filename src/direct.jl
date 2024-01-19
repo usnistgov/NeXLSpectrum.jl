@@ -44,24 +44,6 @@ struct DirectReferences
     end
 end
     
-"""
-NeXLUncertainties.asa(::Type{DataFrame}, ffp::DirectReferences)
-
-Summarize the `DirectReference` structs within a `DirectReferences` as a `DataFrame`.
-"""
-function NeXLUncertainties.asa(::Type{DataFrame}, ffp::DirectReferences)
-DataFrame(
-    :Type => [ "$(fr.label)" for fr in ffp.references ],
-    :Spectrum => [ name(fr.label.spectrum) for fr in ffp.references ],
-    Symbol("Beam Energy (keV)") => [ get(fr.label.spectrum, :BeamEnergy, missing)/1000.0 for fr in ffp.references ],
-    Symbol("Probe Current (nA)") => [ get(fr.label.spectrum, :ProbeCurrent, missing) for fr in ffp.references ],
-    Symbol("Live Time (s)") => [ get(fr.label.spectrum, :LiveTime, missing) for fr in ffp.references ],
-    :Material => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
-    :Lines => [ fr.label.xrays for fr in ffp.references],
-    :ROI => [ fr.roi for fr in ffp.references],
-)
-end
-
 struct DirectRefInit
     element::Element
     spectrum::Spectrum
