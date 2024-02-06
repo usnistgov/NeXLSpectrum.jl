@@ -1,14 +1,12 @@
 # ![](NeXL_sm.png)Spectrum
 ## Microanalytical X-ray Spectrum Analysis
-| **Documentation**                        | **Build Status**                  |
-|:----------------------------------------:|:---------------------------------:|
-| [![][docs-stable-img]][docs-stable-url]  | [![][travis-img]][travis-url]     |
+| **Documentation**                        | 
+|:----------------------------------------:|
+| [![][docs-stable-img]][docs-stable-url]  |
 
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://pages.nist.gov/NeXLSpectrum.jl
-[travis-img]: https://travis-ci.com/usnistgov/NeXLSpectrum.jl.svg?branch=master
-[travis-url]: https://travis-ci.com/usnistgov/NeXLSpectrum.jl
 
 #### Installation
 Install NeXLSpectrum using the Julia package manager
