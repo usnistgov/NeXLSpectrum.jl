@@ -100,7 +100,7 @@ readrplraw(filenamebase::AbstractString)::Array{<:Real} =
 function readrpl(io::IO)::RPLHeader
     w, h, d, o = -1, -1, -1, -1
     dl, dtv, bo, rb = -1, "", :unknown, :unknown
-    dt = DataTable(load(Stream{format"CSV"}(io); header_exists=true, delim='\t'))
+    dt = DataTable(load(Stream{format"CSV"}(io); header_exists=true, delim='\t', commentchar=';'))
     for r in eachindex(dt)
         key, val = uppercase(strip(dt.key[r])), strip(dt.value[r])
         if key == "WIDTH"
