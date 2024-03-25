@@ -95,7 +95,7 @@ function Gadfly.plot(
     xmin=0.0,
     xmax=missing,
     legend=true,
-    norm=NoScaling(),
+    norm=NeXLSpectrum.NoScaling(),
     yscale=1.05,
     ytransform=identity,
     style=NeXLSpectrumStyle,
@@ -366,7 +366,7 @@ function Gadfly.plot(
     roi::Union{Nothing,AbstractUnitRange{<:Integer}}=nothing;
     palette=NeXLPalette,
     style=NeXLSpectrumStyle,
-    xmax::Union{AbstractFloat,Nothing}=nothing,
+    xmax::Union{Int,Nothing}=nothing,
     comp::Union{Material,Nothing}=nothing,
     det::Union{EDSDetector,Nothing}=nothing,
     resp::Union{AbstractArray{<:AbstractFloat,2},Nothing}=nothing,
@@ -710,7 +710,7 @@ Gadfly.plot(wind::AbstractWindow; xmin=0.0, xmax=20.0e3, angle=π / 2, style=NeX
         roi::Union{Nothing,AbstractUnitRange{<:Integer}} = nothing;
         palette = NeXLPalette,
         style = NeXLSpectrumStyle,
-        xmax::Union{AbstractFloat, Nothing} = nothing,
+        xmax::Union{Int, Nothing} = nothing,
         comp::Union{Material, Nothing} = nothing,
         det::Union{EDSDetector, Nothing} = nothing,
         resp::Union{AbstractArray{<:AbstractFloat,2},Nothing} = nothing,
@@ -723,8 +723,8 @@ function Gadfly.plot(
     dfr::DirectFitResult,
     roi::Union{Nothing,AbstractUnitRange{<:Integer}}=nothing;
     palette=NeXLPalette,
-    style=NeXLSpectrum.NeXLSpectrumStyle,
-    xmax::Union{AbstractFloat,Nothing}=nothing,
+    style=NeXLSpectrumStyle,
+    xmax::Union{Int,Nothing}=nothing,
     comp::Union{Material,Nothing}=nothing,
     det::Union{EDSDetector,Nothing}=nothing,
     resp::Union{AbstractArray{<:AbstractFloat,2},Nothing}=nothing,
@@ -736,7 +736,7 @@ function Gadfly.plot(
         res = ddffrr.residual.counts
         mx = findlast(i -> raw[i] != res[i], eachindex(raw))
         mx = min(max(mx + mx ÷ 5, 100), length(raw))
-        mn = channel(0.0, ddffrr.label.spectrum)
+        mn = max(1, channel(0.0, ddffrr.label.spectrum))
         return mn:mx
     end
     roilt(l1, l2) = isless(l1.roi[1], l2.roi[1])

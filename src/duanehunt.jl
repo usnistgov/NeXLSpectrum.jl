@@ -10,8 +10,10 @@ function _duane_hunt_impl(spec::Spectrum)
             lim = min(10.0, max(1.0, 1.0e-5 * maximum(cdata)))
             len = min(10, max(5, length(spec) ÷ 400))
             chlast = findlast(i -> mean(@view cdata[i-len:i]) > lim, len+1:length(cdata))
-            energy(chlast, spec), chlast
+            e0 = spec[:BeamEnergy]
+            min(1.01*e0, energy(chlast, spec)), min(channel(1.05*e0, spec), chlast)
         end
+        # @show este0, estCh
         xdata, ydata = let
             # Range of channels above/below `este0`
             chs = max(1,(9*estCh)÷10):min((21*estCh)÷20,length(spec))
