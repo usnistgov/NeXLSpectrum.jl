@@ -252,7 +252,7 @@ function Gadfly.plot(
             ):min(length(spec), channel(mE, spec))
         mchs =
             max(channel(200.0, spec), chs[1], lld(spec)):min(length(specdata[i]), chs[end])  # Ignore zero strobe...
-        maxI = max(maxI, maximum(specdata[i][mchs]))
+        maxI = max(maxI, maximum(specdata[i][mchs]; init=1))
         maxE = max(maxE, mE)
         maxE0 = ismissing(mE0) ? maxE : max(maxE, mE0)
         push!(names, spec[:Name])

@@ -440,6 +440,7 @@ dose(spec::Spectrum)::Float64 = dose(spec.properties)
 What energy is associated with `ch` in `spec`?
 """
 NeXLCore.energy(ch::Int, spec::Spectrum)::Float64 = energy(ch, spec.energy)
+NeXLCore.energy(ch::AbstractFloat, sp::Spectrum)::Float64 = energy(ch, sp.energy)
 
 """
     coordinate(spec::Spectrum)

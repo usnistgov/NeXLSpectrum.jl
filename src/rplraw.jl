@@ -227,26 +227,36 @@ Construct an Array from the data in binary from the specified stream.  Always re
 regardless of how the data is organized on disk.
 """
 function readraw(ios::IOStream, rpl::RPLHeader)::Array{<:Real}
+    if rpl.recordedBy == :vector
+        size = ( rpl.depth, rpl.height, rpl.width )
+    else
+        size = ( rpl.height, rpl.width, rpl.depth )
+    end
     seek(ios, rpl.offset)
-    data = Array{rpl.dataType}(undef, rpl.depth*rpl.height*rpl.width)
-    # Data in a RPL file is organized ch -> row -> col or row -> col -> ch
-    read!(ios, data)
+    data = Array{rpl.dataType}(undef, size...)
+    # Data in a RPL file is organized ch -> row -> col
+    for r in Base.OneTo(rpl.height), c in Base.OneTo(rpl.width) 
+        read!(ios, @view data[:, r, c])
+    end
     nativeendian = (ENDIAN_BOM == 0x04030201 ? :littleendian : :bigendian)
     if rpl.byteOrder != nativeendian
         if nativeendian == :littleendian
-            map!(ntoh, data, data)
+            foreach(i -> data[i] = ntoh(data[i]), eachindex(data))
         else
-            map!(hton, data, data)
+            foreach(i -> data[i] = hton(data[i]), eachindex(data))
         end
     end
+    res = data
     if rpl.recordedBy == :image
         # Reorder as :vector
-        vector = permutedims(reshape(data, (rpl.width, rpl.height, rpl.depth)), (3, 2, 1))
-    else 
-        vector = reshape(data, (rpl.depth, rpl.height, rpl.width))
+        res = Array{rpl.dataType}(undef, rpl.depth, rpl.width, rpl.height)
+        for d in 1:rpl.depth, h in 1:rpl.height, w in 1:rpl.width 
+            res[d, h, w] = data[h, w, d]
+        end
     end
-    return vector
+    return res
 end
+
 
 function writerplraw(rplbasefile::String, arr::AbstractArray{<:Real})
     open(rplbasefile * ".rpl", write = true) do rplio

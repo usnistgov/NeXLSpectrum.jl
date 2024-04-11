@@ -74,6 +74,7 @@ Example:
     energy(101,pes) ==  3.0 + 10.0*101 + 0.001*101^2
 """
 NeXLCore.energy(ch::Int, sc::LinearEnergyScale)::Float64 = (ch - 1) * sc.width + sc.offset
+NeXLCore.energy(ch::AbstractFloat, sc::LinearEnergyScale)::Float64 = (ch - 1) * sc.width + sc.offset
 Polynomials.derivative(_::Int, sc::LinearEnergyScale)::Float64 = sc.width
 
 """
