@@ -116,9 +116,9 @@ function NeXLCore.standardize(ffr::FilterFitResult{T}, standard::FilterFitResult
     ptob = Deferred() do
         pbs, res = ffr.peakback, Dict{ReferenceLabel,NTuple{3,T}}()
         for (meas, pb) in pbs()
-            i = findfirst(std->matches(meas, std), sm.standards)
+            i = findfirst(std->matches(meas, std), stdize.standards)
             if !isnothing(i)
-                std = sm.standards[i]
+                std = stdize.standards[i]
                 sp = copy(NeXLCore.properties(std))
                 sp[:Composition] = std.standard
                 res[CharXRayLabel(sp, meas.roi, meas.xrays)] = pb
