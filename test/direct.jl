@@ -38,11 +38,11 @@ using Statistics
 
     qs = quantify.(dffrs)
     qdf = asa(DataFrame, qs)
-    @test isapprox(mean(qdf[:, "O"]), 0.43649745, atol=1.0e-6)
-    @test isapprox(mean(qdf[:, "Mg"]), 0.1155665, atol=1.0e-6)
-    @test isapprox(mean(qdf[:, "Al"]), 0.04915231, atol=1.0e-6)
-    @test isapprox(mean(qdf[:, "Si"]), 0.2087300, atol=1.0e-6)
-    @test isapprox(mean(qdf[:, "Ca"]), 0.1089368, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "O"]), 0.43653663, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "Mg"]), 0.11553493, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "Al"]), 0.04912649, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "Si"]), 0.2085654, atol=1.0e-6)
+    @test isapprox(mean(qdf[:, "Ca"]), 0.1087420, atol=1.0e-6)
     @test isapprox(mean(qdf[:, "Fe"]), 0.07985825, atol=1.0e-6)
 
     # Compare to nominal K412

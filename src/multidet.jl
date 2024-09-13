@@ -1,6 +1,6 @@
 # Routines to handle spectra collected simulataneously on multiple detectors
 
-using Formatting
+using Format
 
 """
     loadmultispec(path::AbstractString, basefn::AbstractString; indexes=0:3, fnmapper::String = "{1}[{2}].msa")
