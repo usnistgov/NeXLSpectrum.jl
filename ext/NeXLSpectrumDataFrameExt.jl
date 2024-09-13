@@ -191,6 +191,7 @@ function DataFrames.DataFrame(ffp::NeXLSpectrum.FilterFitPacket)
         Symbol("Live Time (s)") => [ get(fr.label.spectrum, :LiveTime, missing) for fr in ffp.references ],
         Symbol("Material") => [ get(fr.label.spectrum, :Composition, nothing) for fr in ffp.references],
         Symbol("Lines") => [ fr.label.xrays for fr in ffp.references],
+        Symbol("Coating") => [ get(fr.label.spectrum, :Coating, nothing) for fr in ffp.references ],
         Symbol("ROI") => [ fr.roi for fr in ffp.references],
         Symbol("Full ROI") => [ fr.ffroi for fr in ffp.references],
         Symbol("P-to-B") => p2b.(ffp.references), 
